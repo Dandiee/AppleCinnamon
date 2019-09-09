@@ -41,7 +41,7 @@ namespace AppleCinnamon.Pipeline
             foreach (var corner in Corners)
             {
                 var cornerChunk = chunk.Neighbours[corner];
-
+            
                 ProcessEdge(cornerChunk, chunk.Neighbours[new Int2(corner.X, 0)]);
                 ProcessEdge(cornerChunk, chunk.Neighbours[new Int2(0, corner.Y)]);
             }
@@ -81,7 +81,7 @@ namespace AppleCinnamon.Pipeline
                     var sourceDefinition = sourceVoxel.GetDefinition();
 
                     if (
-                        !((dir.X == 1 && sourceDefinition.IsTransmittance.X ) || (dir.Y == 1 && sourceDefinition.IsTransmittance.Z))
+                        !((step.Y == 1 && sourceDefinition.IsTransmittance.X ) || (step.X == 1 && sourceDefinition.IsTransmittance.Z))
                         //!sourceDefinition.IsTransmittance 
                         || sourceVoxel.Lightness == 0)
                     {
@@ -94,7 +94,7 @@ namespace AppleCinnamon.Pipeline
                     var targetDefinition = targetVoxel.GetDefinition();
 
                     if (
-                        ((dir.X == 1 && targetDefinition.IsTransmittance.X) || (dir.Y == 1 && targetDefinition.IsTransmittance.Z))
+                        ((step.Y == 1 && targetDefinition.IsTransmittance.X) || (step.X == 1 && targetDefinition.IsTransmittance.Z))
                         // targetDefinition.IsTransmittance 
                         
                         && targetVoxel.Lightness < sourceVoxel.Lightness - 1)

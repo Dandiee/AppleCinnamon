@@ -113,7 +113,7 @@ namespace AppleCinnamon
                 Chunk.Size.Y / 2f,
                 context.Payload.ChunkIndex.Y * Chunk.Size.Z + Chunk.Size.Z / 2f - .5f);
 
-            // _boxDrawer.Set("chunk_" + context.Payload.ChunkIndex, new BoxDetails(Chunk.Size.ToVector3(), position, Color.Red.ToColor3()));
+            _boxDrawer.Set("chunk_" + context.Payload.ChunkIndex, new BoxDetails(Chunk.Size.ToVector3(), position, Color.Red.ToColor3()));
 
             if (!IsFirstChunkInitialized)
             {

@@ -29,13 +29,24 @@ namespace AppleCinnamon.Pipeline
             new Tuple<Int3, Bool3>(Int3.UnitZ, Bool3.UnitZ)
         };
 
+        public static readonly Int3[] Directions2 =
+        {
+             Int3.UnitY
+            ,-Int3.UnitY
+            ,-Int3.UnitX
+            ,Int3.UnitX
+            ,-Int3.UnitZ
+            ,Int3.UnitZ
+        };
+
+
         public DataflowContext<Chunk> InitializeLocalLight(DataflowContext<Chunk> context)
         {
             var sw = Stopwatch.StartNew();
 
             ItsMoreComplexButIsItFasterTestMethod(context.Payload);
-            // var lightSources = InitializeSunlight(context.Payload);
-            // PropagateSunlight(context.Payload, lightSources);
+            //var lightSources = InitializeSunlight(context.Payload);
+            //PropagateSunlight(context.Payload, lightSources);
             sw.Stop();
             if (!Debug.TryAdd(context.Payload.ChunkIndex, sw.ElapsedMilliseconds))
             {
@@ -137,32 +148,28 @@ namespace AppleCinnamon.Pipeline
             var voxels = result.Chunk.Voxels;
             var voxelLightness = voxels[lightSource.X + Chunk.SizeXy * (lightSource.Y + Chunk.Height * lightSource.Z)].Lightness;
 
-            for (var i = -1; i < 2; i++)
+            foreach (var direction in Directions2)
             {
-                var neighbourX = lightSource.X + i;
+                var neighbourX = lightSource.X + direction.X;
                 if ((neighbourX & 16) == 0)
                 {
-                    for (var j = -1; j < 2; j++)
+                    var neighbourY = lightSource.Y + direction.Y;
+                    if (((ushort)neighbourY & 256) == 0)
                     {
-                        var neighbourY = lightSource.Y + j;
-                        if (((ushort)neighbourY & 256) == 0)
+                        var neighbourZ = lightSource.Z + direction.Z;
+                        if ((neighbourZ & 16) == 0)
                         {
-                            for (var k = -1; k < 2; k++)
+                            var neighbourVoxel =
+                                voxels[neighbourX + Chunk.SizeXy * (neighbourY + Chunk.Height * neighbourZ)];
+
+                            if (neighbourVoxel.Lightness < voxelLightness - 1)
                             {
-                                var neighbourZ = lightSource.Z + k;
-                                if ((neighbourZ & 16) == 0)
-                                {
-                                    var neighbourVoxel =
-                                        voxels[neighbourX + Chunk.SizeXy * (neighbourY + Chunk.Height * neighbourZ)];
+                                voxels[neighbourX + Chunk.SizeXy * (neighbourY + Chunk.Height * neighbourZ)]
+                                    = new Voxel(neighbourVoxel.Block, (byte)(voxelLightness - 1));
 
-                                    if (neighbourVoxel.Lightness < voxelLightness - 1)
-                                    {
-                                        voxels[neighbourX + Chunk.SizeXy * (neighbourY + Chunk.Height * neighbourZ)]
-                                            = new Voxel(neighbourVoxel.Block, (byte)(voxelLightness - 1));
+                                // PropagateLightSource(new Int3(neighbourX, neighbourY, neighbourZ), result);
 
-                                        lightSources.Add(new Int3(neighbourX, neighbourY, neighbourZ));
-                                    }
-                                }
+                                lightSources.Add(new Int3(neighbourX, neighbourY, neighbourZ));
                             }
                         }
                     }
@@ -179,33 +186,25 @@ namespace AppleCinnamon.Pipeline
 
             foreach (var darkSpot in initLightResult.DarkSpots)
             {
-                for (var i = -1; i < 2; i++)
+                foreach (var direction in Directions2)
                 {
-                    var darkIndexX = darkSpot.X + i;
-                    if ((darkIndexX & 16) == 0)
+                    var neighbourX = darkSpot.X + direction.X;
+                    if ((neighbourX & 16) == 0)
                     {
-                        for (var j = -1; j < 2; j++)
+                        var neighbourY = darkSpot.Y + direction.Y;
+                        if (((ushort) neighbourY & 256) == 0)
                         {
-                            var darkIndexY = darkSpot.Y + j;
-                            if (((ushort)darkIndexY & 256) == 0)
+                            var neighbourZ = darkSpot.Z + direction.Z;
+                            if ((neighbourZ & 16) == 0)
                             {
-                                for (var k = -1; k < 2; k++)
+                                if (voxels[neighbourX + Chunk.SizeXy * (neighbourY + Chunk.Height * neighbourZ)].Lightness == MaximumSunlight)
                                 {
-                                    var darkIndexZ = darkSpot.Z + k;
-                                    if ((darkIndexZ & 16) == 0)
-                                    {
-                                        if (voxels[darkIndexX + Chunk.SizeXy * (darkIndexY + Chunk.Height * darkIndexZ)].Lightness == MaximumSunlight)
-                                        {
-                                            result.Add(new Int3(darkIndexX, darkIndexY, darkIndexZ));
-                                            goto happyPlace; // BREAK 'EM ALL! - But seriously, that's the most efficient way to break out that many nested loops.
-                                        }
-                                    }
+                                    result.Add(new Int3(neighbourX, neighbourY, neighbourZ));
                                 }
                             }
                         }
                     }
                 }
-                happyPlace:;
             }
 
             return result;
@@ -255,13 +254,11 @@ namespace AppleCinnamon.Pipeline
     {
         public Chunk Chunk { get; }
         public List<Int3> DarkSpots { get; set; }
-        // public List<Int3> LightSpots { get; set; }
 
         public LightPropagationResult(Chunk chunk)
         {
             Chunk = chunk;
             DarkSpots = new List<Int3>();
-            // LightSpots = new List<Int3>();
         }
     }
 
