@@ -258,7 +258,7 @@ namespace AppleCinnamon.Pipeline
         public LightPropagationResult(Chunk chunk)
         {
             Chunk = chunk;
-            DarkSpots = new List<Int3>();
+            DarkSpots = new List<Int3>(512);
         }
     }
 
