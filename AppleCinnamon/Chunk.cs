@@ -33,12 +33,12 @@ namespace AppleCinnamon
         public BoundingBox BoundingBox { get; }
         public Vector3 ChunkIndexVector { get; }
 
-        public void SetLocalVoxel(int i, int j, int k, Voxel voxel) => Voxels[i + Size.X * (j + Size.Y * k)] = voxel;
+        public void SetLocalVoxel(int i, int j, int k, Voxel voxel) => Voxels[i + SizeXy * (j + Height * k)] = voxel;
         public void SetLocalVoxel(Int3 relativeIndex, Voxel voxel) => SetLocalVoxel(relativeIndex.X, relativeIndex.Y, relativeIndex.Z, voxel);
         public Voxel GetLocalVoxel(Int3 relativeIndex) => GetLocalVoxel(relativeIndex.X, relativeIndex.Y, relativeIndex.Z);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Voxel GetLocalVoxel(int i, int j, int k) => Voxels[i + Size.X * (j + Size.Y * k)];
+        public Voxel GetLocalVoxel(int i, int j, int k) => Voxels[i + SizeXy * (j + Height * k)];
 
 
         public Voxel GetLocalWithNeighbours(int i, int j, int k, out VoxelAddress address)

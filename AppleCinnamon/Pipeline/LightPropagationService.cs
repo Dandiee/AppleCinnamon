@@ -16,7 +16,8 @@ namespace AppleCinnamon.Pipeline
 
     public sealed class LightPropagationService : ILightPropagationService
     {
-        public static readonly  ConcurrentDictionary<Int2, long> Debug = new ConcurrentDictionary<Int2, long>();
+        private const byte MaximumSunlight = 15;
+        public static readonly ConcurrentDictionary<Int2, long> Debug = new ConcurrentDictionary<Int2, long>();
 
         public static readonly Tuple<Int3, Bool3>[] Directions =
         {
@@ -59,7 +60,7 @@ namespace AppleCinnamon.Pipeline
                         continue;
                     }
 
-                    if ((byte)neighbourIndex.X < Chunk.Size.X && 
+                    if ((byte)neighbourIndex.X < Chunk.Size.X &&
                         neighbourIndex.Y < Chunk.Size.Y && neighbourIndex.Y > -1 &&
                         (byte)neighbourIndex.Z < Chunk.Size.Z)
                     {
@@ -72,10 +73,10 @@ namespace AppleCinnamon.Pipeline
                         {
                             var condition2 = condition1 && neighbourVoxel.Lightness < voxel.Lightness - 1;
 
-                            if(condition2)
+                            if (condition2)
                             {
                                 chunk.SetLocalVoxel(neighbourIndex.X, neighbourIndex.Y, neighbourIndex.Z,
-                                    new Voxel(neighbourVoxel.Block, (byte) (voxel.Lightness - 1)));
+                                    new Voxel(neighbourVoxel.Block, (byte)(voxel.Lightness - 1)));
 
                                 PropagateSunlight(chunk, neighbourIndex, -direction.Item1);
                             }
@@ -111,7 +112,7 @@ namespace AppleCinnamon.Pipeline
                             break;
                         }
 
-                        chunk.SetLocalVoxel(i, j, k, new Voxel(voxel.Block, 15));
+                        chunk.SetLocalVoxel(i, j, k, new Voxel(voxel.Block, MaximumSunlight));
                         lightSources.Add(new Int3(i, j, k));
                     }
                 }
@@ -133,32 +134,34 @@ namespace AppleCinnamon.Pipeline
 
         private void PropagateLightSource(Int3 lightSource, LightPropagationResult result, List<Int3> lightSources)
         {
-            var chunk = result.Chunk;
-
-            var voxel = chunk.GetLocalVoxel(lightSource.X, lightSource.Y, lightSource.Z);
+            var voxels = result.Chunk.Voxels;
+            var voxelLightness = voxels[lightSource.X + Chunk.SizeXy * (lightSource.Y + Chunk.Height * lightSource.Z)].Lightness;
 
             for (var i = -1; i < 2; i++)
             {
-                for (var j = -1; j < 2; j++)
+                var neighbourX = lightSource.X + i;
+                if ((neighbourX & 16) == 0)
                 {
-                    for (var k = -1; k < 2; k++)
+                    for (var j = -1; j < 2; j++)
                     {
-                        var neighbourIndex = new Int3(lightSource.X + i, lightSource.Y + j, lightSource.Z + k);
-                        if ((byte) neighbourIndex.X < Chunk.SizeXy &&
-                            neighbourIndex.Y < Chunk.Height && neighbourIndex.Y > -1 &&
-                            (byte) neighbourIndex.Z < Chunk.SizeXy)
+                        var neighbourY = lightSource.Y + j;
+                        if (((ushort)neighbourY & 256) == 0)
                         {
+                            for (var k = -1; k < 2; k++)
                             {
-                                var neighbourVoxel = chunk.GetLocalVoxel(neighbourIndex.X, neighbourIndex.Y,
-                                    neighbourIndex.Z);
-
-                                if (neighbourVoxel.Lightness < voxel.Lightness - 1)
+                                var neighbourZ = lightSource.Z + k;
+                                if ((neighbourZ & 16) == 0)
                                 {
-                                    chunk.SetLocalVoxel(neighbourIndex.X, neighbourIndex.Y, neighbourIndex.Z,
-                                        new Voxel(neighbourVoxel.Block, (byte) (voxel.Lightness - 1)));
+                                    var neighbourVoxel =
+                                        voxels[neighbourX + Chunk.SizeXy * (neighbourY + Chunk.Height * neighbourZ)];
 
-                                    lightSources.Add(neighbourIndex);
-                                    // PropagateLightSource(neighbourIndex, result);
+                                    if (neighbourVoxel.Lightness < voxelLightness - 1)
+                                    {
+                                        voxels[neighbourX + Chunk.SizeXy * (neighbourY + Chunk.Height * neighbourZ)]
+                                            = new Voxel(neighbourVoxel.Block, (byte)(voxelLightness - 1));
+
+                                        lightSources.Add(new Int3(neighbourX, neighbourY, neighbourZ));
+                                    }
                                 }
                             }
                         }
@@ -167,56 +170,42 @@ namespace AppleCinnamon.Pipeline
             }
         }
 
+        
+
         private List<Int3> FindLightSources(LightPropagationResult initLightResult)
         {
-            var chunk = initLightResult.Chunk;
+            var voxels = initLightResult.Chunk.Voxels;
             var result = new List<Int3>();
 
             foreach (var darkSpot in initLightResult.DarkSpots)
             {
-                var maximumVoxel = Voxel.Zero;
-                var maximumIndex = Int3.Zero;
-                var foundLightSource = false;
-                var isBroken = false;
-
-                for (var i = -1; i < 2 && !isBroken; i++)
+                for (var i = -1; i < 2; i++)
                 {
-                    for (var j = -1; j < 2 && !isBroken; j++)
+                    var darkIndexX = darkSpot.X + i;
+                    if ((darkIndexX & 16) == 0)
                     {
-                        for (var k = -1; k < 2 && !isBroken; k++)
+                        for (var j = -1; j < 2; j++)
                         {
-                            var neighbourIndex = new Int3(darkSpot.X + i, darkSpot.Y + j, darkSpot.Z + k);
-
-                            if ((neighbourIndex.X & 16) == 0 &&
-                                ((short)neighbourIndex.Y & 256) == 0 &&
-                                (neighbourIndex.Z & 16) == 0)
+                            var darkIndexY = darkSpot.Y + j;
+                            if (((ushort)darkIndexY & 256) == 0)
                             {
-
-                                var voxel = chunk.GetLocalVoxel(darkSpot.X + i,
-                                    darkSpot.Y + j,
-                                    darkSpot.Z + k);
-
-                                if (voxel.Lightness == 15)
+                                for (var k = -1; k < 2; k++)
                                 {
-                                    maximumVoxel = voxel;
-                                    maximumIndex = neighbourIndex;
-                                    isBroken = true;
+                                    var darkIndexZ = darkSpot.Z + k;
+                                    if ((darkIndexZ & 16) == 0)
+                                    {
+                                        if (voxels[darkIndexX + Chunk.SizeXy * (darkIndexY + Chunk.Height * darkIndexZ)].Lightness == MaximumSunlight)
+                                        {
+                                            result.Add(new Int3(darkIndexX, darkIndexY, darkIndexZ));
+                                            goto happyPlace; // BREAK 'EM ALL! - But seriously, that's the most efficient way to break out that many nested loops.
+                                        }
+                                    }
                                 }
-                                // else if (maximumVoxel.Lightness < voxel.Lightness)
-                                // {
-                                //     foundLightSource = true;
-                                //     maximumVoxel = voxel;
-                                //     maximumIndex = neighbourIndex;
-                                // }
                             }
                         }
                     }
                 }
-
-                if (isBroken || foundLightSource)
-                {
-                    result.Add(maximumIndex);
-                }
+                happyPlace:;
             }
 
             return result;
@@ -243,8 +232,7 @@ namespace AppleCinnamon.Pipeline
                         {
                             if (isTransmittance)
                             {
-                                // result.LightSpots.Add(new Int3(i, j, k));
-                                chunk.SetLocalVoxel(i, j, k, new Voxel(voxel.Block, 15));
+                                chunk.SetLocalVoxel(i, j, k, new Voxel(voxel.Block, MaximumSunlight));
                             }
                             else isOnSunlight = false;
                         }
