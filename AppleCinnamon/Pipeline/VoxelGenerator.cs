@@ -36,7 +36,33 @@ namespace AppleCinnamon.Pipeline
                         voxels[i + Chunk.Size.X * (j + Chunk.Size.Y * k)] = new Voxel(3, 0);
                     }
 
-                    voxels[i + Chunk.Size.X * (height + Chunk.Size.Y * k)] = new Voxel(4, 0);
+                    // voxels[i + Chunk.Size.X * (height + Chunk.Size.Y * k)] = new Voxel(4, 0);
+                }
+            }
+
+            for (var i = 0; i < Chunk.Size.X; i++)
+            {
+                for (var j = 0; j < Chunk.Size.Y; j++)
+                {
+                    for (var k = 0; k < Chunk.Size.Z; k++)
+                    {
+                        var originalVoxel = voxels[i + Chunk.Size.X * (j + Chunk.Size.Y * k)];
+                        if (originalVoxel.Block == 0)
+                        {
+                            var rnd = (byte) (Noise.CalcPixel3D(
+                                                  chunkIndex.X * Chunk.Size.X + i + 500,
+                                                  j,
+                                                  chunkIndex.Y * Chunk.Size.Z + k + 500,
+                                                  0.01f) * 0.7);
+
+                            var isBlock = rnd > 128;
+
+                            if (isBlock)
+                            {
+                                voxels[i + Chunk.Size.X * (j + Chunk.Size.Y * k)] = new Voxel(3, 0);
+                            }
+                        }
+                    }
                 }
             }
 

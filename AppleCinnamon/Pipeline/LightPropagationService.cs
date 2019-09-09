@@ -31,8 +31,10 @@ namespace AppleCinnamon.Pipeline
         public DataflowContext<Chunk> InitializeLocalLight(DataflowContext<Chunk> context)
         {
             var sw = Stopwatch.StartNew();
-            var lightSources = InitializeSunlight(context.Payload);
-            PropagateSunlight(context.Payload, lightSources);
+
+            ItsMoreComplexButIsItFasterTestMethod(context.Payload);
+            // var lightSources = InitializeSunlight(context.Payload);
+            // PropagateSunlight(context.Payload, lightSources);
             sw.Stop();
             if (!Debug.TryAdd(context.Payload.ChunkIndex, sw.ElapsedMilliseconds))
             {
@@ -118,9 +120,111 @@ namespace AppleCinnamon.Pipeline
             return lightSources;
         }
 
-        private List<Int3> GetDarkVoxels(Chunk chunk)
+        private void ItsMoreComplexButIsItFasterTestMethod(Chunk chunk)
         {
-            var darkVoxels = new List<Int3>();
+            var result = GetDarkVoxels(chunk);
+            var lightSources = FindLightSources(result);
+
+            for (var i = 0; i < lightSources.Count; i++)
+            {
+                PropagateLightSource(lightSources[i], result, lightSources);
+            }
+        }
+
+        private void PropagateLightSource(Int3 lightSource, LightPropagationResult result, List<Int3> lightSources)
+        {
+            var chunk = result.Chunk;
+
+            var voxel = chunk.GetLocalVoxel(lightSource.X, lightSource.Y, lightSource.Z);
+
+            for (var i = -1; i < 2; i++)
+            {
+                for (var j = -1; j < 2; j++)
+                {
+                    for (var k = -1; k < 2; k++)
+                    {
+                        var neighbourIndex = new Int3(lightSource.X + i, lightSource.Y + j, lightSource.Z + k);
+                        if ((byte) neighbourIndex.X < Chunk.SizeXy &&
+                            neighbourIndex.Y < Chunk.Height && neighbourIndex.Y > -1 &&
+                            (byte) neighbourIndex.Z < Chunk.SizeXy)
+                        {
+                            {
+                                var neighbourVoxel = chunk.GetLocalVoxel(neighbourIndex.X, neighbourIndex.Y,
+                                    neighbourIndex.Z);
+
+                                if (neighbourVoxel.Lightness < voxel.Lightness - 1)
+                                {
+                                    chunk.SetLocalVoxel(neighbourIndex.X, neighbourIndex.Y, neighbourIndex.Z,
+                                        new Voxel(neighbourVoxel.Block, (byte) (voxel.Lightness - 1)));
+
+                                    lightSources.Add(neighbourIndex);
+                                    // PropagateLightSource(neighbourIndex, result);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        private List<Int3> FindLightSources(LightPropagationResult initLightResult)
+        {
+            var chunk = initLightResult.Chunk;
+            var result = new List<Int3>();
+
+            foreach (var darkSpot in initLightResult.DarkSpots)
+            {
+                var maximumVoxel = Voxel.Zero;
+                var maximumIndex = Int3.Zero;
+                var foundLightSource = false;
+                var isBroken = false;
+
+                for (var i = -1; i < 2 && !isBroken; i++)
+                {
+                    for (var j = -1; j < 2 && !isBroken; j++)
+                    {
+                        for (var k = -1; k < 2 && !isBroken; k++)
+                        {
+                            var neighbourIndex = new Int3(darkSpot.X + i, darkSpot.Y + j, darkSpot.Z + k);
+
+                            if ((neighbourIndex.X & 16) == 0 &&
+                                ((short)neighbourIndex.Y & 256) == 0 &&
+                                (neighbourIndex.Z & 16) == 0)
+                            {
+
+                                var voxel = chunk.GetLocalVoxel(darkSpot.X + i,
+                                    darkSpot.Y + j,
+                                    darkSpot.Z + k);
+
+                                if (voxel.Lightness == 15)
+                                {
+                                    maximumVoxel = voxel;
+                                    maximumIndex = neighbourIndex;
+                                    isBroken = true;
+                                }
+                                // else if (maximumVoxel.Lightness < voxel.Lightness)
+                                // {
+                                //     foundLightSource = true;
+                                //     maximumVoxel = voxel;
+                                //     maximumIndex = neighbourIndex;
+                                // }
+                            }
+                        }
+                    }
+                }
+
+                if (isBroken || foundLightSource)
+                {
+                    result.Add(maximumIndex);
+                }
+            }
+
+            return result;
+        }
+
+        private LightPropagationResult GetDarkVoxels(Chunk chunk)
+        {
+            var result = new LightPropagationResult(chunk);
 
             for (var i = 0; i != Chunk.Size.X; i++)
             {
@@ -139,6 +243,7 @@ namespace AppleCinnamon.Pipeline
                         {
                             if (isTransmittance)
                             {
+                                // result.LightSpots.Add(new Int3(i, j, k));
                                 chunk.SetLocalVoxel(i, j, k, new Voxel(voxel.Block, 15));
                             }
                             else isOnSunlight = false;
@@ -147,14 +252,29 @@ namespace AppleCinnamon.Pipeline
                         {
                             if (isTransmittance)
                             {
-                                darkVoxels.Add(new Int3(i, j, k));
+                                result.DarkSpots.Add(new Int3(i, j, k));
                             }
                         }
                     }
                 }
             }
 
-            return darkVoxels;
+            return result;
         }
     }
+
+    public class LightPropagationResult
+    {
+        public Chunk Chunk { get; }
+        public List<Int3> DarkSpots { get; set; }
+        // public List<Int3> LightSpots { get; set; }
+
+        public LightPropagationResult(Chunk chunk)
+        {
+            Chunk = chunk;
+            DarkSpots = new List<Int3>();
+            // LightSpots = new List<Int3>();
+        }
+    }
+
 }

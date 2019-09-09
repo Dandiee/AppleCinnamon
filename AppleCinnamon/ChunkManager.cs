@@ -18,7 +18,7 @@ namespace AppleCinnamon
     {
         private readonly Device _device;
         private readonly BoxDrawer _boxDrawer;
-        private readonly Camera _camera;
+        private readonly Map _map;
 
         private readonly ConcurrentDictionary<Int2, Chunk> _chunks;
         private readonly ConcurrentDictionary<Int2, object> _queuedChunks;
@@ -30,6 +30,8 @@ namespace AppleCinnamon
         private readonly ILightFinalizer _lightFinalizer;
         private readonly ILightUpdater _lightUpdater;
 
+        public EventHandler FirstChunkLoaded;
+
         public ConcurrentBag<Dictionary<string, long>> Benchmark { get; }
         public const int ViewDistance = 8;
         public bool IsFirstChunkInitialized { get; private set; }
@@ -37,11 +39,11 @@ namespace AppleCinnamon
 
         public int RenderedChunks;
 
-        public ChunkManager(Device device, BoxDrawer boxDrawer, Camera camera)
+        public ChunkManager(Device device, BoxDrawer boxDrawer, Map map)
         {
             _device = device;
             _boxDrawer = boxDrawer;
-            _camera = camera;
+            _map = map;
             _chunks = new ConcurrentDictionary<Int2,Chunk>();
             _chunkBuilder = new ChunkBuilder();
             _chunkDispatcher = new ChunkDispatcher();
@@ -72,6 +74,8 @@ namespace AppleCinnamon
             pool.LinkTo(lightFinalizer);
             lightFinalizer.LinkTo(dispatcher);
             dispatcher.LinkTo(finalizer);
+
+            QueueChunksByIndex(Int2.Zero);
         }
 
         public Voxel? GetVoxel(Int3 absoluteIndex)
@@ -111,7 +115,11 @@ namespace AppleCinnamon
 
             // _boxDrawer.Set("chunk_" + context.Payload.ChunkIndex, new BoxDetails(Chunk.Size.ToVector3(), position, Color.Red.ToColor3()));
 
-            IsFirstChunkInitialized = true;
+            if (!IsFirstChunkInitialized)
+            {
+                IsFirstChunkInitialized = true;
+                FirstChunkLoaded?.Invoke(this, null);
+            }
         }
 
         public void Draw(Effect effect, Device device, RenderForm renderForm)
@@ -133,9 +141,9 @@ namespace AppleCinnamon
                     foreach (var chunk in _chunks.Values)
                     {
                         var bb = chunk.BoundingBox;
-                        if (_camera.BoundingFrustum.Contains(ref bb) != ContainmentType.Disjoint)
+                        if (_map.Camera.BoundingFrustum.Contains(ref bb) != ContainmentType.Disjoint)
                         {
-                            chunk.Draw(device, _camera.CurrentChunkIndexVector);
+                            chunk.Draw(device, _map.Camera.CurrentChunkIndexVector);
                             RenderedChunks++;
                         }
                     }
@@ -174,9 +182,17 @@ namespace AppleCinnamon
 
         public void Update(GameTime gameTime, Camera camera)
         {
+            if (camera == null) return;
+
             var currentChunkIndex =
                 new Int2((int)camera.Position.X / Chunk.Size.X, (int)camera.Position.Z / Chunk.Size.Z);
 
+            QueueChunksByIndex(currentChunkIndex);
+        }
+
+
+        private void QueueChunksByIndex(Int2 currentChunkIndex)
+        {
             foreach (var relativeChunkIndex in GetSurroundingChunks(ViewDistance))
             {
                 var chunkIndex = currentChunkIndex + relativeChunkIndex;

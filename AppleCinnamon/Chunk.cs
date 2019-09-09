@@ -13,6 +13,9 @@ namespace AppleCinnamon
 {
     public class Chunk
     {
+        public const int SizeXy = 16;
+        public const int Height = 256;
+
         private Cube<FaceBuffer> _bufferCube;
         private KeyValuePair<Face, FaceBuffer>[] _buffers;
 

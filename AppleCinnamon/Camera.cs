@@ -49,7 +49,6 @@ namespace AppleCinnamon
             Position = new Double3(Game.StartPosition.X, Game.StartPosition.Y, Game.StartPosition.Z);
             LookAt = Double3.Normalize(new Double3(0.5, -0.5, 0.5));
 
-
             var directInput = new DirectInput();
             Keyboard = new Keyboard(directInput);
             Keyboard.Properties.BufferSize = 128;

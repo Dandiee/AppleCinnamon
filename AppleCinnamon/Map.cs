@@ -20,8 +20,12 @@ namespace AppleCinnamon
             Game = game;
             LoadContent();
             BoxDrawer = new BoxDrawer();
-            Camera = new Camera(BoxDrawer);
-            ChunkManager = new ChunkManager(game.Device, BoxDrawer, Camera);
+            // Camera = new Camera(BoxDrawer);
+            ChunkManager = new ChunkManager(game.Device, BoxDrawer, this);
+            ChunkManager.FirstChunkLoaded += (sender, args) =>
+            {
+                Camera = new Camera(BoxDrawer);
+            };
         }
 
 		protected void LoadContent()
@@ -40,15 +44,18 @@ namespace AppleCinnamon
 
         public void Draw()
         {
-            ChunkManager.Draw(_solidBlockEffect, Game.Device, Game.RenderForm);
-            BoxDrawer.Draw(Game.Device, _basicColorEffect);
+            if (Camera != null)
+            {
+                ChunkManager.Draw(_solidBlockEffect, Game.Device, Game.RenderForm);
+                BoxDrawer.Draw(Game.Device, _basicColorEffect);
+            }
         }
 
         public void Update(GameTime gameTime)
         {
             if (Game.RenderForm.Focused)
             {
-                Camera.Update(gameTime, Game.RenderForm, ChunkManager);
+                Camera?.Update(gameTime, Game.RenderForm, ChunkManager);
             }
 
             ChunkManager.Update(gameTime, Camera);
@@ -57,12 +64,15 @@ namespace AppleCinnamon
 
 		public void UpdateSolidEffect()
 		{
-            _solidBlockEffect.GetVariableByName("WorldViewProjection").AsMatrix().SetMatrix(Camera.WorldViewProjection);
-            _basicColorEffect.GetVariableByName("WorldViewProjection").AsMatrix().SetMatrix(Camera.WorldViewProjection);
+            if (Camera != null)
+            {
+                _solidBlockEffect.GetVariableByName("WorldViewProjection").AsMatrix().SetMatrix(Camera.WorldViewProjection);
+                _basicColorEffect.GetVariableByName("WorldViewProjection").AsMatrix() .SetMatrix(Camera.WorldViewProjection);
 
-            // _basicColorEffect.GetVariableByName("Projection").AsMatrix().SetMatrix(Camera.Projection);
-            // _basicColorEffect.GetVariableByName("View").AsMatrix().SetMatrix(Camera.View);
-            // _basicColorEffect.GetVariableByName("World").AsMatrix().SetMatrix(Camera.World);
+                // _basicColorEffect.GetVariableByName("Projection").AsMatrix().SetMatrix(Camera.Projection);
+                // _basicColorEffect.GetVariableByName("View").AsMatrix().SetMatrix(Camera.View);
+                // _basicColorEffect.GetVariableByName("World").AsMatrix().SetMatrix(Camera.World);
+            }
         }
 	}
 }

@@ -31,7 +31,7 @@ namespace AppleCinnamon
         public SwapChain SwapChain { get; private set; }
         public RenderTarget RenderTarget2D { get; private set; }
         public RoundedRectangleGeometry RoundedRectangleGeometry { get; private set; }
-        public static readonly Vector3 StartPosition = new Vector3(0, 120, 0);
+        public static readonly Vector3 StartPosition = new Vector3(0, 256, 0);
         public Factory D2dFactory;
         public Map Map;
         public Geometry Crosshair { get; private set; }
@@ -190,8 +190,14 @@ namespace AppleCinnamon
                 var diff = newTS - gameTime.TotalGameTime;
                 gameTime.TotalGameTime = sw.Elapsed;
                 gameTime.ElapsedGameTime = diff;
-                RenderForm.Text = "Targets: " + (Map.Camera.CurrentCursor?.AbsoluteVoxelIndex?? new Int3()) + "LookAt: " + Map.Camera.LookAt + " / Position" + Map.Camera.Position +
-                                  " / Rendered ChunkManager: " + Map.ChunkManager.RenderedChunks+"/"+Map.ChunkManager.ChunksCount;
+
+                if (Map.Camera != null)
+                {
+                    RenderForm.Text = "Targets: " + (Map.Camera.CurrentCursor?.AbsoluteVoxelIndex ?? new Int3()) +
+                                      "LookAt: " + Map.Camera.LookAt + " / Position" + Map.Camera.Position +
+                                      " / Rendered ChunkManager: " + Map.ChunkManager.RenderedChunks + "/" +
+                                      Map.ChunkManager.ChunksCount;
+                }
 
             });
         }
