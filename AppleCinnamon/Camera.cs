@@ -177,7 +177,7 @@ namespace AppleCinnamon
             const float MovmentFriction = 0.8f;
             const float SprintSpeedFactor = 3f;
 
-            var t = 1 / 1000f;
+            var t = 1 / 200f;
 
             //Velocity *= MovmentFriction;
             Velocity += WorldSettings.Gravity * t;

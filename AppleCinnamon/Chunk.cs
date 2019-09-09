@@ -77,17 +77,17 @@ namespace AppleCinnamon
             if (cx == 0 && cy == 0)
             {
                 address = new VoxelAddress(Int2.Zero, new Int3(i, j, k));
-                return GetLocalVoxel(i, j, k);
+                return Voxels[i + SizeXy * (j + Height * k)];
             }
 
             var neighbourIndex = new Int2(cx, cy);
             address = new VoxelAddress(neighbourIndex, new Int3(i, j, k));
-            return Neighbours[neighbourIndex].GetLocalVoxel(i, j, k);
+            return Neighbours[new Int2(cx, cy)].Voxels[i + SizeXy * (j + Height * k)];
         }
 
         public Voxel GetLocalWithNeighbours(int i, int j, int k)
         {
-            if (j < 0 || j > Size.Y - 1)
+            if (((ushort)j & 256) != 0)
             {
                 return Voxel.One;
             }
@@ -119,10 +119,10 @@ namespace AppleCinnamon
 
             if (cx == 0 && cy == 0)
             {
-                return GetLocalVoxel(i, j, k);
+                return Voxels[i + SizeXy * (j + Height * k)];
             }
 
-            return Neighbours[new Int2(cx, cy)].GetLocalVoxel(i, j, k);
+            return Neighbours[new Int2(cx, cy)].Voxels[i + SizeXy * (j + Height * k)];
         }
 
         public Chunk(

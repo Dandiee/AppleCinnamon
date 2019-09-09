@@ -27,15 +27,14 @@ namespace AppleCinnamon
 
             var vertices = verticesCube.GetAll().ToList();
 
-            for (var i = 0; i != Chunk.Size.X; i++)
+            for (var i = 0; i != Chunk.SizeXy; i++)
             {
-                for (var j = 0; j != Chunk.Size.Y; j++)
+                for (var j = 0; j != Chunk.Height; j++)
                 {
-                    for (var k = 0; k != Chunk.Size.Z; k++)
+                    for (var k = 0; k != Chunk.SizeXy; k++)
                     {
-                        var relativeIndex = new Int3(i, j, k);
-                        var voxel = chunk.GetLocalVoxel(i, j, k);
-                        
+                        var voxel = chunk.Voxels[i + Chunk.SizeXy * (j + Chunk.Height * k)];
+
                         if (voxel.Block > 0)
                         {
                             var definition = VoxelDefinition.DefinitionByType[voxel.Block];
@@ -45,12 +44,14 @@ namespace AppleCinnamon
                                 var face = currentFace.Key;
 
                                 // TODO: this is the most expensive line in the code.
-                                var neighbor = chunk.GetLocalWithNeighbours(i + currentFace.Value.Direction.X, j + currentFace.Value.Direction.Y, k + currentFace.Value.Direction.Z);
-                                var neighborDefinition = neighbor.GetDefinition();
+                                var neighbor = chunk.GetLocalWithNeighbours(i + currentFace.Value.Direction.X,
+                                    j + currentFace.Value.Direction.Y, k + currentFace.Value.Direction.Z);
+
+                                var neighborDefinition = VoxelDefinition.DefinitionByType[neighbor.Block];
 
                                 if (IsFaceVisible(definition, neighborDefinition))
                                 {
-                                    AddFace(face, relativeIndex, currentFace.Value, definition, chunk, neighbor);
+                                    AddFace(face, i, j, k, currentFace.Value, definition, chunk, neighbor);
                                 }
                             }
                         }
@@ -85,7 +86,7 @@ namespace AppleCinnamon
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void AddFace(Face face, Int3 relativeIndex, ChunkBuildFaceResult faceResult, VoxelDefinition definition, Chunk chunk, Voxel neighbor)
+        public void AddFace(Face face, int relativeIndexX, int relativeIndexY, int relativeIndexZ, ChunkBuildFaceResult faceResult, VoxelDefinition definition, Chunk chunk, Voxel neighbor)
         {
             var faceVertices = FaceVertices[face];
             var textureUv = definition.Textures[face];
@@ -94,7 +95,8 @@ namespace AppleCinnamon
 
             for (var i = 0; i < 4; i++)
             {
-                var position = ((faceVertices[i] * definition.Size) + definition.Translation).Add(relativeIndex) + chunk.OffsetVector;
+                var position = (faceVertices[i] * definition.Size) + definition.Translation + chunk.OffsetVector +
+                               new Vector3(relativeIndexX, relativeIndexY, relativeIndexZ);
                 var uvCoordinate = UvOffsets[i] + textureUv;
                 var light = neighbor.Lightness;
                 var denominator = 1f;
@@ -102,7 +104,7 @@ namespace AppleCinnamon
 
                 foreach (var index in aoIndexes[i])
                 {
-                    var aoFriend = chunk.GetLocalWithNeighbours(relativeIndex.X + index.X, relativeIndex.Y + index.Y, relativeIndex.Z + index.Z);
+                    var aoFriend = chunk.GetLocalWithNeighbours(relativeIndexX + index.X, relativeIndexY + index.Y, relativeIndexZ + index.Z);
                     var aoFriendDefinition = aoFriend.GetDefinition();
 
                     if (

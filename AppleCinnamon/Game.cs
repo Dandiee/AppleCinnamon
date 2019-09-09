@@ -52,9 +52,11 @@ namespace AppleCinnamon
 
         private void SetDevice()
         {
-            RenderForm = new RenderForm("SharpDX - Basics");
-            RenderForm.Width = 1600;
-            RenderForm.Height = 900;
+            RenderForm = new RenderForm("Apple & Cinnamon")
+            {
+                Width = 2300,
+                Height = 1300
+            };
 
             // SwapChain description
             var desc = new SwapChainDescription
@@ -206,7 +208,7 @@ namespace AppleCinnamon
         {
             Device.ImmediateContext.OutputMerger.SetTargets(DepthStencilView, RenderTargetView);
             Device.ImmediateContext.ClearDepthStencilView(DepthStencilView, DepthStencilClearFlags.Depth, 1.0f, 0);
-            Device.ImmediateContext.ClearRenderTargetView(RenderTargetView, Color.Black);
+            Device.ImmediateContext.ClearRenderTargetView(RenderTargetView, Color.CornflowerBlue);
 
             RenderTarget2D.BeginDraw();
             Map.Draw();
