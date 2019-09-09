@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Windows.Forms;
 using SharpDX;
 
 namespace AppleCinnamon.System
@@ -17,6 +16,8 @@ namespace AppleCinnamon.System
         public bool Y { get; }
         public bool Z { get; }
 
+        public byte Bytes { get; }
+
         private readonly bool _isTrue;
 
         public Bool3(bool xyz) 
@@ -28,6 +29,13 @@ namespace AppleCinnamon.System
             Y = y;
             Z = z;
             _isTrue = X && Y && Z;
+
+            byte bytes = 0;
+            if (x) bytes += 1;
+            if (y) bytes += 2;
+            if (z) bytes += 4;
+
+            Bytes = bytes;
         }
 
         public Bool3(Int3 direction)

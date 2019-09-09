@@ -10,6 +10,7 @@ namespace AppleCinnamon.Settings
         public Cube<Vector2> Textures { get; }
         public byte LightEmitting { get; }
         public Bool3 IsTransmittance { get; }
+        public byte TransmittanceBytes { get; }
         public bool IsTransparent { get; }
         public bool IsPermeable { get; }
         public Vector3 Size { get; }
@@ -45,6 +46,7 @@ namespace AppleCinnamon.Settings
             DefinitionByType[type] = this;
             IsUnitSized = size == Vector3.One && translation == Vector3.Zero;
             Translation = translation;
+            TransmittanceBytes = IsTransmittance.Bytes;
         }
     }
 
