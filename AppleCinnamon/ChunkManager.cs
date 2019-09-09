@@ -33,7 +33,7 @@ namespace AppleCinnamon
         public EventHandler FirstChunkLoaded;
 
         public ConcurrentBag<Dictionary<string, long>> Benchmark { get; }
-        public const int ViewDistance = 32;
+        public const int ViewDistance = 8;
         public bool IsFirstChunkInitialized { get; private set; }
         public int ChunksCount => _chunks.Count;
 

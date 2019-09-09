@@ -28,8 +28,8 @@ namespace AppleCinnamon.Settings
             .AsPermeable().AsTransmittance().WithLightEmitting(6).WithTransmittance(true, true, true)
             .WithSize(.2f, 1, .2f).Build();
 
-        public static readonly VoxelDefinition Sand = new BlockDefinitionBuilder(3).WithAllSideTexture(2, 1)
-            .Build();
+        // public static readonly VoxelDefinition Sand = new BlockDefinitionBuilder(3).WithAllSideTexture(2, 1).Build();
+        public static readonly VoxelDefinition Sand = new BlockDefinitionBuilder(3).WithAllSideTexture(1, 0).Build();
 
         public static readonly VoxelDefinition Snow = new BlockDefinitionBuilder(4).WithAllSideTexture(2, 4)
             .WithSize(1, 0.2f, 1).WithTranslation(0, -0.4f, 0).WithTransmittance(true, true, true).AsPermeable().Build();

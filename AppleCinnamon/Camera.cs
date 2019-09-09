@@ -30,6 +30,10 @@ namespace AppleCinnamon
         public Keyboard Keyboard { get; set; }
         public Mouse Mouse { get; set; }
 
+        public float Yaw { get; private set; }
+        public float Pitch { get; private set; }
+        public Vector3 Orientation { get; private set; }
+
         protected KeyboardState CurrentKeyboardState { get; private set; }
         protected KeyboardState LastKeyboardState { get; private set; }
         protected MouseState CurrentMouseState { get; private set; }
@@ -46,8 +50,9 @@ namespace AppleCinnamon
         public Camera(BoxDrawer boxDrawer)
         {
             _boxDrawer = boxDrawer;
+            Orientation = Vector3.UnitX;
             Position = new Double3(Game.StartPosition.X, Game.StartPosition.Y, Game.StartPosition.Z);
-            LookAt = Double3.Normalize(new Double3(0.5, -0.5, 0.5));
+            // LookAt = Double3.Normalize(new Double3(0.5, -0.5, 0.5));
 
             var directInput = new DirectInput();
             Keyboard = new Keyboard(directInput);
@@ -161,13 +166,7 @@ namespace AppleCinnamon
             }
         }
 
-        public void UpdateMatrices(RenderForm renderForm)
-        {
-            View = Matrix.LookAtRH(Position.ToVector3(), Position.ToVector3() + LookAt.ToVector3(), Vector3.UnitY);
-            Projection = Matrix.PerspectiveFovRH(MathUtil.PiOverTwo, renderForm.Width / (float) renderForm.Height, 0.1f, 100000f);
-            WorldViewProjection = World * View * Projection;
-            BoundingFrustum = new BoundingFrustum(View * Projection);
-        }
+       
 
         private void UpdateMove(GameTime gameTime)
         {
@@ -177,23 +176,15 @@ namespace AppleCinnamon
             const float MovmentFriction = 0.8f;
             const float SprintSpeedFactor = 3f;
 
-            var t = 1 / 200f;
+            var t = 1 / 1000f;
 
-            //Velocity *= MovmentFriction;
             Velocity += WorldSettings.Gravity * t;
-
-            LookAt = Double3.Normalize(
-                Vector3.Transform(LookAt.ToVector3(), Matrix.RotationY(CurrentMouseState.X * -MouseSensitivity * t))
-                    .ToVector3().ToDouble3());
+            Yaw = MathUtil.Mod2PI(Yaw + CurrentMouseState.X * -MouseSensitivity * t); // MathUtil.Mod2PI(
+            Pitch = MathUtil.Clamp(Pitch + CurrentMouseState.Y * -MouseSensitivity * t, -MathUtil.PiOverTwo, MathUtil.PiOverTwo);
             
-            // LookAt = new Vector3(horizontalLookAt.X, LookAt.Y, horizontalLookAt.Z);
 
-            LookAt = Double3.Normalize(Vector3.Transform(LookAt.ToVector3(),
-                Matrix.RotationAxis(Vector3.Normalize(new Vector3(-(float) LookAt.Z, 0, (float) LookAt.X)),
-                    CurrentMouseState.Y * -MouseSensitivity * t)).ToVector3().ToDouble3());
-
-            var direction = Double3.Normalize(new Double3(LookAt.X, 0, LookAt.Z));
-            var directionNormal = new Double3(-LookAt.Z, 0, LookAt.X);
+            var direction = Vector3.TransformCoordinate(Vector3.UnitX, Matrix.RotationY(Yaw)).ToDouble3();
+            var directionNormal = new Double3(-direction.Z, 0, direction.X);
             var translationVector = Double3.Zero;
 
             if (CurrentKeyboardState.IsPressed(Key.W))
@@ -249,6 +240,17 @@ namespace AppleCinnamon
                 var bb = new BoundingBox(position - halfSize, position + halfSize);
                 CurrentChunkIndexVector = bb.Center;
             }
+        }
+
+        public void UpdateMatrices(RenderForm renderForm)
+        {
+            var rotationMatrix = Matrix.RotationYawPitchRoll(Yaw, 0, Pitch);
+            LookAt = Vector3.Normalize(Vector3.Transform(Vector3.UnitX, rotationMatrix).ToVector3()).ToDouble3();
+            View = Matrix.LookAtRH(Position.ToVector3(), Position.ToVector3() + LookAt.ToVector3(),
+                Vector3.TransformCoordinate(Vector3.UnitY, rotationMatrix));
+            Projection = Matrix.PerspectiveFovRH(MathUtil.PiOverTwo, renderForm.Width / (float)renderForm.Height, 0.1f, 100000f);
+            WorldViewProjection = World * View * Projection;
+            BoundingFrustum = new BoundingFrustum(View * Projection);
         }
     }
 }
