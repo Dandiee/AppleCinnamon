@@ -8,8 +8,8 @@ namespace AppleCinnamon
         public static readonly Voxel One = new Voxel(1, 15);
         public static readonly Voxel Zero = new Voxel(0, 0);
 
-        public byte Block;
-        public byte Lightness;
+        public readonly byte Block;
+        public readonly byte Lightness;
 
         public VoxelDefinition GetDefinition() => VoxelDefinition.DefinitionByType[Block];
 

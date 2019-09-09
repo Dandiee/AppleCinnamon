@@ -6,16 +6,16 @@ namespace AppleCinnamon.Settings
 {
     public sealed class VoxelDefinition
     {
-        public byte Type { get; }
-        public Cube<Vector2> Textures { get; }
-        public byte LightEmitting { get; }
-        public Bool3 IsTransmittance { get; }
-        public byte TransmittanceBytes { get; }
-        public bool IsTransparent { get; }
-        public bool IsPermeable { get; }
-        public Vector3 Size { get; }
-        public Vector3 Translation { get; }
-        public bool IsUnitSized { get; }
+        public byte Type;
+        public Cube<Vector2> Textures;
+        public byte LightEmitting;
+        public Bool3 IsTransmittance;
+        public byte TransmittanceBytes;
+        public bool IsTransparent;
+        public bool IsPermeable;
+        public Vector3 Size;
+        public Vector3 Translation;
+        public bool IsUnitSized;
 
         public static readonly VoxelDefinition[] DefinitionByType = new VoxelDefinition[255];
 

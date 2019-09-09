@@ -12,11 +12,11 @@ namespace AppleCinnamon.System
         public static readonly Bool3 UnitY = new Bool3(false, true, false);
         public static readonly Bool3 UnitZ = new Bool3(false, false, true);
 
-        public bool X { get; }
-        public bool Y { get; }
-        public bool Z { get; }
+        public readonly bool X;
+        public readonly bool Y;
+        public readonly bool Z;
 
-        public byte Bytes { get; }
+        public readonly byte Bytes;
 
         private readonly bool _isTrue;
 
