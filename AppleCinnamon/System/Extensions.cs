@@ -40,5 +40,10 @@ namespace AppleCinnamon.System
         {
             return new Vector3(vector.X + index.X, vector.Y + index.Y, vector.Z + index.Z);
         }
+
+        public static Int3 Round(this Vector3 vector) => new Int3(
+            (int) Math.Round(vector.X),
+            (int) Math.Round(vector.Y),
+            (int) Math.Round(vector.Z));
     }
 }

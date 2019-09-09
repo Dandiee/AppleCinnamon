@@ -13,10 +13,7 @@ using SharpDX.Windows;
 
 namespace AppleCinnamon
 {
-    public interface IChunkManager
-    {
-    }
-
+    public interface IChunkManager { }
     public sealed class ChunkManager : IChunkManager
     {
         private readonly Device _device;
@@ -77,7 +74,7 @@ namespace AppleCinnamon
             dispatcher.LinkTo(finalizer);
         }
 
-        public Voxel? GetBlock(Int3 absoluteIndex)
+        public Voxel? GetVoxel(Int3 absoluteIndex)
         {
             var address = Chunk.GetVoxelAddress(absoluteIndex);
             if (address == null)
@@ -175,7 +172,6 @@ namespace AppleCinnamon
             }
         }
 
-        private int c;
         public void Update(GameTime gameTime, Camera camera)
         {
             var currentChunkIndex =
@@ -190,8 +186,6 @@ namespace AppleCinnamon
                     {
                         throw new Exception("asdasd");
                     }
-
-                    c++;
                     _pipeline.Post(new DataflowContext<Int2>(chunkIndex, _device));
                 }
             }

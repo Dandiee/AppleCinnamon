@@ -35,6 +35,8 @@ namespace AppleCinnamon.Pipeline
                     {
                         voxels[i + Chunk.Size.X * (j + Chunk.Size.Y * k)] = new Voxel(3, 0);
                     }
+
+                    voxels[i + Chunk.Size.X * (height + Chunk.Size.Y * k)] = new Voxel(4, 0);
                 }
             }
 

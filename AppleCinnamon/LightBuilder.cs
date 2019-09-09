@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Security.Cryptography.X509Certificates;
 using AppleCinnamon.Settings;
+using AppleCinnamon.System;
 using SharpDX;
 
 namespace AppleCinnamon
@@ -12,7 +14,15 @@ namespace AppleCinnamon
 
     public sealed class LightUpdater : ILightUpdater
     {
-        public static readonly Int3[] Directions = { Int3.UnitY, -Int3.UnitY, -Int3.UnitX, Int3.UnitX, -Int3.UnitZ, Int3.UnitZ };
+        public static readonly Tuple<Int3, Bool3>[] Directions =
+        {
+            new Tuple<Int3, Bool3>(Int3.UnitY, Bool3.UnitY),
+            new Tuple<Int3, Bool3>(-Int3.UnitY, Bool3.UnitY),
+            new Tuple<Int3, Bool3>(-Int3.UnitX, Bool3.UnitX),
+            new Tuple<Int3, Bool3>(Int3.UnitX, Bool3.UnitX),
+            new Tuple<Int3, Bool3>(-Int3.UnitZ, Bool3.UnitZ),
+            new Tuple<Int3, Bool3>(Int3.UnitZ, Bool3.UnitZ)
+        };
 
         public void UpdateLighting(Chunk chunk, Int3 relativeIndex, Voxel oldVoxel, Voxel newVoxel)
         {
@@ -49,7 +59,7 @@ namespace AppleCinnamon
 
             foreach (var direction in Directions)
             {
-                var neighbourIndex = direction + relativeIndex;
+                var neighbourIndex = direction.Item1 + relativeIndex;
                 var voxel = chunk.GetLocalWithNeighbours(neighbourIndex.X, neighbourIndex.Y, neighbourIndex.Z, out var address);
 
                 if (brightest == null || brightest.Item3 < voxel.Lightness)
@@ -158,7 +168,7 @@ namespace AppleCinnamon
             for (var j = relativeIndex.Y - 1; j > 0; j--)
             {
                 var voxel = chunk.GetLocalVoxel(relativeIndex.X, j, relativeIndex.Z);
-                if (voxel.GetDefinition().IsTransmittance)
+                if (voxel.GetDefinition().IsTransmittance.Y)
                 {
                     var resetVoxelIndex = new Int3(relativeIndex.X, j, relativeIndex.Z);
                     chunk.SetLocalVoxel(resetVoxelIndex, new Voxel(voxel.Block, toLightness));
@@ -174,8 +184,8 @@ namespace AppleCinnamon
         {
             foreach (var direction in Directions)
             {
-                var voxel = sourceChunk.GetLocalWithNeighbours(sourceIndex.X + direction.X, sourceIndex.Y + direction.Y,
-                    sourceIndex.Z + direction.Z, out var address);
+                var voxel = sourceChunk.GetLocalWithNeighbours(sourceIndex.X + direction.Item1.X, sourceIndex.Y + direction.Item1.Y,
+                    sourceIndex.Z + direction.Item1.Z, out var address);
 
                 var definition = voxel.GetDefinition();
 
@@ -184,7 +194,10 @@ namespace AppleCinnamon
                     lightSources.Add(new Tuple<Chunk, Int3>(sourceChunk.Neighbours[address.ChunkIndex],
                         address.RelativeVoxelIndex));
                 }
-                else if (definition.IsTransmittance && voxel.Lightness > 0)
+                else if (
+                    ((direction.Item2 & definition.IsTransmittance) == direction.Item2)
+                    //definition.IsTransmittance 
+                    && voxel.Lightness > 0)
                 {
                     var newChunk = sourceChunk.Neighbours[address.ChunkIndex];
                     newChunk.SetLocalVoxel(address.RelativeVoxelIndex, new Voxel(voxel.Block, 0));
@@ -200,12 +213,15 @@ namespace AppleCinnamon
 
             foreach (var direction in Directions)
             {
-                var targetIndex = sourceIndex + direction;
+                var targetIndex = sourceIndex + direction.Item1;
                 var targetVoxel = sourceChunk.GetLocalWithNeighbours(targetIndex.X, targetIndex.Y, targetIndex.Z,
                     out var targetAddress);
                 var targetDefinition = targetVoxel.GetDefinition();
 
-                if (targetDefinition.IsTransmittance && targetVoxel.Lightness < sourceVoxel.Lightness - 1)
+                if (
+                    ((direction.Item2 & targetDefinition.IsTransmittance) == direction.Item2)
+                    // targetDefinition.IsTransmittance 
+                    && targetVoxel.Lightness < sourceVoxel.Lightness - 1)
                 {
                     var targetChunk = sourceChunk.Neighbours[targetAddress.ChunkIndex];
                     targetChunk.SetLocalVoxel(targetAddress.RelativeVoxelIndex,

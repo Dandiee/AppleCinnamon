@@ -65,6 +65,7 @@ namespace AppleCinnamon.Pipeline
         private void ProcessEdge(Chunk sourceChunk, Chunk targetChunk)
         {
             var dir = targetChunk.ChunkIndex - sourceChunk.ChunkIndex;
+            
             var step = new Int2(Math.Abs(Math.Sign(dir.Y)), Math.Abs(Math.Sign(dir.X)));
             var map = EdgeMapping[dir];
 
@@ -79,7 +80,10 @@ namespace AppleCinnamon.Pipeline
                     var sourceVoxel = sourceChunk.GetLocalVoxel(sourceIndex.X, j, sourceIndex.Y);
                     var sourceDefinition = sourceVoxel.GetDefinition();
 
-                    if (!sourceDefinition.IsTransmittance || sourceVoxel.Lightness == 0)
+                    if (
+                        !((dir.X == 1 && sourceDefinition.IsTransmittance.X ) || (dir.Y == 1 && sourceDefinition.IsTransmittance.Z))
+                        //!sourceDefinition.IsTransmittance 
+                        || sourceVoxel.Lightness == 0)
                     {
                         continue;
                     }
@@ -89,7 +93,11 @@ namespace AppleCinnamon.Pipeline
                     var targetVoxel = targetChunk.GetLocalVoxel(targetVoxelIndex);
                     var targetDefinition = targetVoxel.GetDefinition();
 
-                    if (targetDefinition.IsTransmittance && targetVoxel.Lightness < sourceVoxel.Lightness - 1)
+                    if (
+                        ((dir.X == 1 && targetDefinition.IsTransmittance.X) || (dir.Y == 1 && targetDefinition.IsTransmittance.Z))
+                        // targetDefinition.IsTransmittance 
+                        
+                        && targetVoxel.Lightness < sourceVoxel.Lightness - 1)
                     {
                         targetChunk.SetLocalVoxel(targetVoxelIndex,
                             new Voxel(targetVoxel.Block, (byte)(sourceVoxel.Lightness - 1)));

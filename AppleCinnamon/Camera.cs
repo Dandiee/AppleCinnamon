@@ -13,7 +13,7 @@ namespace AppleCinnamon
     public class Camera
     {
         private readonly BoxDrawer _boxDrawer;
-        public Double3 Position { get; private set; }
+        public Double3 Position { get; set; }
         public Double3 LookAt { get; private set; }
         public Double3 Velocity { get; set; }
         public Int2 CurrentChunkIndex { get; private set; }
@@ -24,11 +24,9 @@ namespace AppleCinnamon
 
         public Matrix World => Matrix.Identity;
         public BoundingFrustum BoundingFrustum { get; private set; }
-
+        public VoxelDefinition VoxelInHand { get; private set; }
         
         public bool IsInAir { get; set; }
-        public bool IsSprinting { get; set; }
-        public bool IsSneaking { get; set; }
         public Keyboard Keyboard { get; set; }
         public Mouse Mouse { get; set; }
 
@@ -37,7 +35,13 @@ namespace AppleCinnamon
         protected MouseState CurrentMouseState { get; private set; }
         protected MouseState LastMouseState { get; private set; }
         public VoxelRayCollisionResult CurrentCursor { get; protected set; }
-        public byte BlockMode { get; set; }
+        
+        public static readonly IReadOnlyDictionary<Key, VoxelDefinition> KeyVoxelMapping = new Dictionary<Key, VoxelDefinition>
+        {
+            [Key.F1] = VoxelDefinition.Sand,
+            [Key.F2] = VoxelDefinition.EmitterStone,
+            [Key.F3] = VoxelDefinition.Snow
+        };
 
         public Camera(BoxDrawer boxDrawer)
         {
@@ -56,13 +60,15 @@ namespace AppleCinnamon
             Mouse.Properties.BufferSize = 128;
             Mouse.Acquire();
 
+            VoxelInHand = VoxelDefinition.Sand;
+
             IsInAir = true;
         }
 
-        public void UpdateCurrentCursor(RenderForm renderForm, ChunkManager chunkManager)
+        public void UpdateCurrentCursor(ChunkManager chunkManager)
         {
-            var ray = new Ray(Position.ToVector3(), LookAt.ToVector3());
-            CurrentCursor = CollisionHelper.GetCurrentSelection(ray, chunkManager);
+            CurrentCursor =
+                CollisionHelper.GetCurrentSelection(new Ray(Position.ToVector3(), LookAt.ToVector3()), chunkManager);
 
             if (CurrentCursor == null)
             {
@@ -72,7 +78,7 @@ namespace AppleCinnamon
             else
             {
                 _boxDrawer.Set("cursor",
-                    new BoxDetails(Vector3.One * 1.05f, CurrentCursor.AbsoluteVoxelIndex.ToVector3(), Color.Yellow.ToColor3()));
+                    new BoxDetails(CurrentCursor.Definition.Size * 1.05f, CurrentCursor.AbsoluteVoxelIndex.ToVector3() + CurrentCursor.Definition.Translation, Color.Yellow.ToColor3()));
             }
         }
 
@@ -81,9 +87,8 @@ namespace AppleCinnamon
         {
             var t = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
-            ApplyPhysics(chunkManager);
+            CollisionHelper.ApplyPlayerPhysics(this, chunkManager);
             UpdateMove(gameTime);
-            
         }
 
 
@@ -113,7 +118,7 @@ namespace AppleCinnamon
             Move(gameTime, chunkManager);
             UpdateMatrices(renderForm);
 
-            UpdateCurrentCursor(renderForm, chunkManager);
+            UpdateCurrentCursor(chunkManager);
             HandleDefaultInputs(chunkManager);
 
             LastKeyboardState = CurrentKeyboardState;
@@ -129,7 +134,14 @@ namespace AppleCinnamon
 
             const int leftClickIndex = 0;
             const int rightClickIndex = 1;
-            const int middleClickIndex = 2;
+
+            foreach (var keyVoxel in KeyVoxelMapping)
+            {
+                if (CurrentKeyboardState.IsPressed(keyVoxel.Key))
+                {
+                    VoxelInHand = keyVoxel.Value;
+                }
+            }
 
             if (!CurrentMouseState.Buttons[leftClickIndex] && LastMouseState.Buttons[leftClickIndex])
             {
@@ -145,7 +157,7 @@ namespace AppleCinnamon
                 {
                     var direction = CurrentCursor.Direction;
                     var targetBlock = CurrentCursor.AbsoluteVoxelIndex + direction;
-                    chunkManager.SetBlock(targetBlock, (byte)(CurrentKeyboardState.IsPressed(Key.LeftControl) ? 2 : 1));
+                    chunkManager.SetBlock(targetBlock, VoxelInHand.Type);
                 }
             }
         }
@@ -238,89 +250,6 @@ namespace AppleCinnamon
                 var bb = new BoundingBox(position - halfSize, position + halfSize);
                 CurrentChunkIndexVector = bb.Center;
             }
-        }
-
-        public static Int3 GetAbsoluteIndex(Vector3 point) =>
-            new Int3(
-                (int)Math.Round(point.X),
-                (int)Math.Round(point.Y),
-                (int)Math.Round(point.Z));
-
-        private void ApplyPhysics(ChunkManager chunkManager)
-        {
-            ApplyFiziks(chunkManager);
-        }
-
-        private void ApplyFiziks(ChunkManager chunkManager)
-        {
-            var min = WorldSettings.PlayerMin + Position.ToVector3();
-            var max = WorldSettings.PlayerMax + Position.ToVector3();
-            var playerBoundingBox = new BoundingBox(min, max);
-
-            var minInd = GetAbsoluteIndex(playerBoundingBox.Minimum);
-            var maxInd = GetAbsoluteIndex(playerBoundingBox.Maximum);
-
-            var totalPenetration = Vector3.Zero;
-            var resultVelocity = Velocity.ToVector3();
-
-            for (var i = minInd.X; i <= maxInd.X; i++)
-            {
-                for (var j = minInd.Y; j <= maxInd.Y; j++)
-                {
-                    for (var k = minInd.Z; k <= maxInd.Z; k++)
-                    {
-                        if (j >= 256)
-                        {
-                            continue;
-                        }
-
-                        var absoluteIndex = new Int3(i, j, k);
-                        var voxel = chunkManager.GetBlock(absoluteIndex);
-
-                        if (voxel == null)
-                        {
-                            return;
-                        }
-
-                        if (voxel.Value.Block > 0)
-                        {
-                            var absoluteCoordinate = absoluteIndex.ToVector3();
-                            var voxelBoundingBox = new BoundingBox(absoluteCoordinate - new Vector3(.5f),
-                                absoluteCoordinate + new Vector3(.5f));
-
-                            var penetration = CollisionHelper.GetFirstPenetration(absoluteIndex, playerBoundingBox, voxelBoundingBox, Velocity.ToVector3(), chunkManager);
-                            if (penetration != null)
-                            {
-                                if (Math.Abs(penetration.Value.X) > Math.Abs(totalPenetration.X))
-                                {
-                                    totalPenetration = new Vector3(penetration.Value.X, totalPenetration.Y, totalPenetration.Z);
-                                    resultVelocity = new Vector3(0, resultVelocity.Y, resultVelocity.Z);
-                                }
-
-                                if (Math.Abs(penetration.Value.Y) > Math.Abs(totalPenetration.Y))
-                                {
-                                    if (penetration.Value.Y < 0)
-                                    {
-                                        IsInAir = false;
-                                    }
-
-                                    totalPenetration = new Vector3(totalPenetration.X, penetration.Value.Y, totalPenetration.Z);
-                                    resultVelocity = new Vector3(resultVelocity.X, 0, resultVelocity.Z);
-                                }
-
-                                if (Math.Abs(penetration.Value.Z) > Math.Abs(totalPenetration.Z))
-                                {
-                                    totalPenetration = new Vector3(totalPenetration.X, totalPenetration.Y, penetration.Value.Z);
-                                    resultVelocity = new Vector3(resultVelocity.X, resultVelocity.Y, 0);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            Position -= totalPenetration.ToDouble3() * 1.05f;
-            Velocity = resultVelocity.ToDouble3();
         }
     }
 }

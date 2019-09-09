@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using AppleCinnamon.Vertices;
+using SharpDX;
 
 namespace AppleCinnamon
 {
@@ -7,9 +8,11 @@ namespace AppleCinnamon
     {
         public List<VertexSolidBlock> Vertices { get; }
         public List<ushort> Indexes { get; }
+        public Int3 Direction { get; }
 
-        public ChunkBuildFaceResult()
+        public ChunkBuildFaceResult(Int3 direction)
         {
+            Direction = direction;
             Vertices = new List<VertexSolidBlock>();
             Indexes = new List<ushort>();
         }
