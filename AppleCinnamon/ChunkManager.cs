@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using AppleCinnamon.Pipeline;
@@ -34,7 +36,7 @@ namespace AppleCinnamon
         public EventHandler FirstChunkLoaded;
 
         public ConcurrentBag<Dictionary<string, long>> Benchmark { get; }
-        public const int ViewDistance = 36;
+        public const int ViewDistance = 10;
         public bool IsInitialized { get; private set; }
         public int ChunksCount => _chunks.Count;
 
@@ -131,6 +133,7 @@ namespace AppleCinnamon
                 _pipeline = Create( Math.Max(1, Environment.ProcessorCount / 4));
 
                 FirstChunkLoaded?.Invoke(this, null);
+                Debug.Write(_chunks.Count);
             }
         }
 
@@ -222,14 +225,22 @@ namespace AppleCinnamon
                 }
             }
         }
-        
+
+        private bool _isUpdateInProgress;
         public void SetBlock(Int3 absoluteIndex, byte voxel)
         {
+            if (_isUpdateInProgress)
+            {
+                return;
+            }
+
             var address = Chunk.GetVoxelAddress(absoluteIndex);
             if (address == null || !_chunks.TryGetValue(address.Value.ChunkIndex, out var chunk))
             {
                 return;
             }
+
+            _isUpdateInProgress = true;
 
             var oldVoxel = chunk.GetLocalVoxel(address.Value.RelativeVoxelIndex);
             var newVoxel = new Voxel(voxel, 0);
@@ -237,17 +248,19 @@ namespace AppleCinnamon
             _lightUpdater.UpdateLighting(chunk, address.Value.RelativeVoxelIndex, oldVoxel, newVoxel);
             _chunkBuilder.BuildChunk(_device, chunk);
 
-            Task.Run(() =>
+            Task.WaitAll(GetSurroundingChunks(2).Select(chunkIndex =>
             {
-                foreach (var chunkIndex in GetSurroundingChunks(2))
+                if (chunkIndex != Int2.Zero &&
+                    _chunks.TryGetValue(chunkIndex + chunk.ChunkIndex, out var chunkToReload))
                 {
-                    if (chunkIndex != Int2.Zero &&
-                        _chunks.TryGetValue(chunkIndex + chunk.ChunkIndex, out var chunkToReload))
-                    {
-                        _chunkBuilder.BuildChunk(_device, chunkToReload);
-                    }
+                    return Task.Run(() => _chunkBuilder.BuildChunk(_device, chunkToReload));
                 }
-            });
+
+                return Task.CompletedTask;
+            }).ToArray());
+
+
+            _isUpdateInProgress = false;
         }
 
        

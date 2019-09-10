@@ -10,12 +10,12 @@ namespace AppleCinnamon
 {
     public interface IChunkBuilder
     {
-        Chunk BuildChunk(Device device, Chunk chunk);
+        void BuildChunk(Device device, Chunk chunk);
     }
 
     public sealed partial class ChunkBuilder : IChunkBuilder
     {
-        public Chunk BuildChunk(Device device, Chunk chunk)
+        public void BuildChunk(Device device, Chunk chunk)
         {
             var verticesCube = new Cube<ChunkBuildFaceResult>(
                 new ChunkBuildFaceResult(Int3.UnitY),
@@ -75,8 +75,6 @@ namespace AppleCinnamon
             });
 
             chunk.SetBuffers(buffers);
-
-            return chunk;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -107,10 +105,7 @@ namespace AppleCinnamon
                     var aoFriend = chunk.GetLocalWithNeighbours(relativeIndexX + index.X, relativeIndexY + index.Y, relativeIndexZ + index.Z);
                     var aoFriendDefinition = aoFriend.GetDefinition();
 
-                    if (
-                        (index.X != 0 && aoFriendDefinition.IsTransmittance.X) || (index.Y != 0 && aoFriendDefinition.IsTransmittance.Y)
-                        //aoFriendDefinition.IsTransmittance
-                        )
+                    if (index.X != 0 && aoFriendDefinition.IsTransmittance.X || index.Y != 0 && aoFriendDefinition.IsTransmittance.Y)
                     {
                         light += aoFriend.Lightness;
                         denominator++;

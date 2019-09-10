@@ -25,7 +25,7 @@ namespace AppleCinnamon
         public Matrix World => Matrix.Identity;
         public BoundingFrustum BoundingFrustum { get; private set; }
         public VoxelDefinition VoxelInHand { get; private set; }
-        
+
         public bool IsInAir { get; set; }
         public Keyboard Keyboard { get; set; }
         public Mouse Mouse { get; set; }
@@ -39,7 +39,7 @@ namespace AppleCinnamon
         protected MouseState CurrentMouseState { get; private set; }
         protected MouseState LastMouseState { get; private set; }
         public VoxelRayCollisionResult CurrentCursor { get; protected set; }
-        
+
         public static readonly IReadOnlyDictionary<Key, VoxelDefinition> KeyVoxelMapping = new Dictionary<Key, VoxelDefinition>
         {
             [Key.F1] = VoxelDefinition.Sand,
@@ -77,7 +77,7 @@ namespace AppleCinnamon
             if (CurrentCursor == null)
             {
                 _boxDrawer.Remove("cursor");
-                
+
             }
             else
             {
@@ -138,7 +138,7 @@ namespace AppleCinnamon
                 }
             }
 
-            if (!CurrentMouseState.Buttons[leftClickIndex] && LastMouseState.Buttons[leftClickIndex])
+            if (CurrentMouseState.Buttons[leftClickIndex])
             {
                 if (CurrentCursor != null)
                 {
@@ -146,13 +146,32 @@ namespace AppleCinnamon
                 }
             }
 
-            if (!CurrentMouseState.Buttons[rightClickIndex] && LastMouseState.Buttons[rightClickIndex])
+            if (CurrentMouseState.Buttons[rightClickIndex])
             {
                 if (CurrentCursor != null)
                 {
                     var direction = CurrentCursor.Direction;
                     var targetBlock = CurrentCursor.AbsoluteVoxelIndex + direction;
-                    chunkManager.SetBlock(targetBlock, VoxelInHand.Type);
+
+
+                    var hasPositionConflict = false;
+                    var min = (WorldSettings.PlayerMin + Position.ToVector3()).Round();
+                    var max = (WorldSettings.PlayerMax + Position.ToVector3()).Round();
+                    for (var i = min.X; i <= max.X && !hasPositionConflict; i++)
+                    {
+                        for (var j = min.Y; j <= max.Y && !hasPositionConflict; j++)
+                        {
+                            for (var k = min.Z; k <= max.Z && !hasPositionConflict; k++)
+                            {
+                                hasPositionConflict = targetBlock == new Int3(i, j, k);
+                            }
+                        }
+                    }
+
+                    if (!hasPositionConflict)
+                    {
+                        chunkManager.SetBlock(targetBlock, VoxelInHand.Type);
+                    }
                 }
             }
         }
@@ -167,7 +186,7 @@ namespace AppleCinnamon
             const float MovmentFriction = 0.8f;
             const float SprintSpeedFactor = 3f;
             var prevPos = Position;
-            var t = (float) gameTime.ElapsedGameTime.TotalSeconds;
+            var t = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
             Velocity += WorldSettings.Gravity * t;
             Yaw = MathUtil.Mod2PI(Yaw + CurrentMouseState.X * -MouseSensitivity); // MathUtil.Mod2PI(
@@ -216,8 +235,8 @@ namespace AppleCinnamon
             Velocity = new Double3(Velocity.X * MovmentFriction, Velocity.Y, Velocity.Z * MovmentFriction);
             Position = Position + Velocity * t;
 
-            var currentBlock = new Int3((int) Math.Round(Position.X), (int) Math.Round(Position.Y),
-                (int) Math.Round(Position.Z));
+            var currentBlock = new Int3((int)Math.Round(Position.X), (int)Math.Round(Position.Y),
+                (int)Math.Round(Position.Z));
             var chunkIndex = Chunk.GetChunkIndex(currentBlock);
 
             if (chunkIndex.HasValue)
@@ -242,7 +261,7 @@ namespace AppleCinnamon
             {
 
             }
-    }
+        }
 
         public void UpdateMatrices(RenderForm renderForm)
         {

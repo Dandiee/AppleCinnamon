@@ -30,9 +30,10 @@ namespace AppleCinnamon
                 new[] { TopLefBac, TopRigBac, BotRigBac, BotLefBac }
             );
 
+        public const float TextureThreshold = 0.0002f;
         public const float UvStep = 1 / 16f;
-
-        private static readonly Vector2[] UvOffsets = { Vector2.Zero, new Vector2(1 / 16f, 0), new Vector2(UvStep, UvStep), new Vector2(0, UvStep) };
+        private static readonly Vector2 UvOffset = new Vector2(TextureThreshold);
+        private static readonly Vector2[] UvOffsets = { Vector2.Zero + UvOffset, new Vector2(UvStep - TextureThreshold, TextureThreshold), new Vector2(UvStep - TextureThreshold, UvStep - TextureThreshold), new Vector2(TextureThreshold, UvStep - TextureThreshold) };
 
         public static readonly Cube<Int3[][]> AmbientIndexes = new Cube<Int3[][]>(
             new[]

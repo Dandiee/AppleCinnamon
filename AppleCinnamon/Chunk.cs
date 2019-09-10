@@ -156,8 +156,15 @@ namespace AppleCinnamon
                 {
                     if (face.Value != null)
                     {
-                        face.Value.IndexBuffer.Dispose();
-                        face.Value.VertexBuffer.Dispose();
+                        if (!face.Value.IndexBuffer.IsDisposed)
+                        {
+                            face.Value.IndexBuffer?.Dispose();
+                        }
+
+                        if (!face.Value.VertexBuffer.IsDisposed)
+                        {
+                            face.Value.VertexBuffer?.Dispose();
+                        }
                     }
                 }
             }
