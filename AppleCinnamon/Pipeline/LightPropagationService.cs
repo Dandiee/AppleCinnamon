@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
-using AppleCinnamon.System;
 using SharpDX;
 
 namespace AppleCinnamon.Pipeline
@@ -15,7 +12,6 @@ namespace AppleCinnamon.Pipeline
     public sealed class LightPropagationService : ILightPropagationService
     {
         private const byte MaximumSunlight = 15;
-        public static readonly ConcurrentDictionary<Int2, long> Debug = new ConcurrentDictionary<Int2, long>();
 
         public static readonly Int3[] Directions =
         {
@@ -28,13 +24,8 @@ namespace AppleCinnamon.Pipeline
             var sw = Stopwatch.StartNew();
 
             ItsMoreComplexButIsItFasterTestMethod(context.Payload);
-            //var lightSources = InitializeSunlight(context.Payload);
-            //PropagateSunlight(context.Payload, lightSources);
             sw.Stop();
-            if (!Debug.TryAdd(context.Payload.ChunkIndex, sw.ElapsedMilliseconds))
-            {
-                throw new Exception();
-            }
+
             return new DataflowContext<Chunk>(context, context.Payload, sw.ElapsedMilliseconds, nameof(LightPropagationService));
         }
 
@@ -42,17 +33,18 @@ namespace AppleCinnamon.Pipeline
         private void ItsMoreComplexButIsItFasterTestMethod(Chunk chunk)
         {
             var result = GetDarkVoxels(chunk);
-            var lightSources = FindLightSources(result);
+            var lightSources = FindLightSources(chunk, result);
 
+            // no it cannot be a foreach, the collection is mutating (still better then recursion)
             for (var i = 0; i < lightSources.Count; i++)
             {
-                PropagateLightSource(lightSources[i], result, lightSources);
+                PropagateLightSource(chunk, lightSources[i], lightSources);
             }
         }
 
-        private void PropagateLightSource(Int3 lightSource, LightPropagationResult result, List<Int3> lightSources)
+        private void PropagateLightSource(Chunk chunk, Int3 lightSource, List<Int3> lightSources)
         {
-            var voxels = result.Chunk.Voxels;
+            var voxels = chunk.Voxels;
             var voxelLightness = voxels[lightSource.X + Chunk.SizeXy * (lightSource.Y + Chunk.Height * lightSource.Z)].Lightness;
 
             foreach (var direction in Directions)
@@ -74,8 +66,6 @@ namespace AppleCinnamon.Pipeline
                                 voxels[neighbourX + Chunk.SizeXy * (neighbourY + Chunk.Height * neighbourZ)]
                                     = new Voxel(neighbourVoxel.Block, (byte)(voxelLightness - 1));
 
-                                // PropagateLightSource(new Int3(neighbourX, neighbourY, neighbourZ), result);
-
                                 lightSources.Add(new Int3(neighbourX, neighbourY, neighbourZ));
                             }
                         }
@@ -86,22 +76,22 @@ namespace AppleCinnamon.Pipeline
 
         
 
-        private List<Int3> FindLightSources(LightPropagationResult initLightResult)
+        private List<Int3> FindLightSources(Chunk chunk, List<Int3> darkVoxels)
         {
-            var voxels = initLightResult.Chunk.Voxels;
+            var voxels = chunk.Voxels;
             var result = new List<Int3>();
 
-            foreach (var darkSpot in initLightResult.DarkSpots)
+            foreach (var darkVoxel in darkVoxels)
             {
                 foreach (var direction in Directions)
                 {
-                    var neighbourX = darkSpot.X + direction.X;
+                    var neighbourX = darkVoxel.X + direction.X;
                     if ((neighbourX & 16) == 0)
                     {
-                        var neighbourY = darkSpot.Y + direction.Y;
+                        var neighbourY = darkVoxel.Y + direction.Y;
                         if (((ushort) neighbourY & 256) == 0)
                         {
-                            var neighbourZ = darkSpot.Z + direction.Z;
+                            var neighbourZ = darkVoxel.Z + direction.Z;
                             if ((neighbourZ & 16) == 0)
                             {
                                 if (voxels[neighbourX + Chunk.SizeXy * (neighbourY + Chunk.Height * neighbourZ)].Lightness == MaximumSunlight)
@@ -117,9 +107,9 @@ namespace AppleCinnamon.Pipeline
             return result;
         }
 
-        private LightPropagationResult GetDarkVoxels(Chunk chunk)
+        private List<Int3> GetDarkVoxels(Chunk chunk)
         {
-            var result = new LightPropagationResult(chunk);
+            var result = new List<Int3>(512);
 
             for (var i = 0; i != Chunk.Size.X; i++)
             {
@@ -146,7 +136,7 @@ namespace AppleCinnamon.Pipeline
                         {
                             if (isTransmittance)
                             {
-                                result.DarkSpots.Add(new Int3(i, j, k));
+                                result.Add(new Int3(i, j, k));
                             }
                         }
                     }
@@ -156,17 +146,4 @@ namespace AppleCinnamon.Pipeline
             return result;
         }
     }
-
-    public class LightPropagationResult
-    {
-        public Chunk Chunk { get; }
-        public List<Int3> DarkSpots { get; set; }
-
-        public LightPropagationResult(Chunk chunk)
-        {
-            Chunk = chunk;
-            DarkSpots = new List<Int3>(512);
-        }
-    }
-
 }

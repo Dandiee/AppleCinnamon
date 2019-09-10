@@ -15,7 +15,10 @@ using SharpDX.Windows;
 
 namespace AppleCinnamon
 {
-    public interface IChunkManager { }
+    public interface IChunkManager
+    {
+        Voxel? GetVoxel(Int3 absoluteIndex);
+    }
     public sealed class ChunkManager : IChunkManager
     {
         private readonly Device _device;
@@ -36,7 +39,7 @@ namespace AppleCinnamon
         public EventHandler FirstChunkLoaded;
 
         public ConcurrentBag<Dictionary<string, long>> Benchmark { get; }
-        public const int ViewDistance = 10;
+        public const int ViewDistance = 8;
         public bool IsInitialized { get; private set; }
         public int ChunksCount => _chunks.Count;
 
@@ -61,7 +64,7 @@ namespace AppleCinnamon
             _chunkPool = new ChunkPool();
 
 
-            _pipeline = Create(Environment.ProcessorCount);
+            _pipeline = Create(1); //Environment.ProcessorCount);
 
             QueueChunksByIndex(Int2.Zero);
         }

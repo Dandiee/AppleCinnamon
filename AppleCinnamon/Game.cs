@@ -176,24 +176,33 @@ namespace AppleCinnamon
         {
             RenderLoop.Run(RenderForm, () =>
             {
-                Cursor.Position = RenderForm.PointToScreen(new Point(RenderForm.ClientSize.Width / 2, RenderForm.ClientSize.Height / 2));
-                      Cursor.Hide();
+                if (RenderForm.Focused)
+                {
+                    Cursor.Position = RenderForm.PointToScreen(new Point(RenderForm.ClientSize.Width / 2,
+                        RenderForm.ClientSize.Height / 2));
+                    Cursor.Hide();
+                }
 
-                //Draw();
-                //if (RenderForm.Focused)
-                //{
-                //    Cursor.Position = RenderForm.PointToScreen(new Point(RenderForm.ClientSize.Width / 2,
-                //        RenderForm.ClientSize.Height / 2));
-                //    Cursor.Hide();
-                //}
+                if (Map.Camera != null)
+                {
 
-                //if (Map.Camera != null)
-                //{
-                //    RenderForm.Text = "Targets: " + (Map.Camera.CurrentCursor?.AbsoluteVoxelIndex ?? new Int3()) +
-                //                      "LookAt: " + Map.Camera.LookAt + " / Position" + Map.Camera.Position +
-                //                      " / Rendered ChunkManager: " + Map.ChunkManager.RenderedChunks + "/" +
-                //                      Map.ChunkManager.ChunksCount;
-                //}
+                    var lightInfo = string.Empty;
+                    if (Map.Camera.CurrentCursor != null)
+                    {
+                        var voxel = Map.ChunkManager.GetVoxel(
+                            Map.Camera.CurrentCursor.AbsoluteVoxelIndex + Map.Camera.CurrentCursor.Direction);
+
+                        if (voxel != null)
+                        {
+                            lightInfo = " / Light: " + voxel.Value.Lightness;
+                        }
+                    }
+
+                    RenderForm.Text = "Targets: " + (Map.Camera.CurrentCursor?.AbsoluteVoxelIndex ?? new Int3()) +
+                                      "LookAt: " + Map.Camera.LookAt + " / Position" + Map.Camera.Position +
+                                      " / Rendered ChunkManager: " + Map.ChunkManager.RenderedChunks + "/" +
+                                      Map.ChunkManager.ChunksCount + lightInfo;
+                }
 
                 Tick();
 

@@ -40,6 +40,8 @@ namespace AppleCinnamon.Pipeline
         {
             var sw = Stopwatch.StartNew();
             var chunk = context.Payload;
+
+
             foreach (var corner in Corners)
             {
                 var cornerChunk = chunk.Neighbours[corner];
@@ -57,6 +59,19 @@ namespace AppleCinnamon.Pipeline
                 ProcessEdge(chunk.Neighbours[edge - offset], edgeChunk);
                 ProcessEdge(edgeChunk, chunk);
             }
+
+
+            // There's an edge case, when a chunk is on the edge of the view distance
+            // If the invisible pre-warmed edge chunk is darker then the (visible) center chunk, the light-smoother may fail on that edge
+            // To avoid smoothness errors, the finished chunk must be back-propagated to the edge chunks.
+            // The corner chunks are not affected by this
+            foreach (var edge in Edges)
+            {
+                var edgeChunk = chunk.Neighbours[edge];
+                ProcessEdge(chunk, edgeChunk);
+            }
+
+
             sw.Stop();
 
             return new DataflowContext<Chunk>(context, context.Payload, sw.ElapsedMilliseconds, nameof(LightFinalizer));
