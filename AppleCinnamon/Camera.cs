@@ -86,16 +86,6 @@ namespace AppleCinnamon
             }
         }
 
-
-        public void Move(GameTime gameTime, ChunkManager chunkManager)
-        {
-            var t = (float)gameTime.ElapsedGameTime.TotalSeconds;
-
-            CollisionHelper.ApplyPlayerPhysics(this, chunkManager);
-            UpdateMove(gameTime);
-        }
-
-
         public void Update(GameTime gameTime, RenderForm renderForm, ChunkManager chunkManager)
         {
             // renderForm.Cursor = Cursor.Current..; renderForm.PointToScreen(new Point(0, 0));
@@ -111,7 +101,7 @@ namespace AppleCinnamon
                 }
             }
 
-            if (!chunkManager.IsFirstChunkInitialized)
+            if (!chunkManager.IsInitialized)
             {
                 return;
             }
@@ -119,7 +109,8 @@ namespace AppleCinnamon
             CurrentKeyboardState = Keyboard.GetCurrentState();
             CurrentMouseState = Mouse.GetCurrentState();
 
-            Move(gameTime, chunkManager);
+            CollisionHelper.ApplyPlayerPhysics(this, chunkManager);
+            UpdateMove(gameTime);
             UpdateMatrices(renderForm);
 
             UpdateCurrentCursor(chunkManager);
@@ -166,22 +157,23 @@ namespace AppleCinnamon
             }
         }
 
-       
+
 
         private void UpdateMove(GameTime gameTime)
         {
-            const float MouseSensitivity = 2f;
+            const float MouseSensitivity = .01f;
             const float MovementSensitivity = 2f;
             const float JumpVelocity = 12;
             const float MovmentFriction = 0.8f;
             const float SprintSpeedFactor = 3f;
-
-            var t = 1 / 1000f;
+            var prevPos = Position;
+            var t = (float) gameTime.ElapsedGameTime.TotalSeconds;
 
             Velocity += WorldSettings.Gravity * t;
-            Yaw = MathUtil.Mod2PI(Yaw + CurrentMouseState.X * -MouseSensitivity * t); // MathUtil.Mod2PI(
-            Pitch = MathUtil.Clamp(Pitch + CurrentMouseState.Y * -MouseSensitivity * t, -MathUtil.PiOverTwo, MathUtil.PiOverTwo);
-            
+            Yaw = MathUtil.Mod2PI(Yaw + CurrentMouseState.X * -MouseSensitivity); // MathUtil.Mod2PI(
+            Pitch = MathUtil.Clamp(Pitch + CurrentMouseState.Y * -MouseSensitivity, -MathUtil.PiOverTwo,
+                MathUtil.PiOverTwo);
+
 
             var direction = Vector3.TransformCoordinate(Vector3.UnitX, Matrix.RotationY(Yaw)).ToDouble3();
             var directionNormal = new Double3(-direction.Z, 0, direction.X);
@@ -217,7 +209,8 @@ namespace AppleCinnamon
             if (!IsInAir && CurrentKeyboardState.IsPressed(Key.Space))
             {
                 IsInAir = true;
-                Velocity = new Double3(Velocity.X, JumpVelocity * (CurrentKeyboardState.IsPressed(Key.LeftShift) ? SprintSpeedFactor : 1), Velocity.Z);
+                Velocity = new Double3(Velocity.X,
+                    JumpVelocity * (CurrentKeyboardState.IsPressed(Key.LeftShift) ? SprintSpeedFactor : 1), Velocity.Z);
             }
 
             Velocity = new Double3(Velocity.X * MovmentFriction, Velocity.Y, Velocity.Z * MovmentFriction);
@@ -240,7 +233,16 @@ namespace AppleCinnamon
                 var bb = new BoundingBox(position - halfSize, position + halfSize);
                 CurrentChunkIndexVector = bb.Center;
             }
-        }
+
+            var xDif = Math.Abs(prevPos.X - Position.X);
+            var yDif = Math.Abs(prevPos.Y - Position.Y);
+            var ZDif = Math.Abs(prevPos.Z - Position.Z);
+
+            if (xDif > 1 || yDif > 1 || ZDif > 1)
+            {
+
+            }
+    }
 
         public void UpdateMatrices(RenderForm renderForm)
         {

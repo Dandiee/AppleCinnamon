@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Windows.Forms;
+using System.Windows.Forms.VisualStyles;
 using AppleCinnamon.System;
 using SharpDX;
 using SharpDX.Direct2D1;
@@ -35,19 +37,19 @@ namespace AppleCinnamon
         public Factory D2dFactory;
         public Map Map;
         public Geometry Crosshair { get; private set; }
+
+       
+
         public Game()
         {
+            
+            
+            
             SetDevice();
-            Program.WriteLine("Device loaded...");
             SetInputs();
-            Program.WriteLine("Keyboard loaded...");
-            SetComponents();
-            Program.WriteLine("Components loaded...");
-            Program.WriteLine("Loop starting...");
+            Map = new Map(this);
             StartLoop();
-
-            Cursor.Current = null;
-
+            
         }
 
         private void SetDevice()
@@ -165,47 +167,159 @@ namespace AppleCinnamon
 
         }
 
-        private void SetComponents()
+        private void ImprovedLoop()
         {
-            Map = new Map(this);
+
         }
 
         private void StartLoop()
         {
-            
-            var gameTime = new GameTime();
-            var sw = Stopwatch.StartNew();
-
             RenderLoop.Run(RenderForm, () =>
             {
-                Update(gameTime);
-                Draw(gameTime);
-                if (RenderForm.Focused)
-                {
-                    Cursor.Position = RenderForm.PointToScreen(new Point(RenderForm.ClientSize.Width / 2,
-                        RenderForm.ClientSize.Height / 2));
-                    Cursor.Hide();
-                }
+                Cursor.Position = RenderForm.PointToScreen(new Point(RenderForm.ClientSize.Width / 2, RenderForm.ClientSize.Height / 2));
+                      Cursor.Hide();
 
+                //Draw();
+                //if (RenderForm.Focused)
+                //{
+                //    Cursor.Position = RenderForm.PointToScreen(new Point(RenderForm.ClientSize.Width / 2,
+                //        RenderForm.ClientSize.Height / 2));
+                //    Cursor.Hide();
+                //}
 
-                var newTS = sw.Elapsed;
-                var diff = newTS - gameTime.TotalGameTime;
-                gameTime.TotalGameTime = sw.Elapsed;
-                gameTime.ElapsedGameTime = diff;
+                //if (Map.Camera != null)
+                //{
+                //    RenderForm.Text = "Targets: " + (Map.Camera.CurrentCursor?.AbsoluteVoxelIndex ?? new Int3()) +
+                //                      "LookAt: " + Map.Camera.LookAt + " / Position" + Map.Camera.Position +
+                //                      " / Rendered ChunkManager: " + Map.ChunkManager.RenderedChunks + "/" +
+                //                      Map.ChunkManager.ChunksCount;
+                //}
 
-                if (Map.Camera != null)
-                {
-                    RenderForm.Text = "Targets: " + (Map.Camera.CurrentCursor?.AbsoluteVoxelIndex ?? new Int3()) +
-                                      "LookAt: " + Map.Camera.LookAt + " / Position" + Map.Camera.Position +
-                                      " / Rendered ChunkManager: " + Map.ChunkManager.RenderedChunks + "/" +
-                                      Map.ChunkManager.ChunksCount;
-                }
+                Tick();
 
             });
         }
 
-        private void Draw(GameTime gameTime)
+
+
+        const int BadUpdateCountTime = 2;
+
+        private bool _forceElapsedTimeToZero;
+        private TimeSpan _totalGameTime;
+        private TimeSpan _inactiveSleepTime;
+        private readonly TimeSpan _maximumElapsedTime = TimeSpan.FromMilliseconds(500.0);
+        private TimeSpan _accumulatedElapsedGameTime;
+        private TimeSpan _lastFrameElapsedGameTime;
+        private readonly TimerTick _timer = new TimerTick();
+        private GameTime _gameTime = new GameTime();
+        private bool _isFixedTimeStep;
+        private readonly TimeSpan _targetElapsedTime = TimeSpan.FromTicks(10000000 / 60);
+        private readonly int[] _lastUpdateCount = new int[4];
+        private int _nextLastUpdateCountIndex;
+        private bool _drawRunningSlowly;
+        
+        private float _updateCountAverageSlowLimit = (float)((4) + (4 - 4)) / 4;
+
+    
+        public void Tick()
         {
+            if (!RenderForm.Focus())
+            {
+                Thread.Sleep(_inactiveSleepTime);
+            }
+
+            // Update the timer
+            _timer.Tick();
+
+            var elapsedAdjustedTime = _timer.ElapsedAdjustedTime;
+
+            if (_forceElapsedTimeToZero)
+            {
+                elapsedAdjustedTime = TimeSpan.Zero;
+                _forceElapsedTimeToZero = false;
+            }
+
+            if (elapsedAdjustedTime > _maximumElapsedTime)
+            {
+                elapsedAdjustedTime = _maximumElapsedTime;
+            }
+
+            bool suppressNextDraw = true;
+            int updateCount = 1;
+            var singleFrameElapsedTime = elapsedAdjustedTime;
+
+            if (_isFixedTimeStep)
+            {
+                // If the rounded TargetElapsedTime is equivalent to current ElapsedAdjustedTime
+                // then make ElapsedAdjustedTime = TargetElapsedTime. We take the same internal rules as XNA 
+                if (Math.Abs(elapsedAdjustedTime.Ticks - _targetElapsedTime.Ticks) < (_targetElapsedTime.Ticks >> 6))
+                {
+                    elapsedAdjustedTime = _targetElapsedTime;
+                }
+
+                // Update the accumulated time
+                _accumulatedElapsedGameTime += elapsedAdjustedTime;
+
+                // Calculate the number of update to issue
+                updateCount = (int)(_accumulatedElapsedGameTime.Ticks / _targetElapsedTime.Ticks);
+
+                // If there is no need for update, then exit
+                if (updateCount == 0)
+                {
+                    // check if we can sleep the thread to free CPU resources
+                    var sleepTime = _targetElapsedTime - _accumulatedElapsedGameTime;
+                    if (sleepTime > TimeSpan.Zero)
+                    {
+                        Thread.Sleep(sleepTime);
+                    }
+
+                    return;
+                }
+
+                // Calculate a moving average on updateCount
+                _lastUpdateCount[_nextLastUpdateCountIndex] = updateCount;
+                float updateCountMean = 0;
+                for (int i = 0; i < _lastUpdateCount.Length; i++)
+                {
+                    updateCountMean += _lastUpdateCount[i];
+                }
+
+                updateCountMean /= _lastUpdateCount.Length;
+                _nextLastUpdateCountIndex = (_nextLastUpdateCountIndex + 1) % _lastUpdateCount.Length;
+
+                // Test when we are running slowly
+                _drawRunningSlowly = updateCountMean > _updateCountAverageSlowLimit;
+
+                // We are going to call Update updateCount times, so we can subtract this from accumulated elapsed game time
+                _accumulatedElapsedGameTime = new TimeSpan(_accumulatedElapsedGameTime.Ticks - (updateCount * _targetElapsedTime.Ticks));
+                singleFrameElapsedTime = _targetElapsedTime;
+            }
+            else
+            {
+                Array.Clear(_lastUpdateCount, 0, _lastUpdateCount.Length);
+                _nextLastUpdateCountIndex = 0;
+                _drawRunningSlowly = false;
+            }
+
+            // Reset the time of the next frame
+            for (_lastFrameElapsedGameTime = TimeSpan.Zero; updateCount > 0; updateCount--)
+            {
+                _gameTime.Update(_totalGameTime, singleFrameElapsedTime, _drawRunningSlowly);
+                Update(_gameTime);
+                _lastFrameElapsedGameTime += singleFrameElapsedTime;
+                _totalGameTime += singleFrameElapsedTime;
+            }
+
+            Draw();
+        }
+
+
+        private void Draw()
+        {
+
+                _gameTime.Update(_totalGameTime, _lastFrameElapsedGameTime, _drawRunningSlowly);
+                _gameTime.FrameCount++;
+
             Device.ImmediateContext.OutputMerger.SetTargets(DepthStencilView, RenderTargetView);
             Device.ImmediateContext.ClearDepthStencilView(DepthStencilView, DepthStencilClearFlags.Depth, 1.0f, 0);
             Device.ImmediateContext.ClearRenderTargetView(RenderTargetView, Color.CornflowerBlue);
@@ -215,37 +329,16 @@ namespace AppleCinnamon
             RenderTarget2D.FillGeometry(Crosshair, new SolidColorBrush(RenderTarget2D, Color.White), null);
             RenderTarget2D.EndDraw();
 
-
-           
-            
-
-            
-            //if (this.Camera.CurrentCursor != null)
-            //{
-            //    this.selection.Draw(gameTime);
-            //}
-
             SwapChain.Present(0, PresentFlags.None);
+
+            _lastFrameElapsedGameTime = TimeSpan.Zero;
         }
 
         private void Update(GameTime gameTime)
         {
-            
-            // this.Camera.Update(gameTime);
             Map.Update(gameTime);
-
-            // if (this.Camera.CurrentCursor != null)
-            // {
-            //     this.selection.AbsoluteBlockIndex = this.Camera.CurrentCursor.AbsoluteBlockIndex;
-            //     this.selection.SelectedBlockSize = new Vector3(this.Camera.CurrentCursor.VoxelDefinition.WidthLength, this.Camera.CurrentCursor.VoxelDefinition.Height, this.Camera.CurrentCursor.VoxelDefinition.WidthLength);
-            //     this.selection.Update(gameTime);
-            // }
         }
 
-        public static IEnumerable<T> Go<T>()
-        {
-            return Enum.GetValues(typeof(T)).Cast<T>().ToList();
-        }
     }
 
 }

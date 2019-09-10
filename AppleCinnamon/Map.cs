@@ -68,10 +68,6 @@ namespace AppleCinnamon
             {
                 _solidBlockEffect.GetVariableByName("WorldViewProjection").AsMatrix().SetMatrix(Camera.WorldViewProjection);
                 _basicColorEffect.GetVariableByName("WorldViewProjection").AsMatrix() .SetMatrix(Camera.WorldViewProjection);
-
-                // _basicColorEffect.GetVariableByName("Projection").AsMatrix().SetMatrix(Camera.Projection);
-                // _basicColorEffect.GetVariableByName("View").AsMatrix().SetMatrix(Camera.View);
-                // _basicColorEffect.GetVariableByName("World").AsMatrix().SetMatrix(Camera.World);
             }
         }
 	}

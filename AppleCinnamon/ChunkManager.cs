@@ -22,25 +22,29 @@ namespace AppleCinnamon
 
         private readonly ConcurrentDictionary<Int2, Chunk> _chunks;
         private readonly ConcurrentDictionary<Int2, object> _queuedChunks;
-        private readonly TransformBlock<DataflowContext<Int2>, DataflowContext<Chunk>> _pipeline;
+        
         private readonly IChunkBuilder _chunkBuilder;
         private readonly IChunkDispatcher _chunkDispatcher;
         private readonly ILightPropagationService _lightPropagationService;
         private readonly IChunkProvider _chunkProvider;
         private readonly ILightFinalizer _lightFinalizer;
         private readonly ILightUpdater _lightUpdater;
+        private readonly IChunkPool _chunkPool;
 
         public EventHandler FirstChunkLoaded;
 
         public ConcurrentBag<Dictionary<string, long>> Benchmark { get; }
-        public const int ViewDistance = 8;
-        public bool IsFirstChunkInitialized { get; private set; }
+        public const int ViewDistance = 36;
+        public bool IsInitialized { get; private set; }
         public int ChunksCount => _chunks.Count;
 
         public int RenderedChunks;
+        private TransformBlock<DataflowContext<Int2>, DataflowContext<Chunk>> _pipeline;
 
         public ChunkManager(Device device, BoxDrawer boxDrawer, Map map)
         {
+            Benchmark = new ConcurrentBag<Dictionary<string, long>>();
+
             _device = device;
             _boxDrawer = boxDrawer;
             _map = map;
@@ -50,32 +54,37 @@ namespace AppleCinnamon
             _queuedChunks = new ConcurrentDictionary<Int2, object>();
             _lightPropagationService = new LightPropagationService();
             _chunkProvider = new ChunkProvider(921207);
-            Benchmark = new ConcurrentBag<Dictionary<string, long>>();
             _lightFinalizer = new LightFinalizer();
             _lightUpdater = new LightUpdater();
+            _chunkPool = new ChunkPool();
 
-            var chunkPool = new ChunkPool();
 
+            _pipeline = Create(Environment.ProcessorCount);
+
+            QueueChunksByIndex(Int2.Zero);
+        }
+
+        public TransformBlock<DataflowContext<Int2>, DataflowContext<Chunk>> Create(int mdop)
+        {
             var dataflowOptions = new ExecutionDataflowBlockOptions
             {
-                MaxDegreeOfParallelism = Environment.ProcessorCount
+                MaxDegreeOfParallelism = mdop
             };
 
-         
-            _pipeline = new TransformBlock<DataflowContext<Int2>, DataflowContext<Chunk>>(_chunkProvider.GetChunk, dataflowOptions);
+            var pipeline = new TransformBlock<DataflowContext<Int2>, DataflowContext<Chunk>>(_chunkProvider.GetChunk, dataflowOptions);
             var lighter = new TransformBlock<DataflowContext<Chunk>, DataflowContext<Chunk>>(_lightPropagationService.InitializeLocalLight, dataflowOptions);
-            var pool = new TransformManyBlock<DataflowContext<Chunk>, DataflowContext<Chunk>>(chunkPool.Process, dataflowOptions);
+            var pool = new TransformManyBlock<DataflowContext<Chunk>, DataflowContext<Chunk>>(_chunkPool.Process, dataflowOptions);
             var lightFinalizer = new TransformBlock<DataflowContext<Chunk>, DataflowContext<Chunk>>(_lightFinalizer.Finalize, dataflowOptions);
             var dispatcher = new TransformBlock<DataflowContext<Chunk>, DataflowContext<Chunk>>(_chunkDispatcher.Dispatch, dataflowOptions);
             var finalizer = new ActionBlock<DataflowContext<Chunk>>(Finalize, dataflowOptions);
-            
-            _pipeline.LinkTo(lighter);
+
+            pipeline.LinkTo(lighter);
             lighter.LinkTo(pool);
             pool.LinkTo(lightFinalizer);
             lightFinalizer.LinkTo(dispatcher);
             dispatcher.LinkTo(finalizer);
 
-            QueueChunksByIndex(Int2.Zero);
+            return pipeline;
         }
 
         public Voxel? GetVoxel(Int3 absoluteIndex)
@@ -115,9 +124,12 @@ namespace AppleCinnamon
 
             // _boxDrawer.Set("chunk_" + context.Payload.ChunkIndex, new BoxDetails(Chunk.Size.ToVector3(), position, Color.Red.ToColor3()));
 
-            if (!IsFirstChunkInitialized)
+            if (!IsInitialized && _chunks.Count == (ViewDistance - 2) * (ViewDistance - 2))
             {
-                IsFirstChunkInitialized = true;
+                IsInitialized = true;
+                _pipeline.Complete();
+                _pipeline = Create( Math.Max(1, Environment.ProcessorCount / 4));
+
                 FirstChunkLoaded?.Invoke(this, null);
             }
         }
@@ -184,10 +196,13 @@ namespace AppleCinnamon
         {
             if (camera == null) return;
 
-            var currentChunkIndex =
-                new Int2((int)camera.Position.X / Chunk.Size.X, (int)camera.Position.Z / Chunk.Size.Z);
+            if (IsInitialized)
+            {
+                var currentChunkIndex =
+                    new Int2((int) camera.Position.X / Chunk.Size.X, (int) camera.Position.Z / Chunk.Size.Z);
 
-            QueueChunksByIndex(currentChunkIndex);
+                QueueChunksByIndex(currentChunkIndex);
+            }
         }
 
 
@@ -202,6 +217,7 @@ namespace AppleCinnamon
                     {
                         throw new Exception("asdasd");
                     }
+
                     _pipeline.Post(new DataflowContext<Int2>(chunkIndex, _device));
                 }
             }
