@@ -56,8 +56,8 @@ namespace AppleCinnamon
         {
             RenderForm = new RenderForm("Apple & Cinnamon")
             {
-                Width = 2300,
-                Height = 1300
+                Width = 1024,
+                Height = 768
             };
 
             // SwapChain description

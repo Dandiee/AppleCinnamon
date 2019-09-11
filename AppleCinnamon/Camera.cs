@@ -88,7 +88,6 @@ namespace AppleCinnamon
 
         public void Update(GameTime gameTime, RenderForm renderForm, ChunkManager chunkManager)
         {
-            // renderForm.Cursor = Cursor.Current..; renderForm.PointToScreen(new Point(0, 0));
             if (!chunkManager.Benchmark.IsEmpty)
             {
                 var aggregate = new Dictionary<string, long>(chunkManager.Benchmark.First());

@@ -46,7 +46,6 @@ namespace AppleCinnamon.Pipeline
             {
                 var cornerChunk = chunk.Neighbours[corner];
 
-                // TODO: propagation should be bi-directional
                 ProcessEdge(cornerChunk, chunk.Neighbours[new Int2(corner.X, 0)]);
                 ProcessEdge(cornerChunk, chunk.Neighbours[new Int2(0, corner.Y)]);
             }
@@ -66,11 +65,11 @@ namespace AppleCinnamon.Pipeline
             // If the invisible pre-warmed edge chunk is darker then the (visible) center chunk, the light-smoother may fail on that edge
             // To avoid smoothness errors, the finished chunk must be back-propagated to the edge chunks.
             // The corner chunks are not affected by this
-            foreach (var edge in Edges)
-            {
-                var edgeChunk = chunk.Neighbours[edge];
-                ProcessEdge(chunk, edgeChunk);
-            }
+            //foreach (var edge in Edges)
+            //{
+            //    var edgeChunk = chunk.Neighbours[edge];
+            //    ProcessEdge(chunk, edgeChunk);
+            //}
 
 
             sw.Stop();
@@ -127,24 +126,19 @@ namespace AppleCinnamon.Pipeline
                     var lightDifference = targetVoxel.Lightness - sourceVoxel.Lightness;
                     if (Math.Abs(lightDifference) > 1)
                     {
+                        // target -> source
                         if (lightDifference > 0)
+                        {
+                            var newSourceVoxel = new Voxel(sourceVoxel.Block, (byte)(targetVoxel.Lightness - 1));
+                            sourceVoxels[sourceIndex] = newSourceVoxel;
+                            PropagateSunlight(sourceVoxels, sourceIndexX, j, sourceIndexY, sourceDefinition, newSourceVoxel);
+                        }
+                        else // source -> target
                         {
                             var newTargetVoxel = new Voxel(targetVoxel.Block, (byte)(sourceVoxel.Lightness - 1));
                             targetVoxels[targetIndex] = newTargetVoxel;
                             PropagateSunlight(targetVoxels, targetIndexX, j, targetIndexY, targetDefinition, newTargetVoxel);
                         }
-                        else
-                        {
-
-                        }
-                    }
-
-                    if ((step.Y == 1 && targetDefinition.IsTransmittance.X || step.X == 1 && targetDefinition.IsTransmittance.Z)
-                        && targetVoxel.Lightness < sourceVoxel.Lightness - 1)
-                    {
-                        var newTargetVoxel = new Voxel(targetVoxel.Block, (byte)(sourceVoxel.Lightness - 1));
-                        targetVoxels[targetIndex] = newTargetVoxel;
-                        PropagateSunlight(targetVoxels, targetIndexX, j, targetIndexY, targetDefinition, newTargetVoxel);
                     }
                 }
             }
