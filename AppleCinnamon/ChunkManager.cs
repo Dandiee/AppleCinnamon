@@ -39,7 +39,7 @@ namespace AppleCinnamon
         public EventHandler FirstChunkLoaded;
 
         public ConcurrentBag<Dictionary<string, long>> Benchmark { get; }
-        public const int ViewDistance = 8;
+        public const int ViewDistance = 16;
         public bool IsInitialized { get; private set; }
         public int ChunksCount => _chunks.Count;
 
@@ -64,7 +64,7 @@ namespace AppleCinnamon
             _chunkPool = new ChunkPool();
 
 
-            _pipeline = Create(1); //Environment.ProcessorCount);
+            _pipeline = Create(Environment.ProcessorCount);
 
             QueueChunksByIndex(Int2.Zero);
         }
@@ -133,7 +133,7 @@ namespace AppleCinnamon
             {
                 IsInitialized = true;
                 _pipeline.Complete();
-                _pipeline = Create( Math.Max(1, Environment.ProcessorCount / 4));
+                _pipeline = Create( Math.Max(1, Environment.ProcessorCount / 2));
 
                 FirstChunkLoaded?.Invoke(this, null);
                 Debug.Write(_chunks.Count);

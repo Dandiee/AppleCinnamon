@@ -28,7 +28,7 @@ namespace AppleCinnamon.Pipeline
                     var coord = chunkIndex * chunkSizeXz + new Int2(i, k);
                     var height = 64 + (byte)(Noise.CalcPixel2D(coord.X + 500, coord.Y + 500, 0.01f) * 0.09);
 
-                    height = 51;
+                    // height = 51;
                     
 
                     for (var j = 0; j < height; j++)

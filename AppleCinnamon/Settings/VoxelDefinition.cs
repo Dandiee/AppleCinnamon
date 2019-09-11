@@ -17,7 +17,25 @@ namespace AppleCinnamon.Settings
         public readonly Vector3 Translation;
         public readonly bool IsUnitSized;
 
+
+        
+
         public static readonly VoxelDefinition[] DefinitionByType = new VoxelDefinition[255];
+
+        public static readonly VoxelDefinition Stone = new BlockDefinitionBuilder(10).WithAllSideTexture(1, 0).Build();
+        //public static readonly VoxelDefinition Stone = new BlockDefinitionBuilder(10).WithAllSideTexture(1, 0).Build();
+        public static readonly VoxelDefinition Log = new BlockDefinitionBuilder(10).WithAllSideTexture(4, 1).Build();
+        public static readonly VoxelDefinition Leaves = new BlockDefinitionBuilder(10).WithAllSideTexture(15, 0).Build();
+        public static readonly VoxelDefinition Gravel = new BlockDefinitionBuilder(10).WithAllSideTexture(3, 1).Build();
+        public static readonly VoxelDefinition CoalOre = new BlockDefinitionBuilder(11).WithAllSideTexture(2, 2).Build();
+        public static readonly VoxelDefinition IronOre = new BlockDefinitionBuilder(12).WithAllSideTexture(1, 2).Build();
+        public static readonly VoxelDefinition GoldOre = new BlockDefinitionBuilder(13).WithAllSideTexture(0, 2).Build();
+        public static readonly VoxelDefinition Dirt = new BlockDefinitionBuilder(13).WithAllSideTexture(2, 0).Build();
+        public static readonly VoxelDefinition Lava = new BlockDefinitionBuilder(10).WithAllSideTexture(15, 15).Build();
+        public static readonly VoxelDefinition Water = new BlockDefinitionBuilder(10).WithAllSideTexture(15, 12).Build();
+
+
+
 
         public static readonly VoxelDefinition Air = new VoxelDefinition(0, null, 0, Bool3.True, true, true, Vector3.One, Vector3.Zero);
 

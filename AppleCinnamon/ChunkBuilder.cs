@@ -123,6 +123,5 @@ namespace AppleCinnamon
             faceResult.Indexes.Add((ushort)(vertexIndex + 2));
             faceResult.Indexes.Add((ushort)(vertexIndex + 3));
         }
-
     }
 }

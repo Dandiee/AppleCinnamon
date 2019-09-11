@@ -45,5 +45,11 @@ namespace AppleCinnamon.System
             (int) Math.Round(vector.X),
             (int) Math.Round(vector.Y),
             (int) Math.Round(vector.Z));
+
+        public static int Floor(this float value)
+        {
+            int valueI = (int)value;
+            return value < valueI ? valueI - 1 : valueI;
+        }
     }
 }
