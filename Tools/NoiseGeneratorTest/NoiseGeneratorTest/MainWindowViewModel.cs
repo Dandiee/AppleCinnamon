@@ -78,7 +78,7 @@ namespace NoiseGeneratorTest
             {
                 for (var j = 0; j < Height; j++)
                 {
-                    result[i, j] = (byte) ((noise.Compute(i, j) * Factor) * 255);
+                    result[i, j] = (byte) (noise.Compute(i, j) + 128 * Factor);
                 }
             }
 

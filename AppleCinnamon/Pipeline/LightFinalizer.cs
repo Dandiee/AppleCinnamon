@@ -46,6 +46,7 @@ namespace AppleCinnamon.Pipeline
             {
                 var cornerChunk = chunk.Neighbours[corner];
 
+                // TODO: propagation should be bi-directional
                 ProcessEdge(cornerChunk, chunk.Neighbours[new Int2(corner.X, 0)]);
                 ProcessEdge(cornerChunk, chunk.Neighbours[new Int2(0, corner.Y)]);
             }
@@ -96,32 +97,53 @@ namespace AppleCinnamon.Pipeline
             {
                 for (var j = Chunk.Height - 1; j > 0; j--)
                 {
+                    
                     var sourceIndexX = source.X + step.X * n;
                     var sourceIndexY = source.Y + step.Y * n;
+                    var sourceIndex = sourceIndexX + Chunk.SizeXy * (j + Chunk.Height * sourceIndexY);
 
-                    var sourceVoxel = sourceVoxels[sourceIndexX + Chunk.SizeXy * (j + Chunk.Height * sourceIndexY)];
+                    var sourceVoxel = sourceVoxels[sourceIndex];
                     var sourceDefinition = VoxelDefinition.DefinitionByType[sourceVoxel.Block];
 
-                    if (!(step.Y == 1 && sourceDefinition.IsTransmittance.X || step.X == 1 && sourceDefinition.IsTransmittance.Z)
-                        || sourceVoxel.Lightness == 0)
+                    if (!(step.Y == 1 && sourceDefinition.IsTransmittance.X || 
+                          step.X == 1 && sourceDefinition.IsTransmittance.Z))
                     {
                         continue;
                     }
 
                     var targetIndexX = target.X + step.X * n;
                     var targetIndexY = target.Y + step.Y * n;
+                    var targetIndex = targetIndexX + Chunk.SizeXy * (j + Chunk.Height * targetIndexY);
 
-                    //var targetVoxelIndex = new Int3(targetIndexX, j, targetIndexY);
-
-                    var targetVoxelIndex = targetIndexX + Chunk.SizeXy * (j + Chunk.Height * targetIndexY);
-                    var targetVoxel = targetVoxels[targetVoxelIndex];
+                    var targetVoxel = targetVoxels[targetIndex];
                     var targetDefinition = VoxelDefinition.DefinitionByType[targetVoxel.Block];
+
+                    if (!(step.Y == 1 && targetDefinition.IsTransmittance.X ||
+                          step.X == 1 && targetDefinition.IsTransmittance.Z))
+                    {
+                        continue;
+                    }
+
+                    var lightDifference = targetVoxel.Lightness - sourceVoxel.Lightness;
+                    if (Math.Abs(lightDifference) > 1)
+                    {
+                        if (lightDifference > 0)
+                        {
+                            var newTargetVoxel = new Voxel(targetVoxel.Block, (byte)(sourceVoxel.Lightness - 1));
+                            targetVoxels[targetIndex] = newTargetVoxel;
+                            PropagateSunlight(targetVoxels, targetIndexX, j, targetIndexY, targetDefinition, newTargetVoxel);
+                        }
+                        else
+                        {
+
+                        }
+                    }
 
                     if ((step.Y == 1 && targetDefinition.IsTransmittance.X || step.X == 1 && targetDefinition.IsTransmittance.Z)
                         && targetVoxel.Lightness < sourceVoxel.Lightness - 1)
                     {
                         var newTargetVoxel = new Voxel(targetVoxel.Block, (byte)(sourceVoxel.Lightness - 1));
-                        targetVoxels[targetVoxelIndex] = newTargetVoxel;
+                        targetVoxels[targetIndex] = newTargetVoxel;
                         PropagateSunlight(targetVoxels, targetIndexX, j, targetIndexY, targetDefinition, newTargetVoxel);
                     }
                 }
