@@ -1,6 +1,10 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
+using System.Linq;
+using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
 using Prism.Commands;
@@ -49,6 +53,20 @@ namespace NoiseGeneratorTest
             set => SetProperty(ref _factor, value);
         }
 
+        private int _amplitude;
+        public int Amplitude
+        {
+            get => _amplitude;
+            set => SetProperty(ref _amplitude, value);
+        }
+
+        private int _frequency;
+        public int Frequency
+        {
+            get => _frequency;
+            set => SetProperty(ref _frequency, value);
+        }
+
 
         private int _renderTime;
         public int RenderTime
@@ -61,10 +79,12 @@ namespace NoiseGeneratorTest
 
         public MainWindowViewModel()
         {
-            Width = 64;
-            Height = 64;
+            Width = 32;
+            Height = 32;
             Octaves = 8;
-            Factor = 0.2f;
+            Factor = 1f;
+            Amplitude = 1;
+            Frequency = 1;
 
             RenderCommand = new DelegateCommand(Render);
         }
@@ -72,13 +92,32 @@ namespace NoiseGeneratorTest
         private byte[,] GenerateNoise()
         {
             var result = new byte[Width, Height];
+            var values = new double[Width, Height];
+            var listValues = new List<double>(Width * Height);
 
-            var noise = new OctaveNoise(Octaves, new JavaRandom(9212107));
+            var noise = new OctaveNoise(Octaves, new Random(9212107), Amplitude, Frequency);
             for (var i = 0; i < Width; i++)
             {
                 for (var j = 0; j < Height; j++)
                 {
-                    result[i, j] = (byte) (noise.Compute(i, j) + 128 * Factor);
+                    var value = noise.Compute(i, j);
+
+                    values[i, j] = (byte) (value * Factor);
+
+                    listValues.Add(value);
+                }
+            }
+
+            var min = listValues.Min();
+            var max = listValues.Max();
+
+            var range = (max - min) / 255f;
+
+            for (var i = 0; i < Width; i++)
+            {
+                for (var j = 0; j < Height; j++)
+                {
+                    result[i, j] = (byte) ((values[i, j] - min) / range);
                 }
             }
 

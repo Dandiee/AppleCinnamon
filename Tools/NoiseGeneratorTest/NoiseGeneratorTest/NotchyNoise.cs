@@ -9,16 +9,14 @@ namespace NoiseGeneratorTest
 
     public sealed class ImprovedNoise
     {
-
-        public ImprovedNoise(JavaRandom rnd)
+        public ImprovedNoise(Random random)
         {
-            // shuffle randomly using fisher-yates
             for (int i = 0; i < 256; i++)
                 p[i] = (byte)i;
 
             for (int i = 0; i < 256; i++)
             {
-                int j = rnd.Next(i, 256);
+                int j = random.Next(i, 256);
                 byte temp = p[i]; p[i] = p[j]; p[j] = temp;
             }
             for (int i = 0; i < 256; i++)
@@ -27,31 +25,24 @@ namespace NoiseGeneratorTest
 
         public double Compute(double x, double y)
         {
-            int xFloor = x >= 0 ? (int)x : (int)x - 1;
-            int yFloor = y >= 0 ? (int)y : (int)y - 1;
+            var xFloor = x >= 0 ? (int)x : (int)x - 1;
+            var yFloor = y >= 0 ? (int)y : (int)y - 1;
             int X = xFloor & 0xFF, Y = yFloor & 0xFF;
             x -= xFloor; y -= yFloor;
-
-            double u = x * x * x * (x * (x * 6 - 15) + 10); // Fade(x)
-            double v = y * y * y * (y * (y * 6 - 15) + 10); // Fade(y)
+            var u = x * x * x * (x * (x * 6 - 15) + 10);
+            var v = y * y * y * (y * (y * 6 - 15) + 10);
             int A = p[X] + Y, B = p[X + 1] + Y;
-
-            // Normally, calculating Grad involves a function call. However, we can directly pack this table
-            // (since each value indicates either -1, 0 1) into a set of bit flags. This way we avoid needing 
-            // to call another function that performs branching
             const int xFlags = 0x46552222, yFlags = 0x2222550A;
-
-            int hash = (p[p[A]] & 0xF) << 1;
-            double g22 = (((xFlags >> hash) & 3) - 1) * x + (((yFlags >> hash) & 3) - 1) * y; // Grad(p[p[A], x, y)
+            var hash = (p[p[A]] & 0xF) << 1;
+            var g22 = (((xFlags >> hash) & 3) - 1) * x + (((yFlags >> hash) & 3) - 1) * y;
             hash = (p[p[B]] & 0xF) << 1;
-            double g12 = (((xFlags >> hash) & 3) - 1) * (x - 1) + (((yFlags >> hash) & 3) - 1) * y; // Grad(p[p[B], x - 1, y)
-            double c1 = g22 + u * (g12 - g22);
-
+            var g12 = (((xFlags >> hash) & 3) - 1) * (x - 1) + (((yFlags >> hash) & 3) - 1) * y;
+            var c1 = g22 + u * (g12 - g22);
             hash = (p[p[A + 1]] & 0xF) << 1;
-            double g21 = (((xFlags >> hash) & 3) - 1) * x + (((yFlags >> hash) & 3) - 1) * (y - 1); // Grad(p[p[A + 1], x, y - 1)
+            var g21 = (((xFlags >> hash) & 3) - 1) * x + (((yFlags >> hash) & 3) - 1) * (y - 1);
             hash = (p[p[B + 1]] & 0xF) << 1;
-            double g11 = (((xFlags >> hash) & 3) - 1) * (x - 1) + (((yFlags >> hash) & 3) - 1) * (y - 1); // Grad(p[p[B + 1], x - 1, y - 1)
-            double c2 = g21 + u * (g11 - g21);
+            var g11 = (((xFlags >> hash) & 3) - 1) * (x - 1) + (((yFlags >> hash) & 3) - 1) * (y - 1);
+            var c2 = g21 + u * (g11 - g21);
 
             return c1 + v * (c2 - c1);
         }
@@ -61,22 +52,30 @@ namespace NoiseGeneratorTest
 
     public sealed class OctaveNoise
     {
+        private readonly double _baseAmplitude;
+        private readonly double _baseFrequency;
+        private readonly ImprovedNoise[] _baseNoise;
 
-        readonly ImprovedNoise[] baseNoise;
-        public OctaveNoise(int octaves, JavaRandom rnd)
+        public OctaveNoise(int octaves, Random random, double baseAmplitude, double baseFrequency)
         {
-            baseNoise = new ImprovedNoise[octaves];
+            _baseAmplitude = baseAmplitude;
+            _baseFrequency = baseFrequency;
+            _baseNoise = new ImprovedNoise[octaves];
             for (int i = 0; i < octaves; i++)
-                baseNoise[i] = new ImprovedNoise(rnd);
+            {
+                _baseNoise[i] = new ImprovedNoise(random);
+            }
         }
 
         public double Compute(double x, double y)
         {
-            double amplitude = 1, frequency = 1;
+            var amplitude = _baseAmplitude;
+            var frequency = _baseFrequency;
+
             double sum = 0;
-            for (int i = 0; i < baseNoise.Length; i++)
+            for (var i = 0; i < _baseNoise.Length; i++)
             {
-                sum += baseNoise[i].Compute(x * frequency, y * frequency) * amplitude;
+                sum += _baseNoise[i].Compute(x * frequency, y * frequency) * amplitude;
                 amplitude *= 2.0;
                 frequency *= 0.5;
             }
@@ -84,62 +83,4 @@ namespace NoiseGeneratorTest
         }
     }
 
-    public sealed class CombinedNoise
-    {
-
-        readonly OctaveNoise noise1, noise2;
-        public CombinedNoise(OctaveNoise noise1, OctaveNoise noise2)
-        {
-            this.noise1 = noise1;
-            this.noise2 = noise2;
-        }
-
-        public double Compute(double x, double y)
-        {
-            double offset = noise2.Compute(x, y);
-            return noise1.Compute(x + offset, y);
-        }
-    }
-
-    public sealed class JavaRandom
-    {
-
-        long seed;
-        const long value = 0x5DEECE66DL;
-        const long mask = (1L << 48) - 1;
-
-        public JavaRandom(int seed) { SetSeed(seed); }
-        public void SetSeed(int seed)
-        {
-            this.seed = (seed ^ value) & mask;
-        }
-
-        public int Next(int min, int max) { return min + Next(max - min); }
-
-        public int Next(int n)
-        {
-            if ((n & -n) == n)
-            { // i.e., n is a power of 2
-                seed = (seed * value + 0xBL) & mask;
-                long raw = (long)((ulong)seed >> (48 - 31));
-                return (int)((n * raw) >> 31);
-            }
-
-            int bits, val;
-            do
-            {
-                seed = (seed * value + 0xBL) & mask;
-                bits = (int)((ulong)seed >> (48 - 31));
-                val = bits % n;
-            } while (bits - val + (n - 1) < 0);
-            return val;
-        }
-
-        public float NextFloat()
-        {
-            seed = (seed * value + 0xBL) & mask;
-            int raw = (int)((ulong)seed >> (48 - 24));
-            return raw / ((float)(1 << 24));
-        }
-    }
 }

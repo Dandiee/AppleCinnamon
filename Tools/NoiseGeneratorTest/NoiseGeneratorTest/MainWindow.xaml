@@ -64,6 +64,39 @@
                 </i:Interaction.Triggers>
             </Slider>
 
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <Label Grid.Column="0" Content="Amplitude"/>
+                <TextBlock Grid.Column="1" Text="{Binding Amplitude}" HorizontalAlignment="Right"/>
+            </Grid>
+            <Slider Value="{Binding Amplitude}" Minimum="1" Maximum="127" Margin="0 0 0 10">
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="ValueChanged">
+                        <i:InvokeCommandAction Command="{Binding RenderCommand}"/>
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
+            </Slider>
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <Label Grid.Column="0" Content="Frequency"/>
+                <TextBlock Grid.Column="1" Text="{Binding Frequency}" HorizontalAlignment="Right"/>
+            </Grid>
+            <Slider Value="{Binding Frequency}" Minimum="1" Maximum="128" Margin="0 0 0 10">
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="ValueChanged">
+                        <i:InvokeCommandAction Command="{Binding RenderCommand}"/>
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
+            </Slider>
+
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition/>
