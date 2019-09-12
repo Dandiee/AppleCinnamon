@@ -15,103 +15,162 @@
         <Image Source="{Binding Image}" Margin="10"></Image>
 
         <StackPanel Grid.Column="1">
+            <TabControl>
+                <TabItem Header="Noise">
+                    <StackPanel>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                            </Grid.ColumnDefinitions>
+                            <Label Grid.Column="0" Content="Width"/>
+                            <TextBlock Grid.Column="1" Text="{Binding Width}" HorizontalAlignment="Right"/>
+                        </Grid>
+                        <Slider Value="{Binding Width}" Minimum="16" Maximum="512" Margin="0 0 0 10" Ticks="16">
+                            <i:Interaction.Triggers>
+                                <i:EventTrigger EventName="ValueChanged">
+                                    <i:InvokeCommandAction Command="{Binding RenderCommand}"/>
+                                </i:EventTrigger>
+                            </i:Interaction.Triggers>
+                        </Slider>
 
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition/>
-                    <ColumnDefinition/>
-                </Grid.ColumnDefinitions>
-                <Label Grid.Column="0" Content="Width"/>
-                <TextBlock Grid.Column="1" Text="{Binding Width}" HorizontalAlignment="Right"/>
-            </Grid>
-            <Slider Value="{Binding Width}" Minimum="16" Maximum="512" Margin="0 0 0 10" Ticks="16">
-                <i:Interaction.Triggers>
-                    <i:EventTrigger EventName="ValueChanged">
-                        <i:InvokeCommandAction Command="{Binding RenderCommand}"/>
-                    </i:EventTrigger>
-                </i:Interaction.Triggers>
-            </Slider>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                            </Grid.ColumnDefinitions>
+                            <Label Grid.Column="0" Content="Height"/>
+                            <TextBlock Grid.Column="1" Text="{Binding Height}" HorizontalAlignment="Right"/>
+                        </Grid>
+                        <Slider Value="{Binding Height}" Minimum="16" Maximum="512" Margin="0 0 0 10" Ticks="16">
+                            <i:Interaction.Triggers>
+                                <i:EventTrigger EventName="ValueChanged">
+                                    <i:InvokeCommandAction Command="{Binding RenderCommand}"/>
+                                </i:EventTrigger>
+                            </i:Interaction.Triggers>
+                        </Slider>
 
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition/>
-                    <ColumnDefinition/>
-                </Grid.ColumnDefinitions>
-                <Label Grid.Column="0" Content="Height"/>
-                <TextBlock Grid.Column="1" Text="{Binding Height}" HorizontalAlignment="Right"/>
-            </Grid>
-            <Slider Value="{Binding Height}" Minimum="16" Maximum="512" Margin="0 0 0 10" Ticks="16">
-                <i:Interaction.Triggers>
-                    <i:EventTrigger EventName="ValueChanged">
-                        <i:InvokeCommandAction Command="{Binding RenderCommand}"/>
-                    </i:EventTrigger>
-                </i:Interaction.Triggers>
-            </Slider>
-
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition/>
-                    <ColumnDefinition/>
-                </Grid.ColumnDefinitions>
-                <Label Grid.Column="0" Content="Octaves"/>
-                <TextBlock Grid.Column="1" Text="{Binding Octaves}" HorizontalAlignment="Right"/>
-            </Grid>
-            <Slider Value="{Binding Octaves}" Minimum="1" Maximum="16" Margin="0 0 0 10">
-                <i:Interaction.Triggers>
-                    <i:EventTrigger EventName="ValueChanged">
-                        <i:InvokeCommandAction Command="{Binding RenderCommand}"/>
-                    </i:EventTrigger>
-                </i:Interaction.Triggers>
-            </Slider>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                            </Grid.ColumnDefinitions>
+                            <Label Grid.Column="0" Content="Octaves"/>
+                            <TextBlock Grid.Column="1" Text="{Binding Octaves}" HorizontalAlignment="Right"/>
+                        </Grid>
+                        <Slider Value="{Binding Octaves}" Minimum="1" Maximum="16" Margin="0 0 0 10">
+                            <i:Interaction.Triggers>
+                                <i:EventTrigger EventName="ValueChanged">
+                                    <i:InvokeCommandAction Command="{Binding RenderCommand}"/>
+                                </i:EventTrigger>
+                            </i:Interaction.Triggers>
+                        </Slider>
 
 
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition/>
-                    <ColumnDefinition/>
-                </Grid.ColumnDefinitions>
-                <Label Grid.Column="0" Content="Amplitude"/>
-                <TextBlock Grid.Column="1" Text="{Binding Amplitude}" HorizontalAlignment="Right"/>
-            </Grid>
-            <Slider Value="{Binding Amplitude}" Minimum="1" Maximum="127" Margin="0 0 0 10">
-                <i:Interaction.Triggers>
-                    <i:EventTrigger EventName="ValueChanged">
-                        <i:InvokeCommandAction Command="{Binding RenderCommand}"/>
-                    </i:EventTrigger>
-                </i:Interaction.Triggers>
-            </Slider>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                            </Grid.ColumnDefinitions>
+                            <Label Grid.Column="0" Content="Amplitude"/>
+                            <TextBlock Grid.Column="1" Text="{Binding Amplitude}" HorizontalAlignment="Right"/>
+                        </Grid>
+                        <Slider Value="{Binding Amplitude}" Minimum="1" Maximum="127" Margin="0 0 0 10">
+                            <i:Interaction.Triggers>
+                                <i:EventTrigger EventName="ValueChanged">
+                                    <i:InvokeCommandAction Command="{Binding RenderCommand}"/>
+                                </i:EventTrigger>
+                            </i:Interaction.Triggers>
+                        </Slider>
 
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition/>
-                    <ColumnDefinition/>
-                </Grid.ColumnDefinitions>
-                <Label Grid.Column="0" Content="Frequency"/>
-                <TextBlock Grid.Column="1" Text="{Binding Frequency}" HorizontalAlignment="Right"/>
-            </Grid>
-            <Slider Value="{Binding Frequency}" Minimum="1" Maximum="128" Margin="0 0 0 10">
-                <i:Interaction.Triggers>
-                    <i:EventTrigger EventName="ValueChanged">
-                        <i:InvokeCommandAction Command="{Binding RenderCommand}"/>
-                    </i:EventTrigger>
-                </i:Interaction.Triggers>
-            </Slider>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                            </Grid.ColumnDefinitions>
+                            <Label Grid.Column="0" Content="Frequency"/>
+                            <TextBlock Grid.Column="1" Text="{Binding Frequency}" HorizontalAlignment="Right"/>
+                        </Grid>
+                        <Slider Value="{Binding Frequency}" Minimum="1" Maximum="128" Margin="0 0 0 10">
+                            <i:Interaction.Triggers>
+                                <i:EventTrigger EventName="ValueChanged">
+                                    <i:InvokeCommandAction Command="{Binding RenderCommand}"/>
+                                </i:EventTrigger>
+                            </i:Interaction.Triggers>
+                        </Slider>
 
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition/>
-                    <ColumnDefinition/>
-                </Grid.ColumnDefinitions>
-                <Label Grid.Column="0" Content="Factor"/>
-                <TextBlock Grid.Column="1" Text="{Binding Factor}" HorizontalAlignment="Right"/>
-            </Grid>
-            <Slider Value="{Binding Factor}" Minimum="0.0001" Maximum="1" Margin="0 0 0 10">
-                <i:Interaction.Triggers>
-                    <i:EventTrigger EventName="ValueChanged">
-                        <i:InvokeCommandAction Command="{Binding RenderCommand}"/>
-                    </i:EventTrigger>
-                </i:Interaction.Triggers>
-            </Slider>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                            </Grid.ColumnDefinitions>
+                            <Label Grid.Column="0" Content="Factor"/>
+                            <TextBlock Grid.Column="1" Text="{Binding Factor}" HorizontalAlignment="Right"/>
+                        </Grid>
+                        <Slider Value="{Binding Factor}" Minimum="0.0001" Maximum="1" Margin="0 0 0 10">
+                            <i:Interaction.Triggers>
+                                <i:EventTrigger EventName="ValueChanged">
+                                    <i:InvokeCommandAction Command="{Binding RenderCommand}"/>
+                                </i:EventTrigger>
+                            </i:Interaction.Triggers>
+                        </Slider>
+                    </StackPanel>
+                </TabItem>
+
+                <TabItem Header="Palette">
+                    <StackPanel>
+                        
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                            </Grid.ColumnDefinitions>
+                            <Label Grid.Column="0" Content="WaterLevel"/>
+                            <TextBlock Grid.Column="1" Text="{Binding WaterLevel}" HorizontalAlignment="Right"/>
+                        </Grid>
+                        <Slider Value="{Binding WaterLevel}" Minimum="0" Maximum="255" Margin="0 0 0 10">
+                            <i:Interaction.Triggers>
+                                <i:EventTrigger EventName="ValueChanged">
+                                    <i:InvokeCommandAction Command="{Binding RenderCommand}"/>
+                                </i:EventTrigger>
+                            </i:Interaction.Triggers>
+                        </Slider>
+
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                            </Grid.ColumnDefinitions>
+                            <Label Grid.Column="0" Content="GrassLevel"/>
+                            <TextBlock Grid.Column="1" Text="{Binding GrassLevel}" HorizontalAlignment="Right"/>
+                        </Grid>
+                        <Slider Value="{Binding GrassLevel}" Minimum="0" Maximum="255" Margin="0 0 0 10">
+                            <i:Interaction.Triggers>
+                                <i:EventTrigger EventName="ValueChanged">
+                                    <i:InvokeCommandAction Command="{Binding RenderCommand}"/>
+                                </i:EventTrigger>
+                            </i:Interaction.Triggers>
+                        </Slider>
+
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                            </Grid.ColumnDefinitions>
+                            <Label Grid.Column="0" Content="SnowLevel"/>
+                            <TextBlock Grid.Column="1" Text="{Binding SnowLevel}" HorizontalAlignment="Right"/>
+                        </Grid>
+                        <Slider Value="{Binding SnowLevel}" Minimum="0" Maximum="255" Margin="0 0 0 10">
+                            <i:Interaction.Triggers>
+                                <i:EventTrigger EventName="ValueChanged">
+                                    <i:InvokeCommandAction Command="{Binding RenderCommand}"/>
+                                </i:EventTrigger>
+                            </i:Interaction.Triggers>
+                        </Slider>
+
+                    </StackPanel>
+                </TabItem>
+            </TabControl>
 
             <Button Content="Render" Command="{Binding RenderCommand}"/>
 

@@ -75,6 +75,28 @@ namespace NoiseGeneratorTest
             set => SetProperty(ref _renderTime, value);
         }
 
+
+        private int _waterLevel;
+        public int WaterLevel
+        {
+            get => _waterLevel;
+            set => SetProperty(ref _waterLevel, value);
+        }
+
+        private int _snowLevel;
+        public int SnowLevel
+        {
+            get => _snowLevel;
+            set => SetProperty(ref _snowLevel, value);
+        }
+
+        private int _grassLevel;
+        public int GrassLevel
+        {
+            get => _grassLevel;
+            set => SetProperty(ref _grassLevel, value);
+        }
+
         public ICommand RenderCommand { get; }
 
         public MainWindowViewModel()
@@ -85,6 +107,10 @@ namespace NoiseGeneratorTest
             Factor = 1f;
             Amplitude = 1;
             Frequency = 1;
+
+            WaterLevel = 64;
+            SnowLevel = 128;
+            GrassLevel = 65;
 
             RenderCommand = new DelegateCommand(Render);
         }
@@ -135,6 +161,11 @@ namespace NoiseGeneratorTest
             Image = GetBitmapImage(bitmap);
         }
 
+
+        private static readonly Color WaterColor = Color.Aqua;
+        private static readonly Color SnowColor = Color.Snow;
+        private static readonly Color GrassColor = Color.Green;
+
         private Bitmap GetBitmap(byte[,] heightMap)
         {
             var bitmap = new Bitmap(Width, Height);
@@ -144,8 +175,22 @@ namespace NoiseGeneratorTest
                 for (var j = 0; j < Height; j++)
                 {
                     var height = heightMap[i, j];
+                    var color = Color.Empty;
 
-                    bitmap.SetPixel(i, j, Color.FromArgb(height, height, height));
+                    if (height < WaterLevel)
+                    {
+                        color = WaterColor;
+                    }
+                    else if (height < SnowLevel)
+                    {
+                        color = GrassColor;
+                    }
+                    else
+                    {
+                        color = SnowColor;
+                    }
+
+                    bitmap.SetPixel(i, j, color);
                 }
             }
 
