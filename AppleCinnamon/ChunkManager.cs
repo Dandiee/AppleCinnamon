@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using AppleCinnamon.Pipeline;
@@ -42,6 +43,7 @@ namespace AppleCinnamon
         public const int ViewDistance = 8;
         public bool IsInitialized { get; private set; }
         public int ChunksCount => _chunks.Count;
+        private int _chunksCount;
 
         public int RenderedChunks;
         private TransformBlock<DataflowContext<Int2>, DataflowContext<Chunk>> _pipeline;
@@ -64,7 +66,8 @@ namespace AppleCinnamon
             _chunkPool = new ChunkPool();
 
 
-            _pipeline = Create(Environment.ProcessorCount);
+            //_pipeline = Create(Environment.ProcessorCount);
+            _pipeline = Create(1);
 
             QueueChunksByIndex(Int2.Zero);
         }
@@ -122,14 +125,15 @@ namespace AppleCinnamon
                 throw new Exception();
             }
 
+            Interlocked.Increment(ref _chunksCount);
+
             var position = new Vector3(
                 context.Payload.ChunkIndex.X * Chunk.Size.X + Chunk.Size.X / 2f - .5f,
                 Chunk.Size.Y / 2f,
                 context.Payload.ChunkIndex.Y * Chunk.Size.Z + Chunk.Size.Z / 2f - .5f);
 
-            // _boxDrawer.Set("chunk_" + context.Payload.ChunkIndex, new BoxDetails(Chunk.Size.ToVector3(), position, Color.Red.ToColor3()));
-
-            if (!IsInitialized && _chunks.Count == (ViewDistance - 2) * (ViewDistance - 2))
+            var root = ViewDistance * 2 + 1;
+            if (!IsInitialized && _chunksCount == root * root)
             {
                 IsInitialized = true;
                 _pipeline.Complete();
@@ -183,7 +187,7 @@ namespace AppleCinnamon
         {
             yield return new Int2();
 
-            for (var i = 1; i < size; i++)
+            for (var i = 1; i < size + 2; i++)
             {
                 var cursor = new Int2(i * -1);
 

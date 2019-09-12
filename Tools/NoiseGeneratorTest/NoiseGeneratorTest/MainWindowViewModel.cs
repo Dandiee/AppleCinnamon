@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Windows.Documents;
@@ -168,7 +169,7 @@ namespace NoiseGeneratorTest
 
         private Bitmap GetBitmap(byte[,] heightMap)
         {
-            var bitmap = new Bitmap(Width, Height);
+            var bitmap = new Bitmap(Width, Height, PixelFormat.Format32bppArgb);
 
             for (var i = 0; i < Width; i++)
             {
@@ -176,21 +177,25 @@ namespace NoiseGeneratorTest
                 {
                     var height = heightMap[i, j];
                     var color = Color.Empty;
+                    var refHeight = 0;
 
                     if (height < WaterLevel)
                     {
                         color = WaterColor;
+                        refHeight = WaterLevel - height;
                     }
                     else if (height < SnowLevel)
                     {
                         color = GrassColor;
+                        refHeight = height - WaterLevel;
                     }
                     else
                     {
                         color = SnowColor;
+                        refHeight = 255 - height;
                     }
 
-                    bitmap.SetPixel(i, j, color);
+                    bitmap.SetPixel(i, j, Color.FromArgb(refHeight, color));
                 }
             }
 
