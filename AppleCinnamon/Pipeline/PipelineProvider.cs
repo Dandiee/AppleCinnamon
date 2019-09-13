@@ -19,6 +19,7 @@ namespace AppleCinnamon.Pipeline
         private readonly ILightFinalizer _lightFinalizer;
         private readonly IChunkPool _chunkPool;
         private readonly ExperimentalStep _experimentalStep;
+        private readonly GlobalVisibility _globalVisibility;
 
 
         public PipelineProvider()
@@ -29,6 +30,7 @@ namespace AppleCinnamon.Pipeline
             _lightFinalizer = new LightFinalizer();
             _chunkPool = new ChunkPool();
             _experimentalStep = new ExperimentalStep();
+            _globalVisibility = new GlobalVisibility();
         }
 
         public TransformBlock<DataflowContext<Int2>, DataflowContext<Chunk>> CreatePipeline(int maxDegreeOfParallelism, Action<DataflowContext<Chunk>> successCallback)
@@ -42,6 +44,7 @@ namespace AppleCinnamon.Pipeline
             var experimental = new TransformBlock<DataflowContext<Chunk>, DataflowContext<Chunk>>(_experimentalStep.Process, dataflowOptions);
             var lighter = new TransformBlock<DataflowContext<Chunk>, DataflowContext<Chunk>>(_lightPropagationService.InitializeLocalLight, dataflowOptions);
             var pool = new TransformManyBlock<DataflowContext<Chunk>, DataflowContext<Chunk>>(_chunkPool.Process, dataflowOptions);
+            var globalVisibility = new TransformBlock<DataflowContext<Chunk>, DataflowContext<Chunk>>(_globalVisibility.Process, dataflowOptions);
             var lightFinalizer = new TransformBlock<DataflowContext<Chunk>, DataflowContext<Chunk>>(_lightFinalizer.Finalize, dataflowOptions);
             var dispatcher = new TransformBlock<DataflowContext<Chunk>, DataflowContext<Chunk>>(_chunkDispatcher.Dispatch, dataflowOptions);
             var finalizer = new ActionBlock<DataflowContext<Chunk>>(successCallback, dataflowOptions);
@@ -49,7 +52,8 @@ namespace AppleCinnamon.Pipeline
             pipeline.LinkTo(experimental);
             experimental.LinkTo(lighter);
             lighter.LinkTo(pool);
-            pool.LinkTo(lightFinalizer);
+            pool.LinkTo(globalVisibility);
+            globalVisibility.LinkTo(lightFinalizer);
             lightFinalizer.LinkTo(dispatcher);
             dispatcher.LinkTo(finalizer);
 

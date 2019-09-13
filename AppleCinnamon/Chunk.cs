@@ -26,6 +26,10 @@ namespace AppleCinnamon
 
 
         public readonly Dictionary<int, byte> VisibilityFlags;
+        public readonly List<int> PendingLeftVoxels;
+        public readonly List<int> PendingRightVoxels;
+        public readonly List<int> PendingFrontVoxels;
+        public readonly List<int> PendingBackVoxels;
 
         public Int2 ChunkIndex { get; }
         public Vector3 OffsetVector { get; }
@@ -135,6 +139,11 @@ namespace AppleCinnamon
             _bufferCube = new Cube<FaceBuffer>();
             Neighbours = new ConcurrentDictionary<Int2, Chunk>();
             VisibilityFlags = new Dictionary<int, byte>();
+
+            PendingLeftVoxels = new List<int>(16);
+            PendingRightVoxels = new List<int>(16);
+            PendingFrontVoxels = new List<int>(16);
+            PendingBackVoxels = new List<int>(16);
 
             ChunkIndex = chunkIndex;
             Offset = chunkIndex * new Int2(Size.X, Size.Z);

@@ -27,36 +27,57 @@ namespace AppleCinnamon
 
             var vertices = verticesCube.GetAll().ToList();
 
-            for (var i = 0; i != Chunk.SizeXy; i++)
+            var visibilityFlags = chunk.VisibilityFlags;
+            foreach (var visibilityFlag in visibilityFlags)
             {
-                for (var j = 0; j != Chunk.Height; j++)
+
+                var index = visibilityFlag.Key;
+
+                var k = index / (Chunk.SizeXy * Chunk.Height);
+                var j = (index - k * Chunk.SizeXy * Chunk.Height) / Chunk.SizeXy;
+                var i = index - (k * Chunk.SizeXy * Chunk.Height + j * Chunk.SizeXy);
+
+                var voxel = chunk.Voxels[index];
+                var definition = VoxelDefinition.DefinitionByType[voxel.Block];
+                var flag = visibilityFlag.Value;
+
+                if ((flag & 1) == 1)
                 {
-                    for (var k = 0; k != Chunk.SizeXy; k++)
-                    {
-                        var voxel = chunk.Voxels[i + Chunk.SizeXy * (j + Chunk.Height * k)];
-
-                        if (voxel.Block > 0)
-                        {
-                            var definition = VoxelDefinition.DefinitionByType[voxel.Block];
-
-                            foreach (var currentFace in vertices)
-                            {
-                                var face = currentFace.Key;
-
-                                // TODO: this is the most expensive line in the code.
-                                var neighbor = chunk.GetLocalWithNeighbours(i + currentFace.Value.Direction.X,
-                                    j + currentFace.Value.Direction.Y, k + currentFace.Value.Direction.Z);
-
-                                var neighborDefinition = VoxelDefinition.DefinitionByType[neighbor.Block];
-
-                                if (IsFaceVisible(definition, neighborDefinition))
-                                {
-                                    AddFace(face, i, j, k, currentFace.Value, definition, chunk, neighbor);
-                                }
-                            }
-                        }
-                    }
+                    var neighbor = chunk.GetLocalWithNeighbours(i, j + 1, k);
+                    AddFace(Face.Top, i, j, k, verticesCube.Top, definition, chunk, neighbor);
                 }
+
+                if ((flag & 2) == 2)
+                {
+                    var neighbor = chunk.GetLocalWithNeighbours(i, j - 1, k);
+                    AddFace(Face.Bottom, i, j, k, verticesCube.Bottom, definition, chunk, neighbor);
+                }
+
+                if ((flag & 4) == 4)
+                {
+                    var neighbor = chunk.GetLocalWithNeighbours(i - 1, j, k);
+                    AddFace(Face.Left, i, j, k, verticesCube.Left, definition, chunk, neighbor);
+                }
+
+                if ((flag & 8) == 8)
+                {
+                    var neighbor = chunk.GetLocalWithNeighbours(i + 1, j, k);
+                    AddFace(Face.Right, i, j, k, verticesCube.Right, definition, chunk, neighbor);
+                }
+
+                if ((flag & 16) == 16)
+                {
+                    var neighbor = chunk.GetLocalWithNeighbours(i, j, k - 1);
+                    AddFace(Face.Front, i, j, k, verticesCube.Front, definition, chunk, neighbor);
+                }
+
+                if ((flag & 32) == 32)
+                {
+                    var neighbor = chunk.GetLocalWithNeighbours(i, j, k + 1);
+                    AddFace(Face.Back, i, j, k, verticesCube.Back, definition, chunk, neighbor);
+                }
+
+
             }
 
 

@@ -28,8 +28,8 @@ namespace AppleCinnamon.System
             [Face.Bottom] = (cube, value) => cube.Bottom = value,
             [Face.Left] = (cube, value) => cube.Left = value,
             [Face.Right] = (cube, value) => cube.Right = value,
-            [Face.Front] = (cube, value) => cube.Front = value,
-            [Face.Back] = (cube, value) => cube.Back = value
+            [Face.Front] = (cube, value) => cube.Front = value, // -Z
+            [Face.Back] = (cube, value) => cube.Back = value    // +Z
         };
 
         private static readonly IReadOnlyDictionary<Face, Func<Cube<T>, T>> Getters = new Dictionary<Face, Func<Cube<T>, T>>
