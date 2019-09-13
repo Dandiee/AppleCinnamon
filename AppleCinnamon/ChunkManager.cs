@@ -24,7 +24,6 @@ namespace AppleCinnamon
     {
         private readonly Device _device;
         private readonly BoxDrawer _boxDrawer;
-        private readonly Map _map;
 
         private readonly ConcurrentDictionary<Int2, Chunk> _chunks;
         private readonly ConcurrentDictionary<Int2, object> _queuedChunks;
@@ -48,13 +47,12 @@ namespace AppleCinnamon
         public int RenderedChunks;
         private TransformBlock<DataflowContext<Int2>, DataflowContext<Chunk>> _pipeline;
 
-        public ChunkManager(Device device, BoxDrawer boxDrawer, Map map)
+        public ChunkManager(Device device, BoxDrawer boxDrawer)
         {
             Benchmark = new ConcurrentBag<Dictionary<string, long>>();
 
             _device = device;
             _boxDrawer = boxDrawer;
-            _map = map;
             _chunks = new ConcurrentDictionary<Int2,Chunk>();
             _chunkBuilder = new ChunkBuilder();
             _chunkDispatcher = new ChunkDispatcher();
@@ -144,7 +142,7 @@ namespace AppleCinnamon
             }
         }
 
-        public void Draw(Effect effect, Device device, RenderForm renderForm)
+        public void Draw(Effect effect, Device device, RenderForm renderForm, Camera camera)
         {
             RenderedChunks = 0;
 
@@ -163,9 +161,9 @@ namespace AppleCinnamon
                     foreach (var chunk in _chunks.Values)
                     {
                         var bb = chunk.BoundingBox;
-                        if (_map.Camera.BoundingFrustum.Contains(ref bb) != ContainmentType.Disjoint)
+                        if (camera.BoundingFrustum.Contains(ref bb) != ContainmentType.Disjoint)
                         {
-                            chunk.Draw(device, _map.Camera.CurrentChunkIndexVector);
+                            chunk.Draw(device, camera.CurrentChunkIndexVector);
                             RenderedChunks++;
                         }
                     }

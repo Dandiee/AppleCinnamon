@@ -7,17 +7,22 @@ using System.Windows.Forms;
 using System.Windows.Forms.VisualStyles;
 using AppleCinnamon.System;
 using SharpDX;
+using SharpDX.D3DCompiler;
 using SharpDX.Direct2D1;
 using SharpDX.Direct3D;
 using SharpDX.Direct3D11;
 using SharpDX.DirectInput;
 using SharpDX.DXGI;
 using SharpDX.Mathematics.Interop;
+using SharpDX.WIC;
 using SharpDX.Windows;
 using AlphaMode = SharpDX.Direct2D1.AlphaMode;
 using Device = SharpDX.Direct3D11.Device;
+using Effect = SharpDX.Direct3D11.Effect;
+using EffectFlags = SharpDX.DirectInput.EffectFlags;
 using Factory = SharpDX.Direct2D1.Factory;
 using FillMode = SharpDX.Direct2D1.FillMode;
+using PixelFormat = SharpDX.Direct2D1.PixelFormat;
 using Point = System.Drawing.Point;
 
 namespace AppleCinnamon
@@ -35,21 +40,52 @@ namespace AppleCinnamon
         public RoundedRectangleGeometry RoundedRectangleGeometry { get; private set; }
         public static readonly Vector3 StartPosition = new Vector3(0, 256, 0);
         public Factory D2dFactory;
-        public Map Map;
         public Geometry Crosshair { get; private set; }
 
-       
 
+        private Effect _solidBlockEffect;
+        private Effect _basicColorEffect;
+
+        public ChunkManager ChunkManager { get; set; }
+        public Camera Camera { get; set; }
+        public BoxDrawer BoxDrawer { get; }
+        
         public Game()
         {
             
             
             
             SetDevice();
+            LoadContent();
             SetInputs();
-            Map = new Map(this);
+            BoxDrawer = new BoxDrawer();
+            Camera = new Camera(BoxDrawer);
+            ChunkManager = new ChunkManager(Device, BoxDrawer);
             StartLoop();
             
+        }
+
+        public void UpdateSolidEffect()
+        {
+            if (Camera != null)
+            {
+                _solidBlockEffect.GetVariableByName("WorldViewProjection").AsMatrix().SetMatrix(Camera.WorldViewProjection);
+                _basicColorEffect.GetVariableByName("WorldViewProjection").AsMatrix().SetMatrix(Camera.WorldViewProjection);
+            }
+        }
+
+        protected void LoadContent()
+        {
+
+            var basicColorEffectByteCode = ShaderBytecode.CompileFromFile("Content/Effect/BasicEffect.fx", "fx_5_0", ShaderFlags.Debug, SharpDX.D3DCompiler.EffectFlags.AllowSlowOperations);
+            _basicColorEffect = new Effect(Device, basicColorEffectByteCode);
+            var effectByteCode = ShaderBytecode.CompileFromFile("Content/Effect/SolidBlockEffect.fx", "fx_5_0");
+
+            _solidBlockEffect = new Effect(Device, effectByteCode);
+            var w = TextureLoader.CreateTexture2DFromBitmap(Device,
+                TextureLoader.LoadBitmap(new ImagingFactory2(), "Content/Texture/terrain.png"));
+            _solidBlockEffect.GetVariableByName("Textures").AsShaderResource().SetResource(new ShaderResourceView(Device, w));
+
         }
 
         private void SetDevice()
@@ -183,14 +219,14 @@ namespace AppleCinnamon
                     Cursor.Hide();
                 }
 
-                if (Map.Camera != null)
+                if (Camera != null)
                 {
 
                     var lightInfo = string.Empty;
-                    if (Map.Camera.CurrentCursor != null)
+                    if (Camera.CurrentCursor != null)
                     {
-                        var voxel = Map.ChunkManager.GetVoxel(
-                            Map.Camera.CurrentCursor.AbsoluteVoxelIndex + Map.Camera.CurrentCursor.Direction);
+                        var voxel = ChunkManager.GetVoxel(
+                            Camera.CurrentCursor.AbsoluteVoxelIndex + Camera.CurrentCursor.Direction);
 
                         if (voxel != null)
                         {
@@ -198,10 +234,10 @@ namespace AppleCinnamon
                         }
                     }
 
-                    RenderForm.Text = "Targets: " + (Map.Camera.CurrentCursor?.AbsoluteVoxelIndex ?? new Int3()) +
-                                      "LookAt: " + Map.Camera.LookAt + " / Position" + Map.Camera.Position +
-                                      " / Rendered ChunkManager: " + Map.ChunkManager.RenderedChunks + "/" +
-                                      Map.ChunkManager.ChunksCount + lightInfo;
+                    RenderForm.Text = "Targets: " + (Camera.CurrentCursor?.AbsoluteVoxelIndex ?? new Int3()) +
+                                      "LookAt: " + Camera.LookAt + " / Position" + Camera.Position +
+                                      " / Rendered ChunkManager: " + ChunkManager.RenderedChunks + "/" +
+                                      ChunkManager.ChunksCount + lightInfo;
                 }
 
                 Tick();
@@ -334,7 +370,9 @@ namespace AppleCinnamon
             Device.ImmediateContext.ClearRenderTargetView(RenderTargetView, Color.CornflowerBlue);
 
             RenderTarget2D.BeginDraw();
-            Map.Draw();
+            ChunkManager.Draw(_solidBlockEffect, Device, RenderForm, Camera);
+            BoxDrawer.Draw(Device, _basicColorEffect);
+
             RenderTarget2D.FillGeometry(Crosshair, new SolidColorBrush(RenderTarget2D, Color.White), null);
             RenderTarget2D.EndDraw();
 
@@ -345,7 +383,10 @@ namespace AppleCinnamon
 
         private void Update(GameTime gameTime)
         {
-            Map.Update(gameTime);
+            UpdateSolidEffect();
+
+            Camera.Update(gameTime, RenderForm, ChunkManager);
+            ChunkManager.Update(gameTime, Camera);
         }
 
     }
