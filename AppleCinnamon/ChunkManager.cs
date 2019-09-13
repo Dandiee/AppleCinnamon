@@ -19,11 +19,22 @@ namespace AppleCinnamon
 {
     public interface IChunkManager
     {
+        int FinalizedChunks { get; }
+        int RenderedChunks { get; }
+
         Voxel? GetVoxel(Int3 absoluteIndex);
     }
 
     public sealed class ChunkManager : IChunkManager
     {
+        private int _finalizedChunks;
+        public int FinalizedChunks => _finalizedChunks;
+
+        private int _renderedChunks;
+        public int RenderedChunks => _renderedChunks;
+        
+
+
         private readonly Graphics _graphics;
         private Effect _solidBlockEffect;
 
@@ -44,9 +55,9 @@ namespace AppleCinnamon
         public const int ViewDistance = 8;
         public bool IsInitialized { get; private set; }
         public int ChunksCount => _chunks.Count;
-        private int _chunksCount;
 
-        public int RenderedChunks;
+        
+
         private TransformBlock<DataflowContext<Int2>, DataflowContext<Chunk>> _pipeline;
 
         public ChunkManager(Graphics graphics)
@@ -136,10 +147,10 @@ namespace AppleCinnamon
                 throw new Exception();
             }
 
-            Interlocked.Increment(ref _chunksCount);
+            Interlocked.Increment(ref _finalizedChunks);
          
             var root = ViewDistance * 2 + 1;
-            if (!IsInitialized && _chunksCount == root * root)
+            if (!IsInitialized && _finalizedChunks == root * root)
             {
                 IsInitialized = true;
                 _pipeline.Complete();
@@ -152,7 +163,7 @@ namespace AppleCinnamon
 
         public void Draw(Camera camera)
         {
-            RenderedChunks = 0;
+            _renderedChunks = 0;
 
             if (_chunks.Count > 0)
             {
@@ -172,7 +183,7 @@ namespace AppleCinnamon
                         if (camera.BoundingFrustum.Contains(ref bb) != ContainmentType.Disjoint)
                         {
                             chunk.Draw(_graphics.Device, camera.CurrentChunkIndexVector);
-                            RenderedChunks++;
+                            _renderedChunks++;
                         }
                     }
                 }

@@ -80,6 +80,7 @@
     <Compile Include="ChunkState.cs" />
     <Compile Include="Collision\VoxelRayCollisionResult.cs" />
     <Compile Include="Crosshair.cs" />
+    <Compile Include="DebugLayout.cs" />
     <Compile Include="Graphics.cs" />
     <Compile Include="Pipeline\DataflowContext.cs" />
     <Compile Include="FaceBuffer.cs" />

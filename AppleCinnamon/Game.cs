@@ -11,11 +11,11 @@ namespace AppleCinnamon
     public class Game
     {
         public static readonly Vector3 StartPosition = new Vector3(0, 256, 0);
-        
 
-        public ChunkManager ChunkManager { get; set; }
-        public Camera Camera { get; set; }
-        public BoxDrawer BoxDrawer { get; }
+        private readonly ChunkManager _chunkManager;
+        private readonly Camera _camera;
+        private readonly BoxDrawer _boxDrawer;
+        private readonly DebugLayout _debugLayout;
 
         private readonly Graphics _graphics;
         private readonly Crosshair _crosshair;
@@ -25,9 +25,10 @@ namespace AppleCinnamon
             _graphics = new Graphics();
 
             _crosshair = new Crosshair(_graphics);
-            BoxDrawer = new BoxDrawer(_graphics);
-            Camera = new Camera(_graphics);
-            ChunkManager = new ChunkManager(_graphics);
+            _boxDrawer = new BoxDrawer(_graphics);
+            _camera = new Camera(_graphics);
+            _chunkManager = new ChunkManager(_graphics);
+            _debugLayout = new DebugLayout(_graphics);
 
             StartLoop();
         }
@@ -45,27 +46,6 @@ namespace AppleCinnamon
                     Cursor.Hide();
                 }
 
-                if (Camera != null)
-                {
-
-                    var lightInfo = string.Empty;
-                    if (Camera.CurrentCursor != null)
-                    {
-                        var voxel = ChunkManager.GetVoxel(
-                            Camera.CurrentCursor.AbsoluteVoxelIndex + Camera.CurrentCursor.Direction);
-
-                        if (voxel != null)
-                        {
-                            lightInfo = " / Light: " + voxel.Value.Lightness;
-                        }
-                    }
-
-                    _graphics.RenderForm.Text = "Targets: " + (Camera.CurrentCursor?.AbsoluteVoxelIndex ?? new Int3()) +
-                                      "LookAt: " + Camera.LookAt + " / Position" + Camera.Position +
-                                      " / Rendered ChunkManager: " + ChunkManager.RenderedChunks + "/" +
-                                      ChunkManager.ChunksCount + lightInfo;
-                }
-
                 sw.Stop();
                 var gt = new GameTime(TimeSpan.Zero, sw.Elapsed);
                 Update(gt);
@@ -73,9 +53,10 @@ namespace AppleCinnamon
 
                 _graphics.Draw(() =>
                 {
-                    ChunkManager.Draw(Camera);
-                    BoxDrawer.Draw();
+                    _chunkManager.Draw(_camera);
+                    _boxDrawer.Draw();
                     _crosshair.Draw();
+                    _debugLayout.Draw(_chunkManager, _camera);
                 });
 
             });
@@ -84,9 +65,9 @@ namespace AppleCinnamon
 
         private void Update(GameTime gameTime)
         {
-            BoxDrawer.Update(Camera);
-            Camera.Update(gameTime, _graphics.RenderForm, ChunkManager, BoxDrawer);
-            ChunkManager.Update(Camera);
+            _boxDrawer.Update(_camera);
+            _camera.Update(gameTime, _chunkManager, _boxDrawer);
+            _chunkManager.Update(_camera);
         }
     }
 }

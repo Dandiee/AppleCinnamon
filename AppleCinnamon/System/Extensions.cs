@@ -51,5 +51,10 @@ namespace AppleCinnamon.System
             int valueI = (int)value;
             return value < valueI ? valueI - 1 : valueI;
         }
+
+        public static string ToNonRetardedString(this Vector3 vector)
+        {
+            return $"{vector.X:F2}, {vector.Y:F2}, {vector.Z:F2}";
+        }
     }
 }

@@ -23,11 +23,11 @@ namespace AppleCinnamon
         public readonly SwapChain SwapChain;
         public readonly RenderTarget RenderTarget2D;
         public readonly Factory D2dFactory;
+        public readonly SharpDX.DirectWrite.Factory DirectWrite;
 
 
         public Graphics()
         {
-
             RenderForm = new RenderForm("Apple & Cinnamon")
             {
                 Width = 1024,
@@ -69,6 +69,8 @@ namespace AppleCinnamon
                 OptionFlags = ResourceOptionFlags.None
             }));
 
+
+            DirectWrite = new SharpDX.DirectWrite.Factory();
             Device.ImmediateContext.Rasterizer.SetViewport(new Viewport(0, 0, RenderForm.ClientSize.Width, RenderForm.ClientSize.Height, 0.0f, 1.0f));
         }
 
