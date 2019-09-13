@@ -141,28 +141,28 @@ namespace AppleCinnamon
             }
         }
 
-        public void Draw(Effect effect, Device device, RenderForm renderForm, Camera camera)
+        public void Draw(Effect effect, Camera camera)
         {
             RenderedChunks = 0;
 
             if (_chunks.Count > 0)
             {
-                using (var inputLayout = new InputLayout(device,
+                using (var inputLayout = new InputLayout(_graphics.Device,
                     effect.GetTechniqueByIndex(0).GetPassByIndex(0).Description.Signature,
                     VertexSolidBlock.InputElements))
                 {
-                    device.ImmediateContext.InputAssembler.InputLayout = inputLayout;
-                    device.ImmediateContext.InputAssembler.PrimitiveTopology = PrimitiveTopology.TriangleList;
+                    _graphics.Device.ImmediateContext.InputAssembler.InputLayout = inputLayout;
+                    _graphics.Device.ImmediateContext.InputAssembler.PrimitiveTopology = PrimitiveTopology.TriangleList;
 
                     var pass = effect.GetTechniqueByIndex(0).GetPassByIndex(0);
-                    pass.Apply(device.ImmediateContext);
+                    pass.Apply(_graphics.Device.ImmediateContext);
 
                     foreach (var chunk in _chunks.Values)
                     {
                         var bb = chunk.BoundingBox;
                         if (camera.BoundingFrustum.Contains(ref bb) != ContainmentType.Disjoint)
                         {
-                            chunk.Draw(device, camera.CurrentChunkIndexVector);
+                            chunk.Draw(_graphics.Device, camera.CurrentChunkIndexVector);
                             RenderedChunks++;
                         }
                     }

@@ -65,9 +65,8 @@ namespace AppleCinnamon
             var effectByteCode = ShaderBytecode.CompileFromFile("Content/Effect/SolidBlockEffect.fx", "fx_5_0");
 
             _solidBlockEffect = new Effect(_graphics.Device, effectByteCode);
-            var w = TextureLoader.CreateTexture2DFromBitmap(_graphics.Device,
-                TextureLoader.LoadBitmap(new ImagingFactory2(), "Content/Texture/terrain.png"));
-            _solidBlockEffect.GetVariableByName("Textures").AsShaderResource().SetResource(new ShaderResourceView(_graphics.Device, w));
+            var blocksTexture = TextureLoader.CreateTexture2DFromBitmap(_graphics.Device, TextureLoader.LoadBitmap(new ImagingFactory2(), "Content/Texture/terrain.png"));
+            _solidBlockEffect.GetVariableByName("Textures").AsShaderResource().SetResource(new ShaderResourceView(_graphics.Device, blocksTexture));
 
         }
 
@@ -123,30 +122,20 @@ namespace AppleCinnamon
                 sw.Stop();
                 var gt = new GameTime(TimeSpan.Zero, sw.Elapsed);
                 Update(gt);
-                Draw();
+
+
+                _graphics.Draw(() =>
+                {
+
+                    ChunkManager.Draw(_solidBlockEffect, Camera);
+                    BoxDrawer.Draw(_graphics.Device, _basicColorEffect);
+
+                    _crosshair.Draw();
+                });
+
             });
         }
 
-
-
-
-
-
-        private void Draw()
-        {
-            _graphics.Device.ImmediateContext.OutputMerger.SetTargets(_graphics.DepthStencilView, _graphics.RenderTargetView);
-            _graphics.Device.ImmediateContext.ClearDepthStencilView(_graphics.DepthStencilView, DepthStencilClearFlags.Depth, 1.0f, 0);
-            _graphics.Device.ImmediateContext.ClearRenderTargetView(_graphics.RenderTargetView, Color.CornflowerBlue);
-
-            _graphics.RenderTarget2D.BeginDraw();
-            ChunkManager.Draw(_solidBlockEffect, _graphics.Device, _graphics.RenderForm, Camera);
-            BoxDrawer.Draw(_graphics.Device, _basicColorEffect);
-
-            _crosshair.Draw();
-            _graphics.RenderTarget2D.EndDraw();
-
-            _graphics.SwapChain.Present(0, PresentFlags.None);
-        }
 
         private void Update(GameTime gameTime)
         {

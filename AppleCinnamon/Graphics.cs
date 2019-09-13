@@ -1,4 +1,5 @@
-﻿using SharpDX;
+﻿using System;
+using SharpDX;
 using SharpDX.Direct2D1;
 using SharpDX.Direct3D;
 using SharpDX.Direct3D11;
@@ -69,6 +70,17 @@ namespace AppleCinnamon
             }));
 
             Device.ImmediateContext.Rasterizer.SetViewport(new Viewport(0, 0, RenderForm.ClientSize.Width, RenderForm.ClientSize.Height, 0.0f, 1.0f));
+        }
+
+        public void Draw(Action drawActions)
+        {
+            Device.ImmediateContext.OutputMerger.SetTargets(DepthStencilView, RenderTargetView);
+            Device.ImmediateContext.ClearDepthStencilView(DepthStencilView, DepthStencilClearFlags.Depth, 1.0f, 0);
+            Device.ImmediateContext.ClearRenderTargetView(RenderTargetView, Color.CornflowerBlue);
+            RenderTarget2D.BeginDraw();
+            drawActions();
+            RenderTarget2D.EndDraw();
+            SwapChain.Present(0, PresentFlags.None);
         }
     }
 }
