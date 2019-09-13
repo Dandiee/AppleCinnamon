@@ -10,8 +10,10 @@ using AppleCinnamon.Pipeline;
 using AppleCinnamon.System;
 using AppleCinnamon.Vertices;
 using SharpDX;
+using SharpDX.D3DCompiler;
 using SharpDX.Direct3D;
 using SharpDX.Direct3D11;
+using SharpDX.WIC;
 using SharpDX.Windows;
 
 namespace AppleCinnamon
@@ -24,6 +26,7 @@ namespace AppleCinnamon
     {
         private readonly Graphics _graphics;
         private readonly BoxDrawer _boxDrawer;
+        private Effect _solidBlockEffect;
 
         private readonly ConcurrentDictionary<Int2, Chunk> _chunks;
         private readonly ConcurrentDictionary<Int2, object> _queuedChunks;
@@ -66,7 +69,20 @@ namespace AppleCinnamon
             //_pipeline = Create(Environment.ProcessorCount);
             _pipeline = Create(1);
 
+            LoadContent();
+
             QueueChunksByIndex(Int2.Zero);
+        }
+
+        private void LoadContent()
+        {
+            _solidBlockEffect = new Effect(_graphics.Device,
+                ShaderBytecode.CompileFromFile("Content/Effect/SolidBlockEffect.fx", "fx_5_0"));
+
+            _solidBlockEffect.GetVariableByName("Textures").AsShaderResource().SetResource(
+                new ShaderResourceView(_graphics.Device,
+                    TextureLoader.CreateTexture2DFromBitmap(_graphics.Device,
+                        TextureLoader.LoadBitmap(new ImagingFactory2(), "Content/Texture/terrain.png"))));
         }
 
         public TransformBlock<DataflowContext<Int2>, DataflowContext<Chunk>> Create(int mdop)
@@ -141,20 +157,20 @@ namespace AppleCinnamon
             }
         }
 
-        public void Draw(Effect effect, Camera camera)
+        public void Draw(Camera camera)
         {
             RenderedChunks = 0;
 
             if (_chunks.Count > 0)
             {
                 using (var inputLayout = new InputLayout(_graphics.Device,
-                    effect.GetTechniqueByIndex(0).GetPassByIndex(0).Description.Signature,
+                    _solidBlockEffect.GetTechniqueByIndex(0).GetPassByIndex(0).Description.Signature,
                     VertexSolidBlock.InputElements))
                 {
                     _graphics.Device.ImmediateContext.InputAssembler.InputLayout = inputLayout;
                     _graphics.Device.ImmediateContext.InputAssembler.PrimitiveTopology = PrimitiveTopology.TriangleList;
 
-                    var pass = effect.GetTechniqueByIndex(0).GetPassByIndex(0);
+                    var pass = _solidBlockEffect.GetTechniqueByIndex(0).GetPassByIndex(0);
                     pass.Apply(_graphics.Device.ImmediateContext);
 
                     foreach (var chunk in _chunks.Values)
@@ -199,9 +215,9 @@ namespace AppleCinnamon
             }
         }
 
-        public void Update(GameTime gameTime, Camera camera)
+        public void Update(Camera camera)
         {
-            if (camera == null) return;
+            _solidBlockEffect.GetVariableByName("WorldViewProjection").AsMatrix().SetMatrix(camera.WorldViewProjection);
 
             if (IsInitialized)
             {

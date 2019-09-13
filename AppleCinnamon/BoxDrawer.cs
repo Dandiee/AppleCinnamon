@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using AppleCinnamon.Vertices;
 using SharpDX;
+using SharpDX.D3DCompiler;
 using SharpDX.Direct3D;
 using SharpDX.Direct3D11;
 using Buffer = SharpDX.Direct3D11.Buffer;
@@ -10,6 +11,9 @@ namespace AppleCinnamon
 {
     public sealed class BoxDrawer
     {
+        private readonly Graphics _graphics;
+        private Effect _effect;
+
         private static readonly Vector3 TopLefFro = new Vector3(-.5f, +.5f, -.5f);
         private static readonly Vector3 TopRigFro = new Vector3(+.5f, +.5f, -.5f);
         private static readonly Vector3 TopLefBac = new Vector3(-.5f, +.5f, +.5f);
@@ -27,10 +31,12 @@ namespace AppleCinnamon
         private object lockObj = new object();
 
 
-        public BoxDrawer()
+        public BoxDrawer(Graphics graphics)
         {
+            _graphics = graphics;
             _boxes = new ConcurrentDictionary<string, BoxDetails>();
-
+            _effect = new Effect(_graphics.Device,
+                ShaderBytecode.CompileFromFile("Content/Effect/BasicEffect.fx", "fx_5_0"));
         }
 
         public void Set(string key, BoxDetails box)
@@ -59,8 +65,15 @@ namespace AppleCinnamon
             }
         }
 
-        public void Draw(Device device, Effect effect)
+        public void Update(Camera camera)
         {
+            _effect.GetVariableByName("WorldViewProjection").AsMatrix().SetMatrix(camera.WorldViewProjection);
+        }
+
+        public void Draw()
+        {
+
+
             if (_boxes.Count == 0)
             {
                 return;
@@ -68,30 +81,30 @@ namespace AppleCinnamon
 
             if (_isDirty)
             {
-                UpdateVertexBuffer(device);
+                UpdateVertexBuffer(_graphics.Device);
                 _isDirty = false;
             }
 
             if (_vertexBuffer != null && _verticesCount > 0)
             {
 
-                using (var inputLayout = new InputLayout(device,
-                    effect.GetTechniqueByIndex(0).GetPassByIndex(0).Description.Signature,
+                using (var inputLayout = new InputLayout(_graphics.Device,
+                    _effect.GetTechniqueByIndex(0).GetPassByIndex(0).Description.Signature,
                     VertexSolidBlock.InputElements))
                 {
 
-                    device.ImmediateContext.InputAssembler.InputLayout = inputLayout;
-                    device.ImmediateContext.InputAssembler.PrimitiveTopology = PrimitiveTopology.LineList;
-                    device.ImmediateContext.InputAssembler.SetVertexBuffers(0, new VertexBufferBinding(_vertexBuffer, VertexPositionColor.Size, 0));
+                    _graphics.Device.ImmediateContext.InputAssembler.InputLayout = inputLayout;
+                    _graphics.Device.ImmediateContext.InputAssembler.PrimitiveTopology = PrimitiveTopology.LineList;
+                    _graphics.Device.ImmediateContext.InputAssembler.SetVertexBuffers(0, new VertexBufferBinding(_vertexBuffer, VertexPositionColor.Size, 0));
 
-                    for (int i = 0; i != effect.Description.TechniqueCount; i++)
+                    for (int i = 0; i != _effect.Description.TechniqueCount; i++)
                     {
-                        var technique = effect.GetTechniqueByIndex(i);
+                        var technique = _effect.GetTechniqueByIndex(i);
                         for (int j = 0; j != technique.Description.PassCount; j++)
                         {
                             var pass = technique.GetPassByIndex(j);
-                            pass.Apply(device.ImmediateContext);
-                            device.ImmediateContext.Draw(_verticesCount, 0);
+                            pass.Apply(_graphics.Device.ImmediateContext);
+                            _graphics.Device.ImmediateContext.Draw(_verticesCount, 0);
                         }
                     }
                 }
