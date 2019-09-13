@@ -8,6 +8,8 @@ namespace AppleCinnamon
 {
     public sealed class DebugLayout
     {
+        public const string FontFamilyName = "Consolas";
+
         private readonly Graphics _graphics;
         private readonly TextFormat _textFormat;
 
@@ -15,7 +17,7 @@ namespace AppleCinnamon
         {
             _graphics = graphics;
             _textFormat = new TextFormat(_graphics.DirectWrite,
-                "Consolas", FontWeight.Black, FontStyle.Normal,
+                FontFamilyName, FontWeight.Black, FontStyle.Normal,
                 16);
         }
 
