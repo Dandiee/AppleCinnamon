@@ -26,13 +26,11 @@ namespace AppleCinnamon
 
             _crosshair = new Crosshair(_graphics);
             BoxDrawer = new BoxDrawer(_graphics);
-            Camera = new Camera(BoxDrawer);
-            ChunkManager = new ChunkManager(_graphics, BoxDrawer);
+            Camera = new Camera(_graphics);
+            ChunkManager = new ChunkManager(_graphics);
 
             StartLoop();
         }
-
-
 
         private void StartLoop()
         {
@@ -87,10 +85,8 @@ namespace AppleCinnamon
         private void Update(GameTime gameTime)
         {
             BoxDrawer.Update(Camera);
-            Camera.Update(gameTime, _graphics.RenderForm, ChunkManager);
+            Camera.Update(gameTime, _graphics.RenderForm, ChunkManager, BoxDrawer);
             ChunkManager.Update(Camera);
         }
-
     }
-
 }

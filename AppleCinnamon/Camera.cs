@@ -6,13 +6,13 @@ using AppleCinnamon.Settings;
 using AppleCinnamon.System;
 using SharpDX;
 using SharpDX.DirectInput;
-using SharpDX.Windows;
 
 namespace AppleCinnamon
 {
     public class Camera
     {
-        private readonly BoxDrawer _boxDrawer;
+        private readonly Graphics _graphics;
+
         public Double3 Position { get; set; }
         public Double3 LookAt { get; private set; }
         public Double3 Velocity { get; set; }
@@ -47,9 +47,9 @@ namespace AppleCinnamon
             [Key.F3] = VoxelDefinition.Snow
         };
 
-        public Camera(BoxDrawer boxDrawer)
+        public Camera(Graphics graphics)
         {
-            _boxDrawer = boxDrawer;
+            _graphics = graphics;
             Orientation = Vector3.UnitX;
             Position = new Double3(Game.StartPosition.X, Game.StartPosition.Y, Game.StartPosition.Z);
             // LookAt = Double3.Normalize(new Double3(0.5, -0.5, 0.5));
@@ -69,24 +69,23 @@ namespace AppleCinnamon
             IsInAir = true;
         }
 
-        public void UpdateCurrentCursor(ChunkManager chunkManager)
+        public void UpdateCurrentCursor(BoxDrawer boxDrawer, ChunkManager chunkManager)
         {
             CurrentCursor =
                 CollisionHelper.GetCurrentSelection(new Ray(Position.ToVector3(), LookAt.ToVector3()), chunkManager);
 
             if (CurrentCursor == null)
             {
-                _boxDrawer.Remove("cursor");
-
+                boxDrawer.Remove("cursor");
             }
             else
             {
-                _boxDrawer.Set("cursor",
+                boxDrawer.Set("cursor",
                     new BoxDetails(CurrentCursor.Definition.Size * 1.05f, CurrentCursor.AbsoluteVoxelIndex.ToVector3() + CurrentCursor.Definition.Translation, Color.Yellow.ToColor3()));
             }
         }
 
-        public void Update(GameTime gameTime, RenderForm renderForm, ChunkManager chunkManager)
+        public void Update(GameTime gameTime, ChunkManager chunkManager, BoxDrawer boxDrawer)
         {
             if (!chunkManager.Benchmark.IsEmpty)
             {
@@ -110,9 +109,9 @@ namespace AppleCinnamon
 
             CollisionHelper.ApplyPlayerPhysics(this, chunkManager);
             UpdateMove(gameTime);
-            UpdateMatrices(renderForm);
+            UpdateMatrices();
 
-            UpdateCurrentCursor(chunkManager);
+            UpdateCurrentCursor(boxDrawer, chunkManager);
             HandleDefaultInputs(chunkManager);
 
             LastKeyboardState = CurrentKeyboardState;
@@ -251,24 +250,16 @@ namespace AppleCinnamon
                 var bb = new BoundingBox(position - halfSize, position + halfSize);
                 CurrentChunkIndexVector = bb.Center;
             }
-
-            var xDif = Math.Abs(prevPos.X - Position.X);
-            var yDif = Math.Abs(prevPos.Y - Position.Y);
-            var ZDif = Math.Abs(prevPos.Z - Position.Z);
-
-            if (xDif > 1 || yDif > 1 || ZDif > 1)
-            {
-
-            }
         }
 
-        public void UpdateMatrices(RenderForm renderForm)
+        public void UpdateMatrices()
         {
             var rotationMatrix = Matrix.RotationYawPitchRoll(Yaw, 0, Pitch);
             LookAt = Vector3.Normalize(Vector3.Transform(Vector3.UnitX, rotationMatrix).ToVector3()).ToDouble3();
             View = Matrix.LookAtRH(Position.ToVector3(), Position.ToVector3() + LookAt.ToVector3(),
                 Vector3.TransformCoordinate(Vector3.UnitY, rotationMatrix));
-            Projection = Matrix.PerspectiveFovRH(MathUtil.PiOverTwo, renderForm.Width / (float)renderForm.Height, 0.1f, 100000f);
+            Projection = Matrix.PerspectiveFovRH(MathUtil.PiOverTwo,
+                _graphics.RenderForm.Width / (float) _graphics.RenderForm.Height, 0.1f, 100000f);
             WorldViewProjection = World * View * Projection;
             BoundingFrustum = new BoundingFrustum(View * Projection);
         }

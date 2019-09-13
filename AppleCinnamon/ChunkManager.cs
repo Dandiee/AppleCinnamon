@@ -14,7 +14,6 @@ using SharpDX.D3DCompiler;
 using SharpDX.Direct3D;
 using SharpDX.Direct3D11;
 using SharpDX.WIC;
-using SharpDX.Windows;
 
 namespace AppleCinnamon
 {
@@ -22,10 +21,10 @@ namespace AppleCinnamon
     {
         Voxel? GetVoxel(Int3 absoluteIndex);
     }
+
     public sealed class ChunkManager : IChunkManager
     {
         private readonly Graphics _graphics;
-        private readonly BoxDrawer _boxDrawer;
         private Effect _solidBlockEffect;
 
         private readonly ConcurrentDictionary<Int2, Chunk> _chunks;
@@ -50,11 +49,10 @@ namespace AppleCinnamon
         public int RenderedChunks;
         private TransformBlock<DataflowContext<Int2>, DataflowContext<Chunk>> _pipeline;
 
-        public ChunkManager(Graphics graphics, BoxDrawer boxDrawer)
+        public ChunkManager(Graphics graphics)
         {
             Benchmark = new ConcurrentBag<Dictionary<string, long>>();
             _graphics = graphics;
-            _boxDrawer = boxDrawer;
             _chunks = new ConcurrentDictionary<Int2,Chunk>();
             _chunkBuilder = new ChunkBuilder();
             _chunkDispatcher = new ChunkDispatcher();
@@ -139,12 +137,7 @@ namespace AppleCinnamon
             }
 
             Interlocked.Increment(ref _chunksCount);
-
-            var position = new Vector3(
-                context.Payload.ChunkIndex.X * Chunk.Size.X + Chunk.Size.X / 2f - .5f,
-                Chunk.Size.Y / 2f,
-                context.Payload.ChunkIndex.Y * Chunk.Size.Z + Chunk.Size.Z / 2f - .5f);
-
+         
             var root = ViewDistance * 2 + 1;
             if (!IsInitialized && _chunksCount == root * root)
             {
