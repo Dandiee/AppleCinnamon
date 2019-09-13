@@ -12,6 +12,8 @@ namespace AppleCinnamon
     {
         private readonly Graphics _graphics;
 
+        private DateTime _lastModification;
+
         public Double3 Position { get; set; }
         public Double3 LookAt { get; private set; }
         public Double3 Velocity { get; set; }
@@ -129,39 +131,44 @@ namespace AppleCinnamon
                 }
             }
 
-            if (CurrentMouseState.Buttons[leftClickIndex])
+            if (DateTime.Now - _lastModification > TimeSpan.FromMilliseconds(100))
             {
-                if (CurrentCursor != null)
+                if (CurrentMouseState.Buttons[leftClickIndex])
                 {
-                    chunkManager.SetBlock(CurrentCursor.AbsoluteVoxelIndex, 0);
-                }
-            }
-
-            if (CurrentMouseState.Buttons[rightClickIndex])
-            {
-                if (CurrentCursor != null)
-                {
-                    var direction = CurrentCursor.Direction;
-                    var targetBlock = CurrentCursor.AbsoluteVoxelIndex + direction;
-
-
-                    var hasPositionConflict = false;
-                    var min = (WorldSettings.PlayerMin + Position.ToVector3()).Round();
-                    var max = (WorldSettings.PlayerMax + Position.ToVector3()).Round();
-                    for (var i = min.X; i <= max.X && !hasPositionConflict; i++)
+                    if (CurrentCursor != null)
                     {
-                        for (var j = min.Y; j <= max.Y && !hasPositionConflict; j++)
+                        _lastModification = DateTime.Now;
+                        chunkManager.SetBlock(CurrentCursor.AbsoluteVoxelIndex, 0);
+                    }
+                }
+
+                if (CurrentMouseState.Buttons[rightClickIndex])
+                {
+                    if (CurrentCursor != null)
+                    {
+                        var direction = CurrentCursor.Direction;
+                        var targetBlock = CurrentCursor.AbsoluteVoxelIndex + direction;
+
+
+                        var hasPositionConflict = false;
+                        var min = (WorldSettings.PlayerMin + Position.ToVector3()).Round();
+                        var max = (WorldSettings.PlayerMax + Position.ToVector3()).Round();
+                        for (var i = min.X; i <= max.X && !hasPositionConflict; i++)
                         {
-                            for (var k = min.Z; k <= max.Z && !hasPositionConflict; k++)
+                            for (var j = min.Y; j <= max.Y && !hasPositionConflict; j++)
                             {
-                                hasPositionConflict = targetBlock == new Int3(i, j, k);
+                                for (var k = min.Z; k <= max.Z && !hasPositionConflict; k++)
+                                {
+                                    hasPositionConflict = targetBlock == new Int3(i, j, k);
+                                }
                             }
                         }
-                    }
 
-                    if (!hasPositionConflict)
-                    {
-                        chunkManager.SetBlock(targetBlock, VoxelInHand.Type);
+                        if (!hasPositionConflict)
+                        {
+                            _lastModification = DateTime.Now;
+                            chunkManager.SetBlock(targetBlock, VoxelInHand.Type);
+                        }
                     }
                 }
             }

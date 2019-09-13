@@ -56,5 +56,10 @@ namespace AppleCinnamon.System
         {
             return $"{vector.X:F2}, {vector.Y:F2}, {vector.Z:F2}";
         }
+
+        public static int ToIndex(this Int3 index)
+        {
+            return index.X + Chunk.SizeXy * (index.Y + Chunk.Height * index.Z);
+        }
     }
 }
