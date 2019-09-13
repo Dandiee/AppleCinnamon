@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Windows.Forms;
 using SharpDX;
 using SharpDX.Direct2D1;
 using SharpDX.Direct3D;
@@ -30,8 +31,9 @@ namespace AppleCinnamon
         {
             RenderForm = new RenderForm("Apple & Cinnamon")
             {
-                Width = 1024,
-                Height = 768
+                Width = (int)(Screen.PrimaryScreen.Bounds.Width * 0.9f),
+                Height = (int)(Screen.PrimaryScreen.Bounds.Height * 0.9f),
+                StartPosition = FormStartPosition.CenterScreen
             };
 
             Device.CreateWithSwapChain(DriverType.Hardware, DeviceCreationFlags.BgraSupport, new SwapChainDescription

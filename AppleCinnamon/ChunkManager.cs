@@ -18,6 +18,8 @@ namespace AppleCinnamon
     {
         int FinalizedChunks { get; }
         int RenderedChunks { get; }
+        int QueuedChunks { get; }
+
         ConcurrentDictionary<string, long> PipelinePerformance { get; }
 
         Voxel? GetVoxel(Int3 absoluteIndex);
@@ -28,8 +30,12 @@ namespace AppleCinnamon
     public sealed class ChunkManager : IChunkManager
     {
         public const int ViewDistance = 8;
+        public static readonly int InitialDegreeOfParallelism = Environment.ProcessorCount;
 
         // debug fields
+        private int _queuedChunksCount;
+        public int QueuedChunks => _queuedChunksCount;
+
         private int _finalizedChunks;
         public int FinalizedChunks => _finalizedChunks;
 
@@ -62,7 +68,7 @@ namespace AppleCinnamon
             _queuedChunks = new ConcurrentDictionary<Int2, object>();
             PipelinePerformance = new ConcurrentDictionary<string, long>();
 
-            _pipeline = _pipelineProvider.CreatePipeline(1, Finalize);
+            _pipeline = _pipelineProvider.CreatePipeline(InitialDegreeOfParallelism, Finalize);
             _chunkUpdater = new ChunkUpdater(graphics, this);
 
             LoadContent();
@@ -123,6 +129,8 @@ namespace AppleCinnamon
                 throw new Exception();
             }
 
+            Interlocked.Decrement(ref _queuedChunksCount);
+
             foreach (var performance in context.Debug)
             {
                 if (PipelinePerformance.TryGetValue(performance.Key, out var value))
@@ -134,7 +142,6 @@ namespace AppleCinnamon
                     PipelinePerformance[performance.Key] = performance.Value;
                 }
             }
-
             Interlocked.Increment(ref _finalizedChunks);
             var root = ViewDistance * 2 + 1;
             if (!IsInitialized && _finalizedChunks == root * root)
@@ -181,9 +188,6 @@ namespace AppleCinnamon
             new Int2(-1, 0),
             new Int2(0, -1)
         };
-
-        
-
         public static IEnumerable<Int2> GetSurroundingChunks(int size)
         {
             yield return new Int2();
@@ -228,6 +232,8 @@ namespace AppleCinnamon
                     {
                         throw new Exception("asdasd");
                     }
+
+                    Interlocked.Increment(ref _queuedChunksCount);
 
                     _pipeline.Post(new DataflowContext<Int2>(chunkIndex, _graphics.Device));
                 }

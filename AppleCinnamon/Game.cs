@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Diagnostics;
+using System.Linq;
 using System.Windows.Forms;
 using AppleCinnamon.System;
 using SharpDX;
@@ -19,6 +19,14 @@ namespace AppleCinnamon
 
         private readonly Graphics _graphics;
         private readonly Crosshair _crosshair;
+        private readonly double[] _lastRenderTimes;
+        private DateTime _lastTick;
+        private int _lastRenderTimeIndex;
+        public double AverageRenderTime { get; private set; }
+        public double PeekRenderTime { get; private set; }
+        public double AverageFps { get; private set; }
+        
+
 
         public Game()
         {
@@ -30,35 +38,47 @@ namespace AppleCinnamon
             _chunkManager = new ChunkManager(_graphics);
             _debugLayout = new DebugLayout(_graphics);
 
+            _lastRenderTimes = new double[20];
+
             StartLoop();
         }
+
+        
 
         private void StartLoop()
         {
             RenderLoop.Run(_graphics.RenderForm, () =>
             {
-                var sw = Stopwatch.StartNew();
+                var now = DateTime.Now;
+                var elapsedTime = now - _lastTick;
+                _lastTick = now;
 
-                if (_graphics.RenderForm.Focused)
+                if (!_camera.IsPaused)
                 {
                     Cursor.Position = _graphics.RenderForm.PointToScreen(new Point(_graphics.RenderForm.ClientSize.Width / 2,
                         _graphics.RenderForm.ClientSize.Height / 2));
                     Cursor.Hide();
                 }
+                else
+                {
+                    Cursor.Show();
+                }
 
-                sw.Stop();
-                var gt = new GameTime(TimeSpan.Zero, sw.Elapsed);
-                Update(gt);
-
-
+                
+                Update(new GameTime(TimeSpan.Zero, TimeSpan.FromMilliseconds(Math.Min(AverageRenderTime, 6))));
                 _graphics.Draw(() =>
                 {
                     _chunkManager.Draw(_camera);
                     _boxDrawer.Draw();
                     _crosshair.Draw();
-                    _debugLayout.Draw(_chunkManager, _camera);
+                    _debugLayout.Draw(_chunkManager, _camera, this);
                 });
 
+                _lastRenderTimes[_lastRenderTimeIndex] = elapsedTime.TotalMilliseconds;
+                _lastRenderTimeIndex = _lastRenderTimeIndex == _lastRenderTimes.Length - 1 ? 0 : _lastRenderTimeIndex + 1;
+                AverageRenderTime = _lastRenderTimes.Average();
+                PeekRenderTime = _lastRenderTimes.Max();
+                AverageFps = 1000f / AverageRenderTime;
             });
         }
 
