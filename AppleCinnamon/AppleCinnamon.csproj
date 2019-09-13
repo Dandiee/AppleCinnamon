@@ -83,6 +83,7 @@
     <Compile Include="Crosshair.cs" />
     <Compile Include="DebugLayout.cs" />
     <Compile Include="Graphics.cs" />
+    <Compile Include="Pipeline\ExperimentalStep.cs" />
     <Compile Include="Pipeline\PipelineProvider.cs" />
     <Compile Include="Pipeline\DataflowContext.cs" />
     <Compile Include="FaceBuffer.cs" />

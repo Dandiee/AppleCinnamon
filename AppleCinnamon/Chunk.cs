@@ -24,6 +24,9 @@ namespace AppleCinnamon
 
         public static readonly Int3 Size = new Int3(16, 256, 16);
 
+
+        public readonly Dictionary<int, byte> VisibilityFlags;
+
         public Int2 ChunkIndex { get; }
         public Vector3 OffsetVector { get; }
         public Int2 Offset { get; }
@@ -131,6 +134,7 @@ namespace AppleCinnamon
         {
             _bufferCube = new Cube<FaceBuffer>();
             Neighbours = new ConcurrentDictionary<Int2, Chunk>();
+            VisibilityFlags = new Dictionary<int, byte>();
 
             ChunkIndex = chunkIndex;
             Offset = chunkIndex * new Int2(Size.X, Size.Z);
