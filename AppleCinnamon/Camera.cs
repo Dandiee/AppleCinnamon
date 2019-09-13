@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using AppleCinnamon.Collision;
 using AppleCinnamon.Settings;
 using AppleCinnamon.System;
@@ -87,18 +86,6 @@ namespace AppleCinnamon
 
         public void Update(GameTime gameTime, ChunkManager chunkManager, BoxDrawer boxDrawer)
         {
-            if (!chunkManager.Benchmark.IsEmpty)
-            {
-                var aggregate = new Dictionary<string, long>(chunkManager.Benchmark.First());
-                foreach (var measure in chunkManager.Benchmark.Skip(1))
-                {
-                    foreach (var kvp in measure)
-                    {
-                        aggregate[kvp.Key] += kvp.Value;
-                    }
-                }
-            }
-
             if (!chunkManager.IsInitialized)
             {
                 return;

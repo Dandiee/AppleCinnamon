@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks.Dataflow;
 using AppleCinnamon.Pipeline;
@@ -19,10 +18,12 @@ namespace AppleCinnamon
     {
         int FinalizedChunks { get; }
         int RenderedChunks { get; }
+        ConcurrentDictionary<string, long> PipelinePerformance { get; }
 
         Voxel? GetVoxel(Int3 absoluteIndex);
         bool TryGetChunk(Int2 chunkIndex, out Chunk chunk);
     }
+
 
     public sealed class ChunkManager : IChunkManager
     {
@@ -34,24 +35,20 @@ namespace AppleCinnamon
 
         private int _renderedChunks;
         public int RenderedChunks => _renderedChunks;
-        
+
+        public bool IsInitialized { get; private set; }
+
+        public ConcurrentDictionary<string, long> PipelinePerformance { get; }
 
 
         private readonly Graphics _graphics;
         private Effect _solidBlockEffect;
-
         private readonly ConcurrentDictionary<Int2, Chunk> _chunks;
         private readonly ConcurrentDictionary<Int2, object> _queuedChunks;
-
-
         private readonly IChunkUpdater _chunkUpdater;
         private readonly IPipelineProvider _pipelineProvider;
 
-        public EventHandler FirstChunkLoaded;
-
-        public ConcurrentBag<Dictionary<string, long>> Benchmark { get; }
         
-        public bool IsInitialized { get; private set; }
         
 
         private TransformBlock<DataflowContext<Int2>, DataflowContext<Chunk>> _pipeline;
@@ -60,11 +57,10 @@ namespace AppleCinnamon
         {
             _pipelineProvider = new PipelineProvider();
 
-            Benchmark = new ConcurrentBag<Dictionary<string, long>>();
             _graphics = graphics;
             _chunks = new ConcurrentDictionary<Int2,Chunk>();
             _queuedChunks = new ConcurrentDictionary<Int2, object>();
-
+            PipelinePerformance = new ConcurrentDictionary<string, long>();
 
             _pipeline = _pipelineProvider.CreatePipeline(1, Finalize);
             _chunkUpdater = new ChunkUpdater(graphics, this);
@@ -117,8 +113,6 @@ namespace AppleCinnamon
 
         private void Finalize(DataflowContext<Chunk> context)
         {
-            Benchmark.Add(context.Debug);
-
             if (!_chunks.TryAdd(context.Payload.ChunkIndex, context.Payload))
             {
                 throw new Exception();
@@ -129,17 +123,25 @@ namespace AppleCinnamon
                 throw new Exception();
             }
 
+            foreach (var performance in context.Debug)
+            {
+                if (PipelinePerformance.TryGetValue(performance.Key, out var value))
+                {
+                    PipelinePerformance[performance.Key] = value + performance.Value;
+                }
+                else
+                {
+                    PipelinePerformance[performance.Key] = performance.Value;
+                }
+            }
+
             Interlocked.Increment(ref _finalizedChunks);
-         
             var root = ViewDistance * 2 + 1;
             if (!IsInitialized && _finalizedChunks == root * root)
             {
                 IsInitialized = true;
                 _pipeline.Complete();
                 _pipeline = _pipelineProvider.CreatePipeline(Math.Max(1, Environment.ProcessorCount / 2), Finalize);
-
-                FirstChunkLoaded?.Invoke(this, null);
-                Debug.Write(_chunks.Count);
             }
         }
 

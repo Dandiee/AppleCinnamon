@@ -1,4 +1,5 @@
-﻿using AppleCinnamon.System;
+﻿using System.Linq;
+using AppleCinnamon.System;
 using SharpDX;
 using SharpDX.Direct2D1;
 using SharpDX.DirectWrite;
@@ -11,14 +12,20 @@ namespace AppleCinnamon
         public const string FontFamilyName = "Consolas";
 
         private readonly Graphics _graphics;
-        private readonly TextFormat _textFormat;
+        private readonly TextFormat _leftAlignedTextFormat;
+        private readonly TextFormat _rightAlignedTextFormat;
 
         public DebugLayout(Graphics graphics)
         {
             _graphics = graphics;
-            _textFormat = new TextFormat(_graphics.DirectWrite,
-                FontFamilyName, FontWeight.Black, FontStyle.Normal,
-                16);
+            _leftAlignedTextFormat = new TextFormat(_graphics.DirectWrite,
+                FontFamilyName, FontWeight.Black, FontStyle.Normal, 16);
+
+            _rightAlignedTextFormat = new TextFormat(_graphics.DirectWrite,
+                FontFamilyName, FontWeight.Black, FontStyle.Normal, 16)
+            {
+                TextAlignment = TextAlignment.Trailing
+            };
         }
 
 
@@ -30,16 +37,30 @@ namespace AppleCinnamon
                    $"Current target {camera.CurrentCursor?.AbsoluteVoxelIndex.ToString() ?? "No target"}";
         }
 
+        private string BuildPipelinePerformanceText(IChunkManager chunkManager) =>
+            string.Join("\r\n", chunkManager.PipelinePerformance.Select(s => $"{s.Key}: {s.Value}ms"));
+
         public void Draw(
             IChunkManager chunkManager,
             Camera camera)
         {
-            var text = BuildText(chunkManager, camera);
+            var leftText = BuildText(chunkManager, camera);
+            var rightText = BuildPipelinePerformanceText(chunkManager);
 
-            var textLayout = new TextLayout(_graphics.DirectWrite, text, _textFormat, 600, 500);
+            using (var leftTextLayout = new TextLayout(_graphics.DirectWrite, leftText, _leftAlignedTextFormat,
+                _graphics.RenderForm.Width - 20, _graphics.RenderForm.Height))
+            {
+                _graphics.RenderTarget2D.DrawTextLayout(new RawVector2(10, 10), leftTextLayout,
+                    new SolidColorBrush(_graphics.RenderTarget2D, Color.White));
+            }
 
-            _graphics.RenderTarget2D.DrawTextLayout(new RawVector2(10, 10), textLayout,
-                new SolidColorBrush(_graphics.RenderTarget2D, Color.White));
+            using (var rightTextLayout = new TextLayout(_graphics.DirectWrite, rightText, _rightAlignedTextFormat,
+                _graphics.RenderForm.Width - 20, _graphics.RenderForm.Height))
+            {
+
+                _graphics.RenderTarget2D.DrawTextLayout(new RawVector2(0, 10), rightTextLayout,
+                    new SolidColorBrush(_graphics.RenderTarget2D, Color.White));
+            }
         }
     }
 }
