@@ -32,6 +32,7 @@ namespace AppleCinnamon
         public float Yaw { get; private set; }
         public float Pitch { get; private set; }
         public Vector3 Orientation { get; private set; }
+        public bool IsPaused { get; private set; }
 
         protected KeyboardState CurrentKeyboardState { get; private set; }
         protected KeyboardState LastKeyboardState { get; private set; }
@@ -114,6 +115,11 @@ namespace AppleCinnamon
 
             const int leftClickIndex = 0;
             const int rightClickIndex = 1;
+
+            if (!CurrentKeyboardState.IsPressed(Key.Escape) && LastKeyboardState.IsPressed(Key.Escape))
+            {
+                IsPaused = !IsPaused;
+            }
 
             foreach (var keyVoxel in KeyVoxelMapping)
             {

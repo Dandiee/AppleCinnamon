@@ -40,7 +40,8 @@ namespace AppleCinnamon
 
         private string BuildRightText(IChunkManager chunkManager, Game game)
         {
-            return string.Join("\r\n", chunkManager.PipelinePerformance.Select(s => $"{s.Key}: {s.Value}ms")) + "\r\n" + 
+            return string.Join("\r\n", chunkManager.PipelinePerformance.Select(s => $"{s.Key}: {s.Value:N0} ms")) + "\r\n" + 
+                   $"Total pipeline time: {chunkManager.PipelinePerformance.Values.Sum():N0} ms\r\n" + 
                    $"Average render time: {game.AverageRenderTime:F2}\r\n" +
                    $"Peek render time: {game.PeekRenderTime:F2}\r\n" +
                    $"Average FPS: {game.AverageFps:F2}\r\n";
