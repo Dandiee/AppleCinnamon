@@ -32,7 +32,7 @@ namespace AppleCinnamon.Collision
                     var voxelDefinition = voxel.Value.GetDefinition();
                     if (voxelDefinition.IsUnitSized)
                     {
-                        return new VoxelRayCollisionResult(index, -direction, voxelDefinition);
+                        return new VoxelRayCollisionResult(index, -direction, voxelDefinition, voxel.Value);
                     }
                     else
                     {
@@ -41,7 +41,7 @@ namespace AppleCinnamon.Collision
                         var currentRay = new Ray(position, ray.Direction);
                         if (voxelBoundingBox.Intersects(ref currentRay))
                         {
-                            return new VoxelRayCollisionResult(index, -direction, voxelDefinition);
+                            return new VoxelRayCollisionResult(index, -direction, voxelDefinition, voxel.Value);
                         }
                     }
                 }
@@ -64,7 +64,7 @@ namespace AppleCinnamon.Collision
                 var firstImpact = impacts.OrderBy(impact => impact.Impact).First();
 
                 direction = firstImpact.Direction;
-                position += ray.Direction * (firstImpact.Impact * 1.05f);
+                position += ray.Direction * (firstImpact.Impact * 1.0005f);
             }
 
             return null;

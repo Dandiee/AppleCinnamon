@@ -11,7 +11,7 @@ namespace AppleCinnamon
     public class Camera
     {
         private readonly Graphics _graphics;
-
+        private static readonly TimeSpan BuildCooldown = TimeSpan.FromMilliseconds(0);
         private DateTime _lastModification;
 
         public Double3 Position { get; set; }
@@ -131,7 +131,7 @@ namespace AppleCinnamon
                 }
             }
 
-            if (DateTime.Now - _lastModification > TimeSpan.FromMilliseconds(100))
+            if (DateTime.Now - _lastModification > BuildCooldown)
             {
                 if (CurrentMouseState.Buttons[leftClickIndex])
                 {

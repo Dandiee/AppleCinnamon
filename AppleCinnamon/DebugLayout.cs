@@ -31,11 +31,15 @@ namespace AppleCinnamon
 
         private string BuildLeftText(IChunkManager chunkManager, Camera camera)
         {
+            var targetInfo = camera.CurrentCursor == null
+                ? "No target"
+                : $"{camera.CurrentCursor.AbsoluteVoxelIndex} (Block: {camera.CurrentCursor.Voxel.Block}, Light: {camera.CurrentCursor.Voxel.Lightness})";
+
             return $"Finalized chunks {chunkManager.FinalizedChunks}\r\n" +
                    $"Rendered chunks {chunkManager.RenderedChunks}\r\n" +
                    $"Queued chunks {chunkManager.QueuedChunks}\r\n" +
                    $"Current position {camera.Position.ToVector3().ToNonRetardedString()}\r\n"+
-                   $"Current target {camera.CurrentCursor?.AbsoluteVoxelIndex.ToString() ?? "No target"}";
+                   $"Current target {targetInfo}";
         }
 
         private string BuildRightText(IChunkManager chunkManager, Game game)
