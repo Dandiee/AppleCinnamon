@@ -22,7 +22,7 @@ namespace AppleCinnamon
     }
     public sealed class ChunkManager : IChunkManager
     {
-        private readonly Device _device;
+        private readonly Graphics _graphics;
         private readonly BoxDrawer _boxDrawer;
 
         private readonly ConcurrentDictionary<Int2, Chunk> _chunks;
@@ -47,11 +47,10 @@ namespace AppleCinnamon
         public int RenderedChunks;
         private TransformBlock<DataflowContext<Int2>, DataflowContext<Chunk>> _pipeline;
 
-        public ChunkManager(Device device, BoxDrawer boxDrawer)
+        public ChunkManager(Graphics graphics, BoxDrawer boxDrawer)
         {
             Benchmark = new ConcurrentBag<Dictionary<string, long>>();
-
-            _device = device;
+            _graphics = graphics;
             _boxDrawer = boxDrawer;
             _chunks = new ConcurrentDictionary<Int2,Chunk>();
             _chunkBuilder = new ChunkBuilder();
@@ -226,7 +225,7 @@ namespace AppleCinnamon
                         throw new Exception("asdasd");
                     }
 
-                    _pipeline.Post(new DataflowContext<Int2>(chunkIndex, _device));
+                    _pipeline.Post(new DataflowContext<Int2>(chunkIndex, _graphics.Device));
                 }
             }
         }
@@ -251,14 +250,14 @@ namespace AppleCinnamon
             var newVoxel = new Voxel(voxel, 0);
             chunk.SetLocalVoxel(address.Value.RelativeVoxelIndex, newVoxel);
             _lightUpdater.UpdateLighting(chunk, address.Value.RelativeVoxelIndex, oldVoxel, newVoxel);
-            _chunkBuilder.BuildChunk(_device, chunk);
+            _chunkBuilder.BuildChunk(_graphics.Device, chunk);
 
             Task.WaitAll(GetSurroundingChunks(2).Select(chunkIndex =>
             {
                 if (chunkIndex != Int2.Zero &&
                     _chunks.TryGetValue(chunkIndex + chunk.ChunkIndex, out var chunkToReload))
                 {
-                    return Task.Run(() => _chunkBuilder.BuildChunk(_device, chunkToReload));
+                    return Task.Run(() => _chunkBuilder.BuildChunk(_graphics.Device, chunkToReload));
                 }
 
                 return Task.CompletedTask;
