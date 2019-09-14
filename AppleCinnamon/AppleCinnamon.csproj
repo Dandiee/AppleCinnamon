@@ -83,8 +83,8 @@
     <Compile Include="Crosshair.cs" />
     <Compile Include="DebugLayout.cs" />
     <Compile Include="Graphics.cs" />
-    <Compile Include="Pipeline\ExperimentalStep.cs" />
-    <Compile Include="Pipeline\GlobalVisibility.cs" />
+    <Compile Include="Pipeline\FullScanner.cs" />
+    <Compile Include="Pipeline\GlobalVisibilityFinalizer.cs" />
     <Compile Include="Pipeline\LocalSunlightInitializer.cs" />
     <Compile Include="Pipeline\PipelineProvider.cs" />
     <Compile Include="Pipeline\DataflowContext.cs" />
@@ -117,7 +117,7 @@
     <Compile Include="Camera.cs" />
     <Compile Include="Pipeline\ChunkProvider.cs" />
     <Compile Include="Pipeline\LightFinalizer.cs" />
-    <Compile Include="Pipeline\LightPropagationService.cs" />
+    <Compile Include="Pipeline\LocalLightPropagationService.cs" />
     <Compile Include="Pipeline\VoxelLoader.cs" />
     <Compile Include="Pipeline\VoxelGenerator.cs" />
     <Compile Include="Voxel.cs" />

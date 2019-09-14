@@ -3,7 +3,12 @@ using AppleCinnamon.System;
 
 namespace AppleCinnamon.Pipeline
 {
-    public sealed class GlobalVisibility
+    public interface IGlobalVisibilityFinalizer
+    {
+        DataflowContext<Chunk> Process(DataflowContext<Chunk> context);
+    }
+
+    public sealed class GlobalVisibilityFinalizer : IGlobalVisibilityFinalizer
     {
         public DataflowContext<Chunk> Process(DataflowContext<Chunk> context)
         {
@@ -71,7 +76,7 @@ namespace AppleCinnamon.Pipeline
 
             sw.Stop();
             
-            return new DataflowContext<Chunk>(context, chunk, sw.ElapsedMilliseconds, nameof(GlobalVisibility));
+            return new DataflowContext<Chunk>(context, chunk, sw.ElapsedMilliseconds, nameof(GlobalVisibilityFinalizer));
         }
 
 

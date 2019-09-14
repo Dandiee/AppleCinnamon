@@ -3,7 +3,12 @@ using SharpDX;
 
 namespace AppleCinnamon.Pipeline
 {
-    public sealed class ExperimentalStep
+    public interface IFullScanner
+    {
+        DataflowContext<Chunk> Process(DataflowContext<Chunk> context);
+    }
+
+    public sealed class FullScanner : IFullScanner
     {
         public static readonly Int3[] Directions =
         {
@@ -156,7 +161,7 @@ namespace AppleCinnamon.Pipeline
 
             sw.Stop();
 
-            return new DataflowContext<Chunk>(context, chunk, sw.ElapsedMilliseconds, nameof(ExperimentalStep));
+            return new DataflowContext<Chunk>(context, chunk, sw.ElapsedMilliseconds, nameof(FullScanner));
         }
     }
 }
