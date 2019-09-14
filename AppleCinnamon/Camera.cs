@@ -97,7 +97,7 @@ namespace AppleCinnamon
             CurrentKeyboardState = Keyboard.GetCurrentState();
             CurrentMouseState = Mouse.GetCurrentState();
 
-            CollisionHelper.ApplyPlayerPhysics(this, chunkManager);
+            CollisionHelper.ApplyPlayerPhysics(this, chunkManager, (float)gameTime.ElapsedGameTime.TotalSeconds);
             UpdateMove(gameTime);
             UpdateMatrices();
 

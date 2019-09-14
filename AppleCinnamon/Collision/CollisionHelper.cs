@@ -19,13 +19,13 @@ namespace AppleCinnamon.Collision
             {
                 var index = position.Round();
                 var voxel = chunkManager.GetVoxel(index);
-                
+
                 if (!voxel.HasValue)
                 {
                     return null;
                 }
 
-                
+
 
                 if (voxel.Value.Block > 0)
                 {
@@ -37,7 +37,7 @@ namespace AppleCinnamon.Collision
                     else
                     {
                         var voxelPosition = index.ToVector3();
-                        var voxelBoundingBox = new BoundingBox(voxelPosition - voxelDefinition.Size/2f + voxelDefinition.Translation, voxelPosition + voxelDefinition.Size / 2f + voxelDefinition.Translation);
+                        var voxelBoundingBox = new BoundingBox(voxelPosition - voxelDefinition.Size / 2f + voxelDefinition.Translation, voxelPosition + voxelDefinition.Size / 2f + voxelDefinition.Translation);
                         var currentRay = new Ray(position, ray.Direction);
                         if (voxelBoundingBox.Intersects(ref currentRay))
                         {
@@ -70,13 +70,13 @@ namespace AppleCinnamon.Collision
             return null;
         }
 
-        public static void ApplyPlayerPhysics(Camera camera, ChunkManager chunkManager)
+        public static void ApplyPlayerPhysics(Camera camera, ChunkManager chunkManager, float realElapsedTime)
         {
             var position = camera.Position.ToVector3();
             var velocity = camera.Velocity.ToVector3();
 
 
-            var min = WorldSettings.PlayerMin + position;
+            var min = WorldSettings.PlayerMin + position; // + Vector3.UnitY * 0.05f;
             var max = WorldSettings.PlayerMax + position;
 
             var playerBoundingBox = new BoundingBox(min, max);
@@ -114,9 +114,10 @@ namespace AppleCinnamon.Collision
                             var voxelBoundingBox = new BoundingBox(absoluteCoordinate - new Vector3(.5f),
                                 absoluteCoordinate + new Vector3(.5f));
 
-                            var penetration = GetFirstPenetration(absoluteIndex, playerBoundingBox, voxelBoundingBox, velocity, chunkManager);
+                            var penetration = GetFirstPenetration(absoluteIndex, playerBoundingBox, voxelBoundingBox, velocity, chunkManager, realElapsedTime * 5);
                             if (penetration != null)
                             {
+
                                 if (Math.Abs(penetration.Value.X) > Math.Abs(totalPenetration.X))
                                 {
                                     totalPenetration = new Vector3(penetration.Value.X, totalPenetration.Y, totalPenetration.Z);
@@ -150,7 +151,7 @@ namespace AppleCinnamon.Collision
         }
 
         public static Vector3? GetFirstPenetration(Int3 absoluteIndex, BoundingBox playerBoundingBox, BoundingBox voxelBoundingBox,
-            Vector3 velocity, ChunkManager chunkManager)
+            Vector3 velocity, ChunkManager chunkManager, float realElapsedTime)
         {
             var earliestTimeOfImpact = float.MaxValue;
             Vector3? result = null;
@@ -163,7 +164,7 @@ namespace AppleCinnamon.Collision
                 var penetrationDepth = voxelBoundingBox.Maximum.X - playerBoundingBox.Minimum.X;
                 var timeOfImpact = -penetrationDepth / velocity.X;
 
-                if (timeOfImpact > 0 && earliestTimeOfImpact > timeOfImpact)
+                if (timeOfImpact > 0 && timeOfImpact < realElapsedTime && earliestTimeOfImpact > timeOfImpact)
                 {
                     var neighbour = chunkManager.GetVoxel(absoluteIndex + Int3.UnitX);
                     if (neighbour.HasValue && neighbour.Value.GetDefinition().IsPermeable)
@@ -182,7 +183,7 @@ namespace AppleCinnamon.Collision
                 var penetrationDepth = playerBoundingBox.Maximum.X - voxelBoundingBox.Minimum.X;
                 var timeOfImpact = penetrationDepth / velocity.X;
 
-                if (timeOfImpact > 0 && earliestTimeOfImpact > timeOfImpact)
+                if (timeOfImpact > 0 && timeOfImpact < realElapsedTime && earliestTimeOfImpact > timeOfImpact)
                 {
                     var neighbour = chunkManager.GetVoxel(absoluteIndex - Int3.UnitX);
                     if (neighbour.HasValue && neighbour.Value.GetDefinition().IsPermeable)
@@ -193,14 +194,14 @@ namespace AppleCinnamon.Collision
                 }
             }
             // FRONT
-            if (playerBoundingBox.Minimum.Z < voxelBoundingBox.Maximum.Z && 
+            if (playerBoundingBox.Minimum.Z < voxelBoundingBox.Maximum.Z &&
                 playerBoundingBox.Minimum.Z > voxelBoundingBox.Minimum.Z &&
                 !velocity.Z.IsEpsilon())
             {
                 var penetrationDepth = voxelBoundingBox.Maximum.Z - playerBoundingBox.Minimum.Z;
                 var timeOfImpact = -penetrationDepth / velocity.Z;
 
-                if (timeOfImpact > 0 && earliestTimeOfImpact > timeOfImpact)
+                if (timeOfImpact > 0 && timeOfImpact < realElapsedTime && earliestTimeOfImpact > timeOfImpact)
                 {
                     var neighbour = chunkManager.GetVoxel(absoluteIndex + Int3.UnitZ);
                     if (neighbour.HasValue && neighbour.Value.GetDefinition().IsPermeable)
@@ -212,14 +213,14 @@ namespace AppleCinnamon.Collision
             }
 
             // BACK
-            if (playerBoundingBox.Maximum.Z < voxelBoundingBox.Maximum.Z && 
+            if (playerBoundingBox.Maximum.Z < voxelBoundingBox.Maximum.Z &&
                 playerBoundingBox.Maximum.Z > voxelBoundingBox.Minimum.Z &&
                 !velocity.Z.IsEpsilon())
             {
                 var penetrationDepth = playerBoundingBox.Maximum.Z - voxelBoundingBox.Minimum.Z;
                 var timeOfImpact = penetrationDepth / velocity.Z;
 
-                if (timeOfImpact > 0 && earliestTimeOfImpact > timeOfImpact)
+                if (timeOfImpact > 0 && timeOfImpact < realElapsedTime && earliestTimeOfImpact > timeOfImpact)
                 {
                     var neighbour = chunkManager.GetVoxel(absoluteIndex - Int3.UnitZ);
                     if (neighbour.HasValue && neighbour.Value.GetDefinition().IsPermeable)
@@ -231,14 +232,14 @@ namespace AppleCinnamon.Collision
             }
 
             // FEET
-            if (playerBoundingBox.Minimum.Y < voxelBoundingBox.Maximum.Y && 
+            if (playerBoundingBox.Minimum.Y < voxelBoundingBox.Maximum.Y &&
                 playerBoundingBox.Minimum.Y > voxelBoundingBox.Minimum.Y &&
                 !velocity.Y.IsEpsilon())
             {
                 var penetrationDepth = voxelBoundingBox.Maximum.Y - playerBoundingBox.Minimum.Y;
                 var timeOfImpact = -penetrationDepth / velocity.Y;
 
-                if (timeOfImpact > 0 && earliestTimeOfImpact > timeOfImpact)
+                if (timeOfImpact > 0 && timeOfImpact < realElapsedTime && earliestTimeOfImpact > timeOfImpact)
                 {
                     var neighbour = chunkManager.GetVoxel(absoluteIndex + Int3.UnitY);
                     if (neighbour.HasValue && neighbour.Value.GetDefinition().IsPermeable)
@@ -250,14 +251,14 @@ namespace AppleCinnamon.Collision
             }
 
             // HEAD
-            if (playerBoundingBox.Maximum.Y < voxelBoundingBox.Maximum.Y && 
+            if (playerBoundingBox.Maximum.Y < voxelBoundingBox.Maximum.Y &&
                 playerBoundingBox.Maximum.Y > voxelBoundingBox.Minimum.Y &&
                 !velocity.Y.IsEpsilon())
             {
                 var penetrationDepth = playerBoundingBox.Maximum.Y - voxelBoundingBox.Minimum.Y;
                 var timeOfImpact = penetrationDepth / velocity.Y;
 
-                if (timeOfImpact > 0 && earliestTimeOfImpact > timeOfImpact)
+                if (timeOfImpact > 0 && timeOfImpact < realElapsedTime && earliestTimeOfImpact > timeOfImpact)
                 {
                     var neighbour = chunkManager.GetVoxel(absoluteIndex - Int3.UnitY);
                     if (neighbour.HasValue && neighbour.Value.GetDefinition().IsPermeable)

@@ -39,6 +39,7 @@ namespace AppleCinnamon
                    $"Rendered chunks {chunkManager.RenderedChunks}\r\n" +
                    $"Queued chunks {chunkManager.QueuedChunks}\r\n" +
                    $"Current position {camera.Position.ToVector3().ToNonRetardedString()}\r\n"+
+                   $"Orientation {camera.LookAt.ToVector3().ToNonRetardedString()}\r\n"+
                    $"Current target {targetInfo}";
         }
 
