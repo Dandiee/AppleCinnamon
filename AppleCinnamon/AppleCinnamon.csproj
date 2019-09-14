@@ -85,6 +85,7 @@
     <Compile Include="Graphics.cs" />
     <Compile Include="Pipeline\ExperimentalStep.cs" />
     <Compile Include="Pipeline\GlobalVisibility.cs" />
+    <Compile Include="Pipeline\LocalSunlightInitializer.cs" />
     <Compile Include="Pipeline\PipelineProvider.cs" />
     <Compile Include="Pipeline\DataflowContext.cs" />
     <Compile Include="FaceBuffer.cs" />

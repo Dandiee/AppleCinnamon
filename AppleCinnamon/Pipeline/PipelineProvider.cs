@@ -20,6 +20,7 @@ namespace AppleCinnamon.Pipeline
         private readonly IChunkPool _chunkPool;
         private readonly ExperimentalStep _experimentalStep;
         private readonly GlobalVisibility _globalVisibility;
+        private readonly ILocalSunlightInitializer _localSunlightInitializer;
 
 
         public PipelineProvider()
@@ -31,6 +32,7 @@ namespace AppleCinnamon.Pipeline
             _chunkPool = new ChunkPool();
             _experimentalStep = new ExperimentalStep();
             _globalVisibility = new GlobalVisibility();
+            _localSunlightInitializer = new LocalSunlightInitializer();
         }
 
         public TransformBlock<DataflowContext<Int2>, DataflowContext<Chunk>> CreatePipeline(int maxDegreeOfParallelism, Action<DataflowContext<Chunk>> successCallback)
@@ -41,6 +43,7 @@ namespace AppleCinnamon.Pipeline
             };
 
             var pipeline = new TransformBlock<DataflowContext<Int2>, DataflowContext<Chunk>>(_chunkProvider.GetChunk, dataflowOptions);
+            var sunlightInitializer = new TransformBlock<DataflowContext<Chunk>, DataflowContext<Chunk>>(_localSunlightInitializer.Process, dataflowOptions);
             var experimental = new TransformBlock<DataflowContext<Chunk>, DataflowContext<Chunk>>(_experimentalStep.Process, dataflowOptions);
             var lighter = new TransformBlock<DataflowContext<Chunk>, DataflowContext<Chunk>>(_lightPropagationService.InitializeLocalLight, dataflowOptions);
             var pool = new TransformManyBlock<DataflowContext<Chunk>, DataflowContext<Chunk>>(_chunkPool.Process, dataflowOptions);
@@ -49,7 +52,8 @@ namespace AppleCinnamon.Pipeline
             var dispatcher = new TransformBlock<DataflowContext<Chunk>, DataflowContext<Chunk>>(_chunkDispatcher.Dispatch, dataflowOptions);
             var finalizer = new ActionBlock<DataflowContext<Chunk>>(successCallback, dataflowOptions);
 
-            pipeline.LinkTo(experimental);
+            pipeline.LinkTo(sunlightInitializer);
+            sunlightInitializer.LinkTo(experimental);
             experimental.LinkTo(lighter);
             lighter.LinkTo(pool);
             pool.LinkTo(globalVisibility);

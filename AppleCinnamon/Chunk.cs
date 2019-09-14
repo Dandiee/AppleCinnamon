@@ -30,6 +30,7 @@ namespace AppleCinnamon
         public readonly List<int> PendingRightVoxels;
         public readonly List<int> PendingFrontVoxels;
         public readonly List<int> PendingBackVoxels;
+        public readonly List<int> LightPropagationVoxels;
 
         public Int2 ChunkIndex { get; }
         public Vector3 OffsetVector { get; }
@@ -140,10 +141,11 @@ namespace AppleCinnamon
             Neighbours = new ConcurrentDictionary<Int2, Chunk>();
             VisibilityFlags = new Dictionary<int, byte>();
 
-            PendingLeftVoxels = new List<int>(16);
-            PendingRightVoxels = new List<int>(16);
-            PendingFrontVoxels = new List<int>(16);
-            PendingBackVoxels = new List<int>(16);
+            PendingLeftVoxels = new List<int>(1024);
+            PendingRightVoxels = new List<int>(1024);
+            PendingFrontVoxels = new List<int>(1024);
+            PendingBackVoxels = new List<int>(1024);
+            LightPropagationVoxels = new List<int>(1024);
 
             ChunkIndex = chunkIndex;
             Offset = chunkIndex * new Int2(Size.X, Size.Z);

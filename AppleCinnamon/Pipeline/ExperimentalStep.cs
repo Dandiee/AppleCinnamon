@@ -1,7 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using SharpDX;
-using SharpDX.Direct2D1.Effects;
 
 namespace AppleCinnamon.Pipeline
 {
@@ -26,86 +24,132 @@ namespace AppleCinnamon.Pipeline
                     {
                         var index = i + Chunk.SizeXy * (j + Chunk.Height * k);
                         var voxel = chunk.Voxels[index];
-                        if (voxel.Block > 0)
-                        {
-                            byte visibilityFlag = 0;
+                        var isNotTransparent = voxel.Block > 0;
 
-                            if (j < Chunk.Height - 1)
+                        if (!isNotTransparent && voxel.Lightness > 0)
+                        {
+                            continue;
+                        }
+
+                        byte visibilityFlag = 0;
+                        var voxelLight = voxel.Lightness;
+
+                        if (isNotTransparent)
+                        {
+                            if (j < Chunk.Height - 1) // top
                             {
-                                var top = chunk.Voxels[i + Chunk.SizeXy * (j + 1 + Chunk.Height * k)];
-                                if (top.Block == 0)
+                                var neighbor = chunk.Voxels[i + Chunk.SizeXy * (j + 1 + Chunk.Height * k)];
+                                if (neighbor.Block == 0)
                                 {
                                     visibilityFlag += 1;
                                 }
                             }
 
-                            if (j > 0)
+                            if (j > 0) // bottom
                             {
-                                var bottom = chunk.Voxels[i + Chunk.SizeXy * (j - 1 + Chunk.Height * k)];
-                                if (bottom.Block == 0)
+                                var neighbor = chunk.Voxels[i + Chunk.SizeXy * (j - 1 + Chunk.Height * k)];
+                                if (neighbor.Block == 0)
                                 {
                                     visibilityFlag += 2;
                                 }
                             }
+                        }
 
-                            if (i > 0)
+                        if (i > 0) //left
+                        {
+                            var neighbor = chunk.Voxels[i - 1 + Chunk.SizeXy * (j + Chunk.Height * k)];
+                            if (isNotTransparent)
                             {
-                                var left = chunk.Voxels[i - 1 + Chunk.SizeXy * (j + Chunk.Height * k)];
-                                if (left.Block == 0)
+                                if (neighbor.Block == 0)
                                 {
                                     visibilityFlag += 4;
                                 }
                             }
-                            else
+                            else if (neighbor.Lightness == 15 && neighbor.Lightness - 1 > voxelLight)
                             {
-                                chunk.PendingLeftVoxels.Add(index);
+                                voxelLight = (byte) (neighbor.Lightness - 1);
                             }
+                        }
+                        else if (isNotTransparent)
+                        {
+                            chunk.PendingLeftVoxels.Add(index);
+                        }
 
 
-                            if (i < Chunk.SizeXy - 1)
+                        if (i < Chunk.SizeXy - 1) // right
+                        {
+                            var neighbor = chunk.Voxels[i + 1 + Chunk.SizeXy * (j + Chunk.Height * k)];
+                            if (isNotTransparent)
                             {
-                                var right = chunk.Voxels[i + 1 + Chunk.SizeXy * (j + Chunk.Height * k)];
-                                if (right.Block == 0)
+                                if (neighbor.Block == 0)
                                 {
                                     visibilityFlag += 8;
                                 }
                             }
-                            else
+                            else if (neighbor.Lightness == 15 && neighbor.Lightness - 1 > voxelLight)
                             {
-                                chunk.PendingRightVoxels.Add(index);
+                                voxelLight = (byte)(neighbor.Lightness - 1);
                             }
+                        }
+                        else if (isNotTransparent)
+                        {
+                            chunk.PendingRightVoxels.Add(index);
+                        }
 
-                            if (k > 0)
+                        if (k > 0) // front
+                        {
+                            var neighbor = chunk.Voxels[i + Chunk.SizeXy * (j + Chunk.Height * (k - 1))];
+                            if (isNotTransparent)
                             {
-                                var front = chunk.Voxels[i + Chunk.SizeXy * (j + Chunk.Height * (k - 1))];
-                                if (front.Block == 0)
+                                if (neighbor.Block == 0)
                                 {
                                     visibilityFlag += 16;
                                 }
                             }
-                            else
+                            else if (neighbor.Lightness == 15 && neighbor.Lightness - 1 > voxelLight)
                             {
-                                chunk.PendingFrontVoxels.Add(index);
+                                voxelLight = (byte)(neighbor.Lightness - 1);
                             }
 
-                            if (k < Chunk.SizeXy - 1)
+
+
+                        }
+                        else if (isNotTransparent)
+                        {
+                            chunk.PendingFrontVoxels.Add(index);
+                        }
+
+                        if (k < Chunk.SizeXy - 1) // back
+                        {
+                            var neighbor = chunk.Voxels[i + Chunk.SizeXy * (j + Chunk.Height * (k + 1))];
+                            if (isNotTransparent)
                             {
-                                var back = chunk.Voxels[i + Chunk.SizeXy * (j + Chunk.Height * (k + 1))];
-                                if (back.Block == 0)
+                                if (neighbor.Block == 0)
                                 {
                                     visibilityFlag += 32;
                                 }
                             }
-                            else
+                            else if (neighbor.Lightness == 15 && neighbor.Lightness - 1 > voxelLight)
                             {
-                                chunk.PendingBackVoxels.Add(index);
-                            }
-
-                            if (visibilityFlag > 0)
-                            {
-                                chunk.VisibilityFlags[index] = visibilityFlag;
+                                voxelLight = (byte)(neighbor.Lightness - 1);
                             }
                         }
+                        else if (isNotTransparent)
+                        {
+                            chunk.PendingBackVoxels.Add(index);
+                        }
+
+                        if (visibilityFlag > 0)
+                        {
+                            chunk.VisibilityFlags[index] = visibilityFlag;
+                        }
+
+                        if (voxel.Lightness != voxelLight)
+                        {
+                            chunk.Voxels[index] = new Voxel(voxel.Block, voxelLight);
+                            chunk.LightPropagationVoxels.Add(index);
+                        }
+
                     }
                 }
             }
