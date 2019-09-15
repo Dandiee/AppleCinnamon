@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
+using AppleCinnamon.Settings;
 using SharpDX;
 
 namespace AppleCinnamon.Pipeline
@@ -58,8 +59,9 @@ namespace AppleCinnamon.Pipeline
                         {
                             var neighbourIndex = neighbourX + Chunk.SizeXy * (neighbourY + Chunk.Height * neighbourZ);
                             var neighbourVoxel = voxels[neighbourIndex];
+                            var neighborDefinition = VoxelDefinition.DefinitionByType[neighbourVoxel.Block];
 
-                            if (neighbourVoxel.Block == 0 && neighbourVoxel.Lightness < voxelLightness - 1)
+                            if (neighborDefinition.IsTransparent && neighbourVoxel.Lightness < voxelLightness - 1)
                             {
                                 voxels[neighbourIndex] = new Voxel(neighbourVoxel.Block, (byte)(voxelLightness - 1));
 
@@ -70,7 +72,5 @@ namespace AppleCinnamon.Pipeline
                 }
             }
         }
-
-
     }
 }

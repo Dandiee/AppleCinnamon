@@ -10,7 +10,7 @@ namespace AppleCinnamon.Collision
     {
         public static VoxelRayCollisionResult GetCurrentSelection(Ray ray, ChunkManager chunkManager)
         {
-            const int exitCounter = 128;
+            const int exitCounter = 64;
 
             var position = ray.Position;
             var direction = Int3.Zero;

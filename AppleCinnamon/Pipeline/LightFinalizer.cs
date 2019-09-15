@@ -153,7 +153,7 @@ namespace AppleCinnamon.Pipeline
                         if (neighbourVoxel.Lightness < sourceVoxel.Lightness - 1)
                         {
                             var targetDefinition = VoxelDefinition.DefinitionByType[neighbourVoxel.Block];
-                            if ((direction.Item2.Bytes & targetDefinition.TransmittanceBytes) > 0)
+                            if (targetDefinition.IsTransparent)
                             {
                                 var newTargetVoxel = new Voxel(neighbourVoxel.Block, (byte) (sourceVoxel.Lightness - 1));
                                 voxels[flatNeighbourIndex] = newTargetVoxel;

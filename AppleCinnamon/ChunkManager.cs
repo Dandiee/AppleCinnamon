@@ -30,7 +30,7 @@ namespace AppleCinnamon
     public sealed class ChunkManager : IChunkManager
     {
         public const int ViewDistance = 8;
-        public static readonly int InitialDegreeOfParallelism = 1; //Environment.ProcessorCount;
+        public static readonly int InitialDegreeOfParallelism = 1;// Environment.ProcessorCount;
 
         // debug fields
         private int _queuedChunksCount;
@@ -188,6 +188,8 @@ namespace AppleCinnamon
             new Int2(-1, 0),
             new Int2(0, -1)
         };
+
+
         public static IEnumerable<Int2> GetSurroundingChunks(int size)
         {
             yield return new Int2();

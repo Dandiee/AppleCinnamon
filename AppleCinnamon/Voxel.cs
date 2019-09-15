@@ -7,6 +7,7 @@ namespace AppleCinnamon
     {
         public static readonly Voxel One = new Voxel(1, 15);
         public static readonly Voxel Zero = new Voxel(0, 0);
+        public static readonly Voxel Invalid = new Voxel(255, 255);
 
         public readonly byte Block;
         public readonly byte Lightness;

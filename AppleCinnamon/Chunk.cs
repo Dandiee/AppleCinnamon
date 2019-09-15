@@ -31,6 +31,7 @@ namespace AppleCinnamon
         public readonly List<int> PendingFrontVoxels;
         public readonly List<int> PendingBackVoxels;
         public readonly List<int> LightPropagationVoxels;
+        public readonly List<int> TopMostWaterVoxels;
 
         public Int2 ChunkIndex { get; }
         public Vector3 OffsetVector { get; }
@@ -146,6 +147,7 @@ namespace AppleCinnamon
             PendingFrontVoxels = new List<int>(1024);
             PendingBackVoxels = new List<int>(1024);
             LightPropagationVoxels = new List<int>(1024);
+            TopMostWaterVoxels = new List<int>(128);
 
             ChunkIndex = chunkIndex;
             Offset = chunkIndex * new Int2(Size.X, Size.Z);

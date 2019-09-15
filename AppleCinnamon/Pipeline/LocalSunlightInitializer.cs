@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.Collections.Concurrent;
+using System.Diagnostics;
 using AppleCinnamon.Settings;
 
 namespace AppleCinnamon.Pipeline
@@ -14,23 +15,40 @@ namespace AppleCinnamon.Pipeline
         {
             var sw = Stopwatch.StartNew();
             var voxels = context.Payload.Voxels;
+            var waterVoxels = context.Payload.TopMostWaterVoxels;
 
             for (var i = 0; i != Chunk.Size.X; i++)
             {
                 for (var k = 0; k != Chunk.Size.Z; k++)
                 {
+                    var previousWasWater = false;
+                    var topMostFound = false;
+
                     for (var j = Chunk.Size.Y - 1; j > 0; j--)
                     {
                         var index = i + Chunk.SizeXy * (j + Chunk.Height * k);
                         var voxel = voxels[index];
-                        var definition = VoxelDefinition.DefinitionByType[voxel.Block];
-                        var isTransmittance = definition.IsTransmittance.Y;
 
-                        if (isTransmittance)
+                        if (!topMostFound && voxel.Block == 0)
                         {
                             voxels[index] = new Voxel(voxel.Block, 15);
+                            continue;
+                            
                         }
-                        else break;
+                        else if(voxel.Block == VoxelDefinition.Water.Type)
+                        {
+                            topMostFound = true;
+
+                            if (!previousWasWater)
+                            {
+                                waterVoxels.Add(index);
+                                previousWasWater = true;
+                                continue;
+                            }
+                        }
+
+                        topMostFound = true;
+                        previousWasWater = false;
                     }
                 }
             }

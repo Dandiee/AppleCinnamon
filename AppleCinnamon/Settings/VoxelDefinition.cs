@@ -6,13 +6,28 @@ namespace AppleCinnamon.Settings
 {
     public sealed class VoxelDefinition
     {
+        private bool Equals(VoxelDefinition other)
+        {
+            return Type == other.Type;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return ReferenceEquals(this, obj) || obj is VoxelDefinition other && Equals(other);
+        }
+
+        public override int GetHashCode() => Type;
+
         public readonly byte Type;
         public readonly Cube<Vector2> Textures;
         public readonly byte LightEmitting;
         public readonly Bool3 IsTransmittance;
         public readonly byte TransmittanceBytes;
+
         public readonly bool IsTransparent;
+
         public readonly bool IsPermeable;
+        public readonly bool IsSprite;
         public readonly Vector3 Size;
         public readonly Vector3 Translation;
         public readonly bool IsUnitSized;
@@ -22,37 +37,33 @@ namespace AppleCinnamon.Settings
 
         public static readonly VoxelDefinition[] DefinitionByType = new VoxelDefinition[255];
 
-        public static readonly VoxelDefinition Stone = new BlockDefinitionBuilder(10).WithAllSideTexture(1, 0).Build();
+        public static readonly VoxelDefinition Air = new VoxelDefinition(0, null, 0, Bool3.True, true, true, Vector3.One, Vector3.Zero, false);
+        public static readonly VoxelDefinition Water = new BlockDefinitionBuilder(1).WithAllSideTexture(15, 12).AsSprite().Build();
+        public static readonly VoxelDefinition Leaves = new BlockDefinitionBuilder(2).WithAllSideTexture(15, 0).Build();
+        public static readonly VoxelDefinition Lava = new BlockDefinitionBuilder(3).WithAllSideTexture(15, 15).Build();
+        
+
         //public static readonly VoxelDefinition Stone = new BlockDefinitionBuilder(10).WithAllSideTexture(1, 0).Build();
-        public static readonly VoxelDefinition Log = new BlockDefinitionBuilder(10).WithAllSideTexture(4, 1).Build();
-        public static readonly VoxelDefinition Leaves = new BlockDefinitionBuilder(10).WithAllSideTexture(15, 0).Build();
-        public static readonly VoxelDefinition Gravel = new BlockDefinitionBuilder(10).WithAllSideTexture(3, 1).Build();
-        public static readonly VoxelDefinition CoalOre = new BlockDefinitionBuilder(11).WithAllSideTexture(2, 2).Build();
-        public static readonly VoxelDefinition IronOre = new BlockDefinitionBuilder(12).WithAllSideTexture(1, 2).Build();
-        public static readonly VoxelDefinition GoldOre = new BlockDefinitionBuilder(13).WithAllSideTexture(0, 2).Build();
-        public static readonly VoxelDefinition Dirt = new BlockDefinitionBuilder(13).WithAllSideTexture(2, 0).Build();
-        public static readonly VoxelDefinition Lava = new BlockDefinitionBuilder(10).WithAllSideTexture(15, 15).Build();
-        public static readonly VoxelDefinition Water = new BlockDefinitionBuilder(10).WithAllSideTexture(15, 12).Build();
+        public static readonly VoxelDefinition Log = new BlockDefinitionBuilder(16).WithAllSideTexture(4, 1).Build();
+        public static readonly VoxelDefinition Stone = new BlockDefinitionBuilder(17).WithAllSideTexture(1, 0).Build();
+        public static readonly VoxelDefinition Gravel = new BlockDefinitionBuilder(18).WithAllSideTexture(3, 1).Build();
+        public static readonly VoxelDefinition CoalOre = new BlockDefinitionBuilder(19).WithAllSideTexture(2, 2).Build();
+        public static readonly VoxelDefinition IronOre = new BlockDefinitionBuilder(20).WithAllSideTexture(1, 2).Build();
+        public static readonly VoxelDefinition GoldOre = new BlockDefinitionBuilder(21).WithAllSideTexture(0, 2).Build();
+        public static readonly VoxelDefinition Dirt = new BlockDefinitionBuilder(22).WithAllSideTexture(2, 0).Build();
+        
 
+        public static readonly VoxelDefinition Grass = new BlockDefinitionBuilder(23).WithBottomTexture(2, 0).WithTopTexture(0, 0).WithSideTexture(3, 0).Build();
+        public static readonly VoxelDefinition Snow = new BlockDefinitionBuilder(24).WithBottomTexture(2, 0).WithTopTexture(0, 4).WithSideTexture(4, 4).Build();
+        public static readonly VoxelDefinition EmitterStone = new BlockDefinitionBuilder(25).WithAllSideTexture(1, 0).AsPermeable().AsTransmittance().WithLightEmitting(6).WithTransmittance(true, true, true).WithSize(.2f, 1, .2f).Build();
+        public static readonly VoxelDefinition Sand = new BlockDefinitionBuilder(26).WithAllSideTexture(1, 0).Build();
 
+        //public static readonly VoxelDefinition Snow = new BlockDefinitionBuilder(4).WithAllSideTexture(2, 4).WithSize(1, 0.2f, 1).WithTranslation(0, -0.4f, 0).WithTransmittance(true, true, true).AsPermeable().Build();
 
+        public static bool operator ==(VoxelDefinition lhs, VoxelDefinition rhs) => lhs.Type == rhs.Type;
+        public static bool operator !=(VoxelDefinition lhs, VoxelDefinition rhs) => lhs.Type != rhs.Type;
 
-        public static readonly VoxelDefinition Air = new VoxelDefinition(0, null, 0, Bool3.True, true, true, Vector3.One, Vector3.Zero);
-
-        public static readonly VoxelDefinition Grass = new BlockDefinitionBuilder(1).WithBottomTexture(2, 0)
-            .WithTopTexture(0, 0).WithSideTexture(3, 0).Build();
-
-        public static readonly VoxelDefinition EmitterStone = new BlockDefinitionBuilder(2).WithAllSideTexture(1, 0)
-            .AsPermeable().AsTransmittance().WithLightEmitting(6).WithTransmittance(true, true, true)
-            .WithSize(.2f, 1, .2f).Build();
-
-        // public static readonly VoxelDefinition Sand = new BlockDefinitionBuilder(3).WithAllSideTexture(2, 1).Build();
-        public static readonly VoxelDefinition Sand = new BlockDefinitionBuilder(3).WithAllSideTexture(1, 0).Build();
-
-        public static readonly VoxelDefinition Snow = new BlockDefinitionBuilder(4).WithAllSideTexture(2, 4)
-            .WithSize(1, 0.2f, 1).WithTranslation(0, -0.4f, 0).WithTransmittance(true, true, true).AsPermeable().Build();
-
-        public VoxelDefinition(byte type, Cube<Vector2> textures, byte lightEmitting, Bool3 isTransmittance, bool isTransparent, bool isPermeable, Vector3 size, Vector3 translation)
+        public VoxelDefinition(byte type, Cube<Vector2> textures, byte lightEmitting, Bool3 isTransmittance, bool isTransparent, bool isPermeable, Vector3 size, Vector3 translation, bool isSprite)
         {
             Type = type;
             Textures = textures;
@@ -65,6 +76,7 @@ namespace AppleCinnamon.Settings
             IsUnitSized = size == Vector3.One && translation == Vector3.Zero;
             Translation = translation;
             TransmittanceBytes = IsTransmittance.Bytes;
+            IsSprite = isSprite;
         }
     }
 
@@ -76,6 +88,7 @@ namespace AppleCinnamon.Settings
         private Bool3 _isTransmittance;
         private bool _isTransparent;
         private bool _isPermeable;
+        private bool _isSprite;
         private Vector3 _size;
         private Vector3 _translation;
 
@@ -104,6 +117,13 @@ namespace AppleCinnamon.Settings
         {
             _size = new Vector3(x, y, z);
 
+            return this;
+        }
+
+        public BlockDefinitionBuilder AsSprite()
+        {
+            _isSprite = true;
+            _isTransparent = true;
             return this;
         }
 
@@ -189,7 +209,7 @@ namespace AppleCinnamon.Settings
         public VoxelDefinition Build()
         {
             return new VoxelDefinition(_type, _textures, _lightEmitting, _isTransmittance, _isTransparent,
-                _isPermeable, _size, _translation);
+                _isPermeable, _size, _translation, _isSprite);
         }
     }
 }

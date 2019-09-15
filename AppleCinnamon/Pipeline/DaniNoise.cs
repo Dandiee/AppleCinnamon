@@ -1,8 +1,7 @@
 ﻿using System;
 
-namespace NoiseGeneratorTest
+namespace AppleCinnamon.Pipeline
 {
-
     public sealed class ImprovedNoise
     {
         private readonly byte[] _p;
@@ -13,7 +12,7 @@ namespace NoiseGeneratorTest
 
             for (int i = 0; i < 256; i++)
             {
-                _p[i] = (byte) i;
+                _p[i] = (byte)i;
             }
 
             for (int i = 0; i < 256; i++)
@@ -33,13 +32,13 @@ namespace NoiseGeneratorTest
             const int xFlags = 0x46552222;
             const int yFlags = 0x2222550A;
 
-            var xFloor = x >= 0 
-                ? (int)x 
+            var xFloor = x >= 0
+                ? (int)x
                 : (int)x - 1;
 
 
-            var yFloor = y >= 0 
-                ? (int)y 
+            var yFloor = y >= 0
+                ? (int)y
                 : (int)y - 1;
 
             var X = xFloor & 0xFF;
@@ -54,7 +53,7 @@ namespace NoiseGeneratorTest
             var A = _p[X] + Y;
             var B = _p[X + 1] + Y;
 
-            
+
             var hash = (_p[_p[A]] & 0xF) << 1;
             var g22 = (((xFlags >> hash) & 3) - 1) * x + (((yFlags >> hash) & 3) - 1) * y;
 
@@ -72,19 +71,15 @@ namespace NoiseGeneratorTest
             return c1 + v * (c2 - c1);
         }
 
-        
+
     }
 
-    public sealed class OctaveNoise
+    public sealed class DaniNoise
     {
-        private readonly double _baseAmplitude;
-        private readonly double _baseFrequency;
         private readonly ImprovedNoise[] _baseNoise;
 
-        public OctaveNoise(int octaves, Random random, double baseAmplitude, double baseFrequency)
+        public DaniNoise(int octaves, Random random)
         {
-            _baseAmplitude = baseAmplitude;
-            _baseFrequency = baseFrequency;
             _baseNoise = new ImprovedNoise[octaves];
             for (int i = 0; i < octaves; i++)
             {
