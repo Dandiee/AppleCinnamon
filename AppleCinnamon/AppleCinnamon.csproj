@@ -101,7 +101,6 @@
     <Compile Include="System\Int2.cs" />
     <Compile Include="System\TextureLoader.cs" />
     <Compile Include="System\TimerTick.cs" />
-    <Compile Include="Vertices\VertexPosition.cs" />
     <Compile Include="Vertices\VertexPositionColor.cs" />
     <Compile Include="Vertices\VertexSolidBlock.cs" />
     <Compile Include="System\Extensions.cs" />

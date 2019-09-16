@@ -50,7 +50,9 @@ float ComputeFogFactor(float d)
 
 float4 PixelShaderFunction(VertexShaderOutput input) : SV_Target
 {
-    return Textures.Sample(SampleType, input.TexCoords) * input.AmbientOcclusion;
+    float4 color = Textures.Sample(SampleType, input.TexCoords) * input.AmbientOcclusion;
+
+	return float4(color.xyz, 0.7);
 }
 
 technique10 Render

@@ -10,6 +10,7 @@ using SharpDX;
 using SharpDX.D3DCompiler;
 using SharpDX.Direct3D;
 using SharpDX.Direct3D11;
+using SharpDX.Mathematics.Interop;
 using SharpDX.WIC;
 
 namespace AppleCinnamon
@@ -55,8 +56,8 @@ namespace AppleCinnamon
         private readonly IChunkUpdater _chunkUpdater;
         private readonly IPipelineProvider _pipelineProvider;
 
-        
-        
+
+
 
         private TransformBlock<DataflowContext<Int2>, DataflowContext<Chunk>> _pipeline;
 
@@ -65,7 +66,7 @@ namespace AppleCinnamon
             _pipelineProvider = new PipelineProvider();
 
             _graphics = graphics;
-            _chunks = new ConcurrentDictionary<Int2,Chunk>();
+            _chunks = new ConcurrentDictionary<Int2, Chunk>();
             _queuedChunks = new ConcurrentDictionary<Int2, object>();
             PipelinePerformance = new ConcurrentDictionary<string, long>();
 
@@ -193,6 +194,20 @@ namespace AppleCinnamon
                     _waterBlockEffect.GetTechniqueByIndex(0).GetPassByIndex(0).Description.Signature,
                     VertexSolidBlock.InputElements))
                 {
+                    var blendStateDescription = new BlendStateDescription {AlphaToCoverageEnable = false};
+
+                    blendStateDescription.RenderTarget[0].IsBlendEnabled = true;
+                    blendStateDescription.RenderTarget[0].SourceBlend = BlendOption.SourceAlpha;
+                    blendStateDescription.RenderTarget[0].DestinationBlend = BlendOption.InverseSourceAlpha;
+                    blendStateDescription.RenderTarget[0].BlendOperation = BlendOperation.Add;
+                    blendStateDescription.RenderTarget[0].SourceAlphaBlend = BlendOption.Zero;
+                    blendStateDescription.RenderTarget[0].DestinationAlphaBlend = BlendOption.Zero;
+                    blendStateDescription.RenderTarget[0].AlphaBlendOperation = BlendOperation.Add;
+                    blendStateDescription.RenderTarget[0].RenderTargetWriteMask = ColorWriteMaskFlags.All;
+
+                    var blendState = new BlendState(_graphics.Device, blendStateDescription);
+                    _graphics.Device.ImmediateContext.OutputMerger.SetBlendState(blendState);
+
                     _graphics.Device.ImmediateContext.InputAssembler.InputLayout = inputLayout;
                     _graphics.Device.ImmediateContext.InputAssembler.PrimitiveTopology = PrimitiveTopology.TriangleList;
 
@@ -207,10 +222,12 @@ namespace AppleCinnamon
                             chunk.DrawWater(_graphics.Device);
                         }
                     }
+
+                    _graphics.Device.ImmediateContext.OutputMerger.SetBlendState(null);
                 }
             }
         }
-       
+
         private static readonly IReadOnlyCollection<Int2> Directions = new[]
         {
             new Int2(1, 0),
@@ -247,7 +264,7 @@ namespace AppleCinnamon
             if (IsInitialized)
             {
                 var currentChunkIndex =
-                    new Int2((int) camera.Position.X / Chunk.Size.X, (int) camera.Position.Z / Chunk.Size.Z);
+                    new Int2((int)camera.Position.X / Chunk.Size.X, (int)camera.Position.Z / Chunk.Size.Z);
 
                 QueueChunksByIndex(currentChunkIndex);
             }

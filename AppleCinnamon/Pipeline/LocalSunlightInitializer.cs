@@ -1,5 +1,4 @@
-﻿using System.Collections.Concurrent;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using AppleCinnamon.Settings;
 
 namespace AppleCinnamon.Pipeline
@@ -21,7 +20,8 @@ namespace AppleCinnamon.Pipeline
             {
                 for (var k = 0; k != Chunk.Size.Z; k++)
                 {
-                    var previousWasWater = false;
+
+                    var previousBlock = 0;
                     var topMostFound = false;
 
                     for (var j = Chunk.Size.Y - 1; j > 0; j--)
@@ -29,26 +29,26 @@ namespace AppleCinnamon.Pipeline
                         var index = i + Chunk.SizeXy * (j + Chunk.Height * k);
                         var voxel = voxels[index];
 
-                        if (!topMostFound && voxel.Block == 0)
+                        if (!topMostFound)
                         {
-                            voxels[index] = new Voxel(voxel.Block, 15);
-                            continue;
-                            
-                        }
-                        else if(voxel.Block == VoxelDefinition.Water.Type)
-                        {
-                            topMostFound = true;
-
-                            if (!previousWasWater)
+                            if (voxel.Block == 0)
                             {
-                                waterVoxels.Add(index);
-                                previousWasWater = true;
-                                continue;
+                                voxels[index] = new Voxel(voxel.Block, 15);
+                            }
+                            else
+                            {
+                                topMostFound = true;
                             }
                         }
 
-                        topMostFound = true;
-                        previousWasWater = false;
+
+                        if (voxel.Block == VoxelDefinition.Water.Type &&
+                            previousBlock != VoxelDefinition.Water.Type)
+                        {
+                            waterVoxels.Add(index);
+                        }
+
+                        previousBlock = voxel.Block;
                     }
                 }
             }

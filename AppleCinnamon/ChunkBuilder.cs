@@ -120,26 +120,31 @@ namespace AppleCinnamon
                 var i = index - (k * Chunk.SizeXy * Chunk.Height + j * Chunk.SizeXy);
 
                 var vertexOffset = n * 4;
+                var positionOffset = new Vector3(i, j - 0.1f, k);
+                var light = chunk.Voxels[index].Lightness;
+
                 for (var m = 0; m < topOffsetVertices.Length; m++)
                 {
-                    var position = topOffsetVertices[m] + chunk.OffsetVector + new Vector3(i, j, k);
+                    var position = topOffsetVertices[m] + chunk.OffsetVector + positionOffset;
                     var textureUv = UvOffsets[m] + waterTexture;
 
                     vertices[vertexOffset + m] =
-                        new VertexSolidBlock(position, textureUv, 0, chunk.Voxels[index].Lightness);
+                        new VertexSolidBlock(position, textureUv, 0, light);
                 }
 
                 var indexOffset = n * 6;
 
-                indexes[indexOffset + 0] = (ushort)(vertexOffset + 1);
-                indexes[indexOffset + 1] = (ushort)(vertexOffset + 3);
-                indexes[indexOffset + 2] = (ushort)(vertexOffset + 4);
-                indexes[indexOffset + 3] = (ushort)(vertexOffset + 1);
-                indexes[indexOffset + 4] = (ushort)(vertexOffset + 2);
-                indexes[indexOffset + 5] = (ushort)(vertexOffset + 3);
+                indexes[indexOffset + 0] = (ushort)(vertexOffset + 0);
+                indexes[indexOffset + 1] = (ushort)(vertexOffset + 2);
+                indexes[indexOffset + 2] = (ushort)(vertexOffset + 3);
+                indexes[indexOffset + 3] = (ushort)(vertexOffset + 0);
+                indexes[indexOffset + 4] = (ushort)(vertexOffset + 1);
+                indexes[indexOffset + 5] = (ushort)(vertexOffset + 2);
             }
 
-            return new FaceBuffer(indexes.Length, Buffer.Create(device, BindFlags.VertexBuffer, vertices),
+            return new FaceBuffer(
+                indexes.Length, 
+                Buffer.Create(device, BindFlags.VertexBuffer, vertices),
                 Buffer.Create(device, BindFlags.IndexBuffer, indexes));
         }
 

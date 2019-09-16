@@ -26,13 +26,14 @@ namespace AppleCinnamon
         public readonly Factory D2dFactory;
         public readonly SharpDX.DirectWrite.Factory DirectWrite;
 
+        public const float ScreenSizeScale = 0.5f;
 
         public Graphics()
         {
             RenderForm = new RenderForm("Apple & Cinnamon")
             {
-                Width = (int)(Screen.PrimaryScreen.Bounds.Width * 0.9f),
-                Height = (int)(Screen.PrimaryScreen.Bounds.Height * 0.9f),
+                Width = (int)(Screen.PrimaryScreen.Bounds.Width * ScreenSizeScale),
+                Height = (int)(Screen.PrimaryScreen.Bounds.Height * ScreenSizeScale),
                 StartPosition = FormStartPosition.CenterScreen
             };
 
@@ -70,7 +71,6 @@ namespace AppleCinnamon
                 CpuAccessFlags = CpuAccessFlags.None,
                 OptionFlags = ResourceOptionFlags.None
             }));
-
 
             DirectWrite = new SharpDX.DirectWrite.Factory();
             Device.ImmediateContext.Rasterizer.SetViewport(new Viewport(0, 0, RenderForm.ClientSize.Width, RenderForm.ClientSize.Height, 0.0f, 1.0f));
