@@ -38,7 +38,7 @@ namespace AppleCinnamon.Settings
         public static readonly VoxelDefinition[] DefinitionByType = new VoxelDefinition[255];
 
         public static readonly VoxelDefinition Air = new VoxelDefinition(0, null, 0, Bool3.True, true, true, Vector3.One, Vector3.Zero, false);
-        public static readonly VoxelDefinition Water = new BlockDefinitionBuilder(1).WithAllSideTexture(15, 12).AsSprite().Build();
+        public static readonly VoxelDefinition Water = new BlockDefinitionBuilder(1).WithAllSideTexture(13, 12).AsSprite().AsPermeable().Build();
         public static readonly VoxelDefinition Leaves = new BlockDefinitionBuilder(2).WithAllSideTexture(15, 0).Build();
         public static readonly VoxelDefinition Lava = new BlockDefinitionBuilder(3).WithAllSideTexture(15, 15).Build();
         

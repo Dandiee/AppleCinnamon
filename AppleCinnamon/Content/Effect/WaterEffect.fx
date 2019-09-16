@@ -12,6 +12,8 @@ float3 lightDirection = float3(-.3, -1, -0.2);
 float4 SunDirection;
 float4 SunColor;
 
+float2 TextureOffset;
+
 SamplerState SampleType;
 
 struct VertexShaderInput
@@ -36,7 +38,7 @@ VertexShaderOutput VertexShaderFunction(VertexShaderInput input)
 	float4 position = float4(input.Position.xyz, 1);
 	
     output.Position = mul(position, WorldViewProjection);
-	output.TexCoords = input.TexCoords;
+	output.TexCoords = input.TexCoords + float2(TextureOffset.x, TextureOffset.y);
 	output.AmbientOcclusion = input.AmbientOcclusion;
 	
     return output;

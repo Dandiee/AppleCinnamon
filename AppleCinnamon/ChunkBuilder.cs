@@ -109,7 +109,6 @@ namespace AppleCinnamon
             var topOffsetVertices = FaceVertices[Face.Top];
             var vertices = new VertexSolidBlock[chunk.TopMostWaterVoxels.Count * 4];
             var indexes = new ushort[chunk.TopMostWaterVoxels.Count * 6];
-            var waterTexture = VoxelDefinition.Water.Textures[Face.Top];
 
             for (var n = 0; n < chunk.TopMostWaterVoxels.Count; n++)
             {
@@ -126,7 +125,7 @@ namespace AppleCinnamon
                 for (var m = 0; m < topOffsetVertices.Length; m++)
                 {
                     var position = topOffsetVertices[m] + chunk.OffsetVector + positionOffset;
-                    var textureUv = UvOffsets[m] + waterTexture;
+                    var textureUv = WaterUvOffsets[m];
 
                     vertices[vertexOffset + m] =
                         new VertexSolidBlock(position, textureUv, 0, light);

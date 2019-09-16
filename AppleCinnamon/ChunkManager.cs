@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using AppleCinnamon.Pipeline;
 using AppleCinnamon.System;
@@ -10,7 +11,6 @@ using SharpDX;
 using SharpDX.D3DCompiler;
 using SharpDX.Direct3D;
 using SharpDX.Direct3D11;
-using SharpDX.Mathematics.Interop;
 using SharpDX.WIC;
 
 namespace AppleCinnamon
@@ -55,8 +55,7 @@ namespace AppleCinnamon
         private readonly ConcurrentDictionary<Int2, object> _queuedChunks;
         private readonly IChunkUpdater _chunkUpdater;
         private readonly IPipelineProvider _pipelineProvider;
-
-
+        private int _currentWaterTextureOffsetIndex;
 
 
         private TransformBlock<DataflowContext<Int2>, DataflowContext<Chunk>> _pipeline;
@@ -78,6 +77,8 @@ namespace AppleCinnamon
             QueueChunksByIndex(Int2.Zero);
         }
 
+
+
         private void LoadContent()
         {
             _solidBlockEffect = new Effect(_graphics.Device,
@@ -95,7 +96,21 @@ namespace AppleCinnamon
             _waterBlockEffect.GetVariableByName("Textures").AsShaderResource().SetResource(
                 new ShaderResourceView(_graphics.Device,
                     TextureLoader.CreateTexture2DFromBitmap(_graphics.Device,
-                        TextureLoader.LoadBitmap(new ImagingFactory2(), "Content/Texture/terrain.png"))));
+                        TextureLoader.LoadBitmap(new ImagingFactory2(), "Content/Texture/custom_water_still.png"))));
+
+
+            Task.Run(UpdateWaterTexture);
+        }
+
+        private async Task UpdateWaterTexture()
+        {
+            while (true)
+            {
+                _currentWaterTextureOffsetIndex = (_currentWaterTextureOffsetIndex + 1) % 32;
+                _waterBlockEffect.GetVariableByName("TextureOffset").AsVector().Set(new Vector2(0, _currentWaterTextureOffsetIndex * 1 / 32f));
+                await Task.Delay(80);
+
+            }
         }
 
 
@@ -194,7 +209,7 @@ namespace AppleCinnamon
                     _waterBlockEffect.GetTechniqueByIndex(0).GetPassByIndex(0).Description.Signature,
                     VertexSolidBlock.InputElements))
                 {
-                    var blendStateDescription = new BlendStateDescription {AlphaToCoverageEnable = false};
+                    var blendStateDescription = new BlendStateDescription { AlphaToCoverageEnable = false };
 
                     blendStateDescription.RenderTarget[0].IsBlendEnabled = true;
                     blendStateDescription.RenderTarget[0].SourceBlend = BlendOption.SourceAlpha;
