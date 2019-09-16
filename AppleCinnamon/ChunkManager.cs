@@ -31,8 +31,8 @@ namespace AppleCinnamon
 
     public sealed class ChunkManager : IChunkManager
     {
-        public const int ViewDistance = 8;
-        public static readonly int InitialDegreeOfParallelism = 1;// Environment.ProcessorCount;
+        public const int ViewDistance = 12;
+        public static readonly int InitialDegreeOfParallelism = 1; //Environment.ProcessorCount;
 
         // debug fields
         private int _queuedChunksCount;
@@ -282,13 +282,13 @@ namespace AppleCinnamon
             {
                 _solidBlockEffect.GetVariableByName("FogStart").AsScalar().Set(8);
                 _solidBlockEffect.GetVariableByName("FogEnd").AsScalar().Set(64);
-                _solidBlockEffect.GetVariableByName("FogColor").AsVector().Set(new Vector3(0, 0.2f, 1));
+                _solidBlockEffect.GetVariableByName("FogColor").AsVector().Set(new Vector4(0, 0.2f, 1, 0));
             }
             else
             {
                 _solidBlockEffect.GetVariableByName("FogStart").AsScalar().Set(64);
-                _solidBlockEffect.GetVariableByName("FogEnd").AsScalar().Set(128);
-                _solidBlockEffect.GetVariableByName("FogColor").AsVector().Set(new Vector3(0.5f, 0.5f, 0.5f));
+                _solidBlockEffect.GetVariableByName("FogEnd").AsScalar().Set(ViewDistance*Chunk.SizeXy);
+                _solidBlockEffect.GetVariableByName("FogColor").AsVector().Set(new Vector4(0.5f, 0.5f, 0.5f, 1));
             }
 
             if (IsInitialized)

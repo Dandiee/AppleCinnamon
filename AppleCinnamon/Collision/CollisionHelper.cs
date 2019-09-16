@@ -27,7 +27,7 @@ namespace AppleCinnamon.Collision
 
 
 
-                if (voxel.Value.Block > 0)
+                if (voxel.Value.Block > 0 && voxel.Value.Block != VoxelDefinition.Water.Type)
                 {
                     var voxelDefinition = voxel.Value.GetDefinition();
                     if (voxelDefinition.IsUnitSized)

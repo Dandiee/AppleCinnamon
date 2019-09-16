@@ -35,12 +35,29 @@ namespace AppleCinnamon
                 ? "No target"
                 : $"{camera.CurrentCursor.AbsoluteVoxelIndex} (Block: {camera.CurrentCursor.Voxel.Block}, Light: {camera.CurrentCursor.Voxel.Lightness})";
 
+            var targetTargetInfo = "No target target";
+
+            if (camera.CurrentCursor != null)
+            {
+                var targetTarget =
+                    chunkManager.GetVoxel(camera.CurrentCursor.AbsoluteVoxelIndex + camera.CurrentCursor.Direction);
+
+                if (targetTarget != null)
+                {
+                    var address = Chunk.GetVoxelAddress(camera.CurrentCursor.AbsoluteVoxelIndex + camera.CurrentCursor.Direction);
+                    targetTargetInfo = $"Block: {targetTarget.Value.Block}, Light: {targetTarget.Value.Lightness}, " +
+                                       $"Chunk: {address.Value.ChunkIndex.X}, {address.Value.ChunkIndex.Y}, " +
+                                       $"Voxel: {address.Value.RelativeVoxelIndex.X}, {address.Value.RelativeVoxelIndex.Y}, {address.Value.RelativeVoxelIndex.Z}";
+                }
+            }
+
             return $"Finalized chunks {chunkManager.FinalizedChunks}\r\n" +
                    $"Rendered chunks {chunkManager.RenderedChunks}\r\n" +
                    $"Queued chunks {chunkManager.QueuedChunks}\r\n" +
                    $"Current position {camera.Position.ToVector3().ToNonRetardedString()}\r\n"+
                    $"Orientation {camera.LookAt.ToVector3().ToNonRetardedString()}\r\n"+
-                   $"Current target {targetInfo}";
+                   $"Current target {targetInfo}\r\n" +
+                   $"Target target: {targetTargetInfo}";
         }
 
         private string BuildRightText(IChunkManager chunkManager, Game game)

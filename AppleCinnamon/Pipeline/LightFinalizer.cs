@@ -93,8 +93,7 @@ namespace AppleCinnamon.Pipeline
                     var sourceVoxel = sourceVoxels[sourceIndex];
                     var sourceDefinition = VoxelDefinition.DefinitionByType[sourceVoxel.Block];
 
-                    if (!(step.Y == 1 && sourceDefinition.IsTransmittance.X || 
-                          step.X == 1 && sourceDefinition.IsTransmittance.Z))
+                    if (!sourceDefinition.IsTransparent)
                     {
                         continue;
                     }
@@ -106,8 +105,7 @@ namespace AppleCinnamon.Pipeline
                     var targetVoxel = targetVoxels[targetIndex];
                     var targetDefinition = VoxelDefinition.DefinitionByType[targetVoxel.Block];
 
-                    if (!(step.Y == 1 && targetDefinition.IsTransmittance.X ||
-                          step.X == 1 && targetDefinition.IsTransmittance.Z))
+                    if (!targetDefinition.IsTransparent)
                     {
                         continue;
                     }
@@ -135,12 +133,10 @@ namespace AppleCinnamon.Pipeline
 
         private void PropagateSunlight(Voxel[] voxels, int sourceIndexX, int sourceIndexY, int sourceIndexZ, VoxelDefinition sourceDefinition, Voxel sourceVoxel)
         {
-            if (sourceDefinition.IsTransmittance.Y && sourceVoxel.Lightness > 0)
+            if (sourceDefinition.IsTransparent && sourceVoxel.Lightness > 0)
             {
                 foreach (var direction in Directions2)
                 {
-                    //var dirBool3 = new Bool3(Math.Abs(direction.X) > 0, Math.Abs(direction.Y) > 0, Math.Abs(direction.Z) > 0);
-
                     var neighbourIndexX = sourceIndexX + direction.Item1.X;
                     var neighbourIndexY = sourceIndexY + direction.Item1.Y;
                     var neighbourIndexZ = sourceIndexZ + direction.Item1.Z;

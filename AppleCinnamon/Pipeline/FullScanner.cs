@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using AppleCinnamon.Settings;
+using AppleCinnamon.System;
 using SharpDX;
 
 namespace AppleCinnamon.Pipeline
@@ -34,6 +35,7 @@ namespace AppleCinnamon.Pipeline
                         var index = i + Chunk.SizeXy * (j + Chunk.Height * k);
                         var voxel = chunk.Voxels[index];
                         //var definition = VoxelDefinition.DefinitionByType[voxel.Block];
+
 
                         var hasVisibilityFlag = voxel.Block > 0 && //!definition.IsSprite &&
                                                 voxel.Block != VoxelDefinition.Water.Type;

@@ -26,7 +26,7 @@ namespace AppleCinnamon
         public readonly Factory D2dFactory;
         public readonly SharpDX.DirectWrite.Factory DirectWrite;
 
-        public const float ScreenSizeScale = 0.5f;
+        public const float ScreenSizeScale = 0.9f;
 
         public Graphics()
         {
