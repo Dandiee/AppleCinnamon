@@ -108,7 +108,7 @@ namespace AppleCinnamon
 
             var topOffsetVertices = FaceVertices[Face.Top];
             var vertices = new VertexSolidBlock[chunk.TopMostWaterVoxels.Count * 4];
-            var indexes = new ushort[chunk.TopMostWaterVoxels.Count * 6];
+            var indexes = new ushort[chunk.TopMostWaterVoxels.Count * 6 * 2];
 
             for (var n = 0; n < chunk.TopMostWaterVoxels.Count; n++)
             {
@@ -131,7 +131,7 @@ namespace AppleCinnamon
                         new VertexSolidBlock(position, textureUv, 0, light);
                 }
 
-                var indexOffset = n * 6;
+                var indexOffset = n * 6 * 2;
 
                 indexes[indexOffset + 0] = (ushort)(vertexOffset + 0);
                 indexes[indexOffset + 1] = (ushort)(vertexOffset + 2);
@@ -139,6 +139,13 @@ namespace AppleCinnamon
                 indexes[indexOffset + 3] = (ushort)(vertexOffset + 0);
                 indexes[indexOffset + 4] = (ushort)(vertexOffset + 1);
                 indexes[indexOffset + 5] = (ushort)(vertexOffset + 2);
+
+                indexes[indexOffset + 6] = (ushort)(vertexOffset + 2);
+                indexes[indexOffset + 7] = (ushort)(vertexOffset + 1);
+                indexes[indexOffset + 8] = (ushort)(vertexOffset + 0);
+                indexes[indexOffset + 9] = (ushort)(vertexOffset + 3);
+                indexes[indexOffset + 10] = (ushort)(vertexOffset + 2);
+                indexes[indexOffset + 11] = (ushort)(vertexOffset + 0);
             }
 
             return new FaceBuffer(

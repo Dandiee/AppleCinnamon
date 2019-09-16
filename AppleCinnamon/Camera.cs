@@ -28,6 +28,8 @@ namespace AppleCinnamon
         public VoxelDefinition VoxelInHand { get; private set; }
 
         public bool IsInAir { get; set; }
+        public bool IsInWater { get; set; }
+
         public Keyboard Keyboard { get; set; }
         public Mouse Mouse { get; set; }
 
@@ -84,6 +86,16 @@ namespace AppleCinnamon
             {
                 boxDrawer.Set("cursor",
                     new BoxDetails(CurrentCursor.Definition.Size * 1.05f, CurrentCursor.AbsoluteVoxelIndex.ToVector3() + CurrentCursor.Definition.Translation, Color.Yellow.ToColor3()));
+            }
+
+
+            if (VoxelDefinition.Water.Type == chunkManager.GetVoxel(Position.ToVector3().Round())?.Block)
+            {
+                IsInWater = true;
+            }
+            else
+            {
+                IsInWater = false;
             }
         }
 
@@ -187,6 +199,12 @@ namespace AppleCinnamon
             var t = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
             Velocity += WorldSettings.Gravity * t;
+
+            if (IsInWater)
+            {
+                Velocity += WorldSettings.Gravity * -t;
+            }
+
             Yaw = MathUtil.Mod2PI(Yaw + CurrentMouseState.X * -MouseSensitivity); // MathUtil.Mod2PI(
             Pitch = MathUtil.Clamp(Pitch + CurrentMouseState.Y * -MouseSensitivity, -MathUtil.PiOverTwo,
                 MathUtil.PiOverTwo);
@@ -230,8 +248,11 @@ namespace AppleCinnamon
                     JumpVelocity * (CurrentKeyboardState.IsPressed(Key.LeftShift) ? SprintSpeedFactor : 1), Velocity.Z);
             }
 
-            Velocity = new Double3(Velocity.X * MovmentFriction, Velocity.Y, Velocity.Z * MovmentFriction);
+
+            Velocity = new Double3(Velocity.X * MovmentFriction, IsInWater ? Velocity.Y * MovmentFriction : Velocity.Y, Velocity.Z * MovmentFriction);
             Position = Position + Velocity * t;
+
+            
 
             var currentBlock = new Int3((int)Math.Round(Position.X), (int)Math.Round(Position.Y),
                 (int)Math.Round(Position.Z));
@@ -261,6 +282,7 @@ namespace AppleCinnamon
             Projection = Matrix.PerspectiveFovRH(MathUtil.PiOverTwo,
                 _graphics.RenderForm.Width / (float) _graphics.RenderForm.Height, 0.1f, 100000f);
             WorldViewProjection = World * View * Projection;
+            
             BoundingFrustum = new BoundingFrustum(View * Projection);
         }
     }

@@ -11,6 +11,7 @@ using SharpDX;
 using SharpDX.D3DCompiler;
 using SharpDX.Direct3D;
 using SharpDX.Direct3D11;
+using SharpDX.Mathematics.Interop;
 using SharpDX.WIC;
 
 namespace AppleCinnamon
@@ -274,7 +275,21 @@ namespace AppleCinnamon
         public void Update(Camera camera)
         {
             _solidBlockEffect.GetVariableByName("WorldViewProjection").AsMatrix().SetMatrix(camera.WorldViewProjection);
+            _solidBlockEffect.GetVariableByName("EyePosition").AsVector().Set(camera.Position.ToVector3());
             _waterBlockEffect.GetVariableByName("WorldViewProjection").AsMatrix().SetMatrix(camera.WorldViewProjection);
+
+            if (camera.IsInWater)
+            {
+                _solidBlockEffect.GetVariableByName("FogStart").AsScalar().Set(8);
+                _solidBlockEffect.GetVariableByName("FogEnd").AsScalar().Set(64);
+                _solidBlockEffect.GetVariableByName("FogColor").AsVector().Set(new Vector3(0, 0.2f, 1));
+            }
+            else
+            {
+                _solidBlockEffect.GetVariableByName("FogStart").AsScalar().Set(64);
+                _solidBlockEffect.GetVariableByName("FogEnd").AsScalar().Set(128);
+                _solidBlockEffect.GetVariableByName("FogColor").AsVector().Set(new Vector3(0.5f, 0.5f, 0.5f));
+            }
 
             if (IsInitialized)
             {

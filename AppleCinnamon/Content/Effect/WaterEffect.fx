@@ -54,6 +54,8 @@ float4 PixelShaderFunction(VertexShaderOutput input) : SV_Target
 {
     float4 color = Textures.Sample(SampleType, input.TexCoords) * input.AmbientOcclusion;
 
+	
+
 	return float4(color.xyz, 0.7);
 }
 

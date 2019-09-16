@@ -70,7 +70,7 @@ namespace AppleCinnamon.Pipeline
                     for (var k = 0; k < Chunk.Size.Z; k++)
                     {
                         var originalVoxel = voxels[i + Chunk.Size.X * (j + Chunk.Size.Y * k)];
-                        if (originalVoxel.Block == 0)
+                        //if (originalVoxel.Block == 0)
                         {
                             var rnd = (byte) (Noise.CalcPixel3D(
                                                   chunkIndex.X * Chunk.Size.X + i + 500,
