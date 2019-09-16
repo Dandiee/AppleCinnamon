@@ -1,50 +1,63 @@
-float4x4 World;
-float4x4 View;
-float4x4 Projection;
-float3 Normal = float3(0, 1, 0);
-float TextureOffset;
-Texture Textures;
+float4x4 WorldViewProjection;
+float3 Normal;
+Texture2D Textures;
 
-sampler TextureSampler = sampler_state { texture = <Textures> ; magfilter = LINEAR; minfilter = LINEAR; mipfilter=LINEAR; AddressU = mirror; AddressV = mirror;};
-// TODO: add effect parameters here.
+float FogStart = 150;
+float FogEnd = 400;
+float FogEnabled = 1;
+
+float4 ambientColor = float4(0.5, 0.5, 0.5, 1.0);
+float4 diffuseColor = float4(1.0, 1.0, 1.0, 1.0);
+float3 lightDirection = float3(-.3, -1, -0.2);
+float4 SunDirection;
+float4 SunColor;
+
+SamplerState SampleType;
 
 struct VertexShaderInput
 {
-    float4 Position : POSITION0;
-	float2 TexCoords    : TEXCOORD0;
+    float3 Position : POSITION0;
+	float2 TexCoords : TEXCOORD0;
+	float AmbientOcclusion: COLOR0;
 };
+
 
 struct VertexShaderOutput
 {
-    float4 Position : POSITION0;
-	float2 TexCoords    : TEXCOORD0;
+    float4 Position : SV_POSITION; // GECIFONTOS
+	float2 TexCoords : TEXCOORD0;
+	float AmbientOcclusion : COLOR0;
 };
 
 VertexShaderOutput VertexShaderFunction(VertexShaderInput input)
 {
-    VertexShaderOutput output;
-
-    float4 worldPosition = mul(input.Position, World);
-    float4 viewPosition = mul(worldPosition, View);
-    output.Position = mul(viewPosition, Projection);
-    output.TexCoords = float2(input.TexCoords.x, input.TexCoords.y + TextureOffset);
-
+	
+    VertexShaderOutput output = (VertexShaderOutput)0;
+	float4 position = float4(input.Position.xyz, 1);
+	
+    output.Position = mul(position, WorldViewProjection);
+	output.TexCoords = input.TexCoords;
+	output.AmbientOcclusion = input.AmbientOcclusion;
+	
     return output;
 }
 
-float4 PixelShaderFunction(VertexShaderOutput input) : COLOR0
+float ComputeFogFactor(float d)
 {
-	float4 c = tex2D(TextureSampler, input.TexCoords); 
-    return float4(c.xyz, 0.5f);
+    return clamp((d - FogStart) / (FogEnd - FogStart), 0, 1) * FogEnabled;
 }
 
-technique Technique1
-{
-    pass Pass1
-    {
-        // TODO: set renderstates here.
 
-        VertexShader = compile vs_2_0 VertexShaderFunction();
-        PixelShader = compile ps_2_0 PixelShaderFunction();
+float4 PixelShaderFunction(VertexShaderOutput input) : SV_Target
+{
+    return Textures.Sample(SampleType, input.TexCoords) * input.AmbientOcclusion;
+}
+
+technique10 Render
+{
+	pass P0
+	{
+		SetVertexShader( CompileShader( vs_4_0, VertexShaderFunction() ) );
+		SetPixelShader( CompileShader( ps_4_0, PixelShaderFunction() ) );
     }
 }

@@ -49,6 +49,7 @@ namespace AppleCinnamon
 
         private readonly Graphics _graphics;
         private Effect _solidBlockEffect;
+        private Effect _waterBlockEffect;
         private readonly ConcurrentDictionary<Int2, Chunk> _chunks;
         private readonly ConcurrentDictionary<Int2, object> _queuedChunks;
         private readonly IChunkUpdater _chunkUpdater;
@@ -82,6 +83,15 @@ namespace AppleCinnamon
                 ShaderBytecode.CompileFromFile("Content/Effect/SolidBlockEffect.fx", "fx_5_0"));
 
             _solidBlockEffect.GetVariableByName("Textures").AsShaderResource().SetResource(
+                new ShaderResourceView(_graphics.Device,
+                    TextureLoader.CreateTexture2DFromBitmap(_graphics.Device,
+                        TextureLoader.LoadBitmap(new ImagingFactory2(), "Content/Texture/terrain.png"))));
+
+
+            _waterBlockEffect = new Effect(_graphics.Device,
+                ShaderBytecode.CompileFromFile("Content/Effect/WaterEffect.fx", "fx_5_0"));
+
+            _waterBlockEffect.GetVariableByName("Textures").AsShaderResource().SetResource(
                 new ShaderResourceView(_graphics.Device,
                     TextureLoader.CreateTexture2DFromBitmap(_graphics.Device,
                         TextureLoader.LoadBitmap(new ImagingFactory2(), "Content/Texture/terrain.png"))));
@@ -178,6 +188,26 @@ namespace AppleCinnamon
                         }
                     }
                 }
+
+                using (var inputLayout = new InputLayout(_graphics.Device,
+                    _waterBlockEffect.GetTechniqueByIndex(0).GetPassByIndex(0).Description.Signature,
+                    VertexSolidBlock.InputElements))
+                {
+                    _graphics.Device.ImmediateContext.InputAssembler.InputLayout = inputLayout;
+                    _graphics.Device.ImmediateContext.InputAssembler.PrimitiveTopology = PrimitiveTopology.TriangleList;
+
+                    var pass = _waterBlockEffect.GetTechniqueByIndex(0).GetPassByIndex(0);
+                    pass.Apply(_graphics.Device.ImmediateContext);
+
+                    foreach (var chunk in _chunks.Values)
+                    {
+                        var bb = chunk.BoundingBox;
+                        if (camera.BoundingFrustum.Contains(ref bb) != ContainmentType.Disjoint)
+                        {
+                            chunk.DrawWater(_graphics.Device);
+                        }
+                    }
+                }
             }
         }
        
@@ -212,6 +242,7 @@ namespace AppleCinnamon
         public void Update(Camera camera)
         {
             _solidBlockEffect.GetVariableByName("WorldViewProjection").AsMatrix().SetMatrix(camera.WorldViewProjection);
+            _waterBlockEffect.GetVariableByName("WorldViewProjection").AsMatrix().SetMatrix(camera.WorldViewProjection);
 
             if (IsInitialized)
             {

@@ -18,6 +18,7 @@ namespace AppleCinnamon
 
         private Cube<FaceBuffer> _bufferCube;
         private KeyValuePair<Face, FaceBuffer>[] _buffers;
+        private FaceBuffer _waterBuffer;
 
         private static readonly Cube<Vector3> Normals = new Cube<Vector3>(Vector3.UnitY, -Vector3.UnitY,
             -Vector3.UnitX, Vector3.UnitX, -Vector3.UnitZ, Vector3.UnitZ);
@@ -165,7 +166,7 @@ namespace AppleCinnamon
             ChunkIndexVector = BoundingBox.Center;
         }
 
-        public void SetBuffers(Cube<FaceBuffer> buffers)
+        public void SetBuffers(Cube<FaceBuffer> buffers, FaceBuffer waterBuffer)
         {
             if (_bufferCube != null)
             {
@@ -186,9 +187,23 @@ namespace AppleCinnamon
                 }
             }
 
+            if (_waterBuffer != null)
+            {
+                if (!_waterBuffer.IndexBuffer.IsDisposed)
+                {
+                    _waterBuffer.IndexBuffer?.Dispose();
+                }
+                if (!_waterBuffer.VertexBuffer.IsDisposed)
+                {
+                    _waterBuffer.VertexBuffer?.Dispose();
+                }
+            }
+
+            _waterBuffer = waterBuffer;
             _bufferCube = buffers;
             _buffers = _bufferCube.GetAll().ToArray();
         }
+
 
         public static Int2? GetChunkIndex(Int3 absoluteVoxelIndex)
         {
@@ -234,6 +249,17 @@ namespace AppleCinnamon
                 device.ImmediateContext.InputAssembler.SetVertexBuffers(0, new VertexBufferBinding(buffer.VertexBuffer, VertexSolidBlock.Size, 0));
                 device.ImmediateContext.InputAssembler.SetIndexBuffer(buffer.IndexBuffer, Format.R16_UInt, 0);
                 device.ImmediateContext.DrawIndexed(buffer.IndexCount, 0, 0);
+            }
+        }
+
+        public void DrawWater(Device device)
+        {
+            if (_waterBuffer != null && _waterBuffer.IndexCount > 0)
+            {
+                device.ImmediateContext.InputAssembler.SetVertexBuffers(0,
+                    new VertexBufferBinding(_waterBuffer.VertexBuffer, VertexSolidBlock.Size, 0));
+                device.ImmediateContext.InputAssembler.SetIndexBuffer(_waterBuffer.IndexBuffer, Format.R16_UInt, 0);
+                device.ImmediateContext.DrawIndexed(_waterBuffer.IndexCount, 0, 0);
             }
         }
     }

@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 using AppleCinnamon.Settings;
 using AppleCinnamon.System;
 using AppleCinnamon.Vertices;
@@ -24,8 +23,6 @@ namespace AppleCinnamon
                 new ChunkBuildFaceResult(Int3.UnitX),
                 new ChunkBuildFaceResult(-Int3.UnitZ),
                 new ChunkBuildFaceResult(Int3.UnitZ));
-
-            var vertices = verticesCube.GetAll().ToList();
 
             var visibilityFlags = chunk.VisibilityFlags;
             foreach (var visibilityFlag in visibilityFlags)
@@ -81,6 +78,8 @@ namespace AppleCinnamon
             }
 
 
+
+
             var buffers = verticesCube.Transform(face =>
             {
                 if (face.Indexes.Count > 0)
@@ -95,7 +94,53 @@ namespace AppleCinnamon
                 return null;
             });
 
-            chunk.SetBuffers(buffers);
+            var waterBuffer = AddWaterFace(chunk, device);
+
+            chunk.SetBuffers(buffers, waterBuffer);
+        }
+
+        private FaceBuffer AddWaterFace(Chunk chunk, Device device)
+        {
+            if (chunk.TopMostWaterVoxels.Count == 0)
+            {
+                return null;
+            }
+
+            var topOffsetVertices = FaceVertices[Face.Top];
+            var vertices = new VertexSolidBlock[chunk.TopMostWaterVoxels.Count * 4];
+            var indexes = new ushort[chunk.TopMostWaterVoxels.Count * 6];
+            var waterTexture = VoxelDefinition.Water.Textures[Face.Top];
+
+            for (var n = 0; n < chunk.TopMostWaterVoxels.Count; n++)
+            {
+                var index = chunk.TopMostWaterVoxels[n];
+
+                var k = index / (Chunk.SizeXy * Chunk.Height);
+                var j = (index - k * Chunk.SizeXy * Chunk.Height) / Chunk.SizeXy;
+                var i = index - (k * Chunk.SizeXy * Chunk.Height + j * Chunk.SizeXy);
+
+                var vertexOffset = n * 4;
+                for (var m = 0; m < topOffsetVertices.Length; m++)
+                {
+                    var position = topOffsetVertices[m] + chunk.OffsetVector + new Vector3(i, j, k);
+                    var textureUv = UvOffsets[m] + waterTexture;
+
+                    vertices[vertexOffset + m] =
+                        new VertexSolidBlock(position, textureUv, 0, chunk.Voxels[index].Lightness);
+                }
+
+                var indexOffset = n * 6;
+
+                indexes[indexOffset + 0] = (ushort)(vertexOffset + 1);
+                indexes[indexOffset + 1] = (ushort)(vertexOffset + 3);
+                indexes[indexOffset + 2] = (ushort)(vertexOffset + 4);
+                indexes[indexOffset + 3] = (ushort)(vertexOffset + 1);
+                indexes[indexOffset + 4] = (ushort)(vertexOffset + 2);
+                indexes[indexOffset + 5] = (ushort)(vertexOffset + 3);
+            }
+
+            return new FaceBuffer(indexes.Length, Buffer.Create(device, BindFlags.VertexBuffer, vertices),
+                Buffer.Create(device, BindFlags.IndexBuffer, indexes));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -72,8 +72,6 @@ namespace AppleCinnamon
 
         public void Draw()
         {
-
-
             if (_boxes.Count == 0)
             {
                 return;
@@ -110,6 +108,8 @@ namespace AppleCinnamon
                 }
             }
         }
+
+
 
         private void UpdateVertexBuffer(Device device)
         {
