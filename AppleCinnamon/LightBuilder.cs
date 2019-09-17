@@ -168,7 +168,7 @@ namespace AppleCinnamon
             for (var j = relativeIndex.Y - 1; j > 0; j--)
             {
                 var voxel = chunk.GetLocalVoxel(relativeIndex.X, j, relativeIndex.Z);
-                if (voxel.GetDefinition().IsTransmittance.Y)
+                if (voxel.GetDefinition().IsTransparent)
                 {
                     var resetVoxelIndex = new Int3(relativeIndex.X, j, relativeIndex.Z);
                     chunk.SetLocalVoxel(resetVoxelIndex, new Voxel(voxel.Block, toLightness));

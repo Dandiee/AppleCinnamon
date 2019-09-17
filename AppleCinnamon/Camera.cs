@@ -11,7 +11,7 @@ namespace AppleCinnamon
     public class Camera
     {
         private readonly Graphics _graphics;
-        private static readonly TimeSpan BuildCooldown = TimeSpan.FromMilliseconds(0);
+        private static readonly TimeSpan BuildCooldown = TimeSpan.FromMilliseconds(100);
         private DateTime _lastModification;
 
         public Double3 Position { get; set; }
@@ -241,7 +241,7 @@ namespace AppleCinnamon
             }
 
 
-            if (!IsInAir && CurrentKeyboardState.IsPressed(Key.Space))
+            if ((!IsInAir || IsInWater) && CurrentKeyboardState.IsPressed(Key.Space))
             {
                 IsInAir = true;
                 Velocity = new Double3(Velocity.X,

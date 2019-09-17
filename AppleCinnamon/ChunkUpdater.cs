@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AppleCinnamon.Settings;
 using AppleCinnamon.System;
 using SharpDX;
 
@@ -98,8 +99,9 @@ namespace AppleCinnamon
                 var neighbour = relativeIndex + direction.Item1;
                 var neighbourVoxel =
                     chunk.GetLocalWithNeighbours(neighbour.X, neighbour.Y, neighbour.Z, out var neighbourAddress);
+                var neighbourDefinition = VoxelDefinition.DefinitionByType[neighbourVoxel.Block];
 
-                if (neighbourVoxel.Block != 0)
+                if (!neighbourDefinition.IsTransparent)
                 {
                     var neighbourChunk = chunk.Neighbours[neighbourAddress.ChunkIndex];
                     var neighbourIndex = neighbourAddress.RelativeVoxelIndex.ToIndex();

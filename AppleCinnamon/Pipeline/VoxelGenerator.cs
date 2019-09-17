@@ -70,13 +70,32 @@ namespace AppleCinnamon.Pipeline
                     for (var k = 0; k < Chunk.Size.Z; k++)
                     {
                         var originalVoxel = voxels[i + Chunk.Size.X * (j + Chunk.Size.Y * k)];
+                        
                         //if (originalVoxel.Block == 0)
                         {
+
+                            var verticalScale = 1f;
+
+                            if (j > 100)
+                            {
+                                if (j > 160)
+                                {
+                                    verticalScale = 0;
+                                }
+                                else
+                                {
+                                    verticalScale = (160f - j) / 60f;
+                                }
+                                
+                            }
+
+                            
+
                             var rnd = (byte) (Noise.CalcPixel3D(
                                                   chunkIndex.X * Chunk.Size.X + i + 500,
                                                   j,
                                                   chunkIndex.Y * Chunk.Size.Z + k + 500,
-                                                  0.01f) * 0.7);
+                                                  0.01f) * 0.7 * verticalScale);
 
                             var isBlock = rnd > 128;
 
