@@ -30,11 +30,13 @@ namespace AppleCinnamon.Pipeline
                 PropagateLightSource(chunk, lightPropagationVoxels[c], lightPropagationVoxels);
             }
 
+            chunk.LightPropagationVoxels.Clear();
+            chunk.LightPropagationVoxels = null;
+
             sw.Stop();
 
             return new DataflowContext<Chunk>(context, context.Payload, sw.ElapsedMilliseconds, nameof(LocalLocalLightPropagationService));
         }
-
 
 
         private void PropagateLightSource(Chunk chunk, int lightSourceIndex, List<int> lightSources)

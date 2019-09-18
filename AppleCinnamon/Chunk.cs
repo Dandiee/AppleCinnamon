@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using AppleCinnamon.System;
@@ -27,11 +28,11 @@ namespace AppleCinnamon
 
 
         public readonly Dictionary<int, byte> VisibilityFlags;
-        public readonly List<int> PendingLeftVoxels;
-        public readonly List<int> PendingRightVoxels;
-        public readonly List<int> PendingFrontVoxels;
-        public readonly List<int> PendingBackVoxels;
-        public readonly List<int> LightPropagationVoxels;
+        public List<int> PendingLeftVoxels;
+        public List<int> PendingRightVoxels;
+        public List<int> PendingFrontVoxels;
+        public List<int> PendingBackVoxels;
+        public List<int> LightPropagationVoxels;
         public readonly List<int> TopMostWaterVoxels;
 
         public Int2 ChunkIndex { get; }

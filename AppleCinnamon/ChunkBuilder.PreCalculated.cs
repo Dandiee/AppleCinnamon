@@ -1,10 +1,5 @@
-﻿using System.Linq;
-using System.Runtime.CompilerServices;
-using AppleCinnamon.Settings;
-using AppleCinnamon.System;
-using AppleCinnamon.Vertices;
+﻿using AppleCinnamon.System;
 using SharpDX;
-using SharpDX.Direct3D11;
 
 namespace AppleCinnamon
 {

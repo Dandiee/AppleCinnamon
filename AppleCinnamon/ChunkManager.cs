@@ -11,7 +11,6 @@ using SharpDX;
 using SharpDX.D3DCompiler;
 using SharpDX.Direct3D;
 using SharpDX.Direct3D11;
-using SharpDX.Mathematics.Interop;
 using SharpDX.WIC;
 
 namespace AppleCinnamon
@@ -31,8 +30,8 @@ namespace AppleCinnamon
 
     public sealed class ChunkManager : IChunkManager
     {
-        public const int ViewDistance = 12;
-        public static readonly int InitialDegreeOfParallelism = 1; //Environment.ProcessorCount;
+        public const int ViewDistance = 32;
+        public static readonly int InitialDegreeOfParallelism = Environment.ProcessorCount;
 
         // debug fields
         private int _queuedChunksCount;

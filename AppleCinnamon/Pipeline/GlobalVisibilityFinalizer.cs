@@ -80,10 +80,25 @@ namespace AppleCinnamon.Pipeline
             }
 
             sw.Stop();
-            
+
+            CleanUpMemory(chunk);
+
+
             return new DataflowContext<Chunk>(context, chunk, sw.ElapsedMilliseconds, nameof(GlobalVisibilityFinalizer));
         }
 
+        private void CleanUpMemory(Chunk chunk)
+        {
+            chunk.PendingLeftVoxels.Clear();
+            chunk.PendingRightVoxels.Clear();
+            chunk.PendingFrontVoxels.Clear();
+            chunk.PendingBackVoxels.Clear();
 
+
+            chunk.PendingLeftVoxels = null;
+            chunk.PendingRightVoxels = null;
+            chunk.PendingFrontVoxels = null;
+            chunk.PendingBackVoxels = null;
+        }
     }
 }

@@ -57,7 +57,9 @@ namespace AppleCinnamon.Pipeline
                 var offset = new Int2(Math.Sign(edge.Y), Math.Sign(edge.X));
                 ProcessEdge(chunk.Neighbours[edge + offset], edgeChunk);
                 ProcessEdge(chunk.Neighbours[edge - offset], edgeChunk);
+
                 ProcessEdge(edgeChunk, chunk);
+
             }
 
 
