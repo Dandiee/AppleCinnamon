@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using AppleCinnamon.Settings;
 using AppleCinnamon.System;
 using AppleCinnamon.Vertices;
@@ -12,6 +14,18 @@ namespace AppleCinnamon
     public interface IChunkBuilder
     {
         void BuildChunk(Device device, Chunk chunk);
+    }
+
+
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public struct ChunkConstant
+    {
+        public Vector4 ChunkOffset;
+
+        public ChunkConstant(Vector4 chunkOffset)
+        {
+            ChunkOffset = chunkOffset;
+        }
     }
 
     public sealed partial class ChunkBuilder : IChunkBuilder
@@ -86,10 +100,14 @@ namespace AppleCinnamon
             {
                 if (face.Indexes.Count > 0)
                 {
+                    var chunkConstant = new ChunkConstant(new Vector4(Chunk.SizeXy * chunk.ChunkIndex.X, 0,
+                        Chunk.SizeXy * chunk.ChunkIndex.Y, 0));
+
                     return new FaceBuffer(
                         face.Indexes.Count,
                         Buffer.Create(device, BindFlags.VertexBuffer, face.Vertices.ToArray()),
-                        Buffer.Create(device, BindFlags.IndexBuffer, face.Indexes.ToArray())
+                        Buffer.Create(device, BindFlags.IndexBuffer, face.Indexes.ToArray()),
+                        Buffer.Create(device, BindFlags.ConstantBuffer, ref chunkConstant, 16, ResourceUsage.Default, CpuAccessFlags.None, ResourceOptionFlags.None, 0)
                     );
                 }
 
@@ -153,7 +171,7 @@ namespace AppleCinnamon
             return new FaceBuffer(
                 indexes.Length, 
                 Buffer.Create(device, BindFlags.VertexBuffer, vertices),
-                Buffer.Create(device, BindFlags.IndexBuffer, indexes));
+                Buffer.Create(device, BindFlags.IndexBuffer, indexes), null);
         }
 
 
@@ -208,7 +226,7 @@ namespace AppleCinnamon
 
 
 
-        private uint GetCompressedVertexData(int i, int j, int k, int u, int v, int x, int y, int z, int lightness, int ambientNeighbors)
+        private TinySolidBlock GetCompressedVertexData(int i, int j, int k, int u, int v, int x, int y, int z, int lightness, int ambientNeighbors)
         {
             var c = 1;
 
@@ -249,7 +267,7 @@ namespace AppleCinnamon
                 throw new Exception();
             }
 
-            return data;
+            return new TinySolidBlock(data);
         }
     }
 }

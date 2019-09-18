@@ -27,4 +27,22 @@ namespace AppleCinnamon.Vertices
         public float AmbientOcclusion;
     }
 
+
+    public struct TinySolidBlock
+    {
+        public const int Size = 4;
+
+        public static readonly InputElement[] InputElements = 
+        {
+            new InputElement("POSITION", 0, Format.R32_UInt, 0, 0)
+        };
+
+        public TinySolidBlock(uint data)
+        {
+            Position = data;
+        }
+
+        public uint Position;
+    }
+
 }

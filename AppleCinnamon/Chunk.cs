@@ -235,7 +235,7 @@ namespace AppleCinnamon
             return new VoxelAddress(chunkIndex.Value, voxelIndex);
         }
 
-        public void Draw(Device device, Vector3 currentChunkIndexVector, Effect solidBlockEffect, EffectPass pass)
+        public void Draw(Device device, Vector3 currentChunkIndexVector)
         {
             foreach (var bufferFace in _buffers)
             {
@@ -248,12 +248,8 @@ namespace AppleCinnamon
                     continue;
                 }
 
-                var offset = normal / 2f + new Vector3(ChunkIndex.X * SizeXy, 0, ChunkIndex.Y * SizeXy);
-
-                solidBlockEffect.GetVariableByName("PositionOffset").AsVector().Set(offset);
-                pass.Apply(device.ImmediateContext);
-
-                device.ImmediateContext.InputAssembler.SetVertexBuffers(0, new VertexBufferBinding(buffer.VertexBuffer, VertexSolidBlock.Size, 0));
+                device.ImmediateContext.VertexShader.SetConstantBuffer(0, buffer.ConstantBuffer);
+                device.ImmediateContext.InputAssembler.SetVertexBuffers(0, new VertexBufferBinding(buffer.VertexBuffer, TinySolidBlock.Size, 0));
                 device.ImmediateContext.InputAssembler.SetIndexBuffer(buffer.IndexBuffer, Format.R16_UInt, 0);
                 device.ImmediateContext.DrawIndexed(buffer.IndexCount, 0, 0);
             }

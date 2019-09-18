@@ -11,6 +11,7 @@ using SharpDX;
 using SharpDX.D3DCompiler;
 using SharpDX.Direct3D;
 using SharpDX.Direct3D11;
+using SharpDX.DXGI;
 using SharpDX.WIC;
 
 namespace AppleCinnamon
@@ -30,7 +31,7 @@ namespace AppleCinnamon
 
     public sealed class ChunkManager : IChunkManager
     {
-        public const int ViewDistance = 8;
+        public const int ViewDistance = 64;
         public static readonly int InitialDegreeOfParallelism = Environment.ProcessorCount;
 
         // debug fields
@@ -186,20 +187,20 @@ namespace AppleCinnamon
             {
 
                 using (var inputLayout = new InputLayout(_graphics.Device,
-                    _solidBlockEffect.GetTechniqueByIndex(0).GetPassByIndex(0).Description.Signature,
-                    VertexSolidBlock.InputElements))
+                    _solidBlockEffect.GetTechniqueByIndex(0).GetPassByIndex(0).Description.Signature, TinySolidBlock.InputElements))
                 {
                     _graphics.Device.ImmediateContext.InputAssembler.InputLayout = inputLayout;
                     _graphics.Device.ImmediateContext.InputAssembler.PrimitiveTopology = PrimitiveTopology.TriangleList;
 
                     var pass = _solidBlockEffect.GetTechniqueByIndex(0).GetPassByIndex(0);
-                    
+                    pass.Apply(_graphics.Device.ImmediateContext);
+
                     foreach (var chunk in _chunks.Values)
                     {
                         var bb = chunk.BoundingBox;
                         if (camera.BoundingFrustum.Contains(ref bb) != ContainmentType.Disjoint)
                         {
-                            chunk.Draw(_graphics.Device, camera.CurrentChunkIndexVector, _solidBlockEffect, pass);
+                            chunk.Draw(_graphics.Device, camera.CurrentChunkIndexVector);
                             _renderedChunks++;
                         }
                     }
