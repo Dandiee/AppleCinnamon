@@ -26,4 +26,5 @@ namespace AppleCinnamon.Vertices
         public Vector2 TextureCoordinate;
         public float AmbientOcclusion;
     }
+
 }

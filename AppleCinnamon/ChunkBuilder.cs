@@ -1,9 +1,11 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System;
+using System.Runtime.CompilerServices;
 using AppleCinnamon.Settings;
 using AppleCinnamon.System;
 using AppleCinnamon.Vertices;
 using SharpDX;
 using SharpDX.Direct3D11;
+using Buffer = SharpDX.Direct3D11.Buffer;
 
 namespace AppleCinnamon
 {
@@ -80,27 +82,14 @@ namespace AppleCinnamon
             }
 
 
-            var faces = verticesCube.GetAll();
-            foreach (var item in faces)
-            {
-                item.Value.ToArray();
-                if (item.Value.Vertices.Count > 0)
-                {
-                    var asd = Buffer.Create(device, BindFlags.VertexBuffer, item.Value.VertexArray);
-                    var qwe = Buffer.Create(device, BindFlags.IndexBuffer, item.Value.IndexArray);
-                }
-
-            }
-
-
             var buffers = verticesCube.Transform(face =>
             {
                 if (face.Indexes.Count > 0)
                 {
                     return new FaceBuffer(
                         face.Indexes.Count,
-                        Buffer.Create(device, BindFlags.VertexBuffer, face.VertexArray),
-                        Buffer.Create(device, BindFlags.IndexBuffer, face.IndexArray)
+                        Buffer.Create(device, BindFlags.VertexBuffer, face.Vertices.ToArray()),
+                        Buffer.Create(device, BindFlags.IndexBuffer, face.Indexes.ToArray())
                     );
                 }
 
@@ -171,15 +160,17 @@ namespace AppleCinnamon
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void AddFace(Face face, int relativeIndexX, int relativeIndexY, int relativeIndexZ, ChunkBuildFaceResult faceResult, VoxelDefinition definition, Chunk chunk, Voxel neighbor, Vector3 voxelPositionOffset)
         {
-            var faceVertices = FaceVertices[face];
-            var textureUv = definition.Textures[face];
+            var faceVertices = FaceVerticesIndex[face];
+            //var textureUv = definition.Textures[face];
+            var textureUv = definition.TexturesIndex[face];
             var aoIndexes = AmbientIndexes[face];
             var vertexIndex = faceResult.Vertices.Count - 1;
 
             for (var i = 0; i < 4; i++)
             {
-                var position = (faceVertices[i] * definition.Size) + voxelPositionOffset;
-                var uvCoordinate = UvOffsets[i] + textureUv;
+                var position = faceVertices[i];
+                //var uvCoordinate = UvOffsets[i] + textureUv;
+                var uvCoordinate = UvIndexOffsets[i] + textureUv;
                 var light = neighbor.Lightness;
                 var denominator = 1f;
                 var ambientOcclusion = 0;
@@ -198,7 +189,13 @@ namespace AppleCinnamon
                     else ambientOcclusion++;
                 }
 
-                faceResult.Vertices.Add(new VertexSolidBlock(position, uvCoordinate, ambientOcclusion, light / denominator));
+                //faceResult.Vertices.Add(new VertexSolidBlock(position, uvCoordinate, ambientOcclusion, light / denominator));
+                faceResult.Vertices.Add(GetCompressedVertexData(
+                    relativeIndexX, relativeIndexY, relativeIndexZ,
+                    uvCoordinate.X, uvCoordinate.Y,
+                    position.X, position.Y, position.Z,
+                    light, 
+                    ambientOcclusion));
             }
 
             faceResult.Indexes.Add((ushort)(vertexIndex + 1));
@@ -207,6 +204,52 @@ namespace AppleCinnamon
             faceResult.Indexes.Add((ushort)(vertexIndex + 1));
             faceResult.Indexes.Add((ushort)(vertexIndex + 2));
             faceResult.Indexes.Add((ushort)(vertexIndex + 3));
+        }
+
+
+
+        private uint GetCompressedVertexData(int i, int j, int k, int u, int v, int x, int y, int z, int lightness, int ambientNeighbors)
+        {
+            var c = 1;
+
+            // 33322222|22222111|11111110|00000000
+            // 21098765|43210987|65432109|87654321
+            // ------------------------------------
+            // 65432109|65432109|65432109|87654321
+            // ccccczyx|vvvvuuuu|kkkkjjjj|jjjjiiii
+
+            uint data = (uint)i;
+            data |= (uint)j << 4;
+            data |= (uint)k << 12;
+            data |= (uint)u << 16;
+            data |= (uint)v << 20;
+            data |= (uint)x << 24;
+            data |= (uint)y << 25;
+            data |= (uint)z << 26;
+            data |= (uint)c << 27;
+
+            var iOut = (data & 15);
+            var jOut = (data & 4080) >> 4;
+            var kOut = (data & 61440) >> 12;
+            var uOut = (data & 983040) >> 16;
+            var vOut = (data & 15728640) >> 20;
+            var xOut = (data & 16777216) >> 24;
+            var yOut = (data & 33554432) >> 25;
+            var zOut = (data & 67108864) >> 26;
+
+            if (i != iOut ||
+                j != jOut ||
+                k != kOut ||
+                u != uOut ||
+                v != vOut ||
+                x != xOut ||
+                y != yOut ||
+                z != zOut)
+            {
+                throw new Exception();
+            }
+
+            return data;
         }
     }
 }

@@ -30,7 +30,7 @@ namespace AppleCinnamon
 
     public sealed class ChunkManager : IChunkManager
     {
-        public const int ViewDistance = 32;
+        public const int ViewDistance = 8;
         public static readonly int InitialDegreeOfParallelism = Environment.ProcessorCount;
 
         // debug fields
@@ -81,8 +81,8 @@ namespace AppleCinnamon
 
         private void LoadContent()
         {
-            _solidBlockEffect = new Effect(_graphics.Device,
-                ShaderBytecode.CompileFromFile("Content/Effect/SolidBlockEffect.fx", "fx_5_0"));
+            //_solidBlockEffect = new Effect(_graphics.Device,ShaderBytecode.CompileFromFile("Content/Effect/SolidBlockEffect.fx", "fx_5_0"));
+            _solidBlockEffect = new Effect(_graphics.Device, ShaderBytecode.CompileFromFile("Content/Effect/SmallSolidBlockEffect.fx", "fx_5_0"));
 
             _solidBlockEffect.GetVariableByName("Textures").AsShaderResource().SetResource(
                 new ShaderResourceView(_graphics.Device,
@@ -184,6 +184,7 @@ namespace AppleCinnamon
 
             if (_chunks.Count > 0)
             {
+
                 using (var inputLayout = new InputLayout(_graphics.Device,
                     _solidBlockEffect.GetTechniqueByIndex(0).GetPassByIndex(0).Description.Signature,
                     VertexSolidBlock.InputElements))
@@ -192,14 +193,13 @@ namespace AppleCinnamon
                     _graphics.Device.ImmediateContext.InputAssembler.PrimitiveTopology = PrimitiveTopology.TriangleList;
 
                     var pass = _solidBlockEffect.GetTechniqueByIndex(0).GetPassByIndex(0);
-                    pass.Apply(_graphics.Device.ImmediateContext);
-
+                    
                     foreach (var chunk in _chunks.Values)
                     {
                         var bb = chunk.BoundingBox;
                         if (camera.BoundingFrustum.Contains(ref bb) != ContainmentType.Disjoint)
                         {
-                            chunk.Draw(_graphics.Device, camera.CurrentChunkIndexVector);
+                            chunk.Draw(_graphics.Device, camera.CurrentChunkIndexVector, _solidBlockEffect, pass);
                             _renderedChunks++;
                         }
                     }
@@ -286,7 +286,7 @@ namespace AppleCinnamon
             else
             {
                 _solidBlockEffect.GetVariableByName("FogStart").AsScalar().Set(64);
-                _solidBlockEffect.GetVariableByName("FogEnd").AsScalar().Set(ViewDistance*Chunk.SizeXy);
+                _solidBlockEffect.GetVariableByName("FogEnd").AsScalar().Set(ViewDistance * Chunk.SizeXy);
                 _solidBlockEffect.GetVariableByName("FogColor").AsVector().Set(new Vector4(0.5f, 0.5f, 0.5f, 1));
             }
 

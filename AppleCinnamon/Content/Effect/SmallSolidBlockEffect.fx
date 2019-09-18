@@ -4,6 +4,7 @@ float4 FogColor = float4(.5, .5, .5, 1);
 float FogStart = 64;
 float FogEnd = 256;
 float3 EyePosition;
+float3 PositionOffset;
 
 Texture2D Textures;
 
@@ -11,11 +12,7 @@ SamplerState SampleType;
 
 struct VertexShaderInput
 {
-    float3 Position : POSITION0; // 12
-	float2 TexCoords : TEXCOORD0; // 8
-	float AmbientOcclusion: COLOR0; // 4 == 24 byte
-
-	// 
+	uint RawData : POSITION;
 };
 
 
@@ -35,12 +32,35 @@ VertexShaderOutput VertexShaderFunction(VertexShaderInput input)
 {
 	
     VertexShaderOutput output = (VertexShaderOutput)0;
-	float4 position = float4(input.Position.xyz, 1);
+	
+	int i = (input.RawData & 15);
+	int j = (input.RawData & 4080) >> 4;
+	int k = (input.RawData & 61440) >> 12;
+	int u = (input.RawData & 983040) >> 16;
+	int v = (input.RawData & 15728640) >> 20;
+	int x = (input.RawData & 16777216) >> 24;
+	int y = (input.RawData & 33554432) >> 25;
+	int z = (input.RawData & 67108864) >> 26;
+
+	int c = (input.RawData & 4160749568) >> 27;
+
+	if (x == 0) { x = -0.5; } else { x = 0.5; }
+	if (y == 0) { y = -0.5; } else { y = 0.5; }
+	if (z == 0) { z = -0.5; } else { z = 0.5; }
+	
+	float4 position = float4(
+		i + PositionOffset.x + x, 
+		j + PositionOffset.y + y, 
+		k + PositionOffset.z + z, 1);
+
+	float2 textCoord = float2(u * 1 / 16.0, v * 1 / 16);
 	
     output.Position = mul(position, WorldViewProjection);
-	output.TexCoords = input.TexCoords;
-	output.AmbientOcclusion = input.AmbientOcclusion;
-	output.FogFactor = ComputeFogFactor(distance(EyePosition.xyz, input.Position.xyz));
+	output.TexCoords = textCoord;
+
+	// output.AmbientOcclusion = input.AmbientOcclusion;
+	output.AmbientOcclusion = 1;
+	output.FogFactor = ComputeFogFactor(distance(EyePosition.xyz, position.xyz));
 	
     return output;
 }

@@ -129,6 +129,9 @@
     </Content>
     <Content Include="Content\Effect\scatter.fx" />
     <Content Include="Content\Effect\SNoise.fx" />
+    <Content Include="Content\Effect\SmallSolidBlockEffect.fx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Content\Effect\SolidBlockEffect.fx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
