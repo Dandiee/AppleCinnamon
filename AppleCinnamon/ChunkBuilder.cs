@@ -249,8 +249,10 @@ namespace AppleCinnamon
             var iOut = (data & 15);
             var jOut = (data & 4080) >> 4;
             var kOut = (data & 61440) >> 12;
+
             var uOut = (data & 983040) >> 16;
             var vOut = (data & 15728640) >> 20;
+
             var xOut = (data & 16777216) >> 24;
             var yOut = (data & 33554432) >> 25;
             var zOut = (data & 67108864) >> 26;
