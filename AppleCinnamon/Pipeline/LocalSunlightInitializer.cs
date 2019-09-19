@@ -16,15 +16,15 @@ namespace AppleCinnamon.Pipeline
             var voxels = context.Payload.Voxels;
             var waterVoxels = context.Payload.TopMostWaterVoxels;
 
-            for (var i = 0; i != Chunk.Size.X; i++)
+            for (var i = 0; i != Chunk.SizeXy; i++)
             {
-                for (var k = 0; k != Chunk.Size.Z; k++)
+                for (var k = 0; k != Chunk.SizeXy; k++)
                 {
 
                     var previousBlock = 0;
                     var topMostFound = false;
 
-                    for (var j = Chunk.Size.Y - 1; j > 0; j--)
+                    for (var j = Chunk.Height - 1; j > 0; j--)
                     {
                         var index = i + Chunk.SizeXy * (j + Chunk.Height * k);
                         var voxel = voxels[index];

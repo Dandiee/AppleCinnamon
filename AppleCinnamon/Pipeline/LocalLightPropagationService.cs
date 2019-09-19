@@ -51,13 +51,13 @@ namespace AppleCinnamon.Pipeline
             foreach (var direction in Directions)
             {
                 var neighbourX = i + direction.X;
-                if ((neighbourX & 16) == 0)
+                if ((neighbourX & Chunk.SizeXy) == 0)
                 {
                     var neighbourY = j + direction.Y;
-                    if (((ushort)neighbourY & 256) == 0)
+                    if (((ushort)neighbourY & Chunk.Height) == 0)
                     {
                         var neighbourZ = k + direction.Z;
-                        if ((neighbourZ & 16) == 0)
+                        if ((neighbourZ & Chunk.SizeXy) == 0)
                         {
                             var neighbourIndex = neighbourX + Chunk.SizeXy * (neighbourY + Chunk.Height * neighbourZ);
                             var neighbourVoxel = voxels[neighbourIndex];

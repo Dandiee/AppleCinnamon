@@ -24,7 +24,9 @@ namespace AppleCinnamon
                 new ChunkBuildFaceResult(-Int3.UnitZ),
                 new ChunkBuildFaceResult(Int3.UnitZ));
 
+            var visibleFaces = 0;
             var visibilityFlags = chunk.VisibilityFlags;
+
             foreach (var visibilityFlag in visibilityFlags)
             {
 
@@ -40,56 +42,49 @@ namespace AppleCinnamon
 
                 var voxelPositionOffset = definition.Translation + chunk.OffsetVector + new Vector3(i, j, k);
 
+                
+
                 if ((flag & 1) == 1)
                 {
                     var neighbor = chunk.GetLocalWithNeighbours(i, j + 1, k);
                     AddFace(Face.Top, i, j, k, verticesCube.Top, definition, chunk, neighbor, voxelPositionOffset);
+                    visibleFaces++;
                 }
 
                 if ((flag & 2) == 2)
                 {
                     var neighbor = chunk.GetLocalWithNeighbours(i, j - 1, k);
                     AddFace(Face.Bottom, i, j, k, verticesCube.Bottom, definition, chunk, neighbor, voxelPositionOffset);
+                    visibleFaces++;
                 }
 
                 if ((flag & 4) == 4)
                 {
                     var neighbor = chunk.GetLocalWithNeighbours(i - 1, j, k);
                     AddFace(Face.Left, i, j, k, verticesCube.Left, definition, chunk, neighbor, voxelPositionOffset);
+                    visibleFaces++;
                 }
 
                 if ((flag & 8) == 8)
                 {
                     var neighbor = chunk.GetLocalWithNeighbours(i + 1, j, k);
                     AddFace(Face.Right, i, j, k, verticesCube.Right, definition, chunk, neighbor, voxelPositionOffset);
+                    visibleFaces++;
                 }
 
                 if ((flag & 16) == 16)
                 {
                     var neighbor = chunk.GetLocalWithNeighbours(i, j, k - 1);
                     AddFace(Face.Front, i, j, k, verticesCube.Front, definition, chunk, neighbor, voxelPositionOffset);
+                    visibleFaces++;
                 }
 
                 if ((flag & 32) == 32)
                 {
                     var neighbor = chunk.GetLocalWithNeighbours(i, j, k + 1);
                     AddFace(Face.Back, i, j, k, verticesCube.Back, definition, chunk, neighbor, voxelPositionOffset);
+                    visibleFaces++;
                 }
-
-
-            }
-
-
-            var faces = verticesCube.GetAll();
-            foreach (var item in faces)
-            {
-                item.Value.ToArray();
-                if (item.Value.Vertices.Count > 0)
-                {
-                    var asd = Buffer.Create(device, BindFlags.VertexBuffer, item.Value.VertexArray);
-                    var qwe = Buffer.Create(device, BindFlags.IndexBuffer, item.Value.IndexArray);
-                }
-
             }
 
 
@@ -99,14 +94,15 @@ namespace AppleCinnamon
                 {
                     return new FaceBuffer(
                         face.Indexes.Count,
-                        Buffer.Create(device, BindFlags.VertexBuffer, face.VertexArray),
-                        Buffer.Create(device, BindFlags.IndexBuffer, face.IndexArray)
+                        VertexSolidBlock.Size,
+                        Buffer.Create(device, BindFlags.VertexBuffer, face.Vertices.ToArray()),
+                        Buffer.Create(device, BindFlags.IndexBuffer, face.Indexes.ToArray())
                     );
                 }
 
                 return null;
             });
-
+            chunk.VisibleFacesCount = visibleFaces;
             var waterBuffer = AddWaterFace(chunk, device);
 
             chunk.SetBuffers(buffers, waterBuffer);
@@ -162,7 +158,8 @@ namespace AppleCinnamon
             }
 
             return new FaceBuffer(
-                indexes.Length, 
+                indexes.Length,
+                VertexSolidBlock.Size,
                 Buffer.Create(device, BindFlags.VertexBuffer, vertices),
                 Buffer.Create(device, BindFlags.IndexBuffer, indexes));
         }

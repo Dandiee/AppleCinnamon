@@ -143,7 +143,7 @@ namespace AppleCinnamon.Pipeline
                     var neighbourIndexY = sourceIndexY + direction.Item1.Y;
                     var neighbourIndexZ = sourceIndexZ + direction.Item1.Z;
 
-                    if ((neighbourIndexX & 16) == 0 && ((ushort)neighbourIndexY & 256) == 0 && (neighbourIndexZ & 16) == 0)
+                    if ((neighbourIndexX & Chunk.SizeXy) == 0 && ((ushort)neighbourIndexY & Chunk.Height) == 0 && (neighbourIndexZ & Chunk.SizeXy) == 0)
                     {
                         var flatNeighbourIndex = neighbourIndexX + Chunk.SizeXy * (neighbourIndexY + Chunk.Height * neighbourIndexZ);
                         var neighbourVoxel = voxels[flatNeighbourIndex];

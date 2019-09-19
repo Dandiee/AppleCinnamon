@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
@@ -20,6 +21,7 @@ namespace AppleCinnamon
         int FinalizedChunks { get; }
         int RenderedChunks { get; }
         int QueuedChunks { get; }
+        int TotalVisibleFaces { get; }
 
         ConcurrentDictionary<string, long> PipelinePerformance { get; }
 
@@ -30,7 +32,7 @@ namespace AppleCinnamon
 
     public sealed class ChunkManager : IChunkManager
     {
-        public const int ViewDistance = 32;
+        public const int ViewDistance = 16;
         public static readonly int InitialDegreeOfParallelism = Environment.ProcessorCount;
 
         // debug fields
@@ -42,6 +44,9 @@ namespace AppleCinnamon
 
         private int _renderedChunks;
         public int RenderedChunks => _renderedChunks;
+
+        private int _totalVisibleFaces;
+        public int TotalVisibleFaces => _totalVisibleFaces;
 
         public bool IsInitialized { get; private set; }
 
@@ -173,6 +178,7 @@ namespace AppleCinnamon
             if (!IsInitialized && _finalizedChunks == root * root)
             {
                 IsInitialized = true;
+                _totalVisibleFaces += _chunks.Values.Sum(s => s.VisibleFacesCount);
                 _pipeline.Complete();
                 _pipeline = _pipelineProvider.CreatePipeline(Math.Max(1, Environment.ProcessorCount / 2), Finalize);
             }
@@ -293,7 +299,7 @@ namespace AppleCinnamon
             if (IsInitialized)
             {
                 var currentChunkIndex =
-                    new Int2((int)camera.Position.X / Chunk.Size.X, (int)camera.Position.Z / Chunk.Size.Z);
+                    new Int2((int)camera.Position.X / Chunk.SizeXy, (int)camera.Position.Z / Chunk.SizeXy);
 
                 QueueChunksByIndex(currentChunkIndex);
             }

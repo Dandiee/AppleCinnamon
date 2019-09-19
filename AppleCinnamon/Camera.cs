@@ -263,10 +263,10 @@ namespace AppleCinnamon
                 CurrentChunkIndex = chunkIndex.Value;
 
                 var position = new Vector3(
-                    CurrentChunkIndex.X * Chunk.Size.X + Chunk.Size.X / 2f - .5f,
-                    Chunk.Size.Y / 2f,
-                    CurrentChunkIndex.Y * Chunk.Size.Z + Chunk.Size.Z / 2f - .5f);
-                var halfSize = new Vector3(Chunk.Size.X / 2f, Chunk.Size.Y / 2f, Chunk.Size.Z / 2f);
+                    CurrentChunkIndex.X * Chunk.SizeXy + Chunk.SizeXy / 2f - .5f,
+                    Chunk.Height / 2f,
+                    CurrentChunkIndex.Y * Chunk.SizeXy + Chunk.SizeXy / 2f - .5f);
+                var halfSize = new Vector3(Chunk.SizeXy / 2f, Chunk.Height / 2f, Chunk.SizeXy / 2f);
 
                 var bb = new BoundingBox(position - halfSize, position + halfSize);
                 CurrentChunkIndexVector = bb.Center;

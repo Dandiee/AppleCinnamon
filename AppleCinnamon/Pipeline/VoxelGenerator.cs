@@ -27,11 +27,11 @@ namespace AppleCinnamon.Pipeline
 
         public Voxel[] GenerateVoxels(Int2 chunkIndex)
         {
-            var voxels = new Voxel[Chunk.Size.X * Chunk.Size.Y * Chunk.Size.Z];
-            var chunkSizeXz = new Int2(Chunk.Size.X, Chunk.Size.Z);
-            for (var i = 0; i < Chunk.Size.X; i++)
+            var voxels = new Voxel[Chunk.SizeXy * Chunk.Height * Chunk.SizeXy];
+            var chunkSizeXz = new Int2(Chunk.SizeXy, Chunk.SizeXy);
+            for (var i = 0; i < Chunk.SizeXy; i++)
             {
-                for (var k = 0; k < Chunk.Size.Z; k++)
+                for (var k = 0; k < Chunk.SizeXy; k++)
                 {
                     var coord = chunkIndex * chunkSizeXz + new Int2(i, k);
                     var height = (byte)((_daniNoise.Compute(coord.X, coord.Y) + 128) * 0.7) + 32;
@@ -41,35 +41,35 @@ namespace AppleCinnamon.Pipeline
 
                     for (var j = 0; j < height - 1; j++)
                     {
-                        voxels[i + Chunk.Size.X * (j + Chunk.Size.Y * k)] = new Voxel(VoxelDefinition.Stone.Type, 0);
+                        voxels[i + Chunk.SizeXy * (j + Chunk.Height * k)] = new Voxel(VoxelDefinition.Stone.Type, 0);
                     }
 
                     if (height < 100) // water level
                     {
                         for (var j = height; j < 100- 1; j++)
                         {
-                            voxels[i + Chunk.Size.X * (j + Chunk.Size.Y * k)] =
+                            voxels[i + Chunk.SizeXy * (j + Chunk.Height * k)] =
                                 new Voxel(VoxelDefinition.Water.Type, 0);
                         }
                     }
 
-                    voxels[i + Chunk.Size.X * (height - 1 + Chunk.Size.Y * k)] = 
+                    voxels[i + Chunk.SizeXy * (height - 1 + Chunk.Height * k)] = 
                         new Voxel(
                             height > (128 + _random.Next(5))
                             ? VoxelDefinition.Snow.Type
                             : VoxelDefinition.Grass.Type, 0);
 
-                    // voxels[i + Chunk.Size.X * (height + Chunk.Size.Y * k)] = new Voxel(4, 0);
+                    // voxels[i + Chunk.SizeXy * (height + Chunk.Height * k)] = new Voxel(4, 0);
                 }
             }
 
-            //for (var i = 0; i < Chunk.Size.X; i++)
+            //for (var i = 0; i < Chunk.SizeXy; i++)
             //{
-            //    for (var j = 0; j < Chunk.Size.Y; j++)
+            //    for (var j = 0; j < Chunk.Height; j++)
             //    {
-            //        for (var k = 0; k < Chunk.Size.Z; k++)
+            //        for (var k = 0; k < Chunk.SizeXy; k++)
             //        {
-            //            var originalVoxel = voxels[i + Chunk.Size.X * (j + Chunk.Size.Y * k)];
+            //            var originalVoxel = voxels[i + Chunk.SizeXy * (j + Chunk.Height * k)];
                         
             //            //if (originalVoxel.Block == 0)
             //            {
@@ -92,16 +92,16 @@ namespace AppleCinnamon.Pipeline
                             
 
             //                var rnd = (byte) (Noise.CalcPixel3D(
-            //                                      chunkIndex.X * Chunk.Size.X + i + 500,
+            //                                      chunkIndex.X * Chunk.SizeXy + i + 500,
             //                                      j,
-            //                                      chunkIndex.Y * Chunk.Size.Z + k + 500,
+            //                                      chunkIndex.Y * Chunk.SizeXy + k + 500,
             //                                      0.01f) * 0.7 * verticalScale);
 
             //                var isBlock = rnd > 128;
 
             //                if (isBlock)
             //                {
-            //                    voxels[i + Chunk.Size.X * (j + Chunk.Size.Y * k)] = new Voxel(VoxelDefinition.Snow.Type, 0);
+            //                    voxels[i + Chunk.SizeXy * (j + Chunk.Height * k)] = new Voxel(VoxelDefinition.Snow.Type, 0);
             //                }
             //            }
             //        }
@@ -114,7 +114,7 @@ namespace AppleCinnamon.Pipeline
             //    {
             //        for (var k = 0; k < 16; k++)
             //        {
-            //            voxels[i + Chunk.Size.X * (60 + Chunk.Size.Y * k)] = new Voxel(1, 0);
+            //            voxels[i + Chunk.SizeXy * (60 + Chunk.Height * k)] = new Voxel(1, 0);
             //        }
             //    }
             //}
