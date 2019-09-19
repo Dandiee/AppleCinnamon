@@ -1,9 +1,12 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System;
+using System.Linq;
+using System.Runtime.CompilerServices;
 using AppleCinnamon.Settings;
 using AppleCinnamon.System;
 using AppleCinnamon.Vertices;
 using SharpDX;
 using SharpDX.Direct3D11;
+using Buffer = SharpDX.Direct3D11.Buffer;
 
 namespace AppleCinnamon
 {
@@ -28,6 +31,15 @@ namespace AppleCinnamon
             var visibilityFlags = chunk.VisibilityFlags;
             chunk.VisibleVoxelsCount = chunk.VisibilityFlags.Count;
 
+            var geometryVertices = new VertexGeometry[visibilityFlags.Count];
+
+            var zeroAmbient = new byte[6][];
+            for (var i = 0; i < 6; i++)
+            {
+                zeroAmbient[i] = new byte[4];
+            }
+
+            var c = 0;
             foreach (var visibilityFlag in visibilityFlags)
             {
 
@@ -40,6 +52,8 @@ namespace AppleCinnamon
                 var voxel = chunk.Voxels[index];
                 var definition = VoxelDefinition.DefinitionByType[voxel.Block];
                 var flag = visibilityFlag.Value;
+
+                geometryVertices[c++] = new VertexGeometry(voxel.Block, i + chunk.OffsetVector.X, (byte) j, k + chunk.OffsetVector.Z, new byte[6], zeroAmbient, flag);
 
                 var voxelPositionOffset = definition.Translation + chunk.OffsetVector + new Vector3(i, j, k);
 
@@ -103,10 +117,57 @@ namespace AppleCinnamon
 
                 return null;
             });
+
+
+            chunk.GeometryBuffer = Buffer.Create(device, BindFlags.VertexBuffer, geometryVertices);
             chunk.VisibleFacesCount = visibleFaces;
             var waterBuffer = AddWaterFace(chunk, device);
 
             chunk.SetBuffers(buffers, waterBuffer);
+        }
+
+   
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void AddFace(Face face, int relativeIndexX, int relativeIndexY, int relativeIndexZ, ChunkBuildFaceResult faceResult, VoxelDefinition definition, Chunk chunk, Voxel neighbor, Vector3 voxelPositionOffset)
+        {
+            var faceVertices = FaceVertices[face];
+            var textureUv = definition.Textures[face];
+            var aoIndexes = AmbientIndexes[face];
+            var vertexIndex = faceResult.Vertices.Count - 1;
+
+            for (var i = 0; i < 4; i++)
+            {
+                var position = (faceVertices[i] * definition.Size) + voxelPositionOffset;
+                var uvCoordinate = UvOffsets[i] + textureUv;
+                var light = neighbor.Lightness;
+                var denominator = 1f;
+                var ambientOcclusion = 0;
+
+                foreach (var index in aoIndexes[i])
+                {
+                    var aoFriend = chunk.GetLocalWithNeighbours(relativeIndexX + index.X, relativeIndexY + index.Y, relativeIndexZ + index.Z);
+                    var aoFriendDefinition = VoxelDefinition.DefinitionByType[aoFriend.Block];
+
+                    if (aoFriendDefinition.IsTransparent)
+                    {
+                        light += aoFriend.Lightness;
+                        denominator++;
+                    }
+
+                    else ambientOcclusion++;
+                }
+
+                faceResult.Vertices.Add(new VertexSolidBlock(position, uvCoordinate, ambientOcclusion, light / denominator));
+            }
+
+            faceResult.Indexes.Add((ushort)(vertexIndex + 1));
+            faceResult.Indexes.Add((ushort)(vertexIndex + 3));
+            faceResult.Indexes.Add((ushort)(vertexIndex + 4));
+
+            faceResult.Indexes.Add((ushort)(vertexIndex + 1));
+            faceResult.Indexes.Add((ushort)(vertexIndex + 2));
+            faceResult.Indexes.Add((ushort)(vertexIndex + 3));
         }
 
         private FaceBuffer AddWaterFace(Chunk chunk, Device device)
@@ -165,46 +226,5 @@ namespace AppleCinnamon
                 Buffer.Create(device, BindFlags.IndexBuffer, indexes));
         }
 
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void AddFace(Face face, int relativeIndexX, int relativeIndexY, int relativeIndexZ, ChunkBuildFaceResult faceResult, VoxelDefinition definition, Chunk chunk, Voxel neighbor, Vector3 voxelPositionOffset)
-        {
-            var faceVertices = FaceVertices[face];
-            var textureUv = definition.Textures[face];
-            var aoIndexes = AmbientIndexes[face];
-            var vertexIndex = faceResult.Vertices.Count - 1;
-
-            for (var i = 0; i < 4; i++)
-            {
-                var position = (faceVertices[i] * definition.Size) + voxelPositionOffset;
-                var uvCoordinate = UvOffsets[i] + textureUv;
-                var light = neighbor.Lightness;
-                var denominator = 1f;
-                var ambientOcclusion = 0;
-
-                foreach (var index in aoIndexes[i])
-                {
-                    var aoFriend = chunk.GetLocalWithNeighbours(relativeIndexX + index.X, relativeIndexY + index.Y, relativeIndexZ + index.Z);
-                    var aoFriendDefinition = VoxelDefinition.DefinitionByType[aoFriend.Block];
-
-                    if (aoFriendDefinition.IsTransparent)
-                    {
-                        light += aoFriend.Lightness;
-                        denominator++;
-                    }
-
-                    else ambientOcclusion++;
-                }
-
-                faceResult.Vertices.Add(new VertexSolidBlock(position, uvCoordinate, ambientOcclusion, light / denominator));
-            }
-
-            faceResult.Indexes.Add((ushort)(vertexIndex + 1));
-            faceResult.Indexes.Add((ushort)(vertexIndex + 3));
-            faceResult.Indexes.Add((ushort)(vertexIndex + 4));
-            faceResult.Indexes.Add((ushort)(vertexIndex + 1));
-            faceResult.Indexes.Add((ushort)(vertexIndex + 2));
-            faceResult.Indexes.Add((ushort)(vertexIndex + 3));
-        }
     }
 }

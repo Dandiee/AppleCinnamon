@@ -14,12 +14,13 @@ namespace AppleCinnamon
 {
     public class Chunk
     {
-        public const int SizeXy = 64;
+        public const int SizeXy = 16;
         public const int Height = 256;
 
         private Cube<FaceBuffer> _bufferCube;
         private KeyValuePair<Face, FaceBuffer>[] _buffers;
         private FaceBuffer _waterBuffer;
+        public Buffer GeometryBuffer;
         public int VisibleFacesCount { get; set; }
         public int VisibleVoxelsCount { get; set; }
 
@@ -231,6 +232,17 @@ namespace AppleCinnamon
 
             var voxelIndex = new Int3(absoluteVoxelIndex.X & SizeXy- 1, absoluteVoxelIndex.Y, absoluteVoxelIndex.Z & SizeXy- 1);
             return new VoxelAddress(chunkIndex.Value, voxelIndex);
+        }
+
+        public void DrawGeometry(Device device, Vector3 currentChunkIndexVector)
+        {
+            if (GeometryBuffer != null)
+            {
+                device.ImmediateContext.InputAssembler.SetVertexBuffers(0,
+                    new VertexBufferBinding(GeometryBuffer, VertexGeometry.Size, 0));
+
+                device.ImmediateContext.Draw(VisibilityFlags.Count, 0);
+            }
         }
 
         public void Draw(Device device, Vector3 currentChunkIndexVector)

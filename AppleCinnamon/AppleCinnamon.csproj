@@ -125,6 +125,9 @@
     <Compile Include="VoxelAddress.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Content\Effect\GeometryBlockEffect.fx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Content\Effect\hoffmanshader.fx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

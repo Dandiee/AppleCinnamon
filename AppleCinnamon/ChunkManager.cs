@@ -33,7 +33,7 @@ namespace AppleCinnamon
 
     public sealed class ChunkManager : IChunkManager
     {
-        public const int ViewDistance = 16;
+        public const int ViewDistance = 2;
         public static readonly int InitialDegreeOfParallelism = Environment.ProcessorCount;
 
         // debug fields
@@ -57,6 +57,7 @@ namespace AppleCinnamon
         private readonly Graphics _graphics;
         private Effect _solidBlockEffect;
         private Effect _waterBlockEffect;
+        private Effect _geometryEffect;
         private readonly ConcurrentDictionary<Int2, Chunk> _chunks;
         private readonly ConcurrentDictionary<Int2, object> _queuedChunks;
         private readonly IChunkUpdater _chunkUpdater;
@@ -100,6 +101,14 @@ namespace AppleCinnamon
                 ShaderBytecode.CompileFromFile("Content/Effect/WaterEffect.fx", "fx_5_0"));
 
             _waterBlockEffect.GetVariableByName("Textures").AsShaderResource().SetResource(
+                new ShaderResourceView(_graphics.Device,
+                    TextureLoader.CreateTexture2DFromBitmap(_graphics.Device,
+                        TextureLoader.LoadBitmap(new ImagingFactory2(), "Content/Texture/custom_water_still.png"))));
+
+            _geometryEffect = new Effect(_graphics.Device,
+                ShaderBytecode.CompileFromFile("Content/Effect/GeometryBlockEffect.fx", "fx_5_0"));
+            
+            _geometryEffect.GetVariableByName("Textures").AsShaderResource().SetResource(
                 new ShaderResourceView(_graphics.Device,
                     TextureLoader.CreateTexture2DFromBitmap(_graphics.Device,
                         TextureLoader.LoadBitmap(new ImagingFactory2(), "Content/Texture/custom_water_still.png"))));
@@ -193,62 +202,83 @@ namespace AppleCinnamon
 
             if (_chunks.Count > 0)
             {
+
                 using (var inputLayout = new InputLayout(_graphics.Device,
-                    _solidBlockEffect.GetTechniqueByIndex(0).GetPassByIndex(0).Description.Signature,
-                    VertexSolidBlock.InputElements))
+                    _geometryEffect.GetTechniqueByIndex(0).GetPassByIndex(0).Description.Signature,
+                    VertexGeometry.InputElements))
                 {
                     _graphics.Device.ImmediateContext.InputAssembler.InputLayout = inputLayout;
-                    _graphics.Device.ImmediateContext.InputAssembler.PrimitiveTopology = PrimitiveTopology.TriangleList;
+                    _graphics.Device.ImmediateContext.InputAssembler.PrimitiveTopology = PrimitiveTopology.PointList;
 
                     var pass = _solidBlockEffect.GetTechniqueByIndex(0).GetPassByIndex(0);
                     pass.Apply(_graphics.Device.ImmediateContext);
 
                     foreach (var chunk in _chunks.Values)
                     {
-                        var bb = chunk.BoundingBox;
-                        if (camera.BoundingFrustum.Contains(ref bb) != ContainmentType.Disjoint)
-                        {
-                            chunk.Draw(_graphics.Device, camera.CurrentChunkIndexVector);
-                            _renderedChunks++;
-                        }
+                        chunk.DrawGeometry(_graphics.Device, camera.CurrentChunkIndexVector);
                     }
                 }
 
-                using (var inputLayout = new InputLayout(_graphics.Device,
-                    _waterBlockEffect.GetTechniqueByIndex(0).GetPassByIndex(0).Description.Signature,
-                    VertexSolidBlock.InputElements))
-                {
-                    var blendStateDescription = new BlendStateDescription { AlphaToCoverageEnable = false };
 
-                    blendStateDescription.RenderTarget[0].IsBlendEnabled = true;
-                    blendStateDescription.RenderTarget[0].SourceBlend = BlendOption.SourceAlpha;
-                    blendStateDescription.RenderTarget[0].DestinationBlend = BlendOption.InverseSourceAlpha;
-                    blendStateDescription.RenderTarget[0].BlendOperation = BlendOperation.Add;
-                    blendStateDescription.RenderTarget[0].SourceAlphaBlend = BlendOption.Zero;
-                    blendStateDescription.RenderTarget[0].DestinationAlphaBlend = BlendOption.Zero;
-                    blendStateDescription.RenderTarget[0].AlphaBlendOperation = BlendOperation.Add;
-                    blendStateDescription.RenderTarget[0].RenderTargetWriteMask = ColorWriteMaskFlags.All;
 
-                    var blendState = new BlendState(_graphics.Device, blendStateDescription);
-                    _graphics.Device.ImmediateContext.OutputMerger.SetBlendState(blendState);
 
-                    _graphics.Device.ImmediateContext.InputAssembler.InputLayout = inputLayout;
-                    _graphics.Device.ImmediateContext.InputAssembler.PrimitiveTopology = PrimitiveTopology.TriangleList;
 
-                    var pass = _waterBlockEffect.GetTechniqueByIndex(0).GetPassByIndex(0);
-                    pass.Apply(_graphics.Device.ImmediateContext);
+                //using (var inputLayout = new InputLayout(_graphics.Device,
+                //    _solidBlockEffect.GetTechniqueByIndex(0).GetPassByIndex(0).Description.Signature,
+                //    VertexSolidBlock.InputElements))
+                //{
+                //    _graphics.Device.ImmediateContext.InputAssembler.InputLayout = inputLayout;
+                //    _graphics.Device.ImmediateContext.InputAssembler.PrimitiveTopology = PrimitiveTopology.TriangleList;
 
-                    foreach (var chunk in _chunks.Values)
-                    {
-                        var bb = chunk.BoundingBox;
-                        if (camera.BoundingFrustum.Contains(ref bb) != ContainmentType.Disjoint)
-                        {
-                            chunk.DrawWater(_graphics.Device);
-                        }
-                    }
+                //    var pass = _solidBlockEffect.GetTechniqueByIndex(0).GetPassByIndex(0);
+                //    pass.Apply(_graphics.Device.ImmediateContext);
 
-                    _graphics.Device.ImmediateContext.OutputMerger.SetBlendState(null);
-                }
+                //    foreach (var chunk in _chunks.Values)
+                //    {
+                //        var bb = chunk.BoundingBox;
+                //        if (camera.BoundingFrustum.Contains(ref bb) != ContainmentType.Disjoint)
+                //        {
+                //            chunk.Draw(_graphics.Device, camera.CurrentChunkIndexVector);
+                //            _renderedChunks++;
+                //        }
+                //    }
+                //}
+
+                //using (var inputLayout = new InputLayout(_graphics.Device,
+                //    _waterBlockEffect.GetTechniqueByIndex(0).GetPassByIndex(0).Description.Signature,
+                //    VertexSolidBlock.InputElements))
+                //{
+                //    var blendStateDescription = new BlendStateDescription { AlphaToCoverageEnable = false };
+
+                //    blendStateDescription.RenderTarget[0].IsBlendEnabled = true;
+                //    blendStateDescription.RenderTarget[0].SourceBlend = BlendOption.SourceAlpha;
+                //    blendStateDescription.RenderTarget[0].DestinationBlend = BlendOption.InverseSourceAlpha;
+                //    blendStateDescription.RenderTarget[0].BlendOperation = BlendOperation.Add;
+                //    blendStateDescription.RenderTarget[0].SourceAlphaBlend = BlendOption.Zero;
+                //    blendStateDescription.RenderTarget[0].DestinationAlphaBlend = BlendOption.Zero;
+                //    blendStateDescription.RenderTarget[0].AlphaBlendOperation = BlendOperation.Add;
+                //    blendStateDescription.RenderTarget[0].RenderTargetWriteMask = ColorWriteMaskFlags.All;
+
+                //    var blendState = new BlendState(_graphics.Device, blendStateDescription);
+                //    _graphics.Device.ImmediateContext.OutputMerger.SetBlendState(blendState);
+
+                //    _graphics.Device.ImmediateContext.InputAssembler.InputLayout = inputLayout;
+                //    _graphics.Device.ImmediateContext.InputAssembler.PrimitiveTopology = PrimitiveTopology.TriangleList;
+
+                //    var pass = _waterBlockEffect.GetTechniqueByIndex(0).GetPassByIndex(0);
+                //    pass.Apply(_graphics.Device.ImmediateContext);
+
+                //    foreach (var chunk in _chunks.Values)
+                //    {
+                //        var bb = chunk.BoundingBox;
+                //        if (camera.BoundingFrustum.Contains(ref bb) != ContainmentType.Disjoint)
+                //        {
+                //            chunk.DrawWater(_graphics.Device);
+                //        }
+                //    }
+
+                //    _graphics.Device.ImmediateContext.OutputMerger.SetBlendState(null);
+                //}
             }
         }
 
@@ -285,18 +315,27 @@ namespace AppleCinnamon
             _solidBlockEffect.GetVariableByName("WorldViewProjection").AsMatrix().SetMatrix(camera.WorldViewProjection);
             _solidBlockEffect.GetVariableByName("EyePosition").AsVector().Set(camera.Position.ToVector3());
             _waterBlockEffect.GetVariableByName("WorldViewProjection").AsMatrix().SetMatrix(camera.WorldViewProjection);
+            _geometryEffect.GetVariableByName("WorldViewProjection").AsMatrix().SetMatrix(camera.WorldViewProjection);
 
             if (camera.IsInWater)
             {
                 _solidBlockEffect.GetVariableByName("FogStart").AsScalar().Set(8);
                 _solidBlockEffect.GetVariableByName("FogEnd").AsScalar().Set(64);
                 _solidBlockEffect.GetVariableByName("FogColor").AsVector().Set(new Vector4(0, 0.2f, 1, 0));
+
+                _geometryEffect.GetVariableByName("FogStart").AsScalar().Set(8);
+                _geometryEffect.GetVariableByName("FogEnd").AsScalar().Set(64);
+                _geometryEffect.GetVariableByName("FogColor").AsVector().Set(new Vector4(0, 0.2f, 1, 0));
             }
             else
             {
                 _solidBlockEffect.GetVariableByName("FogStart").AsScalar().Set(64);
                 _solidBlockEffect.GetVariableByName("FogEnd").AsScalar().Set(ViewDistance*Chunk.SizeXy);
                 _solidBlockEffect.GetVariableByName("FogColor").AsVector().Set(new Vector4(0.5f, 0.5f, 0.5f, 1));
+
+                _geometryEffect.GetVariableByName("FogStart").AsScalar().Set(64);
+                _geometryEffect.GetVariableByName("FogEnd").AsScalar().Set(ViewDistance * Chunk.SizeXy);
+                _geometryEffect.GetVariableByName("FogColor").AsVector().Set(new Vector4(0.5f, 0.5f, 0.5f, 1));
             }
 
             if (IsInitialized)
