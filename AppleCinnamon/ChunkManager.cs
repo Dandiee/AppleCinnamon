@@ -205,7 +205,7 @@ namespace AppleCinnamon
                         var bb = chunk.BoundingBox;
                         if (camera.BoundingFrustum.Contains(ref bb) != ContainmentType.Disjoint)
                         {
-                            chunk.Draw(_graphics.Device, camera.CurrentChunkIndexVector);
+                            chunk.DrawSmarter(_graphics.Device, camera.CurrentChunkIndexVector);
                             _renderedChunks++;
                         }
                     }

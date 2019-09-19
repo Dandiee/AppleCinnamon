@@ -1,7 +1,5 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using AppleCinnamon.System;
 using AppleCinnamon.Vertices;
@@ -14,11 +12,11 @@ namespace AppleCinnamon
 {
     public class Chunk
     {
-        public const int SizeXy = 64;
+        public const int SizeXy = 16;
         public const int Height = 256;
 
-        private Cube<FaceBuffer> _bufferCube;
-        private KeyValuePair<Face, FaceBuffer>[] _buffers;
+        public ChunkBuffer ChunkBuffer;
+
         private FaceBuffer _waterBuffer;
         public int VisibleFacesCount { get; set; }
 
@@ -138,7 +136,6 @@ namespace AppleCinnamon
             Int2 chunkIndex,
             Voxel[] voxels)
         {
-            _bufferCube = new Cube<FaceBuffer>();
             Neighbours = new ConcurrentDictionary<Int2, Chunk>();
             VisibilityFlags = new Dictionary<int, byte>();
 
@@ -165,26 +162,8 @@ namespace AppleCinnamon
             ChunkIndexVector = BoundingBox.Center;
         }
 
-        public void SetBuffers(Cube<FaceBuffer> buffers, FaceBuffer waterBuffer)
+        public void SetBuffers(FaceBuffer waterBuffer)
         {
-            if (_bufferCube != null)
-            {
-                foreach (var face in _bufferCube.GetAll())
-                {
-                    if (face.Value != null)
-                    {
-                        if (!face.Value.IndexBuffer.IsDisposed)
-                        {
-                            face.Value.IndexBuffer?.Dispose();
-                        }
-
-                        if (!face.Value.VertexBuffer.IsDisposed)
-                        {
-                            face.Value.VertexBuffer?.Dispose();
-                        }
-                    }
-                }
-            }
 
             if (_waterBuffer != null)
             {
@@ -199,8 +178,6 @@ namespace AppleCinnamon
             }
 
             _waterBuffer = waterBuffer;
-            _bufferCube = buffers;
-            _buffers = _bufferCube.GetAll().ToArray();
         }
 
 
@@ -232,26 +209,30 @@ namespace AppleCinnamon
             return new VoxelAddress(chunkIndex.Value, voxelIndex);
         }
 
-        public void Draw(Device device, Vector3 currentChunkIndexVector)
+        public void DrawSmarter(Device device, Vector3 currentChunkIndexVector)
         {
-            foreach (var bufferFace in _buffers)
+            var vbSet = false;
+
+            foreach (var offset in ChunkBuffer.Offsets)
             {
-                
-                if (bufferFace.Value == null || bufferFace.Value.IndexCount == 0)
+                if (offset.Value.Count == 0)
                 {
                     continue;
                 }
 
-                if (Vector3.Dot(ChunkIndexVector - currentChunkIndexVector, Normals[bufferFace.Key]) > 0)
+                if (Vector3.Dot(ChunkIndexVector - currentChunkIndexVector, offset.Key.ToVector3()) > 0)
                 {
                     continue;
                 }
 
-                var buffer = bufferFace.Value;
+                if (!vbSet)
+                {
+                    device.ImmediateContext.InputAssembler.SetVertexBuffers(0, ChunkBuffer.Binding);
+                    device.ImmediateContext.InputAssembler.SetIndexBuffer(ChunkBuffer.IndexBuffer, Format.R16_UInt, 0);
+                    vbSet = true;
+                }
 
-                device.ImmediateContext.InputAssembler.SetVertexBuffers(0, buffer.Binding);
-                device.ImmediateContext.InputAssembler.SetIndexBuffer(buffer.IndexBuffer, Format.R16_UInt, 0);
-                device.ImmediateContext.DrawIndexed(buffer.IndexCount, 0, 0);
+                device.ImmediateContext.DrawIndexed(offset.Value.Count * 6, offset.Value.Offset * 6, offset.Value.Offset * 4);
             }
         }
 

@@ -1,9 +1,12 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using AppleCinnamon.Settings;
 using AppleCinnamon.System;
 using AppleCinnamon.Vertices;
 using SharpDX;
 using SharpDX.Direct3D11;
+using Buffer = SharpDX.Direct3D11.Buffer;
 
 namespace AppleCinnamon
 {
@@ -87,25 +90,21 @@ namespace AppleCinnamon
                 }
             }
 
+            var chunkBuffer = new ChunkBuffer(device,
+                new ChunkFaceVertex(verticesCube.Top.Vertices, verticesCube.Top.Indexes),
+                new ChunkFaceVertex(verticesCube.Bottom.Vertices, verticesCube.Bottom.Indexes),
+                new ChunkFaceVertex(verticesCube.Left.Vertices, verticesCube.Left.Indexes),
+                new ChunkFaceVertex(verticesCube.Right.Vertices, verticesCube.Right.Indexes),
+                new ChunkFaceVertex(verticesCube.Front.Vertices, verticesCube.Front.Indexes),
+                new ChunkFaceVertex(verticesCube.Back.Vertices, verticesCube.Back.Indexes));
 
-            var buffers = verticesCube.Transform(face =>
-            {
-                if (face.Indexes.Count > 0)
-                {
-                    return new FaceBuffer(
-                        face.Indexes.Count,
-                        VertexSolidBlock.Size,
-                        Buffer.Create(device, BindFlags.VertexBuffer, face.Vertices.ToArray()),
-                        Buffer.Create(device, BindFlags.IndexBuffer, face.Indexes.ToArray())
-                    );
-                }
+            chunk.ChunkBuffer = chunkBuffer;
 
-                return null;
-            });
+         
             chunk.VisibleFacesCount = visibleFaces;
             var waterBuffer = AddWaterFace(chunk, device);
 
-            chunk.SetBuffers(buffers, waterBuffer);
+            chunk.SetBuffers(waterBuffer);
         }
 
         private FaceBuffer AddWaterFace(Chunk chunk, Device device)
@@ -204,6 +203,115 @@ namespace AppleCinnamon
             faceResult.Indexes.Add((ushort)(vertexIndex + 1));
             faceResult.Indexes.Add((ushort)(vertexIndex + 2));
             faceResult.Indexes.Add((ushort)(vertexIndex + 3));
+        }
+    }
+
+    public class ChunkBuffer
+    {
+        public readonly Buffer VertexBuffer;
+        public readonly Buffer IndexBuffer;
+        public readonly VertexBufferBinding Binding;
+        public readonly IDictionary<Int3, OffsetData> Offsets;
+
+        public ChunkBuffer(Device device,
+            ChunkFaceVertex top,
+            ChunkFaceVertex bot,
+            ChunkFaceVertex lef,
+            ChunkFaceVertex rig,
+            ChunkFaceVertex fro,
+            ChunkFaceVertex bac)
+        {
+            var topCount = top.Vertices.Count / 4;
+            var botCount = bot.Vertices.Count / 4;
+            var lefCount = lef.Vertices.Count / 4;
+            var rigCount = rig.Vertices.Count / 4;
+            var froCount = fro.Vertices.Count / 4;
+            var bacCount = bac.Vertices.Count / 4;
+
+            var allCount = topCount + botCount + lefCount + rigCount + froCount + bacCount;
+
+            var topOffset = 0;
+            var botOffset = topCount;
+            var lefOffset = botOffset + botCount;
+            var rigOffset = lefOffset + lefCount;
+            var froOffset = rigOffset + rigCount;
+            var bacOffset = froOffset + froCount;
+
+            var vertices = new VertexSolidBlock[allCount * 4];
+            top.Vertices.CopyTo(0, vertices, topOffset * 4, topCount * 4);
+            bot.Vertices.CopyTo(0, vertices, botOffset * 4, botCount * 4);
+            lef.Vertices.CopyTo(0, vertices, lefOffset * 4, lefCount * 4);
+            rig.Vertices.CopyTo(0, vertices, rigOffset * 4, rigCount * 4);
+            fro.Vertices.CopyTo(0, vertices, froOffset * 4, froCount * 4);
+            bac.Vertices.CopyTo(0, vertices, bacOffset * 4, bacCount * 4);
+
+            var indexes = new ushort[allCount * 6];
+            top.Indexes.CopyTo(0, indexes, topOffset * 6, topCount * 6);
+            bot.Indexes.CopyTo(0, indexes, botOffset * 6, botCount * 6);
+            lef.Indexes.CopyTo(0, indexes, lefOffset * 6, lefCount * 6);
+            rig.Indexes.CopyTo(0, indexes, rigOffset * 6, rigCount * 6);
+            fro.Indexes.CopyTo(0, indexes, froOffset * 6, froCount * 6);
+            bac.Indexes.CopyTo(0, indexes, bacOffset * 6, bacCount * 6);
+
+
+            // var indexes = new ushort[allCount * 6];
+            // CopyWithOffset(top, indexes, topOffset);
+            // CopyWithOffset(bot, indexes, botOffset);
+            // CopyWithOffset(lef, indexes, lefOffset);
+            // CopyWithOffset(rig, indexes, rigOffset);
+            // CopyWithOffset(fro, indexes, froOffset);
+            // CopyWithOffset(bac, indexes, bacOffset);
+
+
+            Offsets = new Dictionary<Int3, OffsetData>
+            {
+                [new Int3(+0, +1, +0)] = new OffsetData(topOffset, topCount),
+                [new Int3(+0, -1, +0)] = new OffsetData(botOffset, botCount),
+                [new Int3(-1, +0, +0)] = new OffsetData(lefOffset, lefCount),
+                [new Int3(+1, +0, +0)] = new OffsetData(rigOffset, rigCount),
+                [new Int3(+0, +0, -1)] = new OffsetData(froOffset, froCount),
+                [new Int3(+0, +0, +1)] = new OffsetData(bacOffset, bacCount)
+            };
+
+            VertexBuffer = Buffer.Create(device, BindFlags.VertexBuffer, vertices);
+            IndexBuffer = Buffer.Create(device, BindFlags.IndexBuffer, indexes);
+            Binding = new VertexBufferBinding(VertexBuffer, VertexSolidBlock.Size, 0);
+
+        }
+
+        private void CopyWithOffset(ChunkFaceVertex side, ushort[] indexes, int offset)
+        {
+            var indexOffset = offset * 6;
+
+            for (var i = 0; i < side.Indexes.Count; i++)
+            {
+                indexes[i + indexOffset] = (ushort)(side.Indexes[i] + offset * 4);
+            }
+        }
+
+    }
+
+    public struct OffsetData
+    {
+        public readonly int Offset;
+        public readonly int Count;
+
+        public OffsetData(int offset, int count)
+        {
+            Offset = offset;
+            Count = count;
+        }
+    }
+
+    public class ChunkFaceVertex
+    {
+        public List<VertexSolidBlock> Vertices { get; }
+        public List<ushort> Indexes { get; }
+
+        public ChunkFaceVertex(List<VertexSolidBlock> vertices, List<ushort> indexes)
+        {
+            Vertices = vertices;
+            Indexes = indexes;
         }
     }
 }
