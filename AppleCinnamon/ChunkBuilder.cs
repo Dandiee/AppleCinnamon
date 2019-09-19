@@ -26,6 +26,7 @@ namespace AppleCinnamon
 
             var visibleFaces = 0;
             var visibilityFlags = chunk.VisibilityFlags;
+            chunk.VisibleVoxelsCount = chunk.VisibilityFlags.Count;
 
             foreach (var visibilityFlag in visibilityFlags)
             {

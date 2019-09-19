@@ -21,6 +21,7 @@ namespace AppleCinnamon
         private KeyValuePair<Face, FaceBuffer>[] _buffers;
         private FaceBuffer _waterBuffer;
         public int VisibleFacesCount { get; set; }
+        public int VisibleVoxelsCount { get; set; }
 
         private static readonly Cube<Vector3> Normals = new Cube<Vector3>(Vector3.UnitY, -Vector3.UnitY,
             -Vector3.UnitX, Vector3.UnitX, -Vector3.UnitZ, Vector3.UnitZ);

@@ -22,6 +22,7 @@ namespace AppleCinnamon
         int RenderedChunks { get; }
         int QueuedChunks { get; }
         int TotalVisibleFaces { get; }
+        int TotalVisibleVoxels { get; }
 
         ConcurrentDictionary<string, long> PipelinePerformance { get; }
 
@@ -45,8 +46,8 @@ namespace AppleCinnamon
         private int _renderedChunks;
         public int RenderedChunks => _renderedChunks;
 
-        private int _totalVisibleFaces;
-        public int TotalVisibleFaces => _totalVisibleFaces;
+        public int TotalVisibleFaces { get; private set; }
+        public int TotalVisibleVoxels { get; private set; }
 
         public bool IsInitialized { get; private set; }
 
@@ -178,7 +179,9 @@ namespace AppleCinnamon
             if (!IsInitialized && _finalizedChunks == root * root)
             {
                 IsInitialized = true;
-                _totalVisibleFaces += _chunks.Values.Sum(s => s.VisibleFacesCount);
+                TotalVisibleFaces += _chunks.Values.Sum(s => s.VisibleFacesCount);
+                TotalVisibleVoxels += _chunks.Values.Sum(s => s.VisibleVoxelsCount);
+
                 _pipeline.Complete();
                 _pipeline = _pipelineProvider.CreatePipeline(Math.Max(1, Environment.ProcessorCount / 2), Finalize);
             }
