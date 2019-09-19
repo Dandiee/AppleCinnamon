@@ -12,7 +12,16 @@ SamplerState SampleType;
 
 struct VS_IN
 {
-	float2 Position : POSITION;
+	float3 Position : POSITION;
+	// uint IndexAndLight : RANDOM;
+	// uint PositionYVisibilityAmbient : RANDOMKA;
+	// uint Ambient : RANDOMOCSKA;
+};
+
+
+struct GS_IN
+{
+	float3 Position : POSITION;
 	// uint IndexAndLight : RANDOM;
 	// uint PositionYVisibilityAmbient : RANDOMKA;
 	// uint Ambient : RANDOMOCSKA;
@@ -24,9 +33,9 @@ struct PS_IN
 };
 
 
-VS_IN VS(VS_IN input )
+GS_IN VS(VS_IN input )
 {
-	VS_IN output = (VS_IN)0;
+	GS_IN output = (GS_IN)0;
 
 	output.Position = input.Position;
 	// output.IndexAndLight = input.IndexAndLight;
@@ -37,9 +46,9 @@ VS_IN VS(VS_IN input )
 }
 
 [maxvertexcount(3)]
-void GS(point VS_IN inputs[1], inout TriangleStream<PS_IN> triStream )
+void GS(point GS_IN inputs[1], inout TriangleStream<PS_IN> triStream )
 {
-	VS_IN input = inputs[0];
+	GS_IN input = inputs[0];
 
 	// uint j = (input.PositionYVisibilityAmbient & 65280);
 	
@@ -54,8 +63,8 @@ void GS(point VS_IN inputs[1], inout TriangleStream<PS_IN> triStream )
 	output3.Position = pos + float4(-.5, +.5, +.5, 0);
 
 	triStream.Append(output1);
-	/*triStream.Append(output2);
-	triStream.Append(output3);*/
+	triStream.Append(output2);
+	triStream.Append(output3);
 
 	triStream.RestartStrip();
 }
@@ -73,8 +82,9 @@ technique10 Render
 {
 	pass P0
 	{
-		SetVertexShader(CompileShader(vs_5_0, VS()));
-		SetGeometryShader( CompileShader( gs_5_0, GS() ) );
-		SetPixelShader( CompileShader( ps_5_0, PS() ) );
+		SetVertexShader(CompileShader(vs_4_0, VS()));
+		SetGeometryShader( CompileShader( gs_4_0, GS() ) );
+		SetPixelShader( CompileShader( ps_4_0, PS() ) );
+		
 	}
 }

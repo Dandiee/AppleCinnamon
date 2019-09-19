@@ -8,7 +8,7 @@ namespace AppleCinnamon.Vertices
     [StructLayout(LayoutKind.Sequential)]
     public struct VertexGeometry
     {
-        public const int Size = 8;
+        public const int Size = 12;
 
         // actual results
         // faces: 13793568	13 793 568
@@ -17,7 +17,7 @@ namespace AppleCinnamon.Vertices
 
         // 87654321|87654321|87654321|87654321
         // XXXXXXXX|XXXXXXXX|XXXXXXXX|XXXXXXXX
-        public Vector2 Position;
+        public Vector3 Position;
 
         // 87654321|87654321|87654321|87654321
         // ZZZZZZZZ|ZZZZZZZZ|ZZZZZZZZ|ZZZZZZZZ
@@ -38,7 +38,7 @@ namespace AppleCinnamon.Vertices
 
         public static readonly InputElement[] InputElements =
        {
-            new InputElement("POSITION", 0, Format.R32G32_Float, 00, 0),
+            new InputElement("POSITION", 0, Format.R32G32B32_Float, 00, 0),
             //new InputElement("RANDOM", 0, Format.R32_UInt, 08, 0),
             //new InputElement("RANDOMKA", 0, Format.R32_UInt, 12, 0),
             //new InputElement("RANDOMOCSKA", 0, Format.R32_UInt, 16, 0),
@@ -47,7 +47,7 @@ namespace AppleCinnamon.Vertices
 
         public VertexGeometry(byte block, float i, byte j, float k, byte[] lights, byte[][] ambients, byte visibility)
         {
-            Position = new Vector2(i, k);
+            Position = new Vector3(i, j, k);
             
             //IndexAndLight = block;
             //IndexAndLight |= (uint)lights[0] << 8;  // sizeof(block)
