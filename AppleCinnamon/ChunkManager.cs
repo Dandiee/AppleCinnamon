@@ -22,6 +22,7 @@ namespace AppleCinnamon
         int RenderedChunks { get; }
         int QueuedChunks { get; }
         int TotalVisibleFaces { get; }
+        int TotalVisibleVoxels { get; }
 
         ConcurrentDictionary<string, long> PipelinePerformance { get; }
 
@@ -32,8 +33,8 @@ namespace AppleCinnamon
 
     public sealed class ChunkManager : IChunkManager
     {
-        public const int ViewDistance = 16;
-        public static readonly int InitialDegreeOfParallelism = Environment.ProcessorCount;
+        public const int ViewDistance = 4;
+        public static readonly int InitialDegreeOfParallelism = 1;
 
         // debug fields
         private int _queuedChunksCount;
@@ -45,8 +46,8 @@ namespace AppleCinnamon
         private int _renderedChunks;
         public int RenderedChunks => _renderedChunks;
 
-        private int _totalVisibleFaces;
-        public int TotalVisibleFaces => _totalVisibleFaces;
+        public int TotalVisibleFaces { get; private set; }
+        public int TotalVisibleVoxels { get; private set; }
 
         public bool IsInitialized { get; private set; }
 
@@ -178,7 +179,9 @@ namespace AppleCinnamon
             if (!IsInitialized && _finalizedChunks == root * root)
             {
                 IsInitialized = true;
-                _totalVisibleFaces += _chunks.Values.Sum(s => s.VisibleFacesCount);
+                TotalVisibleFaces = _chunks.Values.Sum(s => s.VisibleFacesCount);
+                TotalVisibleVoxels = _chunks.Values.Sum(s => s.VisibilityFlags.Count);
+
                 _pipeline.Complete();
                 _pipeline = _pipelineProvider.CreatePipeline(Math.Max(1, Environment.ProcessorCount / 2), Finalize);
             }
@@ -213,7 +216,7 @@ namespace AppleCinnamon
 
                 using (var inputLayout = new InputLayout(_graphics.Device,
                     _waterBlockEffect.GetTechniqueByIndex(0).GetPassByIndex(0).Description.Signature,
-                    VertexSolidBlock.InputElements))
+                    VertexWater.InputElements))
                 {
                     var blendStateDescription = new BlendStateDescription { AlphaToCoverageEnable = false };
 

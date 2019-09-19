@@ -102,6 +102,7 @@
     <Compile Include="System\TextureLoader.cs" />
     <Compile Include="System\TimerTick.cs" />
     <Compile Include="Vertices\VertexPositionColor.cs" />
+    <Compile Include="Vertices\VertexWater.cs" />
     <Compile Include="Vertices\VertexSolidBlock.cs" />
     <Compile Include="System\Extensions.cs" />
     <Compile Include="Settings\VoxelDefinition.cs" />

@@ -29,6 +29,7 @@ namespace AppleCinnamon
         public const float UvStep = 1 / 16f;
         private static readonly Vector2 UvOffset = new Vector2(TextureThreshold);
         private static readonly Vector2[] UvOffsets = { Vector2.Zero + UvOffset, new Vector2(UvStep - TextureThreshold, TextureThreshold), new Vector2(UvStep - TextureThreshold, UvStep - TextureThreshold), new Vector2(TextureThreshold, UvStep - TextureThreshold) };
+        private static readonly Int2[] UvOffsetIndexes = { new Int2(0, 0), new Int2(1, 0), new Int2(1, 1), new Int2(0, 1) };
         private static readonly Vector2[] WaterUvOffsets = { Vector2.Zero, new Vector2(1, 0), new Vector2(1, 1 / 32f), new Vector2(0, 1 / 32f) };
 
         public static readonly Cube<Int3[][]> AmbientIndexes = new Cube<Int3[][]>(

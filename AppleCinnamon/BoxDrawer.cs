@@ -88,7 +88,7 @@ namespace AppleCinnamon
 
                 using (var inputLayout = new InputLayout(_graphics.Device,
                     _effect.GetTechniqueByIndex(0).GetPassByIndex(0).Description.Signature,
-                    VertexSolidBlock.InputElements))
+                    VertexPositionColor.InputElements))
                 {
 
                     _graphics.Device.ImmediateContext.InputAssembler.InputLayout = inputLayout;

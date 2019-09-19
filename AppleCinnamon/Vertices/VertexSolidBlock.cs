@@ -6,24 +6,32 @@ namespace AppleCinnamon.Vertices
 {
     public struct VertexSolidBlock
     {
-        public const int Size = 24;
+        public const int Size = sizeof(int) * 4;
 
         public static readonly InputElement[] InputElements = 
         {
             new InputElement("POSITION", 0, Format.R32G32B32_Float, 0, 0), //0
-            new InputElement("TEXCOORD", 0, Format.R32G32_Float, 12, 0), // 3
-            new InputElement("COLOR", 0, Format.R32_Float, 20, 0), //3+2
+            new InputElement("VISIBILITY", 0, Format.R32_UInt, 12, 0) //3+2
         };
 
-        public VertexSolidBlock(Vector3 position, Vector2 textureCoordinate, int ambientOcclusion, float lightness)
+        public VertexSolidBlock(Vector3 position, byte u, byte v, byte ao, byte baseLightness)
         {
             Position = position;
-            TextureCoordinate = textureCoordinate;
-            AmbientOcclusion = 0.3f + (((1/16f) * lightness) - ambientOcclusion * .1f) * 0.8f;
+            Color = 0;
+            Color |= (uint)(u << 0);
+            Color |= (uint)(v << 4);
+            Color |= (uint)(baseLightness << 8);
+
+            uint u1 = (Color & 15);
+            uint v1 = (Color & 240) >> 4;
+            uint l1 = (Color & 3840) >> 8;
+
         }
 
         public Vector3 Position;
-        public Vector2 TextureCoordinate;
-        public float AmbientOcclusion;
+
+        // 87654321|87654321|87654321|87654321
+        // ????????|????????|??aallll|vvvvuuuu
+        public uint Color;
     }
 }

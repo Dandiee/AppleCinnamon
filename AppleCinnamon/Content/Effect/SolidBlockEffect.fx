@@ -12,8 +12,7 @@ SamplerState SampleType;
 struct VertexShaderInput
 {
     float3 Position : POSITION0;
-	float2 TexCoords : TEXCOORD0;
-	float AmbientOcclusion: COLOR0;
+	uint Asd: VISIBILITY;
 };
 
 
@@ -29,15 +28,20 @@ float ComputeFogFactor(float dist)
 {
     return clamp((dist - FogStart) / (FogEnd - FogStart), 0, 1);
 }
+
 VertexShaderOutput VertexShaderFunction(VertexShaderInput input)
 {
 	
     VertexShaderOutput output = (VertexShaderOutput)0;
 	float4 position = float4(input.Position.xyz, 1);
 	
+	float u = (input.Asd & 15) * 1.0/16.0;
+	float v = ((input.Asd & 240) >> 4) * 1.0/16.0;
+	float l = ((input.Asd & 3840) >> 8) / 16.0;
+	
     output.Position = mul(position, WorldViewProjection);
-	output.TexCoords = input.TexCoords;
-	output.AmbientOcclusion = input.AmbientOcclusion;
+	output.TexCoords = float2(u, v);
+	output.AmbientOcclusion = l;
 	output.FogFactor = ComputeFogFactor(distance(EyePosition.xyz, input.Position.xyz));
 	
     return output;
