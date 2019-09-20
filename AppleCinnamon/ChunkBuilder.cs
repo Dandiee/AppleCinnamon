@@ -42,7 +42,7 @@ namespace AppleCinnamon
 
                 var voxel = chunk.Voxels[index];
                 var definition = VoxelDefinition.DefinitionByType[voxel.Block];
-                var flag = visibilityFlag.Value;
+                var flag = visibilityFlag.Value.VisibilityFlags;
 
                 var voxelPositionOffset = definition.Translation + chunk.OffsetVector + new Vector3(i, j, k);
 

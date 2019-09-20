@@ -149,7 +149,7 @@ namespace AppleCinnamon.Pipeline
 
                         if (visibilityFlag > 0)
                         {
-                            chunk.VisibilityFlags[index] = visibilityFlag;
+                            chunk.VisibilityFlags[index] = new VoxelVisibility(visibilityFlag, 0);
                         }
 
                         if (voxel.Lightness != voxelLight)
