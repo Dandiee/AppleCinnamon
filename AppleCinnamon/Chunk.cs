@@ -2,9 +2,7 @@
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using AppleCinnamon.System;
-using AppleCinnamon.Vertices;
 using SharpDX;
-using SharpDX.Direct3D11;
 using SharpDX.DXGI;
 using Device = SharpDX.Direct3D11.Device;
 
@@ -12,7 +10,7 @@ namespace AppleCinnamon
 {
     public class Chunk
     {
-        public const int SizeXy = 16;
+        public const int SizeXy = 64;
         public const int Height = 256;
 
         public ChunkBuffer ChunkBuffer;
@@ -240,8 +238,7 @@ namespace AppleCinnamon
         {
             if (_waterBuffer != null && _waterBuffer.IndexCount > 0)
             {
-                device.ImmediateContext.InputAssembler.SetVertexBuffers(0,
-                    new VertexBufferBinding(_waterBuffer.VertexBuffer, VertexSolidBlock.Size, 0));
+                device.ImmediateContext.InputAssembler.SetVertexBuffers(0, _waterBuffer.Binding);
                 device.ImmediateContext.InputAssembler.SetIndexBuffer(_waterBuffer.IndexBuffer, Format.R16_UInt, 0);
                 device.ImmediateContext.DrawIndexed(_waterBuffer.IndexCount, 0, 0);
             }

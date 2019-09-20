@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Linq;
 using AppleCinnamon.Settings;
 using AppleCinnamon.System;
 
@@ -20,6 +21,7 @@ namespace AppleCinnamon.Pipeline
             var rightChunk = chunk.Neighbours[new Int2(1, 0)];
             var frontChunk = chunk.Neighbours[new Int2(0, -1)];
             var backChunk = chunk.Neighbours[new Int2(0, 1)];
+
 
             foreach (var index in chunk.PendingLeftVoxels)
             {

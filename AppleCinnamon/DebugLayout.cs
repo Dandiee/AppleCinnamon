@@ -55,6 +55,7 @@ namespace AppleCinnamon
                    $"Rendered chunks {chunkManager.RenderedChunks}\r\n" +
                    $"Queued chunks {chunkManager.QueuedChunks}\r\n" +
                    $"Total visible faces {chunkManager.TotalVisibleFaces}\r\n" + 
+                   $"Total visible voxels {chunkManager.TotalVisibleVoxels}\r\n" + 
                    $"Current position {camera.Position.ToVector3().ToNonRetardedString()}\r\n"+
                    $"Orientation {camera.LookAt.ToVector3().ToNonRetardedString()}\r\n"+
                    $"Current target {targetInfo}\r\n" +

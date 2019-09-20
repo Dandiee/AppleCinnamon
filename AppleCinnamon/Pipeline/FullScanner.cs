@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using AppleCinnamon.Settings;
 using AppleCinnamon.System;
@@ -160,6 +161,7 @@ namespace AppleCinnamon.Pipeline
                     }
                 }
             }
+
 
             sw.Stop();
 
