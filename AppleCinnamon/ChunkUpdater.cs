@@ -107,8 +107,8 @@ namespace AppleCinnamon
                     var neighbourIndex = neighbourAddress.RelativeVoxelIndex.ToIndex();
                     neighbourChunk.VisibilityFlags.TryGetValue(neighbourIndex, out var visibility);
                     neighbourChunk.VisibilityFlags[neighbourIndex] = isRemoving
-                        ? new VoxelVisibility((byte)(visibility.VisibilityFlags + direction.Item2), 0)
-                        : new VoxelVisibility((byte)(visibility.VisibilityFlags - direction.Item2), 0);
+                        ? (byte)(visibility + direction.Item2)
+                        : (byte)(visibility - direction.Item2);
                 }
                 else
                 {
@@ -122,7 +122,7 @@ namespace AppleCinnamon
             }
             else
             {
-                chunk.VisibilityFlags[relativeIndex.ToIndex()] = new VoxelVisibility((byte)newVisibilityFlag, 0);
+                chunk.VisibilityFlags[relativeIndex.ToIndex()] = (byte)newVisibilityFlag;
             }
 
         }

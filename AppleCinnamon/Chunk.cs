@@ -8,21 +8,9 @@ using Device = SharpDX.Direct3D11.Device;
 
 namespace AppleCinnamon
 {
-    public struct VoxelVisibility
-    {
-        public readonly byte VisibilityFlags;
-        public readonly byte LocalityFlags;
-
-        public VoxelVisibility(byte visibilityFlags, byte localityFlags)
-        {
-            VisibilityFlags = visibilityFlags;
-            LocalityFlags = localityFlags;
-        }
-    }
-
     public class Chunk
     {
-        public const int SizeXy = 16;
+        public const int SizeXy = 64;
         public const int Height = 256;
 
         public ChunkBuffer ChunkBuffer;
@@ -33,7 +21,7 @@ namespace AppleCinnamon
         private static readonly Cube<Vector3> Normals = new Cube<Vector3>(Vector3.UnitY, -Vector3.UnitY,
             -Vector3.UnitX, Vector3.UnitX, -Vector3.UnitZ, Vector3.UnitZ);
 
-        public readonly Dictionary<int, VoxelVisibility> VisibilityFlags;
+        public readonly Dictionary<int, byte> VisibilityFlags;
         public List<int> PendingLeftVoxels;
         public List<int> PendingRightVoxels;
         public List<int> PendingFrontVoxels;
@@ -147,7 +135,7 @@ namespace AppleCinnamon
             Voxel[] voxels)
         {
             Neighbours = new ConcurrentDictionary<Int2, Chunk>();
-            VisibilityFlags = new Dictionary<int, VoxelVisibility>();
+            VisibilityFlags = new Dictionary<int, byte>();
 
             PendingLeftVoxels = new List<int>(1024);
             PendingRightVoxels = new List<int>(1024);
