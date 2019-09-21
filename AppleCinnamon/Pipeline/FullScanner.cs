@@ -1,9 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using AppleCinnamon.Settings;
-using AppleCinnamon.System;
 using SharpDX;
 
 namespace AppleCinnamon.Pipeline
@@ -69,6 +67,7 @@ namespace AppleCinnamon.Pipeline
                             if (hasVisibilityFlag && neighbor.Block < 16)
                             {
                                 visibilityFlag += 1;
+                                chunk.VoxelCount.Top++;
                             }
 
                             if (isTransparent && voxelLight < neighbor.Lightness - 1)
@@ -83,6 +82,7 @@ namespace AppleCinnamon.Pipeline
                             if (hasVisibilityFlag && neighbor.Block < 16)
                             {
                                 visibilityFlag += 2;
+                                chunk.VoxelCount.Bottom++;
                             }
                         }
 
@@ -92,6 +92,7 @@ namespace AppleCinnamon.Pipeline
                             if (hasVisibilityFlag && neighbor.Block < 16)
                             {
                                 visibilityFlag += 4;
+                                chunk.VoxelCount.Left++;
                             }
 
                             if (isTransparent && voxelLight < neighbor.Lightness - 1)
@@ -108,6 +109,7 @@ namespace AppleCinnamon.Pipeline
                             if (hasVisibilityFlag && neighbor.Block < 16)
                             {
                                 visibilityFlag += 8;
+                                chunk.VoxelCount.Right++;
                             }
 
                             if (isTransparent && voxelLight < neighbor.Lightness - 1)
@@ -123,6 +125,7 @@ namespace AppleCinnamon.Pipeline
                             if (hasVisibilityFlag && neighbor.Block < 16)
                             {
                                 visibilityFlag += 16;
+                                chunk.VoxelCount.Front++;
                             }
                             if (isTransparent && voxelLight < neighbor.Lightness - 1)
                             {
@@ -137,6 +140,7 @@ namespace AppleCinnamon.Pipeline
                             if (hasVisibilityFlag && neighbor.Block < 16)
                             {
                                 visibilityFlag += 32;
+                                chunk.VoxelCount.Back++;
                             }
 
                             if (isTransparent && voxelLight < neighbor.Lightness - 1)

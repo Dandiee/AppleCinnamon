@@ -33,7 +33,7 @@ namespace AppleCinnamon
 
     public sealed class ChunkManager : IChunkManager
     {
-        public const int ViewDistance = 64;
+        public const int ViewDistance = 16;
         public static readonly int InitialDegreeOfParallelism = 1;
 
         // debug fields

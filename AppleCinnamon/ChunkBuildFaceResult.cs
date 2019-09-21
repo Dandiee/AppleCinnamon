@@ -6,24 +6,16 @@ namespace AppleCinnamon
 {
     public class ChunkBuildFaceResult
     {
-        public List<VertexSolidBlock> Vertices { get; }
-        public List<ushort> Indexes { get; }
+        public VertexSolidBlock[] Vertices { get; }
+        public ushort[] Indexes { get; }
         public Int3 Direction { get; }
 
-        public VertexSolidBlock[] VertexArray { get; private set; }
-        public ushort[] IndexArray { get; private set; }
-
-        public ChunkBuildFaceResult(Int3 direction)
+        public ChunkBuildFaceResult(Int3 direction, int voxelCount)
         {
             Direction = direction;
-            Vertices = new List<VertexSolidBlock>();
-            Indexes = new List<ushort>();
+            Vertices = new VertexSolidBlock[voxelCount * 4];
+            Indexes = new ushort[voxelCount * 6];
         }
 
-        public void ToArray()
-        {
-            VertexArray = Vertices.ToArray();
-            IndexArray = Indexes.ToArray();
-        }
     }
 }

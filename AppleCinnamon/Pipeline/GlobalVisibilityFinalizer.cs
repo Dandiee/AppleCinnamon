@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using System.Linq;
 using AppleCinnamon.Settings;
 using AppleCinnamon.System;
 
@@ -34,6 +33,7 @@ namespace AppleCinnamon.Pipeline
                 {
                     chunk.VisibilityFlags.TryGetValue(index, out var visibility);
                     chunk.VisibilityFlags[index] = (byte)(visibility + 4);
+                    chunk.VoxelCount.Left++;
                 }
             }
 
@@ -48,6 +48,7 @@ namespace AppleCinnamon.Pipeline
                 {
                     chunk.VisibilityFlags.TryGetValue(index, out var visibility);
                     chunk.VisibilityFlags[index] = (byte)(visibility + 8);
+                    chunk.VoxelCount.Right++;
                 }
             }
 
@@ -62,6 +63,7 @@ namespace AppleCinnamon.Pipeline
                 {
                     chunk.VisibilityFlags.TryGetValue(index, out var visibility);
                     chunk.VisibilityFlags[index] = (byte)(visibility + 16);
+                    chunk.VoxelCount.Front++;
                 }
             }
 
@@ -77,6 +79,7 @@ namespace AppleCinnamon.Pipeline
                 {
                     chunk.VisibilityFlags.TryGetValue(index, out var visibility);
                     chunk.VisibilityFlags[index] = (byte)(visibility + 32);
+                    chunk.VoxelCount.Back++;
                 }
 
             }

@@ -29,6 +29,8 @@ namespace AppleCinnamon
         public List<int> LightPropagationVoxels;
         public readonly List<int> TopMostWaterVoxels;
 
+        public Cube<int> VoxelCount { get; }
+
         public Int2 ChunkIndex { get; }
         public Vector3 OffsetVector { get; }
         public Int2 Offset { get; }
@@ -137,6 +139,7 @@ namespace AppleCinnamon
             Neighbours = new ConcurrentDictionary<Int2, Chunk>();
             VisibilityFlags = new Dictionary<int, byte>();
 
+            VoxelCount = new Cube<int>();
             PendingLeftVoxels = new List<int>(1024);
             PendingRightVoxels = new List<int>(1024);
             PendingFrontVoxels = new List<int>(1024);
