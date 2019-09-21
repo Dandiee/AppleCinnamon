@@ -43,13 +43,12 @@ namespace AppleCinnamon
 
                 var voxel = chunk.Voxels[index];
                 var definition = VoxelDefinition.DefinitionByType[voxel.Block];
-                var flag = visibilityFlag.Value;
 
                 var voxelPositionOffset = definition.Translation + chunk.OffsetVector + new Vector3(i, j, k);
 
                 foreach (var faceInfo in offsetIterator)
                 {
-                    if ((flag & faceInfo.BuildInfo.DirectionFlag) == faceInfo.BuildInfo.DirectionFlag)
+                    if ((visibilityFlag.Value & faceInfo.BuildInfo.DirectionFlag) == faceInfo.BuildInfo.DirectionFlag)
                     {
                         var neighbor = chunk.GetLocalWithNeighbours(i + faceInfo.BuildInfo.Direction.X, j + faceInfo.BuildInfo.Direction.Y, k + faceInfo.BuildInfo.Direction.Z);
                         AddFace(faceInfo, i, j, k, vertices, indexes, definition, chunk, neighbor, voxelPositionOffset);
@@ -127,67 +126,50 @@ namespace AppleCinnamon
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void AddFace(OffsetData face, int relativeIndexX, int relativeIndexY, int relativeIndexZ, VertexSolidBlock[] vertices, ushort[] indexes, VoxelDefinition definition, Chunk chunk, Voxel neighbor, Vector3 voxelPositionOffset)
         {
+            // Face specific base variables
             var textureUv = definition.TextureIndexes[face.BuildInfo.Face];
             var offset = face.Offset + face.ProcessedVoxels;
             var vertexIndex = offset * 4;
             var indexIndex = offset * 6;
 
-            var firstNeighbourVoxel = chunk.GetLocalWithNeighbours(
-                relativeIndexX + face.BuildInfo.FirstNeighbourIndex.X,
-                relativeIndexY + face.BuildInfo.FirstNeighbourIndex.Y,
-                relativeIndexZ + face.BuildInfo.FirstNeighbourIndex.Z);
+            // Initialize ambient neighbours
+            var ambientNeighbourIndex = face.BuildInfo.FirstNeighbourIndex;
+            var ambientNeighbourVoxel = chunk.GetLocalWithNeighbours(relativeIndexX + ambientNeighbourIndex.X, relativeIndexY + ambientNeighbourIndex.Y, relativeIndexZ + ambientNeighbourIndex.Z);
+            var ambientNeighbourDefinition = VoxelDefinition.DefinitionByType[ambientNeighbourVoxel.Block];
 
-            var firstNeighbourDefinition = VoxelDefinition.DefinitionByType[firstNeighbourVoxel.Block];
-
-            for (var i = 0; i < 4; i++)
+            // Visit all ambient neighbours
+            foreach(var vertexInfo in face.BuildInfo.VerticesInfo)
             {
-                var faceVertices = face.BuildInfo.Vertices[i];
                 var position = new Vector3(
-                    faceVertices.X * definition.Size.X + voxelPositionOffset.X,
-                    faceVertices.Y * definition.Size.Y + voxelPositionOffset.Y,
-                    faceVertices.Z * definition.Size.Z + voxelPositionOffset.Z);
+                    vertexInfo.Position.X * definition.Size.X + voxelPositionOffset.X,
+                    vertexInfo.Position.Y * definition.Size.Y + voxelPositionOffset.Y,
+                    vertexInfo.Position.Z * definition.Size.Z + voxelPositionOffset.Z);
 
-                var uvCoordinateOffset = UvOffsetIndexes[i];
-                var light = neighbor.Lightness + firstNeighbourVoxel.Lightness;
-                var denominator = firstNeighbourDefinition.IsTransparent ? 2f : 1f;
-                var ambientOcclusion = firstNeighbourDefinition.IsTransparent ? 0 : 1;
-                var vertexNeighbors = face.BuildInfo.AmbientOcclusionNeighbors[i];
+                var totalNeighbourLight = ambientNeighbourVoxel.Lightness;
+                var numberOfAmbientNeighbours = ambientNeighbourDefinition.IsTransparent ? 0 : 1;
 
                 for (var j = 0; j < 2; j++)
                 {
-                    var currentNeighbourIndex = vertexNeighbors[j];
-                    var currentNeighbourVoxel =
-                        chunk.GetLocalWithNeighbours(
-                            relativeIndexX + currentNeighbourIndex.X,
-                            relativeIndexY + currentNeighbourIndex.Y,
-                            relativeIndexZ + currentNeighbourIndex.Z);
+                    ambientNeighbourIndex = vertexInfo.AmbientOcclusionNeighbors[j];
+                    ambientNeighbourVoxel = chunk.GetLocalWithNeighbours(relativeIndexX + ambientNeighbourIndex.X, relativeIndexY + ambientNeighbourIndex.Y, relativeIndexZ + ambientNeighbourIndex.Z);
+                    ambientNeighbourDefinition = VoxelDefinition.DefinitionByType[ambientNeighbourVoxel.Block];
 
-                    var currentNeighbourDefinition = VoxelDefinition.DefinitionByType[currentNeighbourVoxel.Block];
-
-                    if (currentNeighbourDefinition.IsTransparent)
+                    if (ambientNeighbourDefinition.IsTransparent)
                     {
-                        light += currentNeighbourVoxel.Lightness;
-                        denominator++;
+                        totalNeighbourLight += ambientNeighbourVoxel.Lightness;
                     }
-                    else ambientOcclusion++;
-
-                    if (j == 1)
+                    else
                     {
-                        firstNeighbourVoxel = currentNeighbourVoxel;
-                        firstNeighbourDefinition = currentNeighbourDefinition;
+                        numberOfAmbientNeighbours++;
                     }
                 }
 
-                var vertex = new VertexSolidBlock(position,
-                    (byte)(textureUv.X + uvCoordinateOffset.X),
-                    (byte)(textureUv.Y + uvCoordinateOffset.Y),
-                    (byte)ambientOcclusion,
-                    (byte)(light / denominator));
-
-                vertices[vertexIndex + i] = vertex;
+                vertices[vertexIndex + vertexInfo.Index] = new VertexSolidBlock(position, textureUv.X + vertexInfo.TextureIndex.X,
+                    textureUv.Y + vertexInfo.TextureIndex.Y, neighbor.Lightness, totalNeighbourLight,
+                    numberOfAmbientNeighbours);
             }
 
-            indexes[indexIndex] = (ushort)(vertexIndex + 0);
+            indexes[indexIndex] = (ushort)vertexIndex;
             indexes[indexIndex + 1] = (ushort)(vertexIndex + 2);
             indexes[indexIndex + 2] = (ushort)(vertexIndex + 3);
             indexes[indexIndex + 3] = (ushort)(vertexIndex + 0);
@@ -207,8 +189,6 @@ namespace AppleCinnamon
             var froCount = chunk.VoxelCount.Front;
             var bacCount = chunk.VoxelCount.Back;
 
-            var allCount = topCount + botCount + lefCount + rigCount + froCount + bacCount;
-
             var topOffset = 0;
             var botOffset = topCount;
             var lefOffset = botOffset + botCount;
@@ -217,42 +197,154 @@ namespace AppleCinnamon
             var bacOffset = froOffset + froCount;
 
             var result = new Cube<OffsetData>(
-                new OffsetData(topOffset, topCount, ChunkFaceBuildInfo.Top),
-                new OffsetData(botOffset, botCount, ChunkFaceBuildInfo.Bottom),
-                new OffsetData(lefOffset, lefCount, ChunkFaceBuildInfo.Left),
-                new OffsetData(rigOffset, rigCount, ChunkFaceBuildInfo.Right),
-                new OffsetData(froOffset, froCount, ChunkFaceBuildInfo.Front),
-                new OffsetData(bacOffset, bacCount, ChunkFaceBuildInfo.Back));
+                new OffsetData(topOffset, topCount, FaceBuildInfo.Top),
+                new OffsetData(botOffset, botCount, FaceBuildInfo.Bottom),
+                new OffsetData(lefOffset, lefCount, FaceBuildInfo.Left),
+                new OffsetData(rigOffset, rigCount, FaceBuildInfo.Right),
+                new OffsetData(froOffset, froCount, FaceBuildInfo.Front),
+                new OffsetData(bacOffset, bacCount, FaceBuildInfo.Back));
 
             return result;
         }
     }
 
-    public sealed class ChunkFaceBuildInfo
+    public sealed class FaceBuildInfo
     {
-        public static readonly ChunkFaceBuildInfo Top = new ChunkFaceBuildInfo(1, Face.Top, new Int3(0, 1, 0), ChunkBuilder.FaceVertices.Top, ChunkBuilder.FirstAmbientIndexes.Top, ChunkBuilder.AmbientIndexes.Top);
-        public static readonly ChunkFaceBuildInfo Bottom = new ChunkFaceBuildInfo(2, Face.Bottom, new Int3(0, -1, 0), ChunkBuilder.FaceVertices.Bottom, ChunkBuilder.FirstAmbientIndexes.Bottom, ChunkBuilder.AmbientIndexes.Bottom);
-        public static readonly ChunkFaceBuildInfo Left = new ChunkFaceBuildInfo(4, Face.Left, new Int3(-1, 0, 0), ChunkBuilder.FaceVertices.Left, ChunkBuilder.FirstAmbientIndexes.Left, ChunkBuilder.AmbientIndexes.Left);
-        public static readonly ChunkFaceBuildInfo Right = new ChunkFaceBuildInfo(8, Face.Right, new Int3(1, 0, 0), ChunkBuilder.FaceVertices.Right, ChunkBuilder.FirstAmbientIndexes.Right, ChunkBuilder.AmbientIndexes.Right);
-        public static readonly ChunkFaceBuildInfo Front = new ChunkFaceBuildInfo(16, Face.Front, new Int3(0, 0, -1), ChunkBuilder.FaceVertices.Front, ChunkBuilder.FirstAmbientIndexes.Front, ChunkBuilder.AmbientIndexes.Front);
-        public static readonly ChunkFaceBuildInfo Back = new ChunkFaceBuildInfo(32, Face.Back, new Int3(0, 0, 1), ChunkBuilder.FaceVertices.Back, ChunkBuilder.FirstAmbientIndexes.Back, ChunkBuilder.AmbientIndexes.Back);
+        public static readonly Vector3 TopLefFro = new Vector3(-.5f, +.5f, -.5f);
+        public static readonly Vector3 TopRigFro = new Vector3(+.5f, +.5f, -.5f);
+        public static readonly Vector3 TopLefBac = new Vector3(-.5f, +.5f, +.5f);
+        public static readonly Vector3 TopRigBac = new Vector3(+.5f, +.5f, +.5f);
+        public static readonly Vector3 BotLefFro = new Vector3(-.5f, -.5f, -.5f);
+        public static readonly Vector3 BotLefBac = new Vector3(-.5f, -.5f, +.5f);
+        public static readonly Vector3 BotRigFro = new Vector3(+.5f, -.5f, -.5f);
+        public static readonly Vector3 BotRigBac = new Vector3(+.5f, -.5f, +.5f);
+
+        public static readonly Cube<Vector3[]> FaceVertices =
+            new Cube<Vector3[]>(
+                new[] { TopLefFro, TopRigFro, TopRigBac, TopLefBac },
+                new[] { BotRigFro, BotLefFro, BotLefBac, BotRigBac },
+                new[] { TopLefFro, TopLefBac, BotLefBac, BotLefFro },
+                new[] { TopRigBac, TopRigFro, BotRigFro, BotRigBac },
+                new[] { TopRigFro, TopLefFro, BotLefFro, BotRigFro },
+                new[] { TopLefBac, TopRigBac, BotRigBac, BotLefBac }
+            );
+
+        public static readonly Cube<Int3> FirstAmbientIndexes = new Cube<Int3>(
+            new Int3(-1, 1, 0),
+            new Int3(1, -1, 0),
+            new Int3(-1, 0, -1),
+            new Int3(1, 0, 1),
+            new Int3(1, 0, -1),
+            new Int3(-1, 0, 1)
+        );
+
+        public static readonly Cube<Int3[][]> AmbientIndexes = new Cube<Int3[][]>(
+            new[]
+            {
+                new[] {new Int3(-1, 1, -1), new Int3(0, 1, -1)},
+                new[] {new Int3(1, 1, -1), new Int3(1, 1, 0)},
+                new[] {new Int3(1, 1, 1), new Int3(0, 1, 1)},
+                new[] {new Int3(-1, 1, 0), new Int3(-1, 1, 1)}
+            },
+            new[]
+            {
+                new[] {new Int3(1, -1, -1), new Int3(0, -1, -1)},
+                new[] {new Int3(-1, -1, -1), new Int3(-1, -1, 0)},
+                new[] {new Int3(-1, -1, 1), new Int3(0, -1, 1)},
+                new[] {new Int3(1, -1, 1), new Int3(1, -1, 0)}
+            },
+            new[]
+            {
+                new[] {new Int3(-1, 1, -1), new Int3(-1, 1, 0)},
+                new[] {new Int3(-1, 1, 1), new Int3(-1, 0, 1)},
+                new[] {new Int3(-1, -1, 1), new Int3(-1, -1, 0)},
+                new[] {new Int3(-1, -1, -1), new Int3(-1, 0, -1)}
+            },
+            new[]
+            {
+                new[] {new Int3(1, 1, 1), new Int3(1, 1, 0)},
+                new[] {new Int3(1, 1, -1), new Int3(1, 0, -1)},
+                new[] {new Int3(1, -1, -1), new Int3(1, -1, 0)},
+                new[] {new Int3(1, 0, 1), new Int3(1, -1, 1), }
+            },
+            new[]
+            {
+                new[] {new Int3(1, 1, -1), new Int3(0, 1, -1)},
+                new[] {new Int3(-1, 1, -1), new Int3(-1, 0, -1)},
+                new[] {new Int3(-1, -1, -1), new Int3(0, -1, -1)},
+                new[] {new Int3(1, 0, -1), new Int3(1, -1, -1)}
+            },
+            new[]
+            {
+                new[] {new Int3(-1, 1, 1), new Int3(0, 1, 1)},
+                new[] {new Int3(1, 1, 1), new Int3(1, 0, 1)},
+                new[] {new Int3(1, -1, 1), new Int3(0, -1, 1)},
+                new[] {new Int3(-1, -1, 1), new Int3(-1, 0, 1)}
+            }
+        );
+
+        public static readonly Dictionary<Face, Int3> FaceDirectionMapping = new Dictionary<Face, Int3>
+        {
+            {Face.Top, new Int3(0, 1, 0)},
+            {Face.Bottom, new Int3(0, -1, 0)},
+            {Face.Left, new Int3(-1, 0, 0)},
+            {Face.Right, new Int3(1, 0, 0)},
+            {Face.Front, new Int3(0, 0, -1)},
+            {Face.Back, new Int3(0, 0, 1)},
+        };
+
+        public static readonly Dictionary<Face, byte> FaceVisibilityFlagMapping = new Dictionary<Face, byte>
+        {
+            {Face.Top, 1},
+            {Face.Bottom, 2},
+            {Face.Left, 4},
+            {Face.Right, 8},
+            {Face.Front, 16},
+            {Face.Back, 32},
+        };
+
+        public static readonly Int2[] UvOffsetIndexes = { new Int2(0, 0), new Int2(1, 0), new Int2(1, 1), new Int2(0, 1) };
+
+        public static readonly FaceBuildInfo Top = new FaceBuildInfo(Face.Top);
+        public static readonly FaceBuildInfo Bottom = new FaceBuildInfo(Face.Bottom);
+        public static readonly FaceBuildInfo Left = new FaceBuildInfo(Face.Left);
+        public static readonly FaceBuildInfo Right = new FaceBuildInfo(Face.Right);
+        public static readonly FaceBuildInfo Front = new FaceBuildInfo(Face.Front);
+        public static readonly FaceBuildInfo Back = new FaceBuildInfo(Face.Back);
 
         public readonly byte DirectionFlag;
         public readonly Face Face;
         public readonly Int3 Direction;
-        public readonly Vector3[] Vertices;
         public readonly Int3 FirstNeighbourIndex;
-        public readonly Int3[][] AmbientOcclusionNeighbors;
+        public readonly VertexBuildInfo[] VerticesInfo;
 
-        private ChunkFaceBuildInfo(byte directionFlag, Face face, Int3 direction, Vector3[] vertices, Int3 firstNeighbourIndex, Int3[][] ambientOcclusionNeighbors)
+        private FaceBuildInfo(Face face)
         {
-            DirectionFlag = directionFlag;
+            
+            DirectionFlag = FaceVisibilityFlagMapping[face];
             Face = face;
-            Direction = direction;
-            Vertices = vertices;
-            FirstNeighbourIndex = firstNeighbourIndex;
-            AmbientOcclusionNeighbors = ambientOcclusionNeighbors;
+            Direction = FaceDirectionMapping[face]; ;
+            VerticesInfo = FaceVertices[face].Select((vector, index) =>
+                new VertexBuildInfo(index, vector, AmbientIndexes[face][index], UvOffsetIndexes[index])).ToArray();
+            FirstNeighbourIndex = FirstAmbientIndexes[face];
         }
+    }
+
+    public sealed class VertexBuildInfo
+    {
+        public readonly int Index;
+        public readonly Vector3 Position;
+        public readonly Int3[] AmbientOcclusionNeighbors;
+        public readonly Int2 TextureIndex;
+
+        public VertexBuildInfo(int index, Vector3 position, Int3[] ambientOcclusionNeighbors, Int2 textureIndex)
+        {
+            Index = index;
+            Position = position;
+            AmbientOcclusionNeighbors = ambientOcclusionNeighbors;
+            TextureIndex = textureIndex;
+        }
+
     }
 
     public class ChunkBuffer
@@ -284,26 +376,14 @@ namespace AppleCinnamon
     {
         public readonly int Offset;
         public readonly int Count;
-        public readonly ChunkFaceBuildInfo BuildInfo;
+        public readonly FaceBuildInfo BuildInfo;
         public int ProcessedVoxels;
 
-        public OffsetData(int offset, int count, ChunkFaceBuildInfo buildInfo)
+        public OffsetData(int offset, int count, FaceBuildInfo buildInfo)
         {
             Offset = offset;
             Count = count;
             BuildInfo = buildInfo;
-        }
-    }
-
-    public class ChunkFaceVertex
-    {
-        public VertexSolidBlock Vertices { get; }
-        public ushort Indexes { get; }
-
-        public ChunkFaceVertex(VertexSolidBlock vertices, ushort indexes)
-        {
-            Vertices = vertices;
-            Indexes = indexes;
         }
     }
 }

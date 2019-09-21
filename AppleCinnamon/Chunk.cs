@@ -1,6 +1,5 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using AppleCinnamon.System;
 using SharpDX;
@@ -18,9 +17,6 @@ namespace AppleCinnamon
 
         private FaceBuffer _waterBuffer;
         public int VisibleFacesCount { get; set; }
-
-        private static readonly Cube<Vector3> Normals = new Cube<Vector3>(Vector3.UnitY, -Vector3.UnitY,
-            -Vector3.UnitX, Vector3.UnitX, -Vector3.UnitZ, Vector3.UnitZ);
 
         public readonly Dictionary<int, byte> VisibilityFlags;
         public List<int> PendingLeftVoxels;
