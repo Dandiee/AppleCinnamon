@@ -1,5 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using AppleCinnamon.Settings;
 using AppleCinnamon.System;
@@ -7,6 +7,7 @@ using AppleCinnamon.Vertices;
 using SharpDX;
 using SharpDX.Direct3D11;
 using Buffer = SharpDX.Direct3D11.Buffer;
+using Device = SharpDX.Direct3D11.Device;
 
 namespace AppleCinnamon
 {
@@ -20,18 +21,17 @@ namespace AppleCinnamon
     {
         public void BuildChunk(Device device, Chunk chunk)
         {
-            var verticesCube = new Cube<ChunkBuildFaceResult>(
-                new ChunkBuildFaceResult(Int3.UnitY, chunk.VoxelCount.Top),
-                new ChunkBuildFaceResult(-Int3.UnitY, chunk.VoxelCount.Bottom),
-                new ChunkBuildFaceResult(-Int3.UnitX, chunk.VoxelCount.Left),
-                new ChunkBuildFaceResult(Int3.UnitX, chunk.VoxelCount.Right),
-                new ChunkBuildFaceResult(-Int3.UnitZ, chunk.VoxelCount.Front),
-                new ChunkBuildFaceResult(Int3.UnitZ, chunk.VoxelCount.Back));
+            var offsets = GetOffsetData(chunk);
+            var visibleFacesCount = chunk.VoxelCount.Top + chunk.VoxelCount.Bottom + chunk.VoxelCount.Left +
+                                    chunk.VoxelCount.Right + chunk.VoxelCount.Front + chunk.VoxelCount.Back;
+
+            var vertices = new VertexSolidBlock[visibleFacesCount * 4];
+            var indexes = new ushort[visibleFacesCount * 6];
 
             var visibleFaces = 0;
             var visibilityFlags = chunk.VisibilityFlags;
 
-            var faces = ChunkFaceBuildInfo.GetFaces();
+            var offsetIterator = offsets.GetAll().Select(s => s.Value).ToList();
 
             foreach (var visibilityFlag in visibilityFlags)
             {
@@ -47,33 +47,18 @@ namespace AppleCinnamon
 
                 var voxelPositionOffset = definition.Translation + chunk.OffsetVector + new Vector3(i, j, k);
 
-                foreach (var faceInfo in faces)
+                foreach (var faceInfo in offsetIterator)
                 {
-                    if ((flag & faceInfo.DirectionFlag) == faceInfo.DirectionFlag)
+                    if ((flag & faceInfo.BuildInfo.DirectionFlag) == faceInfo.BuildInfo.DirectionFlag)
                     {
-                        visibleFaces++;
-                        var neighbor = chunk.GetLocalWithNeighbours(i + faceInfo.Direction.X, j + faceInfo.Direction.Y, k + faceInfo.Direction.Z);
-                        AddFace(
-                            faceInfo,
-                            i, j, k,
-                            verticesCube[faceInfo.Face],
-                            definition, chunk, neighbor, voxelPositionOffset);
-
-                        faceInfo.ProcessedVoxels++;
+                        var neighbor = chunk.GetLocalWithNeighbours(i + faceInfo.BuildInfo.Direction.X, j + faceInfo.BuildInfo.Direction.Y, k + faceInfo.BuildInfo.Direction.Z);
+                        AddFace(faceInfo, i, j, k, vertices, indexes, definition, chunk, neighbor, voxelPositionOffset);
                     }
                 }
 
             }
 
-            var chunkBuffer = new ChunkBuffer(device,
-                new ChunkFaceVertex(verticesCube.Top.Vertices, verticesCube.Top.Indexes),
-                new ChunkFaceVertex(verticesCube.Bottom.Vertices, verticesCube.Bottom.Indexes),
-                new ChunkFaceVertex(verticesCube.Left.Vertices, verticesCube.Left.Indexes),
-                new ChunkFaceVertex(verticesCube.Right.Vertices, verticesCube.Right.Indexes),
-                new ChunkFaceVertex(verticesCube.Front.Vertices, verticesCube.Front.Indexes),
-                new ChunkFaceVertex(verticesCube.Back.Vertices, verticesCube.Back.Indexes));
-
-            chunk.ChunkBuffer = chunkBuffer;
+            chunk.ChunkBuffer = new ChunkBuffer(device, vertices, indexes, offsets);
 
 
             chunk.VisibleFacesCount = visibleFaces;
@@ -140,22 +125,23 @@ namespace AppleCinnamon
 
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void AddFace(ChunkFaceBuildInfo face, int relativeIndexX, int relativeIndexY, int relativeIndexZ, ChunkBuildFaceResult faceResult, VoxelDefinition definition, Chunk chunk, Voxel neighbor, Vector3 voxelPositionOffset)
+        public void AddFace(OffsetData face, int relativeIndexX, int relativeIndexY, int relativeIndexZ, VertexSolidBlock[] vertices, ushort[] indexes, VoxelDefinition definition, Chunk chunk, Voxel neighbor, Vector3 voxelPositionOffset)
         {
-            var textureUv = definition.TextureIndexes[face.Face];
-            var vertexIndex = face.ProcessedVoxels * 4;
-            var indexIndex = face.ProcessedVoxels * 6;
+            var textureUv = definition.TextureIndexes[face.BuildInfo.Face];
+            var offset = face.Offset + face.ProcessedVoxels;
+            var vertexIndex = offset * 4;
+            var indexIndex = offset * 6;
 
             var firstNeighbourVoxel = chunk.GetLocalWithNeighbours(
-                relativeIndexX + face.FirstNeighbourIndex.X,
-                relativeIndexY + face.FirstNeighbourIndex.Y,
-                relativeIndexZ + face.FirstNeighbourIndex.Z);
+                relativeIndexX + face.BuildInfo.FirstNeighbourIndex.X,
+                relativeIndexY + face.BuildInfo.FirstNeighbourIndex.Y,
+                relativeIndexZ + face.BuildInfo.FirstNeighbourIndex.Z);
 
             var firstNeighbourDefinition = VoxelDefinition.DefinitionByType[firstNeighbourVoxel.Block];
 
             for (var i = 0; i < 4; i++)
             {
-                var faceVertices = face.Vertices[i];
+                var faceVertices = face.BuildInfo.Vertices[i];
                 var position = new Vector3(
                     faceVertices.X * definition.Size.X + voxelPositionOffset.X,
                     faceVertices.Y * definition.Size.Y + voxelPositionOffset.Y,
@@ -165,7 +151,7 @@ namespace AppleCinnamon
                 var light = neighbor.Lightness + firstNeighbourVoxel.Lightness;
                 var denominator = firstNeighbourDefinition.IsTransparent ? 2f : 1f;
                 var ambientOcclusion = firstNeighbourDefinition.IsTransparent ? 0 : 1;
-                var vertexNeighbors = face.AmbientOcclusionNeighbors[i];
+                var vertexNeighbors = face.BuildInfo.AmbientOcclusionNeighbors[i];
 
                 for (var j = 0; j < 2; j++)
                 {
@@ -198,15 +184,47 @@ namespace AppleCinnamon
                     (byte)ambientOcclusion,
                     (byte)(light / denominator));
 
-                faceResult.Vertices[vertexIndex + i] = vertex;
+                vertices[vertexIndex + i] = vertex;
             }
 
-            faceResult.Indexes[indexIndex] = (ushort)(vertexIndex + 0);
-            faceResult.Indexes[indexIndex + 1] = (ushort)(vertexIndex + 2);
-            faceResult.Indexes[indexIndex + 2] = (ushort)(vertexIndex + 3);
-            faceResult.Indexes[indexIndex + 3] = (ushort)(vertexIndex + 0);
-            faceResult.Indexes[indexIndex + 4] = (ushort)(vertexIndex + 1);
-            faceResult.Indexes[indexIndex + 5] = (ushort)(vertexIndex + 2);
+            indexes[indexIndex] = (ushort)(vertexIndex + 0);
+            indexes[indexIndex + 1] = (ushort)(vertexIndex + 2);
+            indexes[indexIndex + 2] = (ushort)(vertexIndex + 3);
+            indexes[indexIndex + 3] = (ushort)(vertexIndex + 0);
+            indexes[indexIndex + 4] = (ushort)(vertexIndex + 1);
+            indexes[indexIndex + 5] = (ushort)(vertexIndex + 2);
+
+            face.ProcessedVoxels++;
+        }
+
+
+        private Cube<OffsetData> GetOffsetData(Chunk chunk)
+        {
+            var topCount = chunk.VoxelCount.Top;
+            var botCount = chunk.VoxelCount.Bottom;
+            var lefCount = chunk.VoxelCount.Left;
+            var rigCount = chunk.VoxelCount.Right;
+            var froCount = chunk.VoxelCount.Front;
+            var bacCount = chunk.VoxelCount.Back;
+
+            var allCount = topCount + botCount + lefCount + rigCount + froCount + bacCount;
+
+            var topOffset = 0;
+            var botOffset = topCount;
+            var lefOffset = botOffset + botCount;
+            var rigOffset = lefOffset + lefCount;
+            var froOffset = rigOffset + rigCount;
+            var bacOffset = froOffset + froCount;
+
+            var result = new Cube<OffsetData>(
+                new OffsetData(topOffset, topCount, ChunkFaceBuildInfo.Top),
+                new OffsetData(botOffset, botCount, ChunkFaceBuildInfo.Bottom),
+                new OffsetData(lefOffset, lefCount, ChunkFaceBuildInfo.Left),
+                new OffsetData(rigOffset, rigCount, ChunkFaceBuildInfo.Right),
+                new OffsetData(froOffset, froCount, ChunkFaceBuildInfo.Front),
+                new OffsetData(bacOffset, bacCount, ChunkFaceBuildInfo.Back));
+
+            return result;
         }
     }
 
@@ -219,15 +237,12 @@ namespace AppleCinnamon
         public static readonly ChunkFaceBuildInfo Front = new ChunkFaceBuildInfo(16, Face.Front, new Int3(0, 0, -1), ChunkBuilder.FaceVertices.Front, ChunkBuilder.FirstAmbientIndexes.Front, ChunkBuilder.AmbientIndexes.Front);
         public static readonly ChunkFaceBuildInfo Back = new ChunkFaceBuildInfo(32, Face.Back, new Int3(0, 0, 1), ChunkBuilder.FaceVertices.Back, ChunkBuilder.FirstAmbientIndexes.Back, ChunkBuilder.AmbientIndexes.Back);
 
-        public static readonly ChunkFaceBuildInfo[] Faces = { Top, Bottom, Left, Right, Front, Back };
-
         public readonly byte DirectionFlag;
         public readonly Face Face;
         public readonly Int3 Direction;
         public readonly Vector3[] Vertices;
         public readonly Int3 FirstNeighbourIndex;
         public readonly Int3[][] AmbientOcclusionNeighbors;
-        public int ProcessedVoxels;
 
         private ChunkFaceBuildInfo(byte directionFlag, Face face, Int3 direction, Vector3[] vertices, Int3 firstNeighbourIndex, Int3[][] ambientOcclusionNeighbors)
         {
@@ -238,16 +253,6 @@ namespace AppleCinnamon
             FirstNeighbourIndex = firstNeighbourIndex;
             AmbientOcclusionNeighbors = ambientOcclusionNeighbors;
         }
-
-        public static ChunkFaceBuildInfo[] GetFaces()
-        {
-            return new[] {Top.Copy(), Bottom.Copy(), Left.Copy(), Right.Copy(), Front.Copy(), Back.Copy() };
-        }
-
-        public ChunkFaceBuildInfo Copy()
-        {
-            return new ChunkFaceBuildInfo(DirectionFlag, Face, Direction, Vertices, FirstNeighbourIndex, AmbientOcclusionNeighbors);
-        }
     }
 
     public class ChunkBuffer
@@ -257,82 +262,45 @@ namespace AppleCinnamon
         public readonly VertexBufferBinding Binding;
         public readonly IDictionary<Int3, OffsetData> Offsets;
 
-        public ChunkBuffer(Device device,
-            ChunkFaceVertex top,
-            ChunkFaceVertex bot,
-            ChunkFaceVertex lef,
-            ChunkFaceVertex rig,
-            ChunkFaceVertex fro,
-            ChunkFaceVertex bac)
+        public ChunkBuffer(Device device, VertexSolidBlock[] vertices, ushort[] indexes, Cube<OffsetData> offsets)
         {
-            var topCount = top.Vertices.Length / 4;
-            var botCount = bot.Vertices.Length / 4;
-            var lefCount = lef.Vertices.Length / 4;
-            var rigCount = rig.Vertices.Length / 4;
-            var froCount = fro.Vertices.Length / 4;
-            var bacCount = bac.Vertices.Length / 4;
-
-            var allCount = topCount + botCount + lefCount + rigCount + froCount + bacCount;
-
-            var topOffset = 0;
-            var botOffset = topCount;
-            var lefOffset = botOffset + botCount;
-            var rigOffset = lefOffset + lefCount;
-            var froOffset = rigOffset + rigCount;
-            var bacOffset = froOffset + froCount;
-
-            var vertices = new VertexSolidBlock[allCount * 4];
-            Array.Copy(top.Vertices, 0, vertices, topOffset * 4, topCount * 4);
-            Array.Copy(bot.Vertices, 0, vertices, botOffset * 4, botCount * 4);
-            Array.Copy(lef.Vertices, 0, vertices, lefOffset * 4, lefCount * 4);
-            Array.Copy(rig.Vertices, 0, vertices, rigOffset * 4, rigCount * 4);
-            Array.Copy(fro.Vertices, 0, vertices, froOffset * 4, froCount * 4);
-            Array.Copy(bac.Vertices, 0, vertices, bacOffset * 4, bacCount * 4);
-
-
-            var indexes = new ushort[allCount * 6];
-            Array.Copy(top.Indexes, 0, indexes, topOffset * 6, topCount * 6);
-            Array.Copy(bot.Indexes, 0, indexes, botOffset * 6, botCount * 6);
-            Array.Copy(lef.Indexes, 0, indexes, lefOffset * 6, lefCount * 6);
-            Array.Copy(rig.Indexes, 0, indexes, rigOffset * 6, rigCount * 6);
-            Array.Copy(fro.Indexes, 0, indexes, froOffset * 6, froCount * 6);
-            Array.Copy(bac.Indexes, 0, indexes, bacOffset * 6, bacCount * 6);
-
-            Offsets = new Dictionary<Int3, OffsetData>
-            {
-                [new Int3(+0, +1, +0)] = new OffsetData(topOffset, topCount),
-                [new Int3(+0, -1, +0)] = new OffsetData(botOffset, botCount),
-                [new Int3(-1, +0, +0)] = new OffsetData(lefOffset, lefCount),
-                [new Int3(+1, +0, +0)] = new OffsetData(rigOffset, rigCount),
-                [new Int3(+0, +0, -1)] = new OffsetData(froOffset, froCount),
-                [new Int3(+0, +0, +1)] = new OffsetData(bacOffset, bacCount)
-            };
-
             VertexBuffer = Buffer.Create(device, BindFlags.VertexBuffer, vertices);
             IndexBuffer = Buffer.Create(device, BindFlags.IndexBuffer, indexes);
             Binding = new VertexBufferBinding(VertexBuffer, VertexSolidBlock.Size, 0);
+            Offsets = new Dictionary<Int3, OffsetData>
+            {
+                [offsets.Top.BuildInfo.Direction] = offsets.Top,
+                [offsets.Bottom.BuildInfo.Direction] = offsets.Bottom,
+                [offsets.Left.BuildInfo.Direction] = offsets.Left,
+                [offsets.Right.BuildInfo.Direction] = offsets.Right,
+                [offsets.Front.BuildInfo.Direction] = offsets.Front,
+                [offsets.Back.BuildInfo.Direction] = offsets.Back,
+            };
 
         }
     }
 
-    public struct OffsetData
+    public class OffsetData
     {
         public readonly int Offset;
         public readonly int Count;
+        public readonly ChunkFaceBuildInfo BuildInfo;
+        public int ProcessedVoxels;
 
-        public OffsetData(int offset, int count)
+        public OffsetData(int offset, int count, ChunkFaceBuildInfo buildInfo)
         {
             Offset = offset;
             Count = count;
+            BuildInfo = buildInfo;
         }
     }
 
     public class ChunkFaceVertex
     {
-        public VertexSolidBlock[] Vertices { get; }
-        public ushort[] Indexes { get; }
+        public VertexSolidBlock Vertices { get; }
+        public ushort Indexes { get; }
 
-        public ChunkFaceVertex(VertexSolidBlock[] vertices, ushort[] indexes)
+        public ChunkFaceVertex(VertexSolidBlock vertices, ushort indexes)
         {
             Vertices = vertices;
             Indexes = indexes;

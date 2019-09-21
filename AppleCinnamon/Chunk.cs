@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using AppleCinnamon.System;
 using SharpDX;
@@ -233,7 +234,7 @@ namespace AppleCinnamon
                     vbSet = true;
                 }
 
-                device.ImmediateContext.DrawIndexed(offset.Value.Count * 6, offset.Value.Offset * 6, offset.Value.Offset * 4);
+                device.ImmediateContext.DrawIndexed(offset.Value.Count * 6, offset.Value.Offset * 6, 0);
             }
         }
 
