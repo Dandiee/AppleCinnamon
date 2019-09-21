@@ -6,14 +6,14 @@ namespace AppleCinnamon
     public sealed partial class ChunkBuilder
     {
       
-        private static readonly Vector3 TopLefFro = new Vector3(-.5f, +.5f, -.5f);
-        private static readonly Vector3 TopRigFro = new Vector3(+.5f, +.5f, -.5f);
-        private static readonly Vector3 TopLefBac = new Vector3(-.5f, +.5f, +.5f);
-        private static readonly Vector3 TopRigBac = new Vector3(+.5f, +.5f, +.5f);
-        private static readonly Vector3 BotLefFro = new Vector3(-.5f, -.5f, -.5f);
-        private static readonly Vector3 BotLefBac = new Vector3(-.5f, -.5f, +.5f);
-        private static readonly Vector3 BotRigFro = new Vector3(+.5f, -.5f, -.5f);
-        private static readonly Vector3 BotRigBac = new Vector3(+.5f, -.5f, +.5f);
+        public static readonly Vector3 TopLefFro = new Vector3(-.5f, +.5f, -.5f);
+        public static readonly Vector3 TopRigFro = new Vector3(+.5f, +.5f, -.5f);
+        public static readonly Vector3 TopLefBac = new Vector3(-.5f, +.5f, +.5f);
+        public static readonly Vector3 TopRigBac = new Vector3(+.5f, +.5f, +.5f);
+        public static readonly Vector3 BotLefFro = new Vector3(-.5f, -.5f, -.5f);
+        public static readonly Vector3 BotLefBac = new Vector3(-.5f, -.5f, +.5f);
+        public static readonly Vector3 BotRigFro = new Vector3(+.5f, -.5f, -.5f);
+        public static readonly Vector3 BotRigBac = new Vector3(+.5f, -.5f, +.5f);
 
         public static readonly Cube<Vector3[]> FaceVertices =
             new Cube<Vector3[]>(
@@ -32,48 +32,59 @@ namespace AppleCinnamon
         private static readonly Int2[] UvOffsetIndexes = { new Int2(0, 0), new Int2(1, 0), new Int2(1, 1), new Int2(0, 1) };
         private static readonly Vector2[] WaterUvOffsets = { Vector2.Zero, new Vector2(1, 0), new Vector2(1, 1 / 32f), new Vector2(0, 1 / 32f) };
 
+
+        public static readonly Cube<Int3> FirstAmbientIndexes = new Cube<Int3>(
+            new Int3(-1, 1, 0),
+            new Int3(1, -1, 0),
+            new Int3(-1, 0, -1),
+            new Int3(1, 0, 1),
+            new Int3(1, 0, -1),
+            new Int3(-1, 0, 1)
+        );
+
+        // reuse the last index from the previous vertex
         public static readonly Cube<Int3[][]> AmbientIndexes = new Cube<Int3[][]>(
             new[]
             {
-                new[] {new Int3(0, 1, -1), new Int3(-1, 1, -1), new Int3(-1, 1, 0)},
-                new[] {new Int3(1, 1, 0), new Int3(1, 1, -1), new Int3(0, 1, -1)},
-                new[] {new Int3(0, 1, 1), new Int3(1, 1, 1), new Int3(1, 1, 0)},
-                new[] {new Int3(-1, 1, 0), new Int3(-1, 1, 1), new Int3(0, 1, 1)}
+                new[] {new Int3(-1, 1, -1), new Int3(0, 1, -1)},
+                new[] {new Int3(1, 1, -1), new Int3(1, 1, 0)},
+                new[] {new Int3(1, 1, 1), new Int3(0, 1, 1)},
+                new[] {new Int3(-1, 1, 0), new Int3(-1, 1, 1)}
             },
             new[]
             {
-                new[] {new Int3(1, -1, 0), new Int3(1, -1, -1), new Int3(0, -1, -1)},
-                new[] {new Int3(0, -1, -1), new Int3(-1, -1, -1), new Int3(-1, -1, 0)},
-                new[] {new Int3(-1, -1, 0), new Int3(-1, -1, 1), new Int3(0, -1, 1)},
-                new[] {new Int3(0, -1, 1), new Int3(1, -1, 1), new Int3(1, -1, 0)}
+                new[] {new Int3(1, -1, -1), new Int3(0, -1, -1)},
+                new[] {new Int3(-1, -1, -1), new Int3(-1, -1, 0)},
+                new[] {new Int3(-1, -1, 1), new Int3(0, -1, 1)},
+                new[] {new Int3(1, -1, 1), new Int3(1, -1, 0)}
             },
             new[]
             {
-                new[] {new Int3(-1, 0, -1), new Int3(-1, 1, -1), new Int3(-1, 1, 0)},
-                new[] {new Int3(-1, 1, 0), new Int3(-1, 1, 1), new Int3(-1, 0, 1)},
-                new[] {new Int3(-1, 0, 1), new Int3(-1, -1, 1), new Int3(-1, -1, 0)},
-                new[] {new Int3(-1, -1, 0), new Int3(-1, -1, -1), new Int3(-1, 0, -1)}
+                new[] {new Int3(-1, 1, -1), new Int3(-1, 1, 0)},
+                new[] {new Int3(-1, 1, 1), new Int3(-1, 0, 1)},
+                new[] {new Int3(-1, -1, 1), new Int3(-1, -1, 0)},
+                new[] {new Int3(-1, -1, -1), new Int3(-1, 0, -1)}
             },
             new[]
             {
-                new[] {new Int3(1, 1, 0), new Int3(1, 1, 1), new Int3(1, 0, 1)},
-                new[] {new Int3(1, 0, -1), new Int3(1, 1, -1), new Int3(1, 1, 0)},
-                new[] {new Int3(1, -1, 0), new Int3(1, -1, -1), new Int3(1, 0, -1)},
-                new[] {new Int3(1, 0, 1), new Int3(1, -1, 1), new Int3(1, -1, 0)}
+                new[] {new Int3(1, 1, 1), new Int3(1, 1, 0)},
+                new[] {new Int3(1, 1, -1), new Int3(1, 0, -1)},
+                new[] {new Int3(1, -1, -1), new Int3(1, -1, 0)},
+                new[] {new Int3(1, 0, 1), new Int3(1, -1, 1), }
             },
             new[]
             {
-                new[] {new Int3(0, 1, -1), new Int3(1, 1, -1), new Int3(1, 0, -1)},
-                new[] {new Int3(-1, 0, -1), new Int3(-1, 1, -1), new Int3(0, 1, -1)},
-                new[] {new Int3(0, -1, -1), new Int3(-1, -1, -1), new Int3(-1, 0, -1)},
-                new[] {new Int3(1, 0, -1), new Int3(1, -1, -1), new Int3(0, -1, -1)}
+                new[] {new Int3(1, 1, -1), new Int3(0, 1, -1)},
+                new[] {new Int3(-1, 1, -1), new Int3(-1, 0, -1)},
+                new[] {new Int3(-1, -1, -1), new Int3(0, -1, -1)},
+                new[] {new Int3(1, 0, -1), new Int3(1, -1, -1)}
             },
             new[]
             {
-                new[] {new Int3(-1, 0, 1), new Int3(-1, 1, 1), new Int3(0, 1, 1)},
-                new[] {new Int3(0, 1, 1), new Int3(1, 1, 1), new Int3(1, 0, 1)},
-                new[] {new Int3(1, 0, 1), new Int3(1, -1, 1), new Int3(0, -1, 1)},
-                new[] {new Int3(0, -1, 1), new Int3(-1, -1, 1), new Int3(-1, 0, 1)}
+                new[] {new Int3(-1, 1, 1), new Int3(0, 1, 1)},
+                new[] {new Int3(1, 1, 1), new Int3(1, 0, 1)},
+                new[] {new Int3(1, -1, 1), new Int3(0, -1, 1)},
+                new[] {new Int3(-1, -1, 1), new Int3(-1, 0, 1)}
             }
         );
     }

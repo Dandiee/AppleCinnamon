@@ -10,7 +10,7 @@ namespace AppleCinnamon
 {
     public class Chunk
     {
-        public const int SizeXy = 64;
+        public const int SizeXy = 16;
         public const int Height = 256;
 
         public ChunkBuffer ChunkBuffer;

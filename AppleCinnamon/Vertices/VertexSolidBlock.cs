@@ -21,10 +21,7 @@ namespace AppleCinnamon.Vertices
             Color |= (uint)(u << 0);
             Color |= (uint)(v << 4);
             Color |= (uint)(baseLightness << 8);
-
-            uint u1 = (Color & 15);
-            uint v1 = (Color & 240) >> 4;
-            uint l1 = (Color & 3840) >> 8;
+            Color |= (uint)(ao << 12);
 
         }
 

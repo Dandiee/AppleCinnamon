@@ -33,7 +33,6 @@ namespace AppleCinnamon
 
             foreach (var visibilityFlag in visibilityFlags)
             {
-
                 var index = visibilityFlag.Key;
 
                 var k = index / (Chunk.SizeXy * Chunk.Height);
@@ -45,50 +44,19 @@ namespace AppleCinnamon
                 var flag = visibilityFlag.Value;
 
                 var voxelPositionOffset = definition.Translation + chunk.OffsetVector + new Vector3(i, j, k);
+                var isOnEdge = i == 0 || j == 0 || k == 0 ||
+                               i == Chunk.SizeXy - 1 || j == Chunk.Height - 1 || k == Chunk.SizeXy - 1;
 
-                
-
-                if ((flag & 1) == 1)
+                foreach (var faceInfo in ChunkFaceBuildInfo.Faces)
                 {
-                    var neighbor = chunk.GetLocalWithNeighbours(i, j + 1, k);
-                    AddFace(Face.Top, i, j, k, verticesCube.Top, definition, chunk, neighbor, voxelPositionOffset);
-                    visibleFaces++;
+                    if ((flag & faceInfo.DirectionFlag) == faceInfo.DirectionFlag)
+                    {
+                        visibleFaces++;
+                        var neighbor = chunk.GetLocalWithNeighbours(i + faceInfo.Direction.X, j + faceInfo.Direction.Y, k + faceInfo.Direction.Z);
+                        AddFace(faceInfo, i, j, k, verticesCube.Top, definition, chunk, neighbor, voxelPositionOffset);
+                    }
                 }
 
-                if ((flag & 2) == 2)
-                {
-                    var neighbor = chunk.GetLocalWithNeighbours(i, j - 1, k);
-                    AddFace(Face.Bottom, i, j, k, verticesCube.Bottom, definition, chunk, neighbor, voxelPositionOffset);
-                    visibleFaces++;
-                }
-
-                if ((flag & 4) == 4)
-                {
-                    var neighbor = chunk.GetLocalWithNeighbours(i - 1, j, k);
-                    AddFace(Face.Left, i, j, k, verticesCube.Left, definition, chunk, neighbor, voxelPositionOffset);
-                    visibleFaces++;
-                }
-
-                if ((flag & 8) == 8)
-                {
-                    var neighbor = chunk.GetLocalWithNeighbours(i + 1, j, k);
-                    AddFace(Face.Right, i, j, k, verticesCube.Right, definition, chunk, neighbor, voxelPositionOffset);
-                    visibleFaces++;
-                }
-
-                if ((flag & 16) == 16)
-                {
-                    var neighbor = chunk.GetLocalWithNeighbours(i, j, k - 1);
-                    AddFace(Face.Front, i, j, k, verticesCube.Front, definition, chunk, neighbor, voxelPositionOffset);
-                    visibleFaces++;
-                }
-
-                if ((flag & 32) == 32)
-                {
-                    var neighbor = chunk.GetLocalWithNeighbours(i, j, k + 1);
-                    AddFace(Face.Back, i, j, k, verticesCube.Back, definition, chunk, neighbor, voxelPositionOffset);
-                    visibleFaces++;
-                }
             }
 
             var chunkBuffer = new ChunkBuffer(device,
@@ -166,41 +134,57 @@ namespace AppleCinnamon
 
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void AddFace(Face face, int relativeIndexX, int relativeIndexY, int relativeIndexZ, ChunkBuildFaceResult faceResult, VoxelDefinition definition, Chunk chunk, Voxel neighbor, Vector3 voxelPositionOffset)
+        public void AddFace(ChunkFaceBuildInfo face, int relativeIndexX, int relativeIndexY, int relativeIndexZ, ChunkBuildFaceResult faceResult, VoxelDefinition definition, Chunk chunk, Voxel neighbor, Vector3 voxelPositionOffset)
         {
-            var faceVertices = FaceVertices[face];
-            var textureUv = definition.TextureIndexes[face];
-            var aoIndexes = AmbientIndexes[face];
-            var vertexIndex = faceResult.Vertices.Count - 1;
+            var textureUv = definition.TextureIndexes[face.Face];
+            int vertexIndex = faceResult.Vertices.Count - 1;
+
+            var firstNeighbourVoxel = chunk.GetLocalWithNeighbours(
+                relativeIndexX + face.FirstNeighbourIndex.X,
+                relativeIndexY + face.FirstNeighbourIndex.Y, 
+                relativeIndexZ + face.FirstNeighbourIndex.Z);
+
+            var firstNeighbourDefinition = VoxelDefinition.DefinitionByType[firstNeighbourVoxel.Block];
 
             for (var i = 0; i < 4; i++)
             {
-                var position = (faceVertices[i] * definition.Size) + voxelPositionOffset;
-                //var uvCoordinate = UvOffsets[i] + textureUv;
+                var position = face.Vertices[i] * definition.Size + voxelPositionOffset;
                 var uvCoordinateOffset = UvOffsetIndexes[i];
-                var light = neighbor.Lightness;
-                var denominator = 1f;
-                var ambientOcclusion = 0;
+                var light = neighbor.Lightness + firstNeighbourVoxel.Lightness;
+                var denominator = firstNeighbourDefinition.IsTransparent ? 2f : 1f;
+                var ambientOcclusion = firstNeighbourDefinition.IsTransparent ? 0 : 1;
+                var vertexNeigbhors = face.AmbientOcclusionNeighbors[i];
 
-                foreach (var index in aoIndexes[i])
+                for (var j = 0; j < 2; j++)
                 {
-                    var aoFriend = chunk.GetLocalWithNeighbours(relativeIndexX + index.X, relativeIndexY + index.Y, relativeIndexZ + index.Z);
-                    var aoFriendDefinition = VoxelDefinition.DefinitionByType[aoFriend.Block];
+                    var currentNeighbourIndex = vertexNeigbhors[j];
+                    var currentNeighbourVoxel =
+                        chunk.GetLocalWithNeighbours(
+                            relativeIndexX + currentNeighbourIndex.X, 
+                            relativeIndexY + currentNeighbourIndex.Y,
+                            relativeIndexZ + currentNeighbourIndex.Z);
+                    var currentNeighbourDefinition = VoxelDefinition.DefinitionByType[currentNeighbourVoxel.Block];
 
-                    if (aoFriendDefinition.IsTransparent)
+                    if (currentNeighbourDefinition.IsTransparent)
                     {
-                        light += aoFriend.Lightness;
+                        light += currentNeighbourVoxel.Lightness;
                         denominator++;
-                    }
+                    } else ambientOcclusion++;
 
-                    else ambientOcclusion++;
+                    if (j == 1)
+                    {
+                        firstNeighbourVoxel = currentNeighbourVoxel;
+                        firstNeighbourDefinition = currentNeighbourDefinition;
+                    }
                 }
 
-                faceResult.Vertices.Add(new VertexSolidBlock(position, 
-                    (byte)(textureUv.X + uvCoordinateOffset.X),
-                    (byte)(textureUv.Y + uvCoordinateOffset.Y),
-                    (byte)ambientOcclusion, 
-                    (byte)(light/ denominator)));
+                var vertex = new VertexSolidBlock(position,
+                    (byte) (textureUv.X + uvCoordinateOffset.X),
+                    (byte) (textureUv.Y + uvCoordinateOffset.Y),
+                    (byte) ambientOcclusion,
+                    (byte) (light / denominator));
+
+                faceResult.Vertices.Add(vertex);
             }
 
             faceResult.Indexes.Add((ushort)(vertexIndex + 1));
@@ -209,6 +193,35 @@ namespace AppleCinnamon
             faceResult.Indexes.Add((ushort)(vertexIndex + 1));
             faceResult.Indexes.Add((ushort)(vertexIndex + 2));
             faceResult.Indexes.Add((ushort)(vertexIndex + 3));
+        }
+    }
+
+    public sealed class ChunkFaceBuildInfo
+    {
+        public static readonly ChunkFaceBuildInfo Top = new ChunkFaceBuildInfo(1, Face.Top, new Int3(0, 1, 0), ChunkBuilder.FaceVertices.Top, ChunkBuilder.FirstAmbientIndexes.Top, ChunkBuilder.AmbientIndexes.Top);
+        public static readonly ChunkFaceBuildInfo Bottom = new ChunkFaceBuildInfo(2, Face.Bottom, new Int3(0, -1, 0), ChunkBuilder.FaceVertices.Bottom, ChunkBuilder.FirstAmbientIndexes.Bottom, ChunkBuilder.AmbientIndexes.Bottom);
+        public static readonly ChunkFaceBuildInfo Left = new ChunkFaceBuildInfo(4, Face.Left, new Int3(-1, 0, 0), ChunkBuilder.FaceVertices.Left, ChunkBuilder.FirstAmbientIndexes.Left, ChunkBuilder.AmbientIndexes.Left);
+        public static readonly ChunkFaceBuildInfo Right = new ChunkFaceBuildInfo(8, Face.Right, new Int3(1, 0, 0), ChunkBuilder.FaceVertices.Right, ChunkBuilder.FirstAmbientIndexes.Right, ChunkBuilder.AmbientIndexes.Right);
+        public static readonly ChunkFaceBuildInfo Front = new ChunkFaceBuildInfo(16, Face.Front, new Int3(0, 0, -1), ChunkBuilder.FaceVertices.Front, ChunkBuilder.FirstAmbientIndexes.Front, ChunkBuilder.AmbientIndexes.Front);
+        public static readonly ChunkFaceBuildInfo Back = new ChunkFaceBuildInfo(32, Face.Back, new Int3(0, 0, 1), ChunkBuilder.FaceVertices.Back, ChunkBuilder.FirstAmbientIndexes.Back, ChunkBuilder.AmbientIndexes.Back);
+
+        public static readonly ChunkFaceBuildInfo[] Faces = {Top, Bottom, Left, Right, Front, Back};
+
+        public readonly byte DirectionFlag;
+        public readonly Face Face;
+        public readonly Int3 Direction;
+        public readonly Vector3[] Vertices;
+        public readonly Int3 FirstNeighbourIndex;
+        public readonly Int3[][] AmbientOcclusionNeighbors;
+
+        private ChunkFaceBuildInfo(byte directionFlag, Face face, Int3 direction, Vector3[] vertices, Int3 firstNeighbourIndex, Int3[][] ambientOcclusionNeighbors)
+        {
+            DirectionFlag = directionFlag;
+            Face = face;
+            Direction = direction;
+            Vertices = vertices;
+            FirstNeighbourIndex = firstNeighbourIndex;
+            AmbientOcclusionNeighbors = ambientOcclusionNeighbors;
         }
     }
 

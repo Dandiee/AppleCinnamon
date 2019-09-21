@@ -51,11 +51,11 @@ namespace AppleCinnamon
                 }
             }
 
-            return $"Finalized chunks {chunkManager.FinalizedChunks}\r\n" +
-                   $"Rendered chunks {chunkManager.RenderedChunks}\r\n" +
-                   $"Queued chunks {chunkManager.QueuedChunks}\r\n" +
-                   $"Total visible faces {chunkManager.TotalVisibleFaces}\r\n" + 
-                   $"Total visible voxels {chunkManager.TotalVisibleVoxels}\r\n" + 
+            return $"Finalized chunks {chunkManager.FinalizedChunks:N0}\r\n" +
+                   $"Rendered chunks {chunkManager.RenderedChunks:N0}\r\n" +
+                   $"Queued chunks {chunkManager.QueuedChunks:N0}\r\n" +
+                   $"Total visible faces {chunkManager.TotalVisibleFaces:N0}\r\n" + 
+                   $"Total visible voxels {chunkManager.TotalVisibleVoxels:N0}\r\n" + 
                    $"Current position {camera.Position.ToVector3().ToNonRetardedString()}\r\n"+
                    $"Orientation {camera.LookAt.ToVector3().ToNonRetardedString()}\r\n"+
                    $"Current target {targetInfo}\r\n" +

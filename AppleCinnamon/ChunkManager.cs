@@ -33,7 +33,7 @@ namespace AppleCinnamon
 
     public sealed class ChunkManager : IChunkManager
     {
-        public const int ViewDistance = 4;
+        public const int ViewDistance = 64;
         public static readonly int InitialDegreeOfParallelism = 1;
 
         // debug fields
@@ -115,7 +115,6 @@ namespace AppleCinnamon
                 _currentWaterTextureOffsetIndex = (_currentWaterTextureOffsetIndex + 1) % 32;
                 _waterBlockEffect.GetVariableByName("TextureOffset").AsVector().Set(new Vector2(0, _currentWaterTextureOffsetIndex * 1 / 32f));
                 await Task.Delay(80);
-
             }
         }
 
