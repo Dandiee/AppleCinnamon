@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -33,8 +34,8 @@ namespace AppleCinnamon
 
     public sealed class ChunkManager : IChunkManager
     {
-        public const int ViewDistance = 64;
-        public static readonly int InitialDegreeOfParallelism = 1;
+        public const int ViewDistance = 32;
+        public static readonly int InitialDegreeOfParallelism = Environment.ProcessorCount;
 
         // debug fields
         private int _queuedChunksCount;
@@ -186,8 +187,23 @@ namespace AppleCinnamon
             }
         }
 
+        private int _drawCallCounter;
         public void Draw(Camera camera)
         {
+            if (IsInitialized)
+            {
+                if (_drawCallCounter == 300 * 10)
+                {
+                    //Debugger.Break();
+                }
+                else
+                {
+                    _drawCallCounter++;
+                }
+            }
+
+            
+
             _renderedChunks = 0;
 
             if (_chunks.Count > 0)
@@ -204,8 +220,7 @@ namespace AppleCinnamon
 
                     foreach (var chunk in _chunks.Values)
                     {
-                        var bb = chunk.BoundingBox;
-                        if (camera.BoundingFrustum.Contains(ref bb) != ContainmentType.Disjoint)
+                        if (!Game.IsViewFrustumCullingEnabled || camera.BoundingFrustum.Contains(ref chunk.BoundingBox) != ContainmentType.Disjoint)
                         {
                             chunk.DrawSmarter(_graphics.Device, camera.CurrentChunkIndexVector);
                             _renderedChunks++;

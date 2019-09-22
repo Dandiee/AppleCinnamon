@@ -23,8 +23,8 @@ namespace AppleCinnamon
         public Matrix WorldViewProjection { get; private set; }
         public Matrix Projection { get; private set; }
 
-        public Matrix World => Matrix.Identity;
-        public BoundingFrustum BoundingFrustum { get; private set; }
+        public Matrix World => Matrix.Identity * 2;
+        public BoundingFrustum BoundingFrustum;
         public VoxelDefinition VoxelInHand { get; private set; }
 
         public bool IsInAir { get; set; }
@@ -133,6 +133,16 @@ namespace AppleCinnamon
             if (!CurrentKeyboardState.IsPressed(Key.Escape) && LastKeyboardState.IsPressed(Key.Escape))
             {
                 IsPaused = !IsPaused;
+            }
+
+            if (!CurrentKeyboardState.IsPressed(Key.F1) && LastKeyboardState.IsPressed(Key.F1))
+            {
+                Game.IsBackFaceCullingEnabled = !Game.IsBackFaceCullingEnabled;
+            }
+
+            if (!CurrentKeyboardState.IsPressed(Key.F2) && LastKeyboardState.IsPressed(Key.F2))
+            {
+                Game.IsViewFrustumCullingEnabled = !Game.IsViewFrustumCullingEnabled;
             }
 
             foreach (var keyVoxel in KeyVoxelMapping)

@@ -59,7 +59,9 @@ namespace AppleCinnamon
                    $"Current position {camera.Position.ToVector3().ToNonRetardedString()}\r\n"+
                    $"Orientation {camera.LookAt.ToVector3().ToNonRetardedString()}\r\n"+
                    $"Current target {targetInfo}\r\n" +
-                   $"Target target: {targetTargetInfo}";
+                   $"Target target: {targetTargetInfo}\r\n" +
+                   $"Back-face culling [F1]: {(Game.IsBackFaceCullingEnabled ? "On" : "Off")}\r\n" +
+                   $"View frustum culling [F2]: {(Game.IsViewFrustumCullingEnabled ? "On" : "Off")}\r\n";
         }
 
         private string BuildRightText(IChunkManager chunkManager, Game game)

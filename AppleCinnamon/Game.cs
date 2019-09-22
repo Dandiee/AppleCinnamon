@@ -12,6 +12,9 @@ namespace AppleCinnamon
     {
         public static readonly Vector3 StartPosition = new Vector3(0, 256, 0);
 
+        public static bool IsBackFaceCullingEnabled { get; set; }
+        public static bool IsViewFrustumCullingEnabled { get; set; } = true;
+
         private readonly ChunkManager _chunkManager;
         private readonly Camera _camera;
         private readonly BoxDrawer _boxDrawer;
@@ -68,7 +71,11 @@ namespace AppleCinnamon
                 Update(new GameTime(TimeSpan.Zero, TimeSpan.FromMilliseconds(Math.Min(AverageRenderTime, 6))));
                 _graphics.Draw(() =>
                 {
-                    _chunkManager.Draw(_camera);
+                    if (_chunkManager.IsInitialized)
+                    {
+                        _chunkManager.Draw(_camera);
+                    }
+
                     _boxDrawer.Draw();
                     _crosshair.Draw();
                     _debugLayout.Draw(_chunkManager, _camera, this);

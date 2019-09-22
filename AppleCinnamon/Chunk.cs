@@ -10,7 +10,7 @@ namespace AppleCinnamon
 {
     public class Chunk
     {
-        public const int SizeXy = 16;
+        public const int SizeXy = 32;
         public const int Height = 256;
 
         public ChunkBuffer ChunkBuffer;
@@ -34,7 +34,7 @@ namespace AppleCinnamon
         public Voxel[] Voxels { get; }
         public ConcurrentDictionary<Int2, Chunk> Neighbours { get; }
         public ChunkState State { get; set; }
-        public BoundingBox BoundingBox { get; }
+        public  BoundingBox BoundingBox;
         public Vector3 ChunkIndexVector { get; }
 
         public void SetLocalVoxel(int i, int j, int k, Voxel voxel) => Voxels[i + SizeXy * (j + Height * k)] = voxel;
@@ -209,28 +209,37 @@ namespace AppleCinnamon
 
         public void DrawSmarter(Device device, Vector3 currentChunkIndexVector)
         {
-            var vbSet = false;
-
-            foreach (var offset in ChunkBuffer.Offsets)
+            if (!Game.IsBackFaceCullingEnabled)
             {
-                if (offset.Value.Count == 0)
-                {
-                    continue;
-                }
+                device.ImmediateContext.InputAssembler.SetVertexBuffers(0, ChunkBuffer.Binding);
+                device.ImmediateContext.InputAssembler.SetIndexBuffer(ChunkBuffer.IndexBuffer, Format.R16_UInt, 0);
+                device.ImmediateContext.DrawIndexed(VisibleFacesCount * 6, 0, 0);
+            }
+            else
+            {
+                var vbSet = false;
 
-                if (Vector3.Dot(ChunkIndexVector - currentChunkIndexVector, offset.Key.ToVector3()) > 0)
+                foreach (var offset in ChunkBuffer.Offsets)
                 {
-                    continue;
-                }
+                    if (offset.Value.Count == 0)
+                    {
+                        continue;
+                    }
 
-                if (!vbSet)
-                {
-                    device.ImmediateContext.InputAssembler.SetVertexBuffers(0, ChunkBuffer.Binding);
-                    device.ImmediateContext.InputAssembler.SetIndexBuffer(ChunkBuffer.IndexBuffer, Format.R16_UInt, 0);
-                    vbSet = true;
-                }
+                    if (Vector3.Dot(ChunkIndexVector - currentChunkIndexVector, offset.Key.ToVector3()) > 0)
+                    {
+                        continue;
+                    }
 
-                device.ImmediateContext.DrawIndexed(offset.Value.Count * 6, offset.Value.Offset * 6, 0);
+                    if (!vbSet)
+                    {
+                        device.ImmediateContext.InputAssembler.SetVertexBuffers(0, ChunkBuffer.Binding);
+                        device.ImmediateContext.InputAssembler.SetIndexBuffer(ChunkBuffer.IndexBuffer, Format.R16_UInt, 0);
+                        vbSet = true;
+                    }
+
+                    device.ImmediateContext.DrawIndexed(offset.Value.Count * 6, offset.Value.Offset * 6, 0);
+                }
             }
         }
 

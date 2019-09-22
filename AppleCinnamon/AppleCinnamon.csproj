@@ -75,8 +75,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BoxDetails.cs" />
-    <Compile Include="ChunkBuilder.PreCalculated.cs" />
-    <Compile Include="ChunkBuildFaceResult.cs" />
     <Compile Include="ChunkState.cs" />
     <Compile Include="ChunkUpdater.cs" />
     <Compile Include="Collision\VoxelRayCollisionResult.cs" />

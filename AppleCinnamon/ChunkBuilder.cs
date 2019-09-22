@@ -17,23 +17,21 @@ namespace AppleCinnamon
     }
 
 
-    public sealed partial class ChunkBuilder : IChunkBuilder
+    public sealed class ChunkBuilder : IChunkBuilder
     {
+        private static readonly Vector2[] WaterUvOffsets = { Vector2.Zero, new Vector2(1, 0), new Vector2(1, 1 / 32f), new Vector2(0, 1 / 32f) };
+
         public void BuildChunk(Device device, Chunk chunk)
         {
-            var offsets = GetOffsetData(chunk);
+            var faces = GetChunkFaces(chunk);
             var visibleFacesCount = chunk.VoxelCount.Top + chunk.VoxelCount.Bottom + chunk.VoxelCount.Left +
                                     chunk.VoxelCount.Right + chunk.VoxelCount.Front + chunk.VoxelCount.Back;
 
             var vertices = new VertexSolidBlock[visibleFacesCount * 4];
             var indexes = new ushort[visibleFacesCount * 6];
+            var offsetIterator = faces.GetAll().Select(s => s.Value).ToList();
 
-            var visibleFaces = 0;
-            var visibilityFlags = chunk.VisibilityFlags;
-
-            var offsetIterator = offsets.GetAll().Select(s => s.Value).ToList();
-
-            foreach (var visibilityFlag in visibilityFlags)
+            foreach (var visibilityFlag in chunk.VisibilityFlags)
             {
                 var index = visibilityFlag.Key;
 
@@ -57,10 +55,9 @@ namespace AppleCinnamon
 
             }
 
-            chunk.ChunkBuffer = new ChunkBuffer(device, vertices, indexes, offsets);
+            chunk.ChunkBuffer = new ChunkBuffer(device, vertices, indexes, faces);
 
-
-            chunk.VisibleFacesCount = visibleFaces;
+            chunk.VisibleFacesCount = visibleFacesCount;
             var waterBuffer = AddWaterFace(chunk, device);
 
             chunk.SetBuffers(waterBuffer);
@@ -73,7 +70,7 @@ namespace AppleCinnamon
                 return null;
             }
 
-            var topOffsetVertices = FaceVertices[Face.Top];
+            var topOffsetVertices = FaceBuildInfo.FaceVertices.Top;
             var vertices = new VertexWater[chunk.TopMostWaterVoxels.Count * 4];
             var indexes = new ushort[chunk.TopMostWaterVoxels.Count * 6 * 2];
 
@@ -124,7 +121,7 @@ namespace AppleCinnamon
 
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void AddFace(OffsetData face, int relativeIndexX, int relativeIndexY, int relativeIndexZ, VertexSolidBlock[] vertices, ushort[] indexes, VoxelDefinition definition, Chunk chunk, Voxel neighbor, Vector3 voxelPositionOffset)
+        public void AddFace(ChunkFace face, int relativeIndexX, int relativeIndexY, int relativeIndexZ, VertexSolidBlock[] vertices, ushort[] indexes, VoxelDefinition definition, Chunk chunk, Voxel neighbor, Vector3 voxelPositionOffset)
         {
             // Face specific base variables
             var textureUv = definition.TextureIndexes[face.BuildInfo.Face];
@@ -138,7 +135,7 @@ namespace AppleCinnamon
             var ambientNeighbourDefinition = VoxelDefinition.DefinitionByType[ambientNeighbourVoxel.Block];
 
             // Visit all ambient neighbours
-            foreach(var vertexInfo in face.BuildInfo.VerticesInfo)
+            foreach (var vertexInfo in face.BuildInfo.VerticesInfo)
             {
                 var position = new Vector3(
                     vertexInfo.Position.X * definition.Size.X + voxelPositionOffset.X,
@@ -148,9 +145,9 @@ namespace AppleCinnamon
                 var totalNeighbourLight = ambientNeighbourVoxel.Lightness;
                 var numberOfAmbientNeighbours = ambientNeighbourDefinition.IsTransparent ? 0 : 1;
 
-                for (var j = 0; j < 2; j++)
+                foreach (var ambientIndex in vertexInfo.AmbientOcclusionNeighbors)
                 {
-                    ambientNeighbourIndex = vertexInfo.AmbientOcclusionNeighbors[j];
+                    ambientNeighbourIndex = ambientIndex;
                     ambientNeighbourVoxel = chunk.GetLocalWithNeighbours(relativeIndexX + ambientNeighbourIndex.X, relativeIndexY + ambientNeighbourIndex.Y, relativeIndexZ + ambientNeighbourIndex.Z);
                     ambientNeighbourDefinition = VoxelDefinition.DefinitionByType[ambientNeighbourVoxel.Block];
 
@@ -179,8 +176,7 @@ namespace AppleCinnamon
             face.ProcessedVoxels++;
         }
 
-
-        private Cube<OffsetData> GetOffsetData(Chunk chunk)
+        private Cube<ChunkFace> GetChunkFaces(Chunk chunk)
         {
             var topCount = chunk.VoxelCount.Top;
             var botCount = chunk.VoxelCount.Bottom;
@@ -196,13 +192,13 @@ namespace AppleCinnamon
             var froOffset = rigOffset + rigCount;
             var bacOffset = froOffset + froCount;
 
-            var result = new Cube<OffsetData>(
-                new OffsetData(topOffset, topCount, FaceBuildInfo.Top),
-                new OffsetData(botOffset, botCount, FaceBuildInfo.Bottom),
-                new OffsetData(lefOffset, lefCount, FaceBuildInfo.Left),
-                new OffsetData(rigOffset, rigCount, FaceBuildInfo.Right),
-                new OffsetData(froOffset, froCount, FaceBuildInfo.Front),
-                new OffsetData(bacOffset, bacCount, FaceBuildInfo.Back));
+            var result = new Cube<ChunkFace>(
+                new ChunkFace(topOffset, topCount, FaceBuildInfo.Top),
+                new ChunkFace(botOffset, botCount, FaceBuildInfo.Bottom),
+                new ChunkFace(lefOffset, lefCount, FaceBuildInfo.Left),
+                new ChunkFace(rigOffset, rigCount, FaceBuildInfo.Right),
+                new ChunkFace(froOffset, froCount, FaceBuildInfo.Front),
+                new ChunkFace(bacOffset, bacCount, FaceBuildInfo.Back));
 
             return result;
         }
@@ -323,7 +319,7 @@ namespace AppleCinnamon
             
             DirectionFlag = FaceVisibilityFlagMapping[face];
             Face = face;
-            Direction = FaceDirectionMapping[face]; ;
+            Direction = FaceDirectionMapping[face];
             VerticesInfo = FaceVertices[face].Select((vector, index) =>
                 new VertexBuildInfo(index, vector, AmbientIndexes[face][index], UvOffsetIndexes[index])).ToArray();
             FirstNeighbourIndex = FirstAmbientIndexes[face];
@@ -352,14 +348,14 @@ namespace AppleCinnamon
         public readonly Buffer VertexBuffer;
         public readonly Buffer IndexBuffer;
         public readonly VertexBufferBinding Binding;
-        public readonly IDictionary<Int3, OffsetData> Offsets;
+        public readonly IDictionary<Int3, ChunkFace> Offsets;
 
-        public ChunkBuffer(Device device, VertexSolidBlock[] vertices, ushort[] indexes, Cube<OffsetData> offsets)
+        public ChunkBuffer(Device device, VertexSolidBlock[] vertices, ushort[] indexes, Cube<ChunkFace> offsets)
         {
-            VertexBuffer = Buffer.Create(device, BindFlags.VertexBuffer, vertices);
-            IndexBuffer = Buffer.Create(device, BindFlags.IndexBuffer, indexes);
+            VertexBuffer = Buffer.Create(device, BindFlags.VertexBuffer, vertices, vertices.Length * VertexSolidBlock.Size, ResourceUsage.Immutable, CpuAccessFlags.None);
+            IndexBuffer = Buffer.Create(device, BindFlags.IndexBuffer, indexes, indexes.Length * sizeof(ushort), ResourceUsage.Immutable, CpuAccessFlags.None);
             Binding = new VertexBufferBinding(VertexBuffer, VertexSolidBlock.Size, 0);
-            Offsets = new Dictionary<Int3, OffsetData>
+            Offsets = new Dictionary<Int3, ChunkFace>
             {
                 [offsets.Top.BuildInfo.Direction] = offsets.Top,
                 [offsets.Bottom.BuildInfo.Direction] = offsets.Bottom,
@@ -372,14 +368,14 @@ namespace AppleCinnamon
         }
     }
 
-    public class OffsetData
+    public class ChunkFace
     {
         public readonly int Offset;
         public readonly int Count;
         public readonly FaceBuildInfo BuildInfo;
         public int ProcessedVoxels;
 
-        public OffsetData(int offset, int count, FaceBuildInfo buildInfo)
+        public ChunkFace(int offset, int count, FaceBuildInfo buildInfo)
         {
             Offset = offset;
             Count = count;
