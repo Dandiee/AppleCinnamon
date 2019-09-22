@@ -93,20 +93,26 @@ namespace AppleCinnamon.Collision
                 {
                     for (var k = minInd.Z; k <= maxInd.Z; k++)
                     {
-                        if (j >= 256)
-                        {
-                            continue;
-                        }
-
                         var absoluteIndex = new Int3(i, j, k);
-                        var voxel = chunkManager.GetVoxel(absoluteIndex);
-
-                        if (voxel == null)
+                        var address = Chunk.GetVoxelAddress(absoluteIndex);
+                        if (!address.HasValue)
                         {
-                            return;
+                            return; // TODO: or not?!
                         }
 
-                        var voxelDefinition = voxel.Value.GetDefinition();
+                        if (!chunkManager.TryGetChunk(address.Value.ChunkIndex, out var chunk))
+                        {
+                            return; // TODO: or not?
+                        }
+                        
+                        if (j >= chunk.CurrentHeight)
+                        {
+                            continue; // That's for sure
+                        }
+
+                        var voxel = chunk.Voxels[address.Value.RelativeVoxelIndex.ToFlatIndex()];
+
+                        var voxelDefinition = VoxelDefinition.DefinitionByType[voxel.Block];
                         // if (voxel.Value.Block > 0)
                         if (!voxelDefinition.IsPermeable)
                         {

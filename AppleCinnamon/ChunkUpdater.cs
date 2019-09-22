@@ -90,6 +90,11 @@ namespace AppleCinnamon
             {
                 _isUpdateInProgress = true;
 
+                if (address.Value.RelativeVoxelIndex.Y >= chunk.CurrentHeight)
+                {
+                    chunk.ExtendUpward(address.Value.RelativeVoxelIndex.Y);
+                }
+
                 var oldVoxel = chunk.Voxels[address.Value.FlatIndex];
                 var newVoxel = new Voxel(voxel, 0);
                 chunk.Voxels[address.Value.FlatIndex] = newVoxel;

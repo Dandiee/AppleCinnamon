@@ -14,6 +14,7 @@ namespace AppleCinnamon
 
         public static bool IsBackFaceCullingEnabled { get; set; }
         public static bool IsViewFrustumCullingEnabled { get; set; } = true;
+        public static bool ShowChunkBoundingBoxes { get; set; } = true;
 
         private readonly ChunkManager _chunkManager;
         private readonly Camera _camera;
@@ -76,7 +77,7 @@ namespace AppleCinnamon
                         _chunkManager.Draw(_camera);
                     }
 
-                    _boxDrawer.Draw();
+                    _boxDrawer.Draw(_chunkManager, _camera);
                     _crosshair.Draw();
                     _debugLayout.Draw(_chunkManager, _camera, this);
                 });

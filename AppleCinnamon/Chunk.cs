@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Drawing;
 using AppleCinnamon.System;
 using SharpDX;
 using SharpDX.DXGI;
@@ -11,12 +10,9 @@ namespace AppleCinnamon
 {
     public class Chunk
     {
-        public const int SliceHeight = 16;
-        public const int NegativeSliceHeight = -SliceHeight;
+        public const int SliceHeight = 8;
         public const int SizeXy = 32;
-        public const int Height = 256;
         public const int SliceArea = SizeXy * SizeXy * SliceHeight;
-        public const int DoubleSliceHeight = SliceHeight * 2;
 
         public int CurrentHeight;
 
@@ -52,7 +48,6 @@ namespace AppleCinnamon
             var newVoxels = new Voxel[SizeXy * expectedHeight * SizeXy];
             Array.Copy(Voxels, newVoxels, Voxels.Length);
             Voxels = newVoxels;
-            
 
             for (var i = 0; i < SizeXy; i++)
             {
@@ -66,11 +61,20 @@ namespace AppleCinnamon
             }
 
             CurrentHeight = expectedHeight;
+            UpdateBoundingBox();
+        }
+
+        private void UpdateBoundingBox()
+        {
+            var size = new Vector3(SizeXy, CurrentHeight, SizeXy) / 2f;
+            var position = new Vector3(SizeXy / 2f - .5f + SizeXy * ChunkIndex.X, CurrentHeight / 2f - .5f, SizeXy / 2f - .5f + SizeXy * ChunkIndex.Y);
+
+            BoundingBox = new BoundingBox(position - size, position + size);
         }
 
         public Voxel GetLocalWithNeighbours(int i, int j, int k, out VoxelAddress address)
         {
-            if (j < 0 || j > Height - 1)
+            if (j < 0 || j >= CurrentHeight)
             {
                 address = new VoxelAddress();
                 return Voxel.One;
@@ -177,23 +181,15 @@ namespace AppleCinnamon
             PendingBackVoxels = new List<int>(1024);
             LightPropagationVoxels = new List<int>(1024);
             TopMostWaterVoxels = new List<int>(128);
-
             CurrentHeight = (voxels.Length / SliceArea) * SliceHeight;
-
             ChunkIndex = chunkIndex;
             Offset = chunkIndex * new Int2(SizeXy, SizeXy);
             OffsetVector = new Vector3(Offset.X, 0, Offset.Y);
             Voxels = voxels;
             State = ChunkState.WarmUp;
-
-            var position = new Vector3(
-                ChunkIndex.X * SizeXy + SizeXy / 2f - .5f,
-                Height / 2f,
-                ChunkIndex.Y * SizeXy + SizeXy / 2f - .5f);
-
-            var halfSize = new Vector3(SizeXy / 2f, Height / 2f, SizeXy / 2f);
-            BoundingBox = new BoundingBox(position - halfSize, position + halfSize);
             ChunkIndexVector = BoundingBox.Center;
+
+            UpdateBoundingBox();
         }
 
         public void SetBuffers(FaceBuffer waterBuffer)
@@ -217,7 +213,7 @@ namespace AppleCinnamon
 
         public static Int2? GetChunkIndex(Int3 absoluteVoxelIndex)
         {
-            if (absoluteVoxelIndex.Y >= Height || absoluteVoxelIndex.Y < 0)
+            if (absoluteVoxelIndex.Y < 0)
             {
                 return null;
             }

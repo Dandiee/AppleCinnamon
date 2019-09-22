@@ -51,7 +51,7 @@ namespace AppleCinnamon.Pipeline
                 if ((neighbourX & Chunk.SizeXy) == 0)
                 {
                     var neighbourY = index.Y + direction.Y;
-                    if (((ushort)neighbourY & Chunk.Height) == 0)
+                    if (neighbourY > 0 && neighbourY < chunk.CurrentHeight)
                     {
                         var neighbourZ = index.Z + direction.Z;
                         if ((neighbourZ & Chunk.SizeXy) == 0)

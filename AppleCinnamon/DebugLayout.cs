@@ -61,7 +61,8 @@ namespace AppleCinnamon
                    $"Current target {targetInfo}\r\n" +
                    $"Target target: {targetTargetInfo}\r\n" +
                    $"Back-face culling [F1]: {(Game.IsBackFaceCullingEnabled ? "On" : "Off")}\r\n" +
-                   $"View frustum culling [F2]: {(Game.IsViewFrustumCullingEnabled ? "On" : "Off")}\r\n";
+                   $"View frustum culling [F2]: {(Game.IsViewFrustumCullingEnabled ? "On" : "Off")}\r\n" +
+                   $"Show chunk boxes [F3]: {(Game.ShowChunkBoundingBoxes ? "On" : "Off")}\r\n";
         }
 
         private string BuildRightText(IChunkManager chunkManager, Game game)

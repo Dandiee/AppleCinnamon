@@ -146,7 +146,9 @@ namespace AppleCinnamon.Pipeline
                     var neighbourIndexY = sourceIndexY + direction.Item1.Y;
                     var neighbourIndexZ = sourceIndexZ + direction.Item1.Z;
 
-                    if ((neighbourIndexX & Chunk.SizeXy) == 0 && ((ushort)neighbourIndexY & Chunk.Height) == 0 && (neighbourIndexZ & Chunk.SizeXy) == 0)
+                    if ((neighbourIndexX & Chunk.SizeXy) == 0 && 
+                        (neighbourIndexZ & Chunk.SizeXy) == 0 &&
+                        neighbourIndexZ > 0 && neighbourIndexZ < chunk.CurrentHeight)
                     {
                         var neighbourVoxel = chunk.Voxels[Help.GetFlatIndex(neighbourIndexX, neighbourIndexY, neighbourIndexZ)];
                         if (neighbourVoxel.Lightness < sourceVoxel.Lightness - 1)

@@ -75,19 +75,7 @@ namespace AppleCinnamon
 
         public void UpdateCurrentCursor(BoxDrawer boxDrawer, ChunkManager chunkManager)
         {
-            CurrentCursor =
-                CollisionHelper.GetCurrentSelection(new Ray(Position.ToVector3(), LookAt.ToVector3()), chunkManager);
-
-            if (CurrentCursor == null)
-            {
-                boxDrawer.Remove("cursor");
-            }
-            else
-            {
-                boxDrawer.Set("cursor",
-                    new BoxDetails(CurrentCursor.Definition.Size * 1.05f, CurrentCursor.AbsoluteVoxelIndex.ToVector3() + CurrentCursor.Definition.Translation, Color.Yellow.ToColor3()));
-            }
-
+            CurrentCursor = CollisionHelper.GetCurrentSelection(new Ray(Position.ToVector3(), LookAt.ToVector3()), chunkManager);
 
             if (VoxelDefinition.Water.Type == chunkManager.GetVoxel(Position.ToVector3().Round())?.Block)
             {
@@ -110,7 +98,7 @@ namespace AppleCinnamon
             CurrentMouseState = Mouse.GetCurrentState();
 
             CollisionHelper.ApplyPlayerPhysics(this, chunkManager, (float)gameTime.ElapsedGameTime.TotalSeconds);
-            UpdateMove(gameTime);
+            UpdateMove(gameTime, chunkManager);
             UpdateMatrices();
 
             UpdateCurrentCursor(boxDrawer, chunkManager);
@@ -143,6 +131,11 @@ namespace AppleCinnamon
             if (!CurrentKeyboardState.IsPressed(Key.F2) && LastKeyboardState.IsPressed(Key.F2))
             {
                 Game.IsViewFrustumCullingEnabled = !Game.IsViewFrustumCullingEnabled;
+            }
+
+            if (!CurrentKeyboardState.IsPressed(Key.F3) && LastKeyboardState.IsPressed(Key.F3))
+            {
+                Game.ShowChunkBoundingBoxes = !Game.ShowChunkBoundingBoxes;
             }
 
             foreach (var keyVoxel in KeyVoxelMapping)
@@ -198,7 +191,7 @@ namespace AppleCinnamon
 
 
 
-        private void UpdateMove(GameTime gameTime)
+        private void UpdateMove(GameTime gameTime, ChunkManager chunkManager)
         {
             const float MouseSensitivity = .01f;
             const float MovementSensitivity = 2f;
@@ -271,15 +264,8 @@ namespace AppleCinnamon
             if (chunkIndex.HasValue)
             {
                 CurrentChunkIndex = chunkIndex.Value;
-
-                var position = new Vector3(
-                    CurrentChunkIndex.X * Chunk.SizeXy + Chunk.SizeXy / 2f - .5f,
-                    Chunk.Height / 2f,
-                    CurrentChunkIndex.Y * Chunk.SizeXy + Chunk.SizeXy / 2f - .5f);
-                var halfSize = new Vector3(Chunk.SizeXy / 2f, Chunk.Height / 2f, Chunk.SizeXy / 2f);
-
-                var bb = new BoundingBox(position - halfSize, position + halfSize);
-                CurrentChunkIndexVector = bb.Center;
+                var currentChunk = chunkManager.Chunks[chunkIndex.Value];
+                CurrentChunkIndexVector = currentChunk.BoundingBox.Center;
             }
         }
 

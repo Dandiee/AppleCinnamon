@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -56,10 +55,9 @@ namespace AppleCinnamon
 
 
         private readonly Graphics _graphics;
-        private readonly BoxDrawer _boxDrawer;
         private Effect _solidBlockEffect;
         private Effect _waterBlockEffect;
-        private readonly ConcurrentDictionary<Int2, Chunk> _chunks;
+        public readonly ConcurrentDictionary<Int2, Chunk> Chunks;
         private readonly ConcurrentDictionary<Int2, object> _queuedChunks;
         private readonly IChunkUpdater _chunkUpdater;
         private readonly IPipelineProvider _pipelineProvider;
@@ -68,13 +66,12 @@ namespace AppleCinnamon
 
         private TransformBlock<DataflowContext<Int2>, DataflowContext<Chunk>> _pipeline;
 
-        public ChunkManager(Graphics graphics, BoxDrawer boxDrawer)
+        public ChunkManager(Graphics graphics)
         {
             _pipelineProvider = new PipelineProvider();
 
             _graphics = graphics;
-            _boxDrawer = boxDrawer;
-            _chunks = new ConcurrentDictionary<Int2, Chunk>();
+            Chunks = new ConcurrentDictionary<Int2, Chunk>();
             _queuedChunks = new ConcurrentDictionary<Int2, object>();
             PipelinePerformance = new ConcurrentDictionary<string, long>();
 
@@ -130,7 +127,7 @@ namespace AppleCinnamon
                 return null;
             }
 
-            if (!_chunks.TryGetValue(address.Value.ChunkIndex, out var chunk))
+            if (!Chunks.TryGetValue(address.Value.ChunkIndex, out var chunk))
             {
                 return null;
             }
@@ -142,7 +139,7 @@ namespace AppleCinnamon
 
         public bool TryGetChunk(Int2 chunkIndex, out Chunk chunk)
         {
-            if (_chunks.TryGetValue(chunkIndex, out var currentChunk))
+            if (Chunks.TryGetValue(chunkIndex, out var currentChunk))
             {
                 chunk = currentChunk;
                 return true;
@@ -155,7 +152,7 @@ namespace AppleCinnamon
 
         private void Finalize(DataflowContext<Chunk> context)
         {
-            if (!_chunks.TryAdd(context.Payload.ChunkIndex, context.Payload))
+            if (!Chunks.TryAdd(context.Payload.ChunkIndex, context.Payload))
             {
                 throw new Exception();
             }
@@ -166,11 +163,6 @@ namespace AppleCinnamon
             }
 
             Interlocked.Decrement(ref _queuedChunksCount);
-            var chunk = context.Payload;
-            _boxDrawer.Set($"Chunk{chunk.ChunkIndex}", new BoxDetails(
-                new Vector3(Chunk.SizeXy, chunk.CurrentHeight, Chunk.SizeXy),
-                new Vector3(Chunk.SizeXy / 2f - .5f + Chunk.SizeXy * chunk.ChunkIndex.X, chunk.CurrentHeight / 2f -.5f,
-                    Chunk.SizeXy / 2f - .5f + Chunk.SizeXy * chunk.ChunkIndex.Y), Color.Red.ToColor3()));
 
             foreach (var performance in context.Debug)
             {
@@ -188,8 +180,8 @@ namespace AppleCinnamon
             if (!IsInitialized && _finalizedChunks == root * root)
             {
                 IsInitialized = true;
-                TotalVisibleFaces = _chunks.Values.Sum(s => s.VisibleFacesCount);
-                TotalVisibleVoxels = _chunks.Values.Sum(s => s.VisibilityFlags.Count);
+                TotalVisibleFaces = Chunks.Values.Sum(s => s.VisibleFacesCount);
+                TotalVisibleVoxels = Chunks.Values.Sum(s => s.VisibilityFlags.Count);
 
                 _pipeline.Complete();
                 _pipeline = _pipelineProvider.CreatePipeline(Math.Max(1, Environment.ProcessorCount / 2), Finalize);
@@ -215,7 +207,7 @@ namespace AppleCinnamon
 
             _renderedChunks = 0;
 
-            if (_chunks.Count > 0)
+            if (Chunks.Count > 0)
             {
                 using (var inputLayout = new InputLayout(_graphics.Device,
                     _solidBlockEffect.GetTechniqueByIndex(0).GetPassByIndex(0).Description.Signature,
@@ -227,7 +219,7 @@ namespace AppleCinnamon
                     var pass = _solidBlockEffect.GetTechniqueByIndex(0).GetPassByIndex(0);
                     pass.Apply(_graphics.Device.ImmediateContext);
 
-                    foreach (var chunk in _chunks.Values)
+                    foreach (var chunk in Chunks.Values)
                     {
                         if (!Game.IsViewFrustumCullingEnabled || camera.BoundingFrustum.Contains(ref chunk.BoundingBox) != ContainmentType.Disjoint)
                         {
@@ -261,7 +253,7 @@ namespace AppleCinnamon
                     var pass = _waterBlockEffect.GetTechniqueByIndex(0).GetPassByIndex(0);
                     pass.Apply(_graphics.Device.ImmediateContext);
 
-                    foreach (var chunk in _chunks.Values)
+                    foreach (var chunk in Chunks.Values)
                     {
                         var bb = chunk.BoundingBox;
                         if (camera.BoundingFrustum.Contains(ref bb) != ContainmentType.Disjoint)
@@ -337,7 +329,7 @@ namespace AppleCinnamon
             foreach (var relativeChunkIndex in GetSurroundingChunks(ViewDistance))
             {
                 var chunkIndex = currentChunkIndex + relativeChunkIndex;
-                if (!_queuedChunks.ContainsKey(chunkIndex) && !_chunks.ContainsKey(chunkIndex))
+                if (!_queuedChunks.ContainsKey(chunkIndex) && !Chunks.ContainsKey(chunkIndex))
                 {
                     if (!_queuedChunks.TryAdd(chunkIndex, null))
                     {
@@ -350,7 +342,6 @@ namespace AppleCinnamon
                 }
             }
         }
-
         public void SetBlock(Int3 absoluteIndex, byte voxel) => _chunkUpdater.SetVoxel(absoluteIndex, voxel);
     }
 }
