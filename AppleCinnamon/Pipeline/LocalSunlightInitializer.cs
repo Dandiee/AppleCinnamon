@@ -1,5 +1,7 @@
 ﻿using System.Diagnostics;
 using AppleCinnamon.Settings;
+using AppleCinnamon.System;
+using SharpDX;
 
 namespace AppleCinnamon.Pipeline
 {
@@ -13,27 +15,28 @@ namespace AppleCinnamon.Pipeline
         public DataflowContext<Chunk> Process(DataflowContext<Chunk> context)
         {
             var sw = Stopwatch.StartNew();
-            var voxels = context.Payload.Voxels;
+            var chunk = context.Payload;
             var waterVoxels = context.Payload.TopMostWaterVoxels;
 
             for (var i = 0; i != Chunk.SizeXy; i++)
             {
                 for (var k = 0; k != Chunk.SizeXy; k++)
                 {
-
                     var previousBlock = 0;
                     var topMostFound = false;
 
                     for (var j = Chunk.Height - 1; j > 0; j--)
                     {
-                        var index = i + Chunk.SizeXy * (j + Chunk.Height * k);
-                        var voxel = voxels[index];
+                        var index = new Int3(i, j, k);
+                        var flatIndex = index.ToFlatIndex();
+
+                        var voxel = chunk.Voxels[flatIndex];
 
                         if (!topMostFound)
                         {
                             if (voxel.Block == 0)
                             {
-                                voxels[index] = new Voxel(voxel.Block, 15);
+                                chunk.Voxels[flatIndex] = new Voxel(voxel.Block, 15);
                             }
                             else
                             {
@@ -45,7 +48,7 @@ namespace AppleCinnamon.Pipeline
                         if (voxel.Block == VoxelDefinition.Water.Type &&
                             previousBlock != VoxelDefinition.Water.Type)
                         {
-                            waterVoxels.Add(index);
+                            waterVoxels.Add(flatIndex);
                         }
 
                         previousBlock = voxel.Block;

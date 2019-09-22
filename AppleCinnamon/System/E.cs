@@ -1,9 +1,10 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 using SharpDX;
 
 namespace AppleCinnamon.System
 {
-    public static class Extensions
+    public static class E
     {
         public static Vector3 ToVector3(this Int3 lhs)
         {
@@ -57,9 +58,22 @@ namespace AppleCinnamon.System
             return $"{vector.X:F2}, {vector.Y:F2}, {vector.Z:F2}";
         }
 
-        public static int ToIndex(this Int3 index)
+        
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Int3 ToIndex(this int index)
         {
-            return index.X + Chunk.SizeXy * (index.Y + Chunk.Height * index.Z);
+            var k = index / (Chunk.SizeXy * Chunk.Height);
+            var j = (index - k * Chunk.SizeXy * Chunk.Height) / Chunk.SizeXy;
+            var i = index - (k * Chunk.SizeXy * Chunk.Height + j * Chunk.SizeXy);
+
+            return new Int3(i, j, k);
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int ToFlatIndex(this Int3 index) => index.X + Chunk.SizeXy * (index.Y + Chunk.Height * index.Z);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int GetFlatIndex(int i, int j, int k) => i + Chunk.SizeXy * (j + Chunk.Height * k);
     }
 }

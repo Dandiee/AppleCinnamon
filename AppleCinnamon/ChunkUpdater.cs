@@ -90,9 +90,9 @@ namespace AppleCinnamon
             {
                 _isUpdateInProgress = true;
 
-                var oldVoxel = chunk.GetLocalVoxel(address.Value.RelativeVoxelIndex);
+                var oldVoxel = chunk.Voxels[address.Value.FlatIndex];
                 var newVoxel = new Voxel(voxel, 0);
-                chunk.SetLocalVoxel(address.Value.RelativeVoxelIndex, newVoxel);
+                chunk.Voxels[address.Value.FlatIndex] = newVoxel;
                 UpdateVisibilityFlags(chunk, oldVoxel, newVoxel, address.Value.RelativeVoxelIndex);
                 _lightUpdater.UpdateLighting(chunk, address.Value.RelativeVoxelIndex, oldVoxel, newVoxel);
                 _chunkBuilder.BuildChunk(_graphics.Device, chunk);
@@ -118,7 +118,7 @@ namespace AppleCinnamon
         {
             var isRemoving = newVoxel.Block == 0;
             var newVisibilityFlag = 0;
-            chunk.VisibilityFlags.TryGetValue(relativeIndex.ToIndex(), out var oldVisibilityFlag);
+            chunk.VisibilityFlags.TryGetValue(relativeIndex.ToFlatIndex(), out var oldVisibilityFlag);
 
             foreach (var direction in RemoveMapping)
             {
@@ -131,7 +131,7 @@ namespace AppleCinnamon
                 if (!neighbourDefinition.IsTransparent)
                 {
                     var neighbourChunk = chunk.Neighbours[neighbourAddress.ChunkIndex];
-                    var neighbourIndex = neighbourAddress.RelativeVoxelIndex.ToIndex();
+                    var neighbourIndex = neighbourAddress.RelativeVoxelIndex.ToFlatIndex();
                     neighbourChunk.VisibilityFlags.TryGetValue(neighbourIndex, out var visibility);
 
                     if (isRemoving)
@@ -163,11 +163,11 @@ namespace AppleCinnamon
                     }
                 }
 
-                chunk.VisibilityFlags.Remove(relativeIndex.ToIndex());
+                chunk.VisibilityFlags.Remove(relativeIndex.ToFlatIndex());
             }
             else
             {
-                chunk.VisibilityFlags[relativeIndex.ToIndex()] = (byte)newVisibilityFlag;
+                chunk.VisibilityFlags[relativeIndex.ToFlatIndex()] = (byte)newVisibilityFlag;
             }
 
         }

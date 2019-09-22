@@ -22,63 +22,58 @@ namespace AppleCinnamon.Pipeline
             var backChunk = chunk.Neighbours[new Int2(0, 1)];
 
 
-            foreach (var index in chunk.PendingLeftVoxels)
+            foreach (var flatIndex in chunk.PendingLeftVoxels)
             {
-                var k = index / (Chunk.SizeXy * Chunk.Height);
-                var j = (index - k * Chunk.SizeXy * Chunk.Height) / Chunk.SizeXy;
+                var index = flatIndex.ToIndex();
 
-                var neighbour = leftChunk.Voxels[Chunk.SizeXy - 1 + Chunk.SizeXy * (j + Chunk.Height * k)];
+                var neighbour = leftChunk.Voxels[E.GetFlatIndex(Chunk.SizeXy - 1, index.Y, index.Z)];
                 var neighbourDefinition = VoxelDefinition.DefinitionByType[neighbour.Block];
                 if (neighbourDefinition.IsTransparent)
                 {
-                    chunk.VisibilityFlags.TryGetValue(index, out var visibility);
-                    chunk.VisibilityFlags[index] = (byte)(visibility + 4);
+                    chunk.VisibilityFlags.TryGetValue(flatIndex, out var visibility);
+                    chunk.VisibilityFlags[flatIndex] = (byte)(visibility + 4);
                     chunk.VoxelCount.Left++;
                 }
             }
 
-            foreach (var index in chunk.PendingRightVoxels)
+            foreach (var flatIndex in chunk.PendingRightVoxels)
             {
-                var k = index / (Chunk.SizeXy * Chunk.Height);
-                var j = (index - k * Chunk.SizeXy * Chunk.Height) / Chunk.SizeXy;
+                var index = flatIndex.ToIndex();
 
-                var neighbour = rightChunk.Voxels[Chunk.SizeXy * (j + Chunk.Height * k)];
+                var neighbour = rightChunk.Voxels[E.GetFlatIndex(0, index.Y, index.Z)];
                 var neighbourDefinition = VoxelDefinition.DefinitionByType[neighbour.Block];
                 if (neighbourDefinition.IsTransparent)
                 {
-                    chunk.VisibilityFlags.TryGetValue(index, out var visibility);
-                    chunk.VisibilityFlags[index] = (byte)(visibility + 8);
+                    chunk.VisibilityFlags.TryGetValue(flatIndex, out var visibility);
+                    chunk.VisibilityFlags[flatIndex] = (byte)(visibility + 8);
                     chunk.VoxelCount.Right++;
                 }
             }
 
-            foreach (var index in chunk.PendingFrontVoxels)
+            foreach (var flatIndex in chunk.PendingFrontVoxels)
             {
-                var j = index / Chunk.SizeXy;
-                var i = index - j * Chunk.SizeXy;
+                var index = flatIndex.ToIndex();
 
-                var neighbour = frontChunk.Voxels[i + Chunk.SizeXy * (j + Chunk.Height * (Chunk.SizeXy - 1))];
+                var neighbour = frontChunk.Voxels[E.GetFlatIndex(index.X, index.Y, Chunk.SizeXy - 1)];
                 var neighbourDefinition = VoxelDefinition.DefinitionByType[neighbour.Block];
                 if (neighbourDefinition.IsTransparent)
                 {
-                    chunk.VisibilityFlags.TryGetValue(index, out var visibility);
-                    chunk.VisibilityFlags[index] = (byte)(visibility + 16);
+                    chunk.VisibilityFlags.TryGetValue(flatIndex, out var visibility);
+                    chunk.VisibilityFlags[flatIndex] = (byte)(visibility + 16);
                     chunk.VoxelCount.Front++;
                 }
             }
 
-            foreach (var index in chunk.PendingBackVoxels)
+            foreach (var flatIndex in chunk.PendingBackVoxels)
             {
-                var k = Chunk.SizeXy - 1;
-                var j = (index - k * Chunk.SizeXy * Chunk.Height) / Chunk.SizeXy;
-                var i = index - (k * Chunk.SizeXy * Chunk.Height + j * Chunk.SizeXy);
+                var index = flatIndex.ToIndex();
 
-                var neighbour = backChunk.Voxels[i + Chunk.SizeXy * j];
+                var neighbour = backChunk.Voxels[E.GetFlatIndex(index.X, index.Y, 0)];
                 var neighbourDefinition = VoxelDefinition.DefinitionByType[neighbour.Block];
                 if (neighbourDefinition.IsTransparent)
                 {
-                    chunk.VisibilityFlags.TryGetValue(index, out var visibility);
-                    chunk.VisibilityFlags[index] = (byte)(visibility + 32);
+                    chunk.VisibilityFlags.TryGetValue(flatIndex, out var visibility);
+                    chunk.VisibilityFlags[flatIndex] = (byte)(visibility + 32);
                     chunk.VoxelCount.Back++;
                 }
 

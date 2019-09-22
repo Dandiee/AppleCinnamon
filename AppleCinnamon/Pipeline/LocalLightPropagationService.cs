@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
 using AppleCinnamon.Settings;
+using AppleCinnamon.System;
 using SharpDX;
 
 namespace AppleCinnamon.Pipeline
@@ -39,35 +40,33 @@ namespace AppleCinnamon.Pipeline
         }
 
 
-        private void PropagateLightSource(Chunk chunk, int lightSourceIndex, List<int> lightSources)
+        private void PropagateLightSource(Chunk chunk, int lightSourceFlatIndex, List<int> lightSources)
         {
-            var voxels = chunk.Voxels;
-
-            var voxelLightness = voxels[lightSourceIndex].Lightness;
-            var k = lightSourceIndex / (Chunk.SizeXy * Chunk.Height);
-            var j = (lightSourceIndex - k * Chunk.SizeXy * Chunk.Height) / Chunk.SizeXy;
-            var i = lightSourceIndex - (k * Chunk.SizeXy * Chunk.Height + j * Chunk.SizeXy);
+            var voxelLightness = chunk.Voxels[lightSourceFlatIndex].Lightness;
+            var index = lightSourceFlatIndex.ToIndex();
 
             foreach (var direction in Directions)
             {
-                var neighbourX = i + direction.X;
+                var neighbourX = index.X + direction.X;
                 if ((neighbourX & Chunk.SizeXy) == 0)
                 {
-                    var neighbourY = j + direction.Y;
+                    var neighbourY = index.Y + direction.Y;
                     if (((ushort)neighbourY & Chunk.Height) == 0)
                     {
-                        var neighbourZ = k + direction.Z;
+                        var neighbourZ = index.Z + direction.Z;
                         if ((neighbourZ & Chunk.SizeXy) == 0)
                         {
-                            var neighbourIndex = neighbourX + Chunk.SizeXy * (neighbourY + Chunk.Height * neighbourZ);
-                            var neighbourVoxel = voxels[neighbourIndex];
+                            var neighbourIndex = new Int3(neighbourX, neighbourY, neighbourZ);
+                            var neighbourFlatIndex = neighbourIndex.ToFlatIndex();
+                            var neighbourVoxel = chunk.Voxels[neighbourFlatIndex];
                             var neighborDefinition = VoxelDefinition.DefinitionByType[neighbourVoxel.Block];
 
                             if (neighborDefinition.IsTransparent && neighbourVoxel.Lightness < voxelLightness - 1)
                             {
-                                voxels[neighbourIndex] = new Voxel(neighbourVoxel.Block, (byte)(voxelLightness - 1));
+                                chunk.Voxels[neighbourFlatIndex] =
+                                    new Voxel(neighbourVoxel.Block, (byte) (voxelLightness - 1));
 
-                                lightSources.Add(neighbourIndex);
+                                lightSources.Add(neighbourFlatIndex);
                             }
                         }
                     }

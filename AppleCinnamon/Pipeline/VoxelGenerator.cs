@@ -41,19 +41,19 @@ namespace AppleCinnamon.Pipeline
 
                     for (var j = 0; j < height - 1; j++)
                     {
-                        voxels[i + Chunk.SizeXy * (j + Chunk.Height * k)] = new Voxel(VoxelDefinition.Stone.Type, 0);
+                        voxels[E.GetFlatIndex(i, j, k)] = new Voxel(VoxelDefinition.Stone.Type, 0);
                     }
 
                     if (height < 100) // water level
                     {
                         for (var j = height; j < 100- 1; j++)
                         {
-                            voxels[i + Chunk.SizeXy * (j + Chunk.Height * k)] =
+                            voxels[E.GetFlatIndex(i, j, k)] =
                                 new Voxel(VoxelDefinition.Water.Type, 0);
                         }
                     }
 
-                    voxels[i + Chunk.SizeXy * (height - 1 + Chunk.Height * k)] = 
+                    voxels[E.GetFlatIndex(i, height - 1, k)] = 
                         new Voxel(
                             height > (128 + _random.Next(5))
                             ? VoxelDefinition.Snow.Type

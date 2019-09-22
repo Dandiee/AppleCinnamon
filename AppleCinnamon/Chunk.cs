@@ -1,6 +1,5 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using AppleCinnamon.System;
 using SharpDX;
 using SharpDX.DXGI;
@@ -31,19 +30,11 @@ namespace AppleCinnamon
         public Int2 ChunkIndex { get; }
         public Vector3 OffsetVector { get; }
         public Int2 Offset { get; }
-        public Voxel[] Voxels { get; }
+        public Voxel[] Voxels;
         public ConcurrentDictionary<Int2, Chunk> Neighbours { get; }
         public ChunkState State { get; set; }
         public  BoundingBox BoundingBox;
         public Vector3 ChunkIndexVector { get; }
-
-        public void SetLocalVoxel(int i, int j, int k, Voxel voxel) => Voxels[i + SizeXy * (j + Height * k)] = voxel;
-        public void SetLocalVoxel(Int3 relativeIndex, Voxel voxel) => SetLocalVoxel(relativeIndex.X, relativeIndex.Y, relativeIndex.Z, voxel);
-        public Voxel GetLocalVoxel(Int3 relativeIndex) => GetLocalVoxel(relativeIndex.X, relativeIndex.Y, relativeIndex.Z);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Voxel GetLocalVoxel(int i, int j, int k) => Voxels[i + SizeXy * (j + Height * k)];
-
 
         public Voxel GetLocalWithNeighbours(int i, int j, int k, out VoxelAddress address)
         {
@@ -81,12 +72,12 @@ namespace AppleCinnamon
             if (cx == 0 && cy == 0)
             {
                 address = new VoxelAddress(Int2.Zero, new Int3(i, j, k));
-                return Voxels[i + SizeXy * (j + Height * k)];
+                return Voxels[E.GetFlatIndex(i, j, k)];
             }
 
             var neighbourIndex = new Int2(cx, cy);
             address = new VoxelAddress(neighbourIndex, new Int3(i, j, k));
-            return Neighbours[new Int2(cx, cy)].Voxels[i + SizeXy * (j + Height * k)];
+            return Neighbours[new Int2(cx, cy)].Voxels[E.GetFlatIndex(i, j, k)];
         }
 
         public Voxel GetLocalWithNeighbours(int i, int j, int k)
@@ -123,10 +114,10 @@ namespace AppleCinnamon
 
             if (cx == 0 && cy == 0)
             {
-                return Voxels[i + SizeXy * (j + Height * k)];
+                return Voxels[E.GetFlatIndex(i, j, k)];
             }
 
-            return Neighbours[new Int2(cx, cy)].Voxels[i + SizeXy * (j + Height * k)];
+            return Neighbours[new Int2(cx, cy)].Voxels[E.GetFlatIndex(i, j, k)];
         }
 
         public Chunk(

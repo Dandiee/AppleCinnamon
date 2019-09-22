@@ -102,7 +102,7 @@
     <Compile Include="Vertices\VertexPositionColor.cs" />
     <Compile Include="Vertices\VertexWater.cs" />
     <Compile Include="Vertices\VertexSolidBlock.cs" />
-    <Compile Include="System\Extensions.cs" />
+    <Compile Include="System\E.cs" />
     <Compile Include="Settings\VoxelDefinition.cs" />
     <Compile Include="BoxDrawer.cs" />
     <Compile Include="Chunk.cs" />

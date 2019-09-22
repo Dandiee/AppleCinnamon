@@ -35,7 +35,7 @@ namespace AppleCinnamon
     public sealed class ChunkManager : IChunkManager
     {
         public const int ViewDistance = 32;
-        public static readonly int InitialDegreeOfParallelism = Environment.ProcessorCount;
+        public static readonly int InitialDegreeOfParallelism = 1;
 
         // debug fields
         private int _queuedChunksCount;
@@ -133,7 +133,7 @@ namespace AppleCinnamon
                 return null;
             }
 
-            return chunk.GetLocalVoxel(address.Value.RelativeVoxelIndex);
+            return chunk.Voxels[address.Value.RelativeVoxelIndex.ToFlatIndex()];
         }
 
         public bool TryGetChunk(Int2 chunkIndex, out Chunk chunk)

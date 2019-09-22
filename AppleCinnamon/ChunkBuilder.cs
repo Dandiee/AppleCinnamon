@@ -33,23 +33,20 @@ namespace AppleCinnamon
 
             foreach (var visibilityFlag in chunk.VisibilityFlags)
             {
-                var index = visibilityFlag.Key;
+                var flatIndex = visibilityFlag.Key;
+                var index = flatIndex.ToIndex();
 
-                var k = index / (Chunk.SizeXy * Chunk.Height);
-                var j = (index - k * Chunk.SizeXy * Chunk.Height) / Chunk.SizeXy;
-                var i = index - (k * Chunk.SizeXy * Chunk.Height + j * Chunk.SizeXy);
-
-                var voxel = chunk.Voxels[index];
+                var voxel = chunk.Voxels[flatIndex];
                 var definition = VoxelDefinition.DefinitionByType[voxel.Block];
 
-                var voxelPositionOffset = definition.Translation + chunk.OffsetVector + new Vector3(i, j, k);
+                var voxelPositionOffset = definition.Translation + chunk.OffsetVector + new Vector3(index.X, index.Y, index.Z);
 
                 foreach (var faceInfo in offsetIterator)
                 {
                     if ((visibilityFlag.Value & faceInfo.BuildInfo.DirectionFlag) == faceInfo.BuildInfo.DirectionFlag)
                     {
-                        var neighbor = chunk.GetLocalWithNeighbours(i + faceInfo.BuildInfo.Direction.X, j + faceInfo.BuildInfo.Direction.Y, k + faceInfo.BuildInfo.Direction.Z);
-                        AddFace(faceInfo, i, j, k, vertices, indexes, definition, chunk, neighbor, voxelPositionOffset);
+                        var neighbor = chunk.GetLocalWithNeighbours(index.X + faceInfo.BuildInfo.Direction.X, index.Y + faceInfo.BuildInfo.Direction.Y, index.Z + faceInfo.BuildInfo.Direction.Z);
+                        AddFace(faceInfo, index.X, index.Y, index.Z, vertices, indexes, definition, chunk, neighbor, voxelPositionOffset);
                     }
                 }
 
@@ -76,15 +73,12 @@ namespace AppleCinnamon
 
             for (var n = 0; n < chunk.TopMostWaterVoxels.Count; n++)
             {
-                var index = chunk.TopMostWaterVoxels[n];
-
-                var k = index / (Chunk.SizeXy * Chunk.Height);
-                var j = (index - k * Chunk.SizeXy * Chunk.Height) / Chunk.SizeXy;
-                var i = index - (k * Chunk.SizeXy * Chunk.Height + j * Chunk.SizeXy);
+                var flatIndex = chunk.TopMostWaterVoxels[n];
+                var index = flatIndex.ToIndex();
 
                 var vertexOffset = n * 4;
-                var positionOffset = new Vector3(i, j - 0.1f, k);
-                var light = chunk.Voxels[index].Lightness;
+                var positionOffset = new Vector3(index.X, index.Y - 0.1f, index.Z);
+                var light = chunk.Voxels[flatIndex].Lightness;
 
                 for (var m = 0; m < topOffsetVertices.Length; m++)
                 {
@@ -352,8 +346,8 @@ namespace AppleCinnamon
 
         public ChunkBuffer(Device device, VertexSolidBlock[] vertices, ushort[] indexes, Cube<ChunkFace> offsets)
         {
-            VertexBuffer = Buffer.Create(device, BindFlags.VertexBuffer, vertices, vertices.Length * VertexSolidBlock.Size, ResourceUsage.Immutable, CpuAccessFlags.None);
-            IndexBuffer = Buffer.Create(device, BindFlags.IndexBuffer, indexes, indexes.Length * sizeof(ushort), ResourceUsage.Immutable, CpuAccessFlags.None);
+            VertexBuffer = Buffer.Create(device, BindFlags.VertexBuffer, vertices, vertices.Length * VertexSolidBlock.Size, ResourceUsage.Immutable);
+            IndexBuffer = Buffer.Create(device, BindFlags.IndexBuffer, indexes, indexes.Length * sizeof(ushort), ResourceUsage.Immutable);
             Binding = new VertexBufferBinding(VertexBuffer, VertexSolidBlock.Size, 0);
             Offsets = new Dictionary<Int3, ChunkFace>
             {
