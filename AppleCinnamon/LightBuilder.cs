@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using AppleCinnamon.Settings;
 using AppleCinnamon.System;
 using SharpDX;
+using SharpDX.DirectInput;
 
 namespace AppleCinnamon
 {
@@ -106,7 +107,9 @@ namespace AppleCinnamon
         private void RemoveSolid(Chunk chunk, Int3 relativeIndex)
         {
             var upperIndex = new Int3(relativeIndex.X, relativeIndex.Y + 1, relativeIndex.Z);
-            var upperVoxel = chunk.Voxels[upperIndex.ToFlatIndex()];
+            var upperVoxel = chunk.CurrentHeight <= relativeIndex.Y + 1
+                             ? Voxel.Air
+                             : chunk.Voxels[upperIndex.ToFlatIndex()];
 
             // identify light sources
             var lightSources = new List<Tuple<Chunk, Int3>>();
@@ -166,7 +169,7 @@ namespace AppleCinnamon
 
             for (var j = relativeIndex.Y - 1; j > 0; j--)
             {
-                var voxel = chunk.Voxels[E.GetFlatIndex(relativeIndex.X, j, relativeIndex.Z)];
+                var voxel = chunk.Voxels[Help.GetFlatIndex(relativeIndex.X, j, relativeIndex.Z)];
                 if (voxel.GetDefinition().IsTransparent)
                 {
                     var resetVoxelIndex = new Int3(relativeIndex.X, j, relativeIndex.Z);
@@ -212,7 +215,9 @@ namespace AppleCinnamon
 
         private void PropagateLightness(Chunk sourceChunk, Int3 sourceIndex)
         {
-            var sourceVoxel = sourceChunk.Voxels[sourceIndex.ToFlatIndex()];
+            var sourceVoxel = sourceChunk.CurrentHeight <= sourceIndex.Y
+                              ? Voxel.Air
+                              : sourceChunk.Voxels[sourceIndex.ToFlatIndex()];
 
             foreach (var direction in Directions)
             {

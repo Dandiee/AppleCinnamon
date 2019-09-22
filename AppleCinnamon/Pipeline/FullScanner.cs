@@ -19,11 +19,11 @@ namespace AppleCinnamon.Pipeline
 
             for (var i = 0; i != Chunk.SizeXy; i++)
             {
-                for (var j = 0; j != Chunk.Height; j++)
+                for (var j = 0; j != chunk.CurrentHeight; j++)
                 {
                     for (var k = 0; k != Chunk.SizeXy; k++)
                     {
-                        var flatIndex = E.GetFlatIndex(i, j, k);
+                        var flatIndex = Help.GetFlatIndex(i, j, k);
                         var voxel = chunk.Voxels[flatIndex];
                         //var definition = VoxelDefinition.DefinitionByType[voxel.Block];
 
@@ -41,9 +41,9 @@ namespace AppleCinnamon.Pipeline
                         byte visibilityFlag = 0;
                         var voxelLight = voxel.Lightness;
 
-                        if (j < Chunk.Height - 1) // top
+                        if (j < chunk.CurrentHeight - 1) // top
                         {
-                            var neighbor = chunk.Voxels[E.GetFlatIndex(i, j + 1, k)];
+                            var neighbor = chunk.Voxels[Help.GetFlatIndex(i, j + 1, k)];
                             if (hasVisibilityFlag && neighbor.Block < 16)
                             {
                                 visibilityFlag += 1;
@@ -55,10 +55,15 @@ namespace AppleCinnamon.Pipeline
                                 voxelLight = (byte)(neighbor.Lightness - 1);
                             }
                         }
+                        else if (hasVisibilityFlag)
+                        {
+                            visibilityFlag += 1;
+                            chunk.VoxelCount.Top++;
+                        }
 
                         if (j > 0) // bottom
                         {
-                            var neighbor = chunk.Voxels[E.GetFlatIndex(i, j - 1, k)];
+                            var neighbor = chunk.Voxels[Help.GetFlatIndex(i, j - 1, k)];
                             if (hasVisibilityFlag && neighbor.Block < 16)
                             {
                                 visibilityFlag += 2;
@@ -68,7 +73,7 @@ namespace AppleCinnamon.Pipeline
 
                         if (i > 0) //left
                         {
-                            var neighbor = chunk.Voxels[E.GetFlatIndex(i - 1, j, k)];
+                            var neighbor = chunk.Voxels[Help.GetFlatIndex(i - 1, j, k)];
                             if (hasVisibilityFlag && neighbor.Block < 16)
                             {
                                 visibilityFlag += 4;
@@ -85,7 +90,7 @@ namespace AppleCinnamon.Pipeline
 
                         if (i < Chunk.SizeXy - 1) // right
                         {
-                            var neighbor = chunk.Voxels[E.GetFlatIndex(i + 1, j, k)];
+                            var neighbor = chunk.Voxels[Help.GetFlatIndex(i + 1, j, k)];
                             if (hasVisibilityFlag && neighbor.Block < 16)
                             {
                                 visibilityFlag += 8;
@@ -101,7 +106,7 @@ namespace AppleCinnamon.Pipeline
 
                         if (k > 0) // front
                         {
-                            var neighbor = chunk.Voxels[E.GetFlatIndex(i, j, k - 1)];
+                            var neighbor = chunk.Voxels[Help.GetFlatIndex(i, j, k - 1)];
                             if (hasVisibilityFlag && neighbor.Block < 16)
                             {
                                 visibilityFlag += 16;
@@ -116,7 +121,7 @@ namespace AppleCinnamon.Pipeline
 
                         if (k < Chunk.SizeXy - 1) // back
                         {
-                            var neighbor = chunk.Voxels[E.GetFlatIndex(i, j, k + 1)];
+                            var neighbor = chunk.Voxels[Help.GetFlatIndex(i, j, k + 1)];
                             if (hasVisibilityFlag && neighbor.Block < 16)
                             {
                                 visibilityFlag += 32;

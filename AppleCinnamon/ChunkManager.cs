@@ -34,7 +34,7 @@ namespace AppleCinnamon
 
     public sealed class ChunkManager : IChunkManager
     {
-        public const int ViewDistance = 32;
+        public const int ViewDistance = 8;
         public static readonly int InitialDegreeOfParallelism = 1;
 
         // debug fields
@@ -56,6 +56,7 @@ namespace AppleCinnamon
 
 
         private readonly Graphics _graphics;
+        private readonly BoxDrawer _boxDrawer;
         private Effect _solidBlockEffect;
         private Effect _waterBlockEffect;
         private readonly ConcurrentDictionary<Int2, Chunk> _chunks;
@@ -67,11 +68,12 @@ namespace AppleCinnamon
 
         private TransformBlock<DataflowContext<Int2>, DataflowContext<Chunk>> _pipeline;
 
-        public ChunkManager(Graphics graphics)
+        public ChunkManager(Graphics graphics, BoxDrawer boxDrawer)
         {
             _pipelineProvider = new PipelineProvider();
 
             _graphics = graphics;
+            _boxDrawer = boxDrawer;
             _chunks = new ConcurrentDictionary<Int2, Chunk>();
             _queuedChunks = new ConcurrentDictionary<Int2, object>();
             PipelinePerformance = new ConcurrentDictionary<string, long>();
@@ -133,7 +135,9 @@ namespace AppleCinnamon
                 return null;
             }
 
-            return chunk.Voxels[address.Value.RelativeVoxelIndex.ToFlatIndex()];
+            return chunk.CurrentHeight <= address.Value.RelativeVoxelIndex.Y
+                ? Voxel.Air
+                : chunk.Voxels[address.Value.RelativeVoxelIndex.ToFlatIndex()];
         }
 
         public bool TryGetChunk(Int2 chunkIndex, out Chunk chunk)
@@ -162,6 +166,11 @@ namespace AppleCinnamon
             }
 
             Interlocked.Decrement(ref _queuedChunksCount);
+            var chunk = context.Payload;
+            _boxDrawer.Set($"Chunk{chunk.ChunkIndex}", new BoxDetails(
+                new Vector3(Chunk.SizeXy, chunk.CurrentHeight, Chunk.SizeXy),
+                new Vector3(Chunk.SizeXy / 2f - .5f + Chunk.SizeXy * chunk.ChunkIndex.X, chunk.CurrentHeight / 2f -.5f,
+                    Chunk.SizeXy / 2f - .5f + Chunk.SizeXy * chunk.ChunkIndex.Y), Color.Red.ToColor3()));
 
             foreach (var performance in context.Debug)
             {

@@ -27,7 +27,9 @@ namespace AppleCinnamon.Pipeline
 
         public Voxel[] GenerateVoxels(Int2 chunkIndex)
         {
-            var voxels = new Voxel[Chunk.SizeXy * Chunk.Height * Chunk.SizeXy];
+            var voxels = new Voxel[Chunk.SizeXy * Chunk.SliceHeight * Chunk.SizeXy];
+            var currentHeight = Chunk.SliceHeight;
+
             var chunkSizeXz = new Int2(Chunk.SizeXy, Chunk.SizeXy);
             for (var i = 0; i < Chunk.SizeXy; i++)
             {
@@ -41,23 +43,45 @@ namespace AppleCinnamon.Pipeline
 
                     for (var j = 0; j < height - 1; j++)
                     {
-                        voxels[E.GetFlatIndex(i, j, k)] = new Voxel(VoxelDefinition.Stone.Type, 0);
+                        if (j >= currentHeight)
+                        {
+                            var requiredSlice = (j / Chunk.SliceHeight) + 1;
+                            var newHeight = requiredSlice * Chunk.SliceHeight;
+
+                            var newArray = new Voxel[Chunk.SizeXy * newHeight * Chunk.SizeXy];
+                            Array.Copy(voxels, newArray, voxels.Length);
+                            voxels = newArray;
+                            currentHeight = newHeight;
+                        }
+
+                        voxels[Help.GetFlatIndex(i, j, k)] = new Voxel(VoxelDefinition.Stone.Type, 0);
                     }
 
                     if (height < 100) // water level
                     {
-                        for (var j = height; j < 100- 1; j++)
+                        for (var j = height; j < 64- 1; j++)
                         {
-                            voxels[E.GetFlatIndex(i, j, k)] =
+                            if (j >= currentHeight)
+                            {
+                                var requiredSlice = (j / Chunk.SliceHeight) + 1;
+                                var newHeight = requiredSlice * Chunk.SliceHeight;
+
+                                var newArray = new Voxel[Chunk.SizeXy * newHeight * Chunk.SizeXy];
+                                Array.Copy(voxels, newArray, voxels.Length);
+                                voxels = newArray;
+                                currentHeight = newHeight;
+                            }
+
+                            voxels[Help.GetFlatIndex(i, j, k)] =
                                 new Voxel(VoxelDefinition.Water.Type, 0);
                         }
                     }
 
-                    voxels[E.GetFlatIndex(i, height - 1, k)] = 
-                        new Voxel(
-                            height > (128 + _random.Next(5))
-                            ? VoxelDefinition.Snow.Type
-                            : VoxelDefinition.Grass.Type, 0);
+                        voxels[Help.GetFlatIndex(i, height - 2, k)] =
+                            new Voxel(
+                                height > (128 + _random.Next(5))
+                                    ? VoxelDefinition.Snow.Type
+                                    : VoxelDefinition.Grass.Type, 0);
 
                     // voxels[i + Chunk.SizeXy * (height + Chunk.Height * k)] = new Voxel(4, 0);
                 }

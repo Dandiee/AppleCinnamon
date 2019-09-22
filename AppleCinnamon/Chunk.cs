@@ -1,5 +1,7 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Drawing;
 using AppleCinnamon.System;
 using SharpDX;
 using SharpDX.DXGI;
@@ -9,8 +11,14 @@ namespace AppleCinnamon
 {
     public class Chunk
     {
+        public const int SliceHeight = 16;
+        public const int NegativeSliceHeight = -SliceHeight;
         public const int SizeXy = 32;
         public const int Height = 256;
+        public const int SliceArea = SizeXy * SizeXy * SliceHeight;
+        public const int DoubleSliceHeight = SliceHeight * 2;
+
+        public int CurrentHeight;
 
         public ChunkBuffer ChunkBuffer;
 
@@ -33,12 +41,36 @@ namespace AppleCinnamon
         public Voxel[] Voxels;
         public ConcurrentDictionary<Int2, Chunk> Neighbours { get; }
         public ChunkState State { get; set; }
-        public  BoundingBox BoundingBox;
+        public BoundingBox BoundingBox;
         public Vector3 ChunkIndexVector { get; }
+
+        public void ExtendUpward(int heightToFit)
+        {
+            var expectedSlices = heightToFit / SliceHeight + 1;
+            var expectedHeight = expectedSlices * SliceHeight;
+
+            var newVoxels = new Voxel[SizeXy * expectedHeight * SizeXy];
+            Array.Copy(Voxels, newVoxels, Voxels.Length);
+            Voxels = newVoxels;
+            
+
+            for (var i = 0; i < SizeXy; i++)
+            {
+                for (var k = 0; k < SizeXy; k++)
+                {
+                    for (var j = expectedHeight - 1; j >= CurrentHeight; j--)
+                    {
+                        Voxels[Help.GetFlatIndex(i, j, k)] = Voxel.Air;
+                    }
+                }
+            }
+
+            CurrentHeight = expectedHeight;
+        }
 
         public Voxel GetLocalWithNeighbours(int i, int j, int k, out VoxelAddress address)
         {
-            if (j < 0 || j > Height- 1)
+            if (j < 0 || j > Height - 1)
             {
                 address = new VoxelAddress();
                 return Voxel.One;
@@ -50,7 +82,7 @@ namespace AppleCinnamon
             if (i < 0)
             {
                 cx = -1;
-                i = SizeXy- 1;
+                i = SizeXy - 1;
             }
             else if (i == SizeXy)
             {
@@ -61,7 +93,7 @@ namespace AppleCinnamon
             if (k < 0)
             {
                 cy = -1;
-                k = SizeXy- 1;
+                k = SizeXy - 1;
             }
             else if (k == SizeXy)
             {
@@ -72,17 +104,23 @@ namespace AppleCinnamon
             if (cx == 0 && cy == 0)
             {
                 address = new VoxelAddress(Int2.Zero, new Int3(i, j, k));
-                return Voxels[E.GetFlatIndex(i, j, k)];
+                return CurrentHeight <= j
+                    ? Voxel.Air
+                    : Voxels[Help.GetFlatIndex(i, j, k)];
             }
 
             var neighbourIndex = new Int2(cx, cy);
             address = new VoxelAddress(neighbourIndex, new Int3(i, j, k));
-            return Neighbours[new Int2(cx, cy)].Voxels[E.GetFlatIndex(i, j, k)];
+
+            var chunk = Neighbours[new Int2(cx, cy)];
+            return chunk.CurrentHeight <= j
+                ? Voxel.Air
+                : chunk.Voxels[Help.GetFlatIndex(i, j, k)];
         }
 
         public Voxel GetLocalWithNeighbours(int i, int j, int k)
         {
-            if (((ushort)j & 256) != 0)
+            if (j < 0)
             {
                 return Voxel.One;
             }
@@ -93,7 +131,7 @@ namespace AppleCinnamon
             if (i < 0)
             {
                 cx = -1;
-                i = SizeXy- 1;
+                i = SizeXy - 1;
             }
             else if (i == SizeXy)
             {
@@ -104,7 +142,7 @@ namespace AppleCinnamon
             if (k < 0)
             {
                 cy = -1;
-                k = SizeXy- 1;
+                k = SizeXy - 1;
             }
             else if (k == SizeXy)
             {
@@ -114,10 +152,15 @@ namespace AppleCinnamon
 
             if (cx == 0 && cy == 0)
             {
-                return Voxels[E.GetFlatIndex(i, j, k)];
+                return CurrentHeight <= j
+                    ? Voxel.Air
+                    : Voxels[Help.GetFlatIndex(i, j, k)];
             }
 
-            return Neighbours[new Int2(cx, cy)].Voxels[E.GetFlatIndex(i, j, k)];
+            var chunk = Neighbours[new Int2(cx, cy)];
+            return chunk.CurrentHeight <= j
+                   ? Voxel.Air
+                   : chunk.Voxels[Help.GetFlatIndex(i, j, k)];
         }
 
         public Chunk(
@@ -135,6 +178,8 @@ namespace AppleCinnamon
             LightPropagationVoxels = new List<int>(1024);
             TopMostWaterVoxels = new List<int>(128);
 
+            CurrentHeight = (voxels.Length / SliceArea) * SliceHeight;
+
             ChunkIndex = chunkIndex;
             Offset = chunkIndex * new Int2(SizeXy, SizeXy);
             OffsetVector = new Vector3(Offset.X, 0, Offset.Y);
@@ -142,11 +187,11 @@ namespace AppleCinnamon
             State = ChunkState.WarmUp;
 
             var position = new Vector3(
-                ChunkIndex.X * SizeXy+ SizeXy/ 2f - .5f,
-                Height/ 2f,
-                ChunkIndex.Y * SizeXy+ SizeXy/ 2f - .5f);
+                ChunkIndex.X * SizeXy + SizeXy / 2f - .5f,
+                Height / 2f,
+                ChunkIndex.Y * SizeXy + SizeXy / 2f - .5f);
 
-            var halfSize = new Vector3(SizeXy/ 2f, Height/ 2f, SizeXy/ 2f);
+            var halfSize = new Vector3(SizeXy / 2f, Height / 2f, SizeXy / 2f);
             BoundingBox = new BoundingBox(position - halfSize, position + halfSize);
             ChunkIndexVector = BoundingBox.Center;
         }
@@ -172,7 +217,7 @@ namespace AppleCinnamon
 
         public static Int2? GetChunkIndex(Int3 absoluteVoxelIndex)
         {
-            if (absoluteVoxelIndex.Y >= Height|| absoluteVoxelIndex.Y < 0)
+            if (absoluteVoxelIndex.Y >= Height || absoluteVoxelIndex.Y < 0)
             {
                 return null;
             }
@@ -194,7 +239,7 @@ namespace AppleCinnamon
                 return null;
             }
 
-            var voxelIndex = new Int3(absoluteVoxelIndex.X & SizeXy- 1, absoluteVoxelIndex.Y, absoluteVoxelIndex.Z & SizeXy- 1);
+            var voxelIndex = new Int3(absoluteVoxelIndex.X & SizeXy - 1, absoluteVoxelIndex.Y, absoluteVoxelIndex.Z & SizeXy - 1);
             return new VoxelAddress(chunkIndex.Value, voxelIndex);
         }
 

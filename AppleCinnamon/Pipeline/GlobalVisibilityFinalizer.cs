@@ -25,8 +25,10 @@ namespace AppleCinnamon.Pipeline
             foreach (var flatIndex in chunk.PendingLeftVoxels)
             {
                 var index = flatIndex.ToIndex();
+                var neighbour = leftChunk.CurrentHeight <= index.Y
+                    ? Voxel.Air
+                    : leftChunk.Voxels[Help.GetFlatIndex(Chunk.SizeXy - 1, index.Y, index.Z)];
 
-                var neighbour = leftChunk.Voxels[E.GetFlatIndex(Chunk.SizeXy - 1, index.Y, index.Z)];
                 var neighbourDefinition = VoxelDefinition.DefinitionByType[neighbour.Block];
                 if (neighbourDefinition.IsTransparent)
                 {
@@ -40,7 +42,10 @@ namespace AppleCinnamon.Pipeline
             {
                 var index = flatIndex.ToIndex();
 
-                var neighbour = rightChunk.Voxels[E.GetFlatIndex(0, index.Y, index.Z)];
+                var neighbour = rightChunk.CurrentHeight <= index.Y
+                    ? Voxel.Air
+                    : rightChunk.Voxels[Help.GetFlatIndex(0, index.Y, index.Z)];
+
                 var neighbourDefinition = VoxelDefinition.DefinitionByType[neighbour.Block];
                 if (neighbourDefinition.IsTransparent)
                 {
@@ -54,7 +59,10 @@ namespace AppleCinnamon.Pipeline
             {
                 var index = flatIndex.ToIndex();
 
-                var neighbour = frontChunk.Voxels[E.GetFlatIndex(index.X, index.Y, Chunk.SizeXy - 1)];
+                var neighbour = frontChunk.CurrentHeight <= index.Y
+                    ? Voxel.Air
+                    : frontChunk.Voxels[Help.GetFlatIndex(index.X, index.Y, Chunk.SizeXy - 1)];
+
                 var neighbourDefinition = VoxelDefinition.DefinitionByType[neighbour.Block];
                 if (neighbourDefinition.IsTransparent)
                 {
@@ -68,7 +76,10 @@ namespace AppleCinnamon.Pipeline
             {
                 var index = flatIndex.ToIndex();
 
-                var neighbour = backChunk.Voxels[E.GetFlatIndex(index.X, index.Y, 0)];
+                var neighbour = backChunk.CurrentHeight <= index.Y
+                    ? Voxel.Air
+                    : backChunk.Voxels[Help.GetFlatIndex(index.X, index.Y, 0)];
+
                 var neighbourDefinition = VoxelDefinition.DefinitionByType[neighbour.Block];
                 if (neighbourDefinition.IsTransparent)
                 {

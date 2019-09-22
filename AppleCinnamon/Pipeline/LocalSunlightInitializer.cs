@@ -25,7 +25,7 @@ namespace AppleCinnamon.Pipeline
                     var previousBlock = 0;
                     var topMostFound = false;
 
-                    for (var j = Chunk.Height - 1; j > 0; j--)
+                    for (var j = chunk.CurrentHeight - 1; j > 0; j--)
                     {
                         var index = new Int3(i, j, k);
                         var flatIndex = index.ToFlatIndex();
