@@ -14,7 +14,7 @@ namespace AppleCinnamon
 
         public static bool IsBackFaceCullingEnabled { get; set; }
         public static bool IsViewFrustumCullingEnabled { get; set; } = true;
-        public static bool ShowChunkBoundingBoxes { get; set; } = true;
+        public static bool ShowChunkBoundingBoxes { get; set; } = false;
 
         private readonly ChunkManager _chunkManager;
         private readonly Camera _camera;

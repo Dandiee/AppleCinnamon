@@ -92,8 +92,8 @@ namespace AppleCinnamon.Pipeline
 
                     var sourceVoxel = sourceChunk.CurrentHeight <= j
                         ? Voxel.Air
-                        //: sourceChunk.Voxels[Help.GetFlatIndex(sourceIndexX, j, sourceIndexY)];
-                        : sourceChunk.GetVoxel(Help.GetFlatIndex(sourceIndexX, j, sourceIndexY, sourceChunk.CurrentHeight));
+                        : sourceChunk.Voxels[Help.GetFlatIndex(sourceIndexX, j, sourceIndexY, sourceChunk.CurrentHeight)];
+                        // : sourceChunk.GetVoxel(Help.GetFlatIndex(sourceIndexX, j, sourceIndexY, sourceChunk.CurrentHeight));
 
                     var sourceDefinition = VoxelDefinition.DefinitionByType[sourceVoxel.Block];
 
@@ -107,8 +107,8 @@ namespace AppleCinnamon.Pipeline
 
                     var targetVoxel = targetChunk.CurrentHeight <= j 
                         ? Voxel.Air
-                        //: targetChunk.Voxels[Help.GetFlatIndex(targetIndexX, j, targetIndexY)];
-                        : targetChunk.GetVoxel(Help.GetFlatIndex(targetIndexX, j, targetIndexY, targetChunk.CurrentHeight));
+                        : targetChunk.Voxels[Help.GetFlatIndex(targetIndexX, j, targetIndexY, targetChunk.CurrentHeight)];
+                        //: targetChunk.GetVoxel(Help.GetFlatIndex(targetIndexX, j, targetIndexY, targetChunk.CurrentHeight));
 
                     var targetDefinition = VoxelDefinition.DefinitionByType[targetVoxel.Block];
 
