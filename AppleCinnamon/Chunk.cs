@@ -1,16 +1,18 @@
-﻿using System;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using AppleCinnamon.System;
 using SharpDX;
 using SharpDX.DXGI;
 using Device = SharpDX.Direct3D11.Device;
+using Help = AppleCinnamon.System.Help;
 
 namespace AppleCinnamon
 {
     public class Chunk
     {
-        public const int SliceHeight = 8;
+        public const int SliceHeight = 16;
         public const int SizeXy = 32;
         public const int SliceArea = SizeXy * SizeXy * SliceHeight;
 
@@ -21,13 +23,15 @@ namespace AppleCinnamon
         private FaceBuffer _waterBuffer;
         public int VisibleFacesCount { get; set; }
 
-        public readonly Dictionary<int, byte> VisibilityFlags;
+        public Dictionary<int, byte> VisibilityFlags;
+        public List<int> TopMostWaterVoxels;
+
         public List<int> PendingLeftVoxels;
         public List<int> PendingRightVoxels;
         public List<int> PendingFrontVoxels;
         public List<int> PendingBackVoxels;
         public List<int> LightPropagationVoxels;
-        public readonly List<int> TopMostWaterVoxels;
+        
 
         public Cube<int> VoxelCount { get; }
 
@@ -40,13 +44,40 @@ namespace AppleCinnamon
         public BoundingBox BoundingBox;
         public Vector3 ChunkIndexVector { get; }
 
+        public Voxel GetVoxel(int flatIndex) => Voxels[flatIndex];
+
         public void ExtendUpward(int heightToFit)
         {
             var expectedSlices = heightToFit / SliceHeight + 1;
             var expectedHeight = expectedSlices * SliceHeight;
 
             var newVoxels = new Voxel[SizeXy * expectedHeight * SizeXy];
-            Array.Copy(Voxels, newVoxels, Voxels.Length);
+            
+            // In case of local sliced array addressing, a simple copy does the trick
+            // Array.Copy(Voxels, newVoxels, Voxels.Length);
+            var sw = Stopwatch.StartNew();
+            for (var i = 0; i < SizeXy; i++)
+            {
+                for (var j = 0; j < CurrentHeight; j++)
+                {
+                    for (var k = 0; k < SizeXy; k++)
+                    {
+                        var oldFlatIndex = Help.GetFlatIndex(i, j, k, CurrentHeight);
+                        var newFlatIndex = Help.GetFlatIndex(i, j, k, expectedHeight);
+                        newVoxels[newFlatIndex] = Voxels[oldFlatIndex];
+                    }
+                }
+            }
+
+            VisibilityFlags =
+                VisibilityFlags.ToDictionary(kvp => kvp.Key.ToIndex(CurrentHeight).ToFlatIndex(expectedHeight),
+                    kvp => kvp.Value);
+
+            TopMostWaterVoxels = TopMostWaterVoxels.Select(s => s.ToIndex(CurrentHeight).ToFlatIndex(expectedHeight))
+                .ToList();
+            sw.Stop();
+
+
             Voxels = newVoxels;
 
             for (var i = 0; i < SizeXy; i++)
@@ -55,7 +86,7 @@ namespace AppleCinnamon
                 {
                     for (var j = expectedHeight - 1; j >= CurrentHeight; j--)
                     {
-                        Voxels[Help.GetFlatIndex(i, j, k)] = Voxel.Air;
+                        Voxels[Help.GetFlatIndex(i, j, k, expectedHeight)] = Voxel.Air;
                     }
                 }
             }
@@ -110,7 +141,7 @@ namespace AppleCinnamon
                 address = new VoxelAddress(Int2.Zero, new Int3(i, j, k));
                 return CurrentHeight <= j
                     ? Voxel.Air
-                    : Voxels[Help.GetFlatIndex(i, j, k)];
+                    : Voxels[Help.GetFlatIndex(i, j, k, CurrentHeight)];
             }
 
             var neighbourIndex = new Int2(cx, cy);
@@ -119,7 +150,7 @@ namespace AppleCinnamon
             var chunk = Neighbours[new Int2(cx, cy)];
             return chunk.CurrentHeight <= j
                 ? Voxel.Air
-                : chunk.Voxels[Help.GetFlatIndex(i, j, k)];
+                : chunk.Voxels[Help.GetFlatIndex(i, j, k, chunk.CurrentHeight)];
         }
 
         public Voxel GetLocalWithNeighbours(int i, int j, int k)
@@ -158,13 +189,13 @@ namespace AppleCinnamon
             {
                 return CurrentHeight <= j
                     ? Voxel.Air
-                    : Voxels[Help.GetFlatIndex(i, j, k)];
+                    : Voxels[Help.GetFlatIndex(i, j, k, CurrentHeight)];
             }
 
             var chunk = Neighbours[new Int2(cx, cy)];
             return chunk.CurrentHeight <= j
                    ? Voxel.Air
-                   : chunk.Voxels[Help.GetFlatIndex(i, j, k)];
+                   : chunk.Voxels[Help.GetFlatIndex(i, j, k, chunk.CurrentHeight)];
         }
 
         public Chunk(

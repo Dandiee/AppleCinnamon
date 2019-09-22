@@ -92,7 +92,8 @@ namespace AppleCinnamon.Pipeline
 
                     var sourceVoxel = sourceChunk.CurrentHeight <= j
                         ? Voxel.Air
-                        : sourceChunk.Voxels[Help.GetFlatIndex(sourceIndexX, j, sourceIndexY)];
+                        //: sourceChunk.Voxels[Help.GetFlatIndex(sourceIndexX, j, sourceIndexY)];
+                        : sourceChunk.GetVoxel(Help.GetFlatIndex(sourceIndexX, j, sourceIndexY, sourceChunk.CurrentHeight));
 
                     var sourceDefinition = VoxelDefinition.DefinitionByType[sourceVoxel.Block];
 
@@ -105,8 +106,9 @@ namespace AppleCinnamon.Pipeline
                     var targetIndexY = target.Y + step.Y * n;
 
                     var targetVoxel = targetChunk.CurrentHeight <= j 
-                        ? Voxel.Air 
-                        : targetChunk.Voxels[Help.GetFlatIndex(targetIndexX, j, targetIndexY)];
+                        ? Voxel.Air
+                        //: targetChunk.Voxels[Help.GetFlatIndex(targetIndexX, j, targetIndexY)];
+                        : targetChunk.GetVoxel(Help.GetFlatIndex(targetIndexX, j, targetIndexY, targetChunk.CurrentHeight));
 
                     var targetDefinition = VoxelDefinition.DefinitionByType[targetVoxel.Block];
 
@@ -122,13 +124,13 @@ namespace AppleCinnamon.Pipeline
                         if (lightDifference > 0)
                         {
                             var newSourceVoxel = new Voxel(sourceVoxel.Block, (byte)(targetVoxel.Lightness - 1));
-                            sourceChunk.Voxels[Help.GetFlatIndex(sourceIndexX, j, sourceIndexY)] = newSourceVoxel;
+                            sourceChunk.Voxels[Help.GetFlatIndex(sourceIndexX, j, sourceIndexY, sourceChunk.CurrentHeight)] = newSourceVoxel;
                             PropagateSunlight(sourceChunk, sourceIndexX, j, sourceIndexY, sourceDefinition, newSourceVoxel);
                         }
                         else // source -> target
                         {
                             var newTargetVoxel = new Voxel(targetVoxel.Block, (byte)(sourceVoxel.Lightness - 1));
-                            targetChunk.Voxels[Help.GetFlatIndex(targetIndexX, j, targetIndexY)] = newTargetVoxel;
+                            targetChunk.Voxels[Help.GetFlatIndex(targetIndexX, j, targetIndexY, targetChunk.CurrentHeight)] = newTargetVoxel;
                             PropagateSunlight(targetChunk, targetIndexX, j, targetIndexY, targetDefinition, newTargetVoxel);
                         }
                     }
@@ -150,14 +152,14 @@ namespace AppleCinnamon.Pipeline
                         (neighbourIndexZ & Chunk.SizeXy) == 0 &&
                         neighbourIndexZ > 0 && neighbourIndexZ < chunk.CurrentHeight)
                     {
-                        var neighbourVoxel = chunk.Voxels[Help.GetFlatIndex(neighbourIndexX, neighbourIndexY, neighbourIndexZ)];
+                        var neighbourVoxel = chunk.Voxels[Help.GetFlatIndex(neighbourIndexX, neighbourIndexY, neighbourIndexZ, chunk.CurrentHeight)];
                         if (neighbourVoxel.Lightness < sourceVoxel.Lightness - 1)
                         {
                             var targetDefinition = VoxelDefinition.DefinitionByType[neighbourVoxel.Block];
                             if (targetDefinition.IsTransparent)
                             {
                                 var newTargetVoxel = new Voxel(neighbourVoxel.Block, (byte)(sourceVoxel.Lightness - 1));
-                                chunk.Voxels[Help.GetFlatIndex(neighbourIndexX, neighbourIndexY, neighbourIndexZ)] = newTargetVoxel;
+                                chunk.Voxels[Help.GetFlatIndex(neighbourIndexX, neighbourIndexY, neighbourIndexZ, chunk.CurrentHeight)] = newTargetVoxel;
                                 PropagateSunlight(chunk, neighbourIndexX, neighbourIndexY, neighbourIndexZ, targetDefinition, newTargetVoxel);
                             }
                         }

@@ -24,10 +24,10 @@ namespace AppleCinnamon.Pipeline
 
             foreach (var flatIndex in chunk.PendingLeftVoxels)
             {
-                var index = flatIndex.ToIndex();
+                var index = flatIndex.ToIndex(chunk.CurrentHeight);
                 var neighbour = leftChunk.CurrentHeight <= index.Y
                     ? Voxel.Air
-                    : leftChunk.Voxels[Help.GetFlatIndex(Chunk.SizeXy - 1, index.Y, index.Z)];
+                    : leftChunk.Voxels[Help.GetFlatIndex(Chunk.SizeXy - 1, index.Y, index.Z, leftChunk.CurrentHeight)];
 
                 var neighbourDefinition = VoxelDefinition.DefinitionByType[neighbour.Block];
                 if (neighbourDefinition.IsTransparent)
@@ -40,11 +40,11 @@ namespace AppleCinnamon.Pipeline
 
             foreach (var flatIndex in chunk.PendingRightVoxels)
             {
-                var index = flatIndex.ToIndex();
+                var index = flatIndex.ToIndex(chunk.CurrentHeight);
 
                 var neighbour = rightChunk.CurrentHeight <= index.Y
                     ? Voxel.Air
-                    : rightChunk.Voxels[Help.GetFlatIndex(0, index.Y, index.Z)];
+                    : rightChunk.Voxels[Help.GetFlatIndex(0, index.Y, index.Z, rightChunk.CurrentHeight)];
 
                 var neighbourDefinition = VoxelDefinition.DefinitionByType[neighbour.Block];
                 if (neighbourDefinition.IsTransparent)
@@ -57,11 +57,11 @@ namespace AppleCinnamon.Pipeline
 
             foreach (var flatIndex in chunk.PendingFrontVoxels)
             {
-                var index = flatIndex.ToIndex();
+                var index = flatIndex.ToIndex(chunk.CurrentHeight);
 
                 var neighbour = frontChunk.CurrentHeight <= index.Y
                     ? Voxel.Air
-                    : frontChunk.Voxels[Help.GetFlatIndex(index.X, index.Y, Chunk.SizeXy - 1)];
+                    : frontChunk.Voxels[Help.GetFlatIndex(index.X, index.Y, Chunk.SizeXy - 1, frontChunk.CurrentHeight)];
 
                 var neighbourDefinition = VoxelDefinition.DefinitionByType[neighbour.Block];
                 if (neighbourDefinition.IsTransparent)
@@ -74,11 +74,11 @@ namespace AppleCinnamon.Pipeline
 
             foreach (var flatIndex in chunk.PendingBackVoxels)
             {
-                var index = flatIndex.ToIndex();
+                var index = flatIndex.ToIndex(chunk.CurrentHeight);
 
                 var neighbour = backChunk.CurrentHeight <= index.Y
                     ? Voxel.Air
-                    : backChunk.Voxels[Help.GetFlatIndex(index.X, index.Y, 0)];
+                    : backChunk.Voxels[Help.GetFlatIndex(index.X, index.Y, 0, backChunk.CurrentHeight)];
 
                 var neighbourDefinition = VoxelDefinition.DefinitionByType[neighbour.Block];
                 if (neighbourDefinition.IsTransparent)

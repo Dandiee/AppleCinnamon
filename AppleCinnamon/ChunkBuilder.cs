@@ -34,7 +34,7 @@ namespace AppleCinnamon
             foreach (var visibilityFlag in chunk.VisibilityFlags)
             {
                 var flatIndex = visibilityFlag.Key;
-                var index = flatIndex.ToIndex();
+                var index = flatIndex.ToIndex(chunk.CurrentHeight);
 
                 var voxel = chunk.Voxels[flatIndex];
                 var definition = VoxelDefinition.DefinitionByType[voxel.Block];
@@ -74,7 +74,7 @@ namespace AppleCinnamon
             for (var n = 0; n < chunk.TopMostWaterVoxels.Count; n++)
             {
                 var flatIndex = chunk.TopMostWaterVoxels[n];
-                var index = flatIndex.ToIndex();
+                var index = flatIndex.ToIndex(chunk.CurrentHeight);
 
                 var vertexOffset = n * 4;
                 var positionOffset = new Vector3(index.X, index.Y - 0.1f, index.Z);

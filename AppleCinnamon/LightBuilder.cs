@@ -76,7 +76,7 @@ namespace AppleCinnamon
         {
             var brightestNeighbour = GetBrightestNeighbour(chunk, relativeIndex);
 
-            chunk.Voxels[relativeIndex.ToFlatIndex()] =
+            chunk.Voxels[relativeIndex.ToFlatIndex(chunk.CurrentHeight)] =
                 new Voxel(newVoxel.Block,  Math.Max(brightestNeighbour.Item3, newDefinition.LightEmitting));
 
             PropagateLightness(chunk, relativeIndex);
@@ -85,7 +85,7 @@ namespace AppleCinnamon
         private void RemoveEmitter(Chunk chunk, Int3 relativeIndex, Voxel oldVoxel)
         {
             var upperVoxelIndex = new Int3(relativeIndex.X, relativeIndex.Y + 1, relativeIndex.Z);
-            var upperVoxel = chunk.Voxels[upperVoxelIndex.ToFlatIndex()];
+            var upperVoxel = chunk.Voxels[upperVoxelIndex.ToFlatIndex(chunk.CurrentHeight)];
             var lightSources = new List<Tuple<Chunk, Int3>>();
             PropagateDarkness(chunk, relativeIndex, lightSources, oldVoxel.Lightness);
 
@@ -109,7 +109,7 @@ namespace AppleCinnamon
             var upperIndex = new Int3(relativeIndex.X, relativeIndex.Y + 1, relativeIndex.Z);
             var upperVoxel = chunk.CurrentHeight <= relativeIndex.Y + 1
                              ? Voxel.Air
-                             : chunk.Voxels[upperIndex.ToFlatIndex()];
+                             : chunk.Voxels[upperIndex.ToFlatIndex(chunk.CurrentHeight)];
 
             // identify light sources
             var lightSources = new List<Tuple<Chunk, Int3>>();
@@ -169,11 +169,11 @@ namespace AppleCinnamon
 
             for (var j = relativeIndex.Y - 1; j > 0; j--)
             {
-                var voxel = chunk.Voxels[Help.GetFlatIndex(relativeIndex.X, j, relativeIndex.Z)];
+                var voxel = chunk.Voxels[Help.GetFlatIndex(relativeIndex.X, j, relativeIndex.Z, chunk.CurrentHeight)];
                 if (voxel.GetDefinition().IsTransparent)
                 {
                     var resetVoxelIndex = new Int3(relativeIndex.X, j, relativeIndex.Z);
-                    chunk.Voxels[resetVoxelIndex.ToFlatIndex()] = new Voxel(voxel.Block, toLightness);
+                    chunk.Voxels[resetVoxelIndex.ToFlatIndex(chunk.CurrentHeight)] = new Voxel(voxel.Block, toLightness);
                     sunlightSources.Add(resetVoxelIndex);
                 }
                 else break;
@@ -205,7 +205,7 @@ namespace AppleCinnamon
                         && voxel.Lightness > 0)
                     {
                         var newChunk = sourceChunk.Neighbours[address.ChunkIndex];
-                        newChunk.Voxels[address.FlatIndex] = new Voxel(voxel.Block, 0);
+                        newChunk.Voxels[address.RelativeVoxelIndex.ToFlatIndex(newChunk.CurrentHeight)] = new Voxel(voxel.Block, 0);
 
                         PropagateDarkness(newChunk, address.RelativeVoxelIndex, lightSources, voxel.Lightness);
                     }
@@ -217,7 +217,7 @@ namespace AppleCinnamon
         {
             var sourceVoxel = sourceChunk.CurrentHeight <= sourceIndex.Y
                               ? Voxel.Air
-                              : sourceChunk.Voxels[sourceIndex.ToFlatIndex()];
+                              : sourceChunk.Voxels[sourceIndex.ToFlatIndex(sourceChunk.CurrentHeight)];
 
             foreach (var direction in Directions)
             {
@@ -232,7 +232,7 @@ namespace AppleCinnamon
                     && targetVoxel.Lightness < sourceVoxel.Lightness - 1)
                 {
                     var targetChunk = sourceChunk.Neighbours[targetAddress.ChunkIndex];
-                    targetChunk.Voxels[targetAddress.FlatIndex] =
+                    targetChunk.Voxels[targetAddress.RelativeVoxelIndex.ToFlatIndex(targetChunk.CurrentHeight)] =
                         new Voxel(targetVoxel.Block, (byte) (sourceVoxel.Lightness - 1));
 
                     PropagateLightness(targetChunk, targetAddress.RelativeVoxelIndex);

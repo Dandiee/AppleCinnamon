@@ -28,7 +28,7 @@ namespace AppleCinnamon.Pipeline
                     for (var j = chunk.CurrentHeight - 1; j > 0; j--)
                     {
                         var index = new Int3(i, j, k);
-                        var flatIndex = index.ToFlatIndex();
+                        var flatIndex = index.ToFlatIndex(chunk.CurrentHeight);
 
                         var voxel = chunk.Voxels[flatIndex];
 

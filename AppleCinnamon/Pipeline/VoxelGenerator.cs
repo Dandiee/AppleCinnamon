@@ -45,16 +45,29 @@ namespace AppleCinnamon.Pipeline
                     {
                         if (j >= currentHeight)
                         {
+
                             var requiredSlice = (j / Chunk.SliceHeight) + 1;
                             var newHeight = requiredSlice * Chunk.SliceHeight;
 
                             var newArray = new Voxel[Chunk.SizeXy * newHeight * Chunk.SizeXy];
-                            Array.Copy(voxels, newArray, voxels.Length);
+                            //Array.Copy(voxels, newArray, voxels.Length);
+                            for (var x = 0; x < Chunk.SizeXy; x++)
+                            {
+                                for (var y = 0; y < currentHeight; y++)
+                                {
+                                    for (var z = 0; z < Chunk.SizeXy; z++)
+                                    {
+                                        var oldFlatIndex = Help.GetFlatIndex(x, y, z, currentHeight);
+                                        var newFlatIndex = Help.GetFlatIndex(x, y, z, newHeight);
+                                        newArray[newFlatIndex] = voxels[oldFlatIndex];
+                                    }
+                                }
+                            }
                             voxels = newArray;
                             currentHeight = newHeight;
                         }
 
-                        voxels[Help.GetFlatIndex(i, j, k)] = new Voxel(VoxelDefinition.Stone.Type, 0);
+                        voxels[Help.GetFlatIndex(i, j, k, currentHeight)] = new Voxel(VoxelDefinition.Stone.Type, 0);
                     }
 
                     if (height < 100) // water level
@@ -67,17 +80,29 @@ namespace AppleCinnamon.Pipeline
                                 var newHeight = requiredSlice * Chunk.SliceHeight;
 
                                 var newArray = new Voxel[Chunk.SizeXy * newHeight * Chunk.SizeXy];
-                                Array.Copy(voxels, newArray, voxels.Length);
+                                //Array.Copy(voxels, newArray, voxels.Length);
+                                for (var x = 0; x < Chunk.SizeXy; x++)
+                                {
+                                    for (var y = 0; y < currentHeight; y++)
+                                    {
+                                        for (var z = 0; z < Chunk.SizeXy; z++)
+                                        {
+                                            var oldFlatIndex = Help.GetFlatIndex(x, y, z, currentHeight);
+                                            var newFlatIndex = Help.GetFlatIndex(x, y, z, newHeight);
+                                            newArray[newFlatIndex] = voxels[oldFlatIndex];
+                                        }
+                                    }
+                                }
                                 voxels = newArray;
                                 currentHeight = newHeight;
                             }
 
-                            voxels[Help.GetFlatIndex(i, j, k)] =
+                            voxels[Help.GetFlatIndex(i, j, k, currentHeight)] =
                                 new Voxel(VoxelDefinition.Water.Type, 0);
                         }
                     }
 
-                        voxels[Help.GetFlatIndex(i, height - 2, k)] =
+                        voxels[Help.GetFlatIndex(i, height - 2, k, currentHeight)] =
                             new Voxel(
                                 height > (128 + _random.Next(5))
                                     ? VoxelDefinition.Snow.Type

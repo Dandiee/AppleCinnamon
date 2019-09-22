@@ -81,7 +81,7 @@ namespace AppleCinnamon.System
 
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Int3 ToIndex(this int index)
+        public static Int3 ToIndex1(this int index)
         {
             var slice = index / Chunk.SliceArea;
             var sliceIndex = index - slice * Chunk.SliceArea;
@@ -94,20 +94,33 @@ namespace AppleCinnamon.System
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int ToFlatIndex(this Int3 index)
+        public static int ToFlatIndex1(this Int3 index)
         {
             var slice = index.Y / Chunk.SliceHeight;
             return slice * Chunk.SliceArea + index.X + Chunk.SizeXy * (index.Y - slice * Chunk.SliceHeight + Chunk.SliceHeight * index.Z);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int GetFlatIndex(int i, int j, int k)
+        public static int GetFlatIndex1(int i, int j, int k)
         {
             return j / Chunk.SliceHeight * Chunk.SliceArea + i + Chunk.SizeXy * (j - j / Chunk.SliceHeight * Chunk.SliceHeight + k * Chunk.SliceHeight);
         }
 
-        public static Vector<int> SliceAreaVector = new Vector<int>(Chunk.SliceArea);
-        public static Vector<int> SizeXyVector = new Vector<int>(Chunk.SizeXy);
-        public static Vector<int> SliceHeightVector = new Vector<int>(Chunk.SliceHeight);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Int3 ToIndex(this int index, int height)
+        {
+            var k = index / (Chunk.SizeXy * height);
+            var j = (index - k * Chunk.SizeXy * height) / Chunk.SizeXy;
+            var i = index - (k * Chunk.SizeXy * height + j * Chunk.SizeXy);
+
+            return new Int3(i, j, k);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int ToFlatIndex(this Int3 index, int height) => index.X + Chunk.SizeXy * (index.Y + height * index.Z);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int GetFlatIndex(int i, int j, int k, int height) => i + Chunk.SizeXy * (j + height * k);
     }
 }

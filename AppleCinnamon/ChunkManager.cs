@@ -33,7 +33,7 @@ namespace AppleCinnamon
 
     public sealed class ChunkManager : IChunkManager
     {
-        public const int ViewDistance = 8;
+        public const int ViewDistance = 4;
         public static readonly int InitialDegreeOfParallelism = 1;
 
         // debug fields
@@ -134,7 +134,7 @@ namespace AppleCinnamon
 
             return chunk.CurrentHeight <= address.Value.RelativeVoxelIndex.Y
                 ? Voxel.Air
-                : chunk.Voxels[address.Value.RelativeVoxelIndex.ToFlatIndex()];
+                : chunk.Voxels[address.Value.RelativeVoxelIndex.ToFlatIndex(chunk.CurrentHeight)];
         }
 
         public bool TryGetChunk(Int2 chunkIndex, out Chunk chunk)
