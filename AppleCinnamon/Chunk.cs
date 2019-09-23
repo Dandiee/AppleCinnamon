@@ -1,7 +1,9 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using AppleCinnamon.System;
 using SharpDX;
 using SharpDX.DXGI;
@@ -12,8 +14,8 @@ namespace AppleCinnamon
 {
     public class Chunk
     {
-        public const int SliceHeight = 32;
-        public const int SizeXy = 64;
+        public const int SliceHeight = 16;
+        public const int SizeXy = 16;
         public const int SliceArea = SizeXy * SizeXy * SliceHeight;
 
         public int CurrentHeight;
@@ -44,7 +46,11 @@ namespace AppleCinnamon
         public BoundingBox BoundingBox;
         public Vector3 ChunkIndexVector { get; }
 
-        public Voxel GetVoxel(int flatIndex) => Voxels[flatIndex];
+        // and still not as fast as direct array addressing :'(
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe Voxel GetVoxel(IntPtr arrayPtr, int i, int j, int k, int height) =>
+            *(Voxel*) IntPtr.Add(arrayPtr, (i + SizeXy * (j + height * k)) * 2);
+      
 
         public void ExtendUpward(int heightToFit)
         {
