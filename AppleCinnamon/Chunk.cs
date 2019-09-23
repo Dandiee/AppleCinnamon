@@ -14,8 +14,8 @@ namespace AppleCinnamon
 {
     public class Chunk
     {
-        public const int SliceHeight = 16;
-        public const int SizeXy = 16;
+        public const int SliceHeight = 32;
+        public const int SizeXy = 32;
         public const int SliceArea = SizeXy * SizeXy * SliceHeight;
 
         public int CurrentHeight;
@@ -278,6 +278,11 @@ namespace AppleCinnamon
 
         public void DrawSmarter(Device device, Vector3 currentChunkIndexVector)
         {
+            if (ChunkBuffer == null)
+            {
+                return;
+            }
+
             if (!Game.IsBackFaceCullingEnabled)
             {
                 device.ImmediateContext.InputAssembler.SetVertexBuffers(0, ChunkBuffer.Binding);

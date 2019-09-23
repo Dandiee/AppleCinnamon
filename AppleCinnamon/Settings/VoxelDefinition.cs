@@ -34,7 +34,6 @@ namespace AppleCinnamon.Settings
         public readonly bool IsUnitSized;
 
 
-        
 
         public static readonly VoxelDefinition[] DefinitionByType = new VoxelDefinition[255];
 

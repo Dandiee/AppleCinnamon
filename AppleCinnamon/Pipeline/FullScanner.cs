@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Runtime.CompilerServices;
 using AppleCinnamon.Settings;
 using AppleCinnamon.System;
 
@@ -13,175 +12,173 @@ namespace AppleCinnamon.Pipeline
 
     public sealed class FullScanner : IFullScanner
     {
-        public unsafe DataflowContext<Chunk> Process(DataflowContext<Chunk> context)
+        public DataflowContext<Chunk> Process(DataflowContext<Chunk> context)
         {
             var sw = Stopwatch.StartNew();
 
             var chunk = context.Payload;
             var height = chunk.CurrentHeight;
 
-            var vv = chunk.Voxels;
+            var vox = Voxel.Air;
+            var ind = 0;
+            var vis = false;
+            var tra = true;
 
-            fixed (Voxel* voxelsPointer = &vv[0])
+            var prevIInd = 0;
+            var prevIVox = Voxel.Air;
+            var prevIVis = false;
+            var prevITra = true;
+
+            var prevJInd = 0;
+            var prevJVox = Voxel.Air;
+            var prevJVis = false;
+            var prevJTra = true;
+
+            var prevKInd = 0;
+            var prevKVox = Voxel.Air;
+            var prevKVis = false;
+            var prevKTra = true;
+
+            for (var i = 0; i < Chunk.SizeXy; i++)
             {
-                var pointer = (IntPtr) voxelsPointer;
-
-                for (var i = 0; i != Chunk.SizeXy; i++)
+                for (var k = 0; k < Chunk.SizeXy; k++)
                 {
-                    for (var j = 0; j != height; j++)
+                    for (var j = 0; j < height; j++)
                     {
-                        for (var k = 0; k != Chunk.SizeXy; k++)
+                        if (i > 0)
                         {
-                            var flatIndex = Help.GetFlatIndex(i, j, k, chunk.CurrentHeight);
-                            var voxel =  chunk.Voxels[flatIndex];
-                            //var voxel = *(Voxel*)IntPtr.Add(pointer, flatIndex * 2);
+                            prevIInd = Help.GetFlatIndex(i - 1, j, k, height);
+                            prevIVox = chunk.Voxels[prevIInd];
+                            prevIVis = prevIVox.Block > 0 && prevIVox.Block != VoxelDefinition.Water.Type;
+                            prevITra = prevIVox.Block < 16;
+                        }
 
+                        if (j > 0)
+                        {
+                            prevJInd = ind;
+                            prevJVis = vis;
+                            prevJTra = tra;
+                        }
 
-                            //var definition = VoxelDefinition.DefinitionByType[voxel.Block];
+                        if (k > 0)
+                        {
+                            prevKInd = Help.GetFlatIndex(i, j, k - 1, height);
+                            prevKVox = chunk.Voxels[prevKInd];
+                            prevKVis = prevKVox.Block > 0 && prevKVox.Block != VoxelDefinition.Water.Type;
+                            prevKTra = prevKVox.Block < 16; // && prevKVox.Lightness == 0;
+                        }
 
+                        ind = Help.GetFlatIndex(i, j, k, height);
+                        vox = chunk.Voxels[ind];
+                        vis = vox.Block > 0 && vox.Block != VoxelDefinition.Water.Type;
+                        tra = vox.Block < 16; // && vox.Lightness == 0;
 
-                            var hasVisibilityFlag = voxel.Block > 0 && //!definition.IsSprite &&
-                                                    voxel.Block != VoxelDefinition.Water.Type;
-
-                            var isTransparent = /*definition.IsTransparent*/ voxel.Block < 16 && voxel.Lightness == 0;
-
-                            if (!hasVisibilityFlag && !isTransparent)
+                        // X Axis
+                        if (i > 0)
+                        {
+                            if (vis && prevITra) // there's always previous
                             {
-                                continue;
+                                chunk.VisibilityFlags.TryGetValue(ind, out var flags);
+                                chunk.VisibilityFlags[ind] = (byte)(flags + 4);
+                                chunk.VoxelCount.Left++;
+                            }
+                            if (prevIVis && tra)
+                            {
+                                chunk.VisibilityFlags.TryGetValue(prevIInd, out var flags);
+                                chunk.VisibilityFlags[prevIInd] = (byte)(flags + 8);
+                                chunk.VoxelCount.Right++;
+                            }
+                            else if (i == Chunk.SizeXy - 1 && vis) chunk.PendingRightVoxels.Add(ind);
+
+
+                            //// light
+                            //if (prevITra && tra && Math.Abs(prevIVox.Lightness - vox.Lightness) > 1)
+                            //{
+                            //    if (prevIVox.Lightness < vox.Lightness)
+                            //    {
+                            //        chunk.Voxels[prevIInd] = new Voxel(prevIVox.Block, (byte)(vox.Lightness - 1));
+                            //        chunk.LightPropagationVoxels.Add(prevIInd);
+                            //    }
+                            //    else
+                            //    {
+                            //        chunk.Voxels[ind] = new Voxel(vox.Block, (byte)(prevIVox.Lightness - 1));
+                            //        chunk.LightPropagationVoxels.Add(ind);
+                            //    }
+                            //}
+                        }
+                        else if (vis) chunk.PendingLeftVoxels.Add(ind);
+
+                        // Y Axis
+                        if (j > 0)
+                        {
+                            if (vis && prevJTra)
+                            {
+                                chunk.VisibilityFlags.TryGetValue(ind, out var flags);
+                                chunk.VisibilityFlags[ind] = (byte)(flags + 2);
+                                chunk.VoxelCount.Bottom++;
                             }
 
-                            byte visibilityFlag = 0;
-                            var voxelLight = voxel.Lightness;
-
-                            if (j < chunk.CurrentHeight - 1) // top
+                            if (prevJVis && tra)
                             {
-                                var neighbor = chunk.Voxels[Help.GetFlatIndex(i, j + 1, k, chunk.CurrentHeight)];
-                                //var neighbor = Chunk.GetVoxel(pointer, i, j + 1, k, height);
-
-                                if (hasVisibilityFlag && neighbor.Block < 16)
-                                {
-                                    visibilityFlag += 1;
-                                    chunk.VoxelCount.Top++;
-                                }
-
-                                if (isTransparent && voxelLight < neighbor.Lightness - 1)
-                                {
-                                    voxelLight = (byte) (neighbor.Lightness - 1);
-                                }
-                            }
-                            else if (hasVisibilityFlag)
-                            {
-                                visibilityFlag += 1;
+                                chunk.VisibilityFlags.TryGetValue(prevJInd, out var flags);
+                                chunk.VisibilityFlags[prevJInd] = (byte)(flags + 1);
                                 chunk.VoxelCount.Top++;
                             }
 
-                            if (j > 0) // bottom
-                            {
-                                var neighbor = chunk.Voxels[Help.GetFlatIndex(i, j - 1, k, chunk.CurrentHeight)];
-                                //var neighbor = Chunk.GetVoxel(pointer, i, j - 1, k, height);
-
-                                if (hasVisibilityFlag && neighbor.Block < 16)
-                                {
-                                    visibilityFlag += 2;
-                                    chunk.VoxelCount.Bottom++;
-                                }
-                            }
-
-                            if (flatIndex == 148480)
-                            {
-
-                            }
-
-                            if (i > 0) //left
-                            {
-                                var neighbor = chunk.Voxels[Help.GetFlatIndex(i - 1, j, k, chunk.CurrentHeight)];
-                                //var neighbor = Chunk.GetVoxel(pointer, i - 1, j, k, height);
-
-                                if (hasVisibilityFlag && neighbor.Block < 16)
-                                {
-                                    visibilityFlag += 4;
-                                    chunk.VoxelCount.Left++;
-                                }
-
-                                if (isTransparent && voxelLight < neighbor.Lightness - 1)
-                                {
-                                    voxelLight = (byte) (neighbor.Lightness - 1);
-                                }
-                            }
-                            else if (hasVisibilityFlag) chunk.PendingLeftVoxels.Add(flatIndex);
-
-
-                            if (i < Chunk.SizeXy - 1) // right
-                            {
-                                var neighbor = chunk.Voxels[Help.GetFlatIndex(i + 1, j, k, chunk.CurrentHeight)];
-                                //var neighbor = Chunk.GetVoxel(pointer, i + 1, j, k, height);
-
-                                if (hasVisibilityFlag && neighbor.Block < 16)
-                                {
-                                    visibilityFlag += 8;
-                                    chunk.VoxelCount.Right++;
-                                }
-
-                                if (isTransparent && voxelLight < neighbor.Lightness - 1)
-                                {
-                                    voxelLight = (byte) (neighbor.Lightness - 1);
-                                }
-                            }
-                            else if (hasVisibilityFlag) chunk.PendingRightVoxels.Add(flatIndex);
-
-                            if (k > 0) // front
-                            {
-                                var neighbor = chunk.Voxels[Help.GetFlatIndex(i, j, k - 1, chunk.CurrentHeight)];
-                                //var neighbor = Chunk.GetVoxel(pointer, i, j, k - 1, height);
-
-                                if (hasVisibilityFlag && neighbor.Block < 16)
-                                {
-                                    visibilityFlag += 16;
-                                    chunk.VoxelCount.Front++;
-                                }
-
-                                if (isTransparent && voxelLight < neighbor.Lightness - 1)
-                                {
-                                    voxelLight = (byte) (neighbor.Lightness - 1);
-                                }
-                            }
-                            else if (hasVisibilityFlag) chunk.PendingFrontVoxels.Add(flatIndex);
-
-                            if (k < Chunk.SizeXy - 1) // back
-                            {
-                                var neighbor = chunk.Voxels[Help.GetFlatIndex(i, j, k + 1, chunk.CurrentHeight)];
-                                //var neighbor = Chunk.GetVoxel(pointer, i, j, k + 1, height);
-
-                                if (hasVisibilityFlag && neighbor.Block < 16)
-                                {
-                                    visibilityFlag += 32;
-                                    chunk.VoxelCount.Back++;
-                                }
-
-                                if (isTransparent && voxelLight < neighbor.Lightness - 1)
-                                {
-                                    voxelLight = (byte) (neighbor.Lightness - 1);
-                                }
-                            }
-                            else if (hasVisibilityFlag) chunk.PendingBackVoxels.Add(flatIndex);
-
-
-                            if (visibilityFlag > 0)
-                            {
-                                chunk.VisibilityFlags[flatIndex] = visibilityFlag;
-                            }
-
-                            if (voxel.Lightness != voxelLight)
-                            {
-
-                                chunk.Voxels[flatIndex] = new Voxel(voxel.Block, voxelLight);
-                                chunk.LightPropagationVoxels.Add(flatIndex);
-                            }
+                            //// light
+                            //if (prevJTra && tra && Math.Abs(prevJVox.Lightness - vox.Lightness) > 1)
+                            //{
+                            //    if (prevJVox.Lightness < vox.Lightness)
+                            //    {
+                            //        chunk.Voxels[prevJInd] = new Voxel(prevJVox.Block, (byte)(vox.Lightness - 1));
+                            //        chunk.LightPropagationVoxels.Add(prevJInd);
+                            //    }
+                            //    else
+                            //    {
+                            //        chunk.Voxels[ind] = new Voxel(vox.Block, (byte)(prevJVox.Lightness - 1));
+                            //        chunk.LightPropagationVoxels.Add(ind);
+                            //    }
+                            //}
                         }
+
+                        // Z Axis
+                        if (k > 0)
+                        {
+                            if (vis && prevKTra)
+                            {
+                                chunk.VisibilityFlags.TryGetValue(ind, out var flags);
+                                chunk.VisibilityFlags[ind] = (byte)(flags + 16);
+                                chunk.VoxelCount.Front++;
+                            }
+
+                            if (prevKVis && tra)
+                            {
+                                chunk.VisibilityFlags.TryGetValue(prevKInd, out var flags);
+                                chunk.VisibilityFlags[prevKInd] = (byte)(flags + 32);
+                                chunk.VoxelCount.Back++;
+                            }
+                            else if (k == Chunk.SizeXy - 1 && vis) chunk.PendingBackVoxels.Add(ind);
+
+
+                            //// light
+                            //if (prevKTra && tra && Math.Abs(prevKVox.Lightness - vox.Lightness) > 1)
+                            //{
+                            //    if (prevKVox.Lightness < vox.Lightness)
+                            //    {
+                            //        chunk.Voxels[prevKInd] = new Voxel(prevKVox.Block, (byte)(vox.Lightness - 1));
+                            //        chunk.LightPropagationVoxels.Add(prevKInd);
+                            //    }
+                            //    else
+                            //    {
+                            //        chunk.Voxels[ind] = new Voxel(vox.Block, (byte)(prevKVox.Lightness - 1));
+                            //        chunk.LightPropagationVoxels.Add(ind);
+                            //    }
+                            //}
+                        }
+                        else if (vis) chunk.PendingFrontVoxels.Add(ind);
                     }
                 }
             }
-
 
             sw.Stop();
 

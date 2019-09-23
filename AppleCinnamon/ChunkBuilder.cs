@@ -23,9 +23,16 @@ namespace AppleCinnamon
 
         public void BuildChunk(Device device, Chunk chunk)
         {
+
+
             var faces = GetChunkFaces(chunk);
             var visibleFacesCount = chunk.VoxelCount.Top + chunk.VoxelCount.Bottom + chunk.VoxelCount.Left +
                                     chunk.VoxelCount.Right + chunk.VoxelCount.Front + chunk.VoxelCount.Back;
+
+            if (visibleFacesCount == 0)
+            {
+                return;
+            }
 
             var vertices = new VertexSolidBlock[visibleFacesCount * 4];
             var indexes = new ushort[visibleFacesCount * 6];
