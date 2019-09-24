@@ -76,14 +76,18 @@ namespace AppleCinnamon
 
 
         //[MethodImpl(MethodImplOptions.NoInlining| MethodImplOptions.NoOptimization)]
-        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.NoOptimization)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public unsafe Voxel GetVoxel(int flatIndex) => *((Voxel*)Handle.Pointer + flatIndex);
 
         //[MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
-        [MethodImpl(MethodImplOptions.AggressiveInlining| MethodImplOptions.NoOptimization)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public unsafe void SetVoxel(int flatIndex, Voxel voxel) => *((Voxel*)Handle.Pointer + flatIndex) = voxel;
 
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public unsafe Voxel GetVoxelNoInline(int flatIndex) => *((Voxel*)Handle.Pointer + flatIndex);
 
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public unsafe void SetVoxelNoInline(int flatIndex, Voxel voxel) => *((Voxel*)Handle.Pointer + flatIndex) = voxel;
 
 
 

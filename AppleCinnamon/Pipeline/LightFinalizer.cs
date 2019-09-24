@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using AppleCinnamon.Settings;
 using AppleCinnamon.System;
 using SharpDX;
@@ -84,7 +85,7 @@ namespace AppleCinnamon.Pipeline
 
                     var sourceIndex = Help.GetFlatIndex(sourceIndexX, j, sourceIndexY, sourceChunk.CurrentHeight);
                     //var sourceVoxel = sourceChunk.Voxels[sourceIndex];
-                    var sourceVoxel = sourceChunk.GetVoxel(sourceIndex);
+                    var sourceVoxel = sourceChunk.GetVoxelNoInline(sourceIndex);
 
                     var sourceDefinition = VoxelDefinition.DefinitionByType[sourceVoxel.Block];
 
@@ -98,7 +99,7 @@ namespace AppleCinnamon.Pipeline
 
                     var targetIndex = Help.GetFlatIndex(targetIndexX, j, targetIndexY, targetChunk.CurrentHeight);
                     //var targetVoxel = targetChunk.Voxels[targetIndex];
-                    var targetVoxel = targetChunk.GetVoxel(targetIndex);
+                    var targetVoxel = targetChunk.GetVoxelNoInline(targetIndex);
 
 
                     var targetDefinition = VoxelDefinition.DefinitionByType[targetVoxel.Block];
@@ -114,13 +115,13 @@ namespace AppleCinnamon.Pipeline
                         if (lightDifference > 0) // target -> source
                         {
                             var newSourceVoxel = new Voxel(sourceVoxel.Block, (byte)(targetVoxel.Lightness - 1));
-                            sourceChunk.SetVoxel(sourceIndex, newSourceVoxel);
+                            sourceChunk.SetVoxelNoInline(sourceIndex, newSourceVoxel);
                             PropagateSunlight(sourceChunk, sourceIndexX, j, sourceIndexY, sourceDefinition, newSourceVoxel);
                         }
                         else // source -> target
                         {
                             var newTargetVoxel = new Voxel(targetVoxel.Block, (byte)(sourceVoxel.Lightness - 1));
-                            targetChunk.SetVoxel(targetIndex, newTargetVoxel);
+                            targetChunk.SetVoxelNoInline(targetIndex, newTargetVoxel);
                             PropagateSunlight(targetChunk, targetIndexX, j, targetIndexY, targetDefinition, newTargetVoxel);
                         }
                     }
@@ -143,14 +144,14 @@ namespace AppleCinnamon.Pipeline
                         neighbourIndexZ > 0 && neighbourIndexZ < chunk.CurrentHeight)
                     {
                         var neighbourIndex = Help.GetFlatIndex(neighbourIndexX, neighbourIndexY, neighbourIndexZ, chunk.CurrentHeight);
-                        var neighbourVoxel = chunk.GetVoxel(neighbourIndex);
+                        var neighbourVoxel = chunk.GetVoxelNoInline(neighbourIndex);
                         if (neighbourVoxel.Lightness < sourceVoxel.Lightness - 1)
                         {
                             var targetDefinition = VoxelDefinition.DefinitionByType[neighbourVoxel.Block];
                             if (targetDefinition.IsTransparent)
                             {
                                 var newTargetVoxel = new Voxel(neighbourVoxel.Block, (byte)(sourceVoxel.Lightness - 1));
-                                chunk.SetVoxel(neighbourIndex, newTargetVoxel);
+                                chunk.SetVoxelNoInline(neighbourIndex, newTargetVoxel);
 
                                 PropagateSunlight(chunk, neighbourIndexX, neighbourIndexY, neighbourIndexZ, targetDefinition, newTargetVoxel);
                             }
