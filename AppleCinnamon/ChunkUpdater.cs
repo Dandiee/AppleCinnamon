@@ -8,12 +8,7 @@ using SharpDX;
 
 namespace AppleCinnamon
 {
-    public interface IChunkUpdater
-    {
-        void SetVoxel(Int3 absoluteIndex, byte voxel);
-    }
-
-    public sealed class ChunkUpdater : IChunkUpdater
+    public sealed class ChunkUpdater
     {
         public static readonly Tuple<Int3, int>[] RemoveMapping =
         {
@@ -64,13 +59,13 @@ namespace AppleCinnamon
         private bool _isUpdateInProgress;
 
         private readonly Graphics _graphics;
-        private readonly IChunkManager _chunkManager;
-        private readonly IChunkBuilder _chunkBuilder;
-        private readonly ILightUpdater _lightUpdater;
+        private readonly ChunkManager _chunkManager;
+        private readonly ChunkBuilder _chunkBuilder;
+        private readonly LightUpdater _lightUpdater;
 
         public ChunkUpdater(
             Graphics graphics,
-            IChunkManager chunkManager)
+            ChunkManager chunkManager)
         {
             _graphics = graphics;
             _chunkManager = chunkManager;

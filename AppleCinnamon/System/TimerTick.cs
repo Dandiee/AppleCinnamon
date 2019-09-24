@@ -3,7 +3,7 @@ using System.Diagnostics;
 
 namespace AppleCinnamon.System
 {
-    public class TimerTick
+    public sealed class TimerTick
     {
         #region Fields
 

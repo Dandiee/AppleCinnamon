@@ -2,9 +2,9 @@
 using System.Linq;
 using SharpDX.Direct3D11;
 
-namespace AppleCinnamon
+namespace AppleCinnamon.Pipeline
 {
-    public class DataflowContext<TPayload> : DataflowContext
+    public sealed class DataflowContext<TPayload> : DataflowContext
     {
         
         public TPayload Payload { get; }

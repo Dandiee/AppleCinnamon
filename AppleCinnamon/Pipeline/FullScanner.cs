@@ -6,12 +6,7 @@ using AppleCinnamon.System;
 
 namespace AppleCinnamon.Pipeline
 {
-    public interface IFullScanner
-    {
-        DataflowContext<Chunk> Process(DataflowContext<Chunk> context);
-    }
-
-    public sealed class FullScanner : IFullScanner
+    public sealed class FullScanner
     {
         public unsafe DataflowContext<Chunk> Process(DataflowContext<Chunk> context)
         {

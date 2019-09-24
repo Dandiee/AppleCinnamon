@@ -5,12 +5,7 @@ using AppleCinnamon.System;
 
 namespace AppleCinnamon.Pipeline
 {
-    public interface IChunkPool
-    {
-        IEnumerable<DataflowContext<Chunk>> Process(DataflowContext<Chunk> context);
-    }
-
-    public sealed class ChunkPool : IChunkPool
+    public sealed class ChunkPool
     {
         private readonly ConcurrentDictionary<Int2, Chunk> _chunks;
 

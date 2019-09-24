@@ -4,7 +4,7 @@ using SharpDX;
 
 namespace AppleCinnamon.Collision
 {
-    public class VoxelRayCollisionResult
+    public sealed class VoxelRayCollisionResult
     {
         public Int3 AbsoluteVoxelIndex { get; }
         public Int3 Direction { get; }

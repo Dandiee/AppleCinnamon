@@ -29,7 +29,7 @@ namespace AppleCinnamon
         }
 
 
-        private string BuildLeftText(IChunkManager chunkManager, Camera camera)
+        private string BuildLeftText(ChunkManager chunkManager, Camera camera)
         {
             var targetInfo = camera.CurrentCursor == null
                 ? "No target"
@@ -66,7 +66,7 @@ namespace AppleCinnamon
                    $"Show chunk boxes [F3]: {(Game.ShowChunkBoundingBoxes ? "On" : "Off")}\r\n";
         }
 
-        private string BuildRightText(IChunkManager chunkManager, Game game)
+        private string BuildRightText(ChunkManager chunkManager, Game game)
         {
             return string.Join("\r\n", chunkManager.PipelinePerformance.Select(s => $"{s.Key}: {s.Value:N0} ms")) + "\r\n" + 
                    $"Total pipeline time: {chunkManager.PipelinePerformance.Values.Sum():N0} ms\r\n" + 
@@ -77,7 +77,7 @@ namespace AppleCinnamon
         }
 
         public void Draw(
-            IChunkManager chunkManager,
+            ChunkManager chunkManager,
             Camera camera,
             Game game)
         {

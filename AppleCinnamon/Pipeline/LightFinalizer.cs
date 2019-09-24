@@ -8,12 +8,7 @@ using SharpDX;
 
 namespace AppleCinnamon.Pipeline
 {
-    public interface ILightFinalizer
-    {
-        DataflowContext<Chunk> Finalize(DataflowContext<Chunk> context);
-    }
-
-    public sealed class LightFinalizer : ILightFinalizer
+    public sealed class LightFinalizer
     {
         private static readonly Int2[] Corners = { new Int2(-1, -1), new Int2(-1, +1), new Int2(+1, -1), new Int2(+1, +1) };
         private static readonly Int2[] Edges = { Int2.UniX, -Int2.UniX, Int2.UniY, -Int2.UniY };

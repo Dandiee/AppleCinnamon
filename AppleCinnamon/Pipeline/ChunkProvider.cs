@@ -4,15 +4,10 @@ using AppleCinnamon.System;
 
 namespace AppleCinnamon.Pipeline
 {
-    public interface IChunkProvider
-    {
-        DataflowContext<Chunk> GetChunk(DataflowContext<Int2> context);
-    }
-
-    public sealed class ChunkProvider : IChunkProvider
+    public sealed class ChunkProvider
     {
         private readonly ConcurrentDictionary<Int2, Chunk> _chunks;
-        private readonly IVoxelLoader _voxelLoader;
+        private readonly VoxelLoader _voxelLoader;
 
         public ChunkProvider(int seed)
         {

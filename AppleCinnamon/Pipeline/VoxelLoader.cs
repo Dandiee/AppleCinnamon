@@ -2,14 +2,9 @@
 
 namespace AppleCinnamon.Pipeline
 {
-    public interface IVoxelLoader
+    public sealed class VoxelLoader
     {
-        Voxel[] GetVoxels(Int2 chunkIndex);
-    }
-
-    public sealed class VoxelLoader : IVoxelLoader
-    {
-        private readonly IVoxelGenerator _voxelGenerator;
+        private readonly VoxelGenerator _voxelGenerator;
 
         public VoxelLoader(int seed)
         {

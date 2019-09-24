@@ -6,12 +6,7 @@ using SharpDX;
 
 namespace AppleCinnamon.Pipeline
 {
-    public interface ILocalLightPropagationService
-    {
-        DataflowContext<Chunk> InitializeLocalLight(DataflowContext<Chunk> context);
-    }
-
-    public sealed class LocalLocalLightPropagationService : ILocalLightPropagationService
+    public sealed class LocalLightPropagationService
     {
         public static readonly Int3[] Directions =
         {
@@ -36,7 +31,7 @@ namespace AppleCinnamon.Pipeline
 
             sw.Stop();
 
-            return new DataflowContext<Chunk>(context, context.Payload, sw.ElapsedMilliseconds, nameof(LocalLocalLightPropagationService));
+            return new DataflowContext<Chunk>(context, context.Payload, sw.ElapsedMilliseconds, nameof(LocalLightPropagationService));
         }
 
 

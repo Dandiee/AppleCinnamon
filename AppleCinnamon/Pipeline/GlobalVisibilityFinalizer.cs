@@ -4,12 +4,7 @@ using AppleCinnamon.System;
 
 namespace AppleCinnamon.Pipeline
 {
-    public interface IGlobalVisibilityFinalizer
-    {
-        DataflowContext<Chunk> Process(DataflowContext<Chunk> context);
-    }
-
-    public sealed class GlobalVisibilityFinalizer : IGlobalVisibilityFinalizer
+    public sealed class GlobalVisibilityFinalizer
     {
         public DataflowContext<Chunk> Process(DataflowContext<Chunk> context)
         {

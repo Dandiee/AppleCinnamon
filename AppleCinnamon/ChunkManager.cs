@@ -21,23 +21,7 @@ using Vector4 = SharpDX.Vector4;
 
 namespace AppleCinnamon
 {
-    public interface IChunkManager
-    {
-        int FinalizedChunks { get; }
-        int RenderedChunks { get; }
-        int QueuedChunks { get; }
-        int TotalVisibleFaces { get; }
-        int TotalVisibleVoxels { get; }
-        string QuickTest { get; }
-        TimeSpan BootTime { get; }
-        ConcurrentDictionary<string, long> PipelinePerformance { get; }
-
-        Voxel? GetVoxel(Int3 absoluteIndex);
-        bool TryGetChunk(Int2 chunkIndex, out Chunk chunk);
-    }
-
-
-    public sealed class ChunkManager : IChunkManager
+    public sealed class ChunkManager
     {
 
         //public const int ViewDistance = 8;
@@ -70,8 +54,8 @@ namespace AppleCinnamon
         public readonly ConcurrentDictionary<Int2, Chunk> Chunks;
         public readonly List<Chunk> QuickChunks;
         private readonly ConcurrentDictionary<Int2, object> _queuedChunks;
-        private readonly IChunkUpdater _chunkUpdater;
-        private readonly IPipelineProvider _pipelineProvider;
+        private readonly ChunkUpdater _chunkUpdater;
+        private readonly PipelineProvider _pipelineProvider;
         private int _currentWaterTextureOffsetIndex;
 
 

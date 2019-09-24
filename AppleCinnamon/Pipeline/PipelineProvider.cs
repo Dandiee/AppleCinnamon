@@ -4,29 +4,23 @@ using AppleCinnamon.System;
 
 namespace AppleCinnamon.Pipeline
 {
-    public interface IPipelineProvider
-    {
-        TransformBlock<DataflowContext<Int2>, DataflowContext<Chunk>> CreatePipeline(int maxDegreeOfParallelism,
-            Action<DataflowContext<Chunk>> successCallback);
-    }
-
-    public sealed class PipelineProvider : IPipelineProvider
+    public sealed class PipelineProvider
     {
 
-        private readonly IChunkDispatcher _chunkDispatcher;
-        private readonly ILocalLightPropagationService _localLightPropagationService;
-        private readonly IChunkProvider _chunkProvider;
-        private readonly ILightFinalizer _lightFinalizer;
-        private readonly IChunkPool _chunkPool;
-        private readonly IFullScanner _fullScanner;
-        private readonly IGlobalVisibilityFinalizer _globalVisibilityFinalizer;
-        private readonly ILocalSunlightInitializer _localSunlightInitializer;
+        private readonly ChunkDispatcher _chunkDispatcher;
+        private readonly LocalLightPropagationService _localLightPropagationService;
+        private readonly ChunkProvider _chunkProvider;
+        private readonly LightFinalizer _lightFinalizer;
+        private readonly ChunkPool _chunkPool;
+        private readonly FullScanner _fullScanner;
+        private readonly GlobalVisibilityFinalizer _globalVisibilityFinalizer;
+        private readonly LocalSunlightInitializer _localSunlightInitializer;
 
 
         public PipelineProvider()
         {
             _chunkDispatcher = new ChunkDispatcher();
-            _localLightPropagationService = new LocalLocalLightPropagationService();
+            _localLightPropagationService = new LocalLightPropagationService();
             _chunkProvider = new ChunkProvider(921207);
             _lightFinalizer = new LightFinalizer();
             _chunkPool = new ChunkPool();

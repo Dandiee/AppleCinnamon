@@ -89,7 +89,6 @@
     <Reference Include="System.Windows.Forms" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BoxDetails.cs" />
     <Compile Include="ChunkState.cs" />
     <Compile Include="ChunkUpdater.cs" />
     <Compile Include="Collision\VoxelRayCollisionResult.cs" />

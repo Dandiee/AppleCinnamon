@@ -4,9 +4,9 @@ using SharpDX.DXGI;
 using SharpDX.WIC;
 using Device = SharpDX.Direct3D11.Device;
 
-namespace AppleCinnamon
+namespace AppleCinnamon.System
 {
-    public class TextureLoader
+    public sealed class TextureLoader
     {
         public static BitmapSource LoadBitmap(ImagingFactory2 factory, string filename)
         {

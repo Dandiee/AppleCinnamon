@@ -11,13 +11,7 @@ using Device = SharpDX.Direct3D11.Device;
 
 namespace AppleCinnamon
 {
-    public interface IChunkBuilder
-    {
-        void BuildChunk(Device device, Chunk chunk);
-    }
-
-
-    public sealed class ChunkBuilder : IChunkBuilder
+    public sealed class ChunkBuilder
     {
         private static readonly Vector2[] WaterUvOffsets = { Vector2.Zero, new Vector2(1, 0), new Vector2(1, 1 / 32f), new Vector2(0, 1 / 32f) };
 
@@ -337,7 +331,7 @@ namespace AppleCinnamon
 
     }
 
-    public class ChunkBuffer
+    public sealed class ChunkBuffer
     {
         public readonly Buffer VertexBuffer;
         public readonly Buffer IndexBuffer;
@@ -362,7 +356,7 @@ namespace AppleCinnamon
         }
     }
 
-    public class ChunkFace
+    public sealed class ChunkFace
     {
         public readonly int Offset;
         public readonly int Count;

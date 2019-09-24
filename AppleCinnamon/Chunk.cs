@@ -13,7 +13,7 @@ using Help = AppleCinnamon.System.Help;
 
 namespace AppleCinnamon
 {
-    public class Chunk
+    public sealed class Chunk
     {
         public const int SliceHeight = 16;
         public const int SizeXy = 16;

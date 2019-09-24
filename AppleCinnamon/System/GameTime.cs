@@ -2,7 +2,7 @@
 
 namespace AppleCinnamon.System
 {
-    public class GameTime
+    public sealed class GameTime
     {
         #region Constructors and Destructors
 

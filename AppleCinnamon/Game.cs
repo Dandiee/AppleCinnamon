@@ -8,7 +8,7 @@ using Point = System.Drawing.Point;
 
 namespace AppleCinnamon
 {
-    public class Game
+    public sealed class Game
     {
         public static readonly Vector3 StartPosition = new Vector3(0, 256, 0);
 

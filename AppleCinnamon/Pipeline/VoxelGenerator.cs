@@ -5,12 +5,7 @@ using SimplexNoise;
 
 namespace AppleCinnamon.Pipeline
 {
-    public interface IVoxelGenerator
-    {
-        Voxel[] GenerateVoxels(Int2 chunkIndex);
-    }
-
-    public sealed class VoxelGenerator : IVoxelGenerator
+    public sealed class VoxelGenerator
     {
         private const int Offset = int.MaxValue / 2;
         private readonly Random _random;

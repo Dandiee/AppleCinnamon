@@ -5,12 +5,7 @@ using SharpDX;
 
 namespace AppleCinnamon.Pipeline
 {
-    public interface ILocalSunlightInitializer
-    {
-        DataflowContext<Chunk> Process(DataflowContext<Chunk> context);
-    }
-
-    public sealed class LocalSunlightInitializer : ILocalSunlightInitializer
+    public sealed class LocalSunlightInitializer
     {
         public DataflowContext<Chunk> Process(DataflowContext<Chunk> context)
         {

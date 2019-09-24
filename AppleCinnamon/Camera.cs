@@ -8,7 +8,7 @@ using SharpDX.DirectInput;
 
 namespace AppleCinnamon
 {
-    public class Camera
+    public sealed class Camera
     {
         private readonly Graphics _graphics;
         private static readonly TimeSpan BuildCooldown = TimeSpan.FromMilliseconds(100);

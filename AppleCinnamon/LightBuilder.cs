@@ -7,12 +7,7 @@ using SharpDX.DirectInput;
 
 namespace AppleCinnamon
 {
-    public interface ILightUpdater
-    {
-        void UpdateLighting(Chunk chunk, Int3 relativeIndex, Voxel oldVoxel, Voxel newVoxel);
-    }
-
-    public sealed class LightUpdater : ILightUpdater
+    public sealed class LightUpdater
     {
         public static readonly Tuple<Int3, Bool3>[] Directions =
         {

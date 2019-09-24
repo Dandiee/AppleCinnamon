@@ -2,7 +2,7 @@
 
 namespace AppleCinnamon
 {
-    public class FaceBuffer
+    public sealed class FaceBuffer
     {
         public int IndexCount { get; }
         public Buffer VertexBuffer { get; }

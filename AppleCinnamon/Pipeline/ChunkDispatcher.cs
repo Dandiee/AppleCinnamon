@@ -2,14 +2,9 @@
 
 namespace AppleCinnamon.Pipeline
 {
-    public interface IChunkDispatcher
+    public sealed class ChunkDispatcher
     {
-        DataflowContext<Chunk> Dispatch(DataflowContext<Chunk> context);
-    }
-
-    public sealed class ChunkDispatcher : IChunkDispatcher
-    {
-        private readonly IChunkBuilder _chunkBuilder;
+        private readonly ChunkBuilder _chunkBuilder;
 
         public ChunkDispatcher()
         {
