@@ -14,6 +14,9 @@ namespace AppleCinnamon
         private static readonly TimeSpan BuildCooldown = TimeSpan.FromMilliseconds(100);
         private DateTime _lastModification;
 
+        public Vector2 Position2d { get; private set; }
+        public Vector2 LookAt2d { get; private set; }
+
         public Double3 Position { get; set; }
         public Double3 LookAt { get; private set; }
         public Double3 Velocity { get; set; }
@@ -280,6 +283,8 @@ namespace AppleCinnamon
             WorldViewProjection = World * View * Projection;
             
             BoundingFrustum = new BoundingFrustum(View * Projection);
+            LookAt2d = new Vector2((float)LookAt.X, (float)LookAt.Z);
+            Position2d = new Vector2((float)Position.X, (float)Position.Z);
         }
     }
 }

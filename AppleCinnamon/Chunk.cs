@@ -45,6 +45,8 @@ namespace AppleCinnamon
         public ChunkState State { get; set; }
         public BoundingBox BoundingBox;
         public Vector3 ChunkIndexVector { get; }
+        public Vector3 Center { get; private set; }
+        public Vector2 Center2d { get; private set; }
 
         // and still not as fast as direct array addressing :'(
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -107,6 +109,8 @@ namespace AppleCinnamon
             var position = new Vector3(SizeXy / 2f - .5f + SizeXy * ChunkIndex.X, CurrentHeight / 2f - .5f, SizeXy / 2f - .5f + SizeXy * ChunkIndex.Y);
 
             BoundingBox = new BoundingBox(position - size, position + size);
+            Center = position;
+            Center2d = new Vector2(position.X, position.Z);
         }
 
         public Voxel GetLocalWithNeighbours(int i, int j, int k, out VoxelAddress address)

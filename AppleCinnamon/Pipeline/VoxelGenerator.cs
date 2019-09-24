@@ -30,7 +30,7 @@ namespace AppleCinnamon.Pipeline
             var chunkSizeXz = new Int2(Chunk.SizeXy, Chunk.SizeXy);
 
             var heatMap = new int[Chunk.SizeXy, Chunk.SizeXy];
-            var maxHeight = 0;
+            var maxHeight = 101;
             for (var i = 0; i < Chunk.SizeXy; i++)
             {
                 for (var k = 0; k < Chunk.SizeXy; k++)
@@ -66,7 +66,7 @@ namespace AppleCinnamon.Pipeline
 
                     if (height < 100) // water level
                     {
-                        for (var j = height; j < 64 - 1; j++)
+                        for (var j = height; j < 100 - 1; j++)
                         {
                             voxels[Help.GetFlatIndex(i, j, k, currentHeight)] =
                                 new Voxel(VoxelDefinition.Water.Type, 0);
