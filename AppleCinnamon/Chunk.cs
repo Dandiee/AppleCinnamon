@@ -16,7 +16,7 @@ namespace AppleCinnamon
     public sealed class Chunk
     {
         public const int SliceHeight = 16;
-        public const int SizeXy = 16;
+        public const int SizeXy = 32;
         public const int SliceArea = SizeXy * SizeXy * SliceHeight;
 
         public int CurrentHeight;
@@ -57,15 +57,39 @@ namespace AppleCinnamon
             *(Voxel*) IntPtr.Add(arrayPtr, (i + SizeXy * (j + height * k)) * 2);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe Voxel GetVoxelUnsafe(int flatIndex) => *((Voxel*) Handle.Pointer + flatIndex);
+        public static unsafe Voxel GetVoxel(IntPtr arrayPtr, int flatIndex) =>
+            *(Voxel*)IntPtr.Add(arrayPtr, flatIndex * 2);
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public unsafe Voxel GetVoxelUnsafe(int flatIndex) => *((Voxel*) Handle.Pointer + flatIndex);
+
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
         public static unsafe Voxel GetVoxelUnsafe(Chunk chunk, int flatIndex) => *((Voxel*)chunk.Handle.Pointer + flatIndex);
 
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Voxel GetVoxel(int flatIndex) => Voxels[flatIndex];
+        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // public Voxel GetVoxel(int flatIndex) => Voxels[flatIndex];
+        // 
+        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // public void SetVoxel(int flatIndex, Voxel voxel) => Voxels[flatIndex] = voxel;
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
+        [MethodImpl(MethodImplOptions.NoInlining| MethodImplOptions.NoOptimization)]
+        public unsafe Voxel GetVoxel(int flatIndex) => *((Voxel*)Handle.Pointer + flatIndex);
+
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
+        public unsafe void SetVoxel(int flatIndex, Voxel voxel) => *((Voxel*)Handle.Pointer + flatIndex) = voxel;
+
+
+
+
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public unsafe Voxel GetVoxelByAndras(int flatIndex) => *((Voxel*)Handle.Pointer + flatIndex);
+
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] 
         public static Voxel GetVoxel(Chunk chunk, int flatIndex) => chunk.Voxels[flatIndex];
 
 

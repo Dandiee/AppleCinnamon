@@ -25,7 +25,7 @@ namespace AppleCinnamon
     {
 
         //public const int ViewDistance = 8;
-        public static readonly int InitialDegreeOfParallelism = Environment.ProcessorCount / 2;
+        public static readonly int InitialDegreeOfParallelism = 1; //Environment.ProcessorCount / 2;
 
         // debug fields
         private int _queuedChunksCount;

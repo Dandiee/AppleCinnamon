@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Runtime;
 using System.Runtime.CompilerServices;
 using AppleCinnamon.Settings;
 using AppleCinnamon.System;
@@ -10,6 +11,11 @@ namespace AppleCinnamon.Pipeline
     {
         public unsafe DataflowContext<Chunk> Process(DataflowContext<Chunk> context)
         {
+            //if (GCSettings.LatencyMode == GCLatencyMode.NoGCRegion)
+            //{
+            //    GC.TryStartNoGCRegion(1024 * 1024 * 5);
+            //}
+
             var sw = Stopwatch.StartNew();
 
             var chunk = context.Payload;
@@ -28,7 +34,10 @@ namespace AppleCinnamon.Pipeline
                         for (var k = 0; k != Chunk.SizeXy; k++)
                         {
                             var flatIndex = Help.GetFlatIndex(i, j, k, chunk.CurrentHeight);
-                            var voxel =  chunk.Voxels[flatIndex];
+                            //var voxel =  chunk.Voxels[flatIndex];
+                            var voxel =  chunk.GetVoxel(flatIndex);
+
+
                             //var voxel = *(Voxel*)IntPtr.Add(pointer, flatIndex * 2);
 
 
@@ -50,7 +59,8 @@ namespace AppleCinnamon.Pipeline
 
                             if (j < chunk.CurrentHeight - 1) // top
                             {
-                                var neighbor = chunk.Voxels[Help.GetFlatIndex(i, j + 1, k, chunk.CurrentHeight)];
+                                //var neighbor = chunk.Voxels[Help.GetFlatIndex(i, j + 1, k, chunk.CurrentHeight)];
+                                var neighbor = chunk.GetVoxel(Help.GetFlatIndex(i, j + 1, k, chunk.CurrentHeight));
                                 //var neighbor = Chunk.GetVoxel(pointer, i, j + 1, k, height);
 
                                 if (hasVisibilityFlag && neighbor.Block < 16)
@@ -72,7 +82,8 @@ namespace AppleCinnamon.Pipeline
 
                             if (j > 0) // bottom
                             {
-                                var neighbor = chunk.Voxels[Help.GetFlatIndex(i, j - 1, k, chunk.CurrentHeight)];
+                                //var neighbor = chunk.Voxels[Help.GetFlatIndex(i, j - 1, k, chunk.CurrentHeight)];
+                                var neighbor = chunk.GetVoxel(Help.GetFlatIndex(i, j - 1, k, chunk.CurrentHeight));
                                 //var neighbor = Chunk.GetVoxel(pointer, i, j - 1, k, height);
 
                                 if (hasVisibilityFlag && neighbor.Block < 16)
@@ -89,7 +100,8 @@ namespace AppleCinnamon.Pipeline
 
                             if (i > 0) //left
                             {
-                                var neighbor = chunk.Voxels[Help.GetFlatIndex(i - 1, j, k, chunk.CurrentHeight)];
+                                //var neighbor = chunk.Voxels[Help.GetFlatIndex(i - 1, j, k, chunk.CurrentHeight)];
+                                var neighbor = chunk.GetVoxel(Help.GetFlatIndex(i - 1, j, k, chunk.CurrentHeight));
                                 //var neighbor = Chunk.GetVoxel(pointer, i - 1, j, k, height);
 
                                 if (hasVisibilityFlag && neighbor.Block < 16)
@@ -108,7 +120,8 @@ namespace AppleCinnamon.Pipeline
 
                             if (i < Chunk.SizeXy - 1) // right
                             {
-                                var neighbor = chunk.Voxels[Help.GetFlatIndex(i + 1, j, k, chunk.CurrentHeight)];
+                                //var neighbor = chunk.Voxels[Help.GetFlatIndex(i + 1, j, k, chunk.CurrentHeight)];
+                                var neighbor = chunk.GetVoxel(Help.GetFlatIndex(i + 1, j, k, chunk.CurrentHeight));
                                 //var neighbor = Chunk.GetVoxel(pointer, i + 1, j, k, height);
 
                                 if (hasVisibilityFlag && neighbor.Block < 16)
@@ -126,7 +139,8 @@ namespace AppleCinnamon.Pipeline
 
                             if (k > 0) // front
                             {
-                                var neighbor = chunk.Voxels[Help.GetFlatIndex(i, j, k - 1, chunk.CurrentHeight)];
+                                //var neighbor = chunk.Voxels[Help.GetFlatIndex(i, j, k - 1, chunk.CurrentHeight)];
+                                var neighbor = chunk.GetVoxel(Help.GetFlatIndex(i, j, k - 1, chunk.CurrentHeight));
                                 //var neighbor = Chunk.GetVoxel(pointer, i, j, k - 1, height);
 
                                 if (hasVisibilityFlag && neighbor.Block < 16)
@@ -144,7 +158,8 @@ namespace AppleCinnamon.Pipeline
 
                             if (k < Chunk.SizeXy - 1) // back
                             {
-                                var neighbor = chunk.Voxels[Help.GetFlatIndex(i, j, k + 1, chunk.CurrentHeight)];
+                                //var neighbor = chunk.Voxels[Help.GetFlatIndex(i, j, k + 1, chunk.CurrentHeight)];
+                                var neighbor = chunk.GetVoxel(Help.GetFlatIndex(i, j, k + 1, chunk.CurrentHeight));
                                 //var neighbor = Chunk.GetVoxel(pointer, i, j, k + 1, height);
 
                                 if (hasVisibilityFlag && neighbor.Block < 16)
@@ -169,7 +184,8 @@ namespace AppleCinnamon.Pipeline
                             if (voxel.Lightness != voxelLight)
                             {
 
-                                chunk.Voxels[flatIndex] = new Voxel(voxel.Block, voxelLight);
+                                //chunk.Voxels[flatIndex] = new Voxel(voxel.Block, voxelLight);
+                                chunk.SetVoxel(flatIndex, new Voxel(voxel.Block, voxelLight));
                                 chunk.LightPropagationVoxels.Add(flatIndex);
                             }
                         }
