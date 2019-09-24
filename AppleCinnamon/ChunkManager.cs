@@ -39,7 +39,7 @@ namespace AppleCinnamon
 
     public sealed class ChunkManager : IChunkManager
     {
-        
+
         //public const int ViewDistance = 8;
         public static readonly int InitialDegreeOfParallelism = Environment.ProcessorCount / 2;
 
@@ -237,8 +237,8 @@ namespace AppleCinnamon
                     var pass = _solidBlockEffect.GetTechniqueByIndex(0).GetPassByIndex(0);
                     pass.Apply(_graphics.Device.ImmediateContext);
                     var filtered = 0;
-                    
-                    
+
+
 
                     var sw = Stopwatch.StartNew();
                     var renderedChunks = QuickChunks.Where(chunk =>
@@ -248,24 +248,16 @@ namespace AppleCinnamon
                     var sw2 = Stopwatch.StartNew();
                     foreach (var chunk in renderedChunks)
                     {
-
+                        chunk.DrawSmarter(_graphics.Device, camera.CurrentChunkIndexVector);
                         
+                        if (!Game.IsViewFrustumCullingEnabled || camera.BoundingFrustum.Contains(ref chunk.BoundingBox) != ContainmentType.Disjoint)
+                        {
                             chunk.DrawSmarter(_graphics.Device, camera.CurrentChunkIndexVector);
-                            //_renderedChunks++;
-                        //if (chunk == null)
-                        //{
-                        //    continue;
-                        //}
-
-
-                        //if (!Game.IsViewFrustumCullingEnabled || camera.BoundingFrustum.Contains(ref chunk.BoundingBox) != ContainmentType.Disjoint)
-                        //{
-                        //    chunk.DrawSmarter(_graphics.Device, camera.CurrentChunkIndexVector);
-                        //    _renderedChunks++;
-                        //}
+                            _renderedChunks++;
+                        }
                     }
                     sw2.Stop();
-                    QuickTest = sw.ElapsedMilliseconds.ToString() + " / " + sw2.ElapsedMilliseconds.ToString();
+                    QuickTest = sw.ElapsedMilliseconds + " / " + sw2.ElapsedMilliseconds;
                     //sw2.Stop();
                 }
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Buffers;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -41,6 +42,8 @@ namespace AppleCinnamon
         public Vector3 OffsetVector { get; }
         public Int2 Offset { get; }
         public Voxel[] Voxels;
+        public Memory<Voxel> Voxels2;
+        public MemoryHandle Handle;
         public ConcurrentDictionary<Int2, Chunk> Neighbours { get; }
         public ChunkState State { get; set; }
         public BoundingBox BoundingBox;
@@ -52,7 +55,19 @@ namespace AppleCinnamon
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe Voxel GetVoxel(IntPtr arrayPtr, int i, int j, int k, int height) =>
             *(Voxel*) IntPtr.Add(arrayPtr, (i + SizeXy * (j + height * k)) * 2);
-      
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public unsafe Voxel GetVoxelUnsafe(int flatIndex) => *((Voxel*) Handle.Pointer + flatIndex);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe Voxel GetVoxelUnsafe(Chunk chunk, int flatIndex) => *((Voxel*)chunk.Handle.Pointer + flatIndex);
+
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Voxel GetVoxel(int flatIndex) => Voxels[flatIndex];
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Voxel GetVoxel(Chunk chunk, int flatIndex) => chunk.Voxels[flatIndex];
+
 
         public void ExtendUpward(int heightToFit)
         {
@@ -214,6 +229,9 @@ namespace AppleCinnamon
         {
             Neighbours = new ConcurrentDictionary<Int2, Chunk>();
             VisibilityFlags = new Dictionary<int, byte>();
+
+            Voxels2 = new Memory<Voxel>(voxels);
+            Handle = Voxels2.Pin();
 
             VoxelCount = new Cube<int>();
             PendingLeftVoxels = new List<int>(1024);

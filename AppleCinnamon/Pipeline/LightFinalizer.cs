@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using AppleCinnamon.Settings;
 using AppleCinnamon.System;
 using SharpDX;
@@ -69,7 +70,7 @@ namespace AppleCinnamon.Pipeline
 
 
 
-        private void ProcessEdge(Chunk sourceChunk, Chunk targetChunk)
+        private unsafe void ProcessEdge(Chunk sourceChunk, Chunk targetChunk)
         {
             var dir = targetChunk.ChunkIndex - sourceChunk.ChunkIndex;
 
@@ -81,6 +82,10 @@ namespace AppleCinnamon.Pipeline
 
             var height = Math.Max(sourceChunk.CurrentHeight, targetChunk.CurrentHeight);
 
+            try
+            {
+
+            
             for (var n = 0; n < Chunk.SizeXy; n++)
             {
                 for (var j = height - 1; j > 0; j--)
@@ -90,12 +95,19 @@ namespace AppleCinnamon.Pipeline
                     var sourceIndexY = source.Y + step.Y * n;
                     //var sourceIndex = new Int3(sourceIndexX, j, sourceIndexY);
 
+                    var sourceIndex = Help.GetFlatIndex(sourceIndexX, j, sourceIndexY, sourceChunk.CurrentHeight);
+
                     var sourceVoxel = sourceChunk.CurrentHeight <= j
                         ? Voxel.Air
-                        : sourceChunk.Voxels[Help.GetFlatIndex(sourceIndexX, j, sourceIndexY, sourceChunk.CurrentHeight)];
-                        // : sourceChunk.GetVoxel(Help.GetFlatIndex(sourceIndexX, j, sourceIndexY, sourceChunk.CurrentHeight));
+                        //: sourceChunk.Voxels[sourceIndex];
+                        //: sourceChunk.GetVoxel(sourceIndex);
+                        //: Chunk.GetVoxel(sourceChunk, sourceIndex);
+                        //: *((Voxel*)sourceChunk.Handle.Pointer + sourceIndex);
+                        //: sourceChunk.GetVoxel(Help.GetFlatIndex(sourceIndexX, j, sourceIndexY, sourceChunk.CurrentHeight));
+                        //: sourceChunk.GetVoxelUnsafe(sourceIndex);
+                        : Chunk.GetVoxelUnsafe(sourceChunk, sourceIndex);
 
-                    var sourceDefinition = VoxelDefinition.DefinitionByType[sourceVoxel.Block];
+                        var sourceDefinition = VoxelDefinition.DefinitionByType[sourceVoxel.Block];
 
                     if (!sourceDefinition.IsTransparent)
                     {
@@ -105,12 +117,19 @@ namespace AppleCinnamon.Pipeline
                     var targetIndexX = target.X + step.X * n;
                     var targetIndexY = target.Y + step.Y * n;
 
-                    var targetVoxel = targetChunk.CurrentHeight <= j 
+                    var targetIndex = Help.GetFlatIndex(targetIndexX, j, targetIndexY, targetChunk.CurrentHeight);
+                    //Voxel q = *(((Voxel*) targetChunk.Handle.Pointer) + index * 2);
+                    var targetVoxel = targetChunk.CurrentHeight <= j
                         ? Voxel.Air
-                        : targetChunk.Voxels[Help.GetFlatIndex(targetIndexX, j, targetIndexY, targetChunk.CurrentHeight)];
+                        //: targetChunk.Voxels[targetIndex];
+                        //: targetChunk.GetVoxel(targetIndex);
+                        //: Chunk.GetVoxel(targetChunk, targetIndex);
+                        //: *((Voxel*)targetChunk.Handle.Pointer + targetIndex); //[Help.GetFlatIndex(targetIndexX, j, targetIndexY, targetChunk.CurrentHeight)];
+                        // : targetChunk.GetVoxelUnsafe(targetIndex);
+                        : Chunk.GetVoxelUnsafe(targetChunk, targetIndex);
                         //: targetChunk.GetVoxel(Help.GetFlatIndex(targetIndexX, j, targetIndexY, targetChunk.CurrentHeight));
 
-                    var targetDefinition = VoxelDefinition.DefinitionByType[targetVoxel.Block];
+                        var targetDefinition = VoxelDefinition.DefinitionByType[targetVoxel.Block];
 
                     if (!targetDefinition.IsTransparent)
                     {
@@ -135,6 +154,11 @@ namespace AppleCinnamon.Pipeline
                         }
                     }
                 }
+            }
+
+            }
+            catch (Exception e)
+            {
             }
         }
 
