@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime;
+using AppleCinnamon.Pipeline;
 
 namespace AppleCinnamon
 {
@@ -7,6 +8,8 @@ namespace AppleCinnamon
     {
         static void Main(string[] args)
         {
+            var fs = new FullScanner();
+
             Game g = new Game();
         }
 
