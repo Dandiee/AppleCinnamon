@@ -16,7 +16,7 @@ namespace AppleCinnamon
     public sealed class Chunk
     {
         public const int SliceHeight = 16;
-        public const int SizeXy = 16;
+        public const int SizeXy = 32;
         public const int SliceArea = SizeXy * SizeXy * SliceHeight;
 
         public int CurrentHeight;

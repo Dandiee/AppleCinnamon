@@ -42,12 +42,12 @@ namespace AppleCinnamon.System
             [Face.Back] = cube => cube.Back
         };
 
-        public T Top { get; set; }
-        public T Bottom { get; set; }
-        public T Left { get; set; }
-        public T Right { get; set; }
-        public T Front { get; set; }
-        public T Back { get; set; }
+        public T Top;
+        public T Bottom;
+        public T Left;
+        public T Right;
+        public T Front;
+        public T Back;
 
         public Cube() { }
         public Cube(T top, T bottom, T left, T right, T front, T back)
