@@ -110,7 +110,7 @@ namespace AppleCinnamon.Collision
                             continue;
                         }
 
-                        var voxel = chunk.Voxels[address.Value.RelativeVoxelIndex.ToFlatIndex(chunk.CurrentHeight)];
+                        var voxel = chunk.GetVoxel(address.Value.RelativeVoxelIndex.ToFlatIndex(chunk.CurrentHeight));
 
                         var voxelDefinition = VoxelDefinition.DefinitionByType[voxel.Block];
                         // if (voxel.Value.Block > 0)

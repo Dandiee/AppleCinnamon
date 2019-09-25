@@ -30,7 +30,7 @@ namespace AppleCinnamon
                 var flatIndex = visibilityFlag.Key;
                 var index = flatIndex.ToIndex(chunk.CurrentHeight);
 
-                var voxel = chunk.Voxels[flatIndex];
+                var voxel = chunk.GetVoxel(flatIndex);
                 var definition = VoxelDefinition.DefinitionByType[voxel.Block];
 
                 var voxelPositionOffset = definition.Translation + chunk.OffsetVector + new Vector3(index.X, index.Y, index.Z);
@@ -72,7 +72,7 @@ namespace AppleCinnamon
 
                 var vertexOffset = n * 4;
                 var positionOffset = new Vector3(index.X, index.Y - 0.1f, index.Z);
-                var light = chunk.Voxels[flatIndex].Lightness;
+                var light = chunk.GetVoxel(flatIndex).Lightness;
 
                 for (var m = 0; m < topOffsetVertices.Length; m++)
                 {

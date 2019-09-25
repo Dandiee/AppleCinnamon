@@ -37,7 +37,7 @@ namespace AppleCinnamon.Pipeline
 
         private void PropagateLightSource(Chunk chunk, int lightSourceFlatIndex, List<int> lightSources)
         {
-            var voxelLightness = chunk.Voxels[lightSourceFlatIndex].Lightness;
+            var voxelLightness = chunk.GetVoxel(lightSourceFlatIndex).Lightness;
             var index = lightSourceFlatIndex.ToIndex(chunk.CurrentHeight);
 
             foreach (var direction in Directions)
@@ -53,13 +53,12 @@ namespace AppleCinnamon.Pipeline
                         {
                             var neighbourIndex = new Int3(neighbourX, neighbourY, neighbourZ);
                             var neighbourFlatIndex = neighbourIndex.ToFlatIndex(chunk.CurrentHeight);
-                            var neighbourVoxel = chunk.Voxels[neighbourFlatIndex];
+                            var neighbourVoxel = chunk.GetVoxelNoInline(neighbourFlatIndex);
                             var neighborDefinition = VoxelDefinition.DefinitionByType[neighbourVoxel.Block];
 
                             if (neighborDefinition.IsTransparent && neighbourVoxel.Lightness < voxelLightness - 1)
                             {
-                                chunk.Voxels[neighbourFlatIndex] =
-                                    new Voxel(neighbourVoxel.Block, (byte) (voxelLightness - 1));
+                                chunk.SetVoxelNoInline(neighbourFlatIndex, new Voxel(neighbourVoxel.Block, (byte)(voxelLightness - 1)));
 
                                 lightSources.Add(neighbourFlatIndex);
                             }

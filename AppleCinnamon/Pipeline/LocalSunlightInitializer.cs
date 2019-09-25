@@ -25,13 +25,13 @@ namespace AppleCinnamon.Pipeline
                         var index = new Int3(i, j, k);
                         var flatIndex = index.ToFlatIndex(chunk.CurrentHeight);
 
-                        var voxel = chunk.Voxels[flatIndex];
+                        var voxel = chunk.GetVoxelNoInline(flatIndex);
 
                         if (!topMostFound)
                         {
                             if (voxel.Block == 0)
                             {
-                                chunk.Voxels[flatIndex] = new Voxel(voxel.Block, 15);
+                                chunk.SetVoxel(flatIndex, new Voxel(voxel.Block, 15));
                             }
                             else
                             {

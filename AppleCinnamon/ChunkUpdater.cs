@@ -91,9 +91,9 @@ namespace AppleCinnamon
                 }
 
                 var flatIndex = address.Value.RelativeVoxelIndex.ToFlatIndex(chunk.CurrentHeight);
-                var oldVoxel = chunk.Voxels[flatIndex];
+                var oldVoxel = chunk.GetVoxel(flatIndex);
                 var newVoxel = new Voxel(voxel, 0);
-                chunk.Voxels[flatIndex] = newVoxel;
+                chunk.SetVoxel(flatIndex, newVoxel);
 
                 UpdateVisibilityFlags(chunk, oldVoxel, newVoxel, address.Value.RelativeVoxelIndex);
                 _lightUpdater.UpdateLighting(chunk, address.Value.RelativeVoxelIndex, oldVoxel, newVoxel);

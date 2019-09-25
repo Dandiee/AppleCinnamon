@@ -130,7 +130,7 @@ namespace AppleCinnamon
 
             return chunk.CurrentHeight <= address.Value.RelativeVoxelIndex.Y
                 ? Voxel.Air
-                : chunk.Voxels[address.Value.RelativeVoxelIndex.ToFlatIndex(chunk.CurrentHeight)];
+                : chunk.GetVoxel(address.Value.RelativeVoxelIndex.ToFlatIndex(chunk.CurrentHeight));
         }
 
         public bool TryGetChunk(Int2 chunkIndex, out Chunk chunk)
