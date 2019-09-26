@@ -12,7 +12,7 @@ namespace AppleCinnamon
     {
         public static readonly Vector3 StartPosition = new Vector3(0, 256, 0);
 
-        public const int ViewDistance = 32;
+        public const int ViewDistance = 20;
         public static bool IsBackFaceCullingEnabled { get; set; }
         public static bool IsViewFrustumCullingEnabled { get; set; } = true;
         public static bool ShowChunkBoundingBoxes { get; set; } = false;

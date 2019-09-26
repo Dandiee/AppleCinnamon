@@ -135,25 +135,28 @@ namespace AppleCinnamon.Pipeline
             }
         }
 
-  
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private unsafe void Unroll(int* indexPointer, int n, int parentIndex, Chunk chunk, bool hasVisibilityFlag, BlockIndex block, List<int> pendingSideVoxels, RefInt count)
         {
             var index = *(indexPointer + n);
             if (index > -1)
             {
-                var neighbourVoxel = *((Voxel*)chunk.Handle.Pointer + index);
                 if (hasVisibilityFlag)
                 {
-                    if (neighbourVoxel.Block < 16)
+                    if (*((byte*)chunk.Handle.Pointer + index * 2) < 16)
                     {
                         block.VisibilityFlag += (byte)(1 << (n - 1));
                         count.Value++;
                     }
                 }
-                else if (block.VoxelLight < neighbourVoxel.Lightness - 1)
+                else
                 {
-                    block.VoxelLight = (byte)(neighbourVoxel.Lightness - 1);
+                    var voxelLight = *((byte*)chunk.Handle.Pointer + index * 2 + 1);
+                    if (block.VoxelLight < voxelLight - 1)
+                    {
+                        block.VoxelLight = (byte) (voxelLight - 1);
+                    }
                 }
             }
             else if (hasVisibilityFlag) pendingSideVoxels?.Add(parentIndex);
@@ -182,7 +185,7 @@ namespace AppleCinnamon.Pipeline
             else if (hasVisibilityFlag) pendingSideVoxels?.Add(parentIndex);
         }
 
-        public unsafe DataflowContext<Chunk> Process(DataflowContext<Chunk> context)
+        public unsafe DataflowContext<Chunk> Proces3s(DataflowContext<Chunk> context)
         {
             var chunk = context.Payload;
 
@@ -207,7 +210,7 @@ namespace AppleCinnamon.Pipeline
                     for (var j = 0; j != chunk.CurrentHeight; j++)
                     {
                         var flatIndex = Help.GetFlatIndex(i, j, k, chunk.CurrentHeight);
-                        var voxel = *((Voxel*) chunk.Handle.Pointer + flatIndex);
+                        var voxel = *((Voxel*)chunk.Handle.Pointer + flatIndex);
                         var hasVisibilityFlag = voxel.Block > 0 && voxel.Block != VoxelDefinition.Water.Type;
 
                         if (!hasVisibilityFlag && !(voxel.Block < 16 && voxel.Lightness == 0))
@@ -217,12 +220,12 @@ namespace AppleCinnamon.Pipeline
 
                         block.VoxelLight = voxel.Lightness;
 
-                        Unroll2(j > 0, i,j+1,k, 1, flatIndex, chunk, hasVisibilityFlag, block, null, chunk.VoxelCount.Top);
-                        Unroll2(j < chunk.CurrentHeight - 1, i,j-1,k, 2, flatIndex, chunk, hasVisibilityFlag, block, null, chunk.VoxelCount.Bottom);
-                        Unroll2(xN, i-1,j,k, 3, flatIndex, chunk, hasVisibilityFlag, block, chunk.PendingLeftVoxels, chunk.VoxelCount.Left);
-                        Unroll2(xP, i+1,j,k, 4, flatIndex, chunk, hasVisibilityFlag, block, chunk.PendingRightVoxels, chunk.VoxelCount.Right);
-                        Unroll2(zN, i,j,k-1, 5, flatIndex, chunk, hasVisibilityFlag, block, chunk.PendingFrontVoxels, chunk.VoxelCount.Front);
-                        Unroll2(zP, i,j,k+1, 6, flatIndex, chunk, hasVisibilityFlag, block, chunk.PendingBackVoxels, chunk.VoxelCount.Back);
+                        Unroll2(j > 0, i, j + 1, k, 1, flatIndex, chunk, hasVisibilityFlag, block, null, chunk.VoxelCount.Top);
+                        Unroll2(j < chunk.CurrentHeight - 1, i, j - 1, k, 2, flatIndex, chunk, hasVisibilityFlag, block, null, chunk.VoxelCount.Bottom);
+                        Unroll2(xN, i - 1, j, k, 3, flatIndex, chunk, hasVisibilityFlag, block, chunk.PendingLeftVoxels, chunk.VoxelCount.Left);
+                        Unroll2(xP, i + 1, j, k, 4, flatIndex, chunk, hasVisibilityFlag, block, chunk.PendingRightVoxels, chunk.VoxelCount.Right);
+                        Unroll2(zN, i, j, k - 1, 5, flatIndex, chunk, hasVisibilityFlag, block, chunk.PendingFrontVoxels, chunk.VoxelCount.Front);
+                        Unroll2(zP, i, j, k + 1, 6, flatIndex, chunk, hasVisibilityFlag, block, chunk.PendingBackVoxels, chunk.VoxelCount.Back);
 
                         if (block.VisibilityFlag > 0)
                         {
@@ -256,7 +259,7 @@ namespace AppleCinnamon.Pipeline
         }
 
 
-        public unsafe DataflowContext<Chunk> Process2(DataflowContext<Chunk> context)
+        public unsafe DataflowContext<Chunk> Process45(DataflowContext<Chunk> context)
         {
             var chunk = context.Payload;
 
@@ -268,49 +271,59 @@ namespace AppleCinnamon.Pipeline
             var sw = Stopwatch.StartNew();
 
 
-            for (var i = 0; i < indexes.Length; i += 7)
+
+            
+
+            var counter = 0;
+            for (var i = 0; i != Chunk.SizeXy; i++)
             {
-                var indexPointer = (int*)header + i;
-                var index = *indexPointer;
-                var voxel = *((Voxel*)chunk.Handle.Pointer + index);
-                var hasVisibilityFlag = voxel.Block > 0 && voxel.Block != VoxelDefinition.Water.Type;
-
-                if (!hasVisibilityFlag && !(voxel.Block < 16 && voxel.Lightness == 0))
+                for (var j = 0; j != chunk.CurrentHeight; j++)
                 {
-                    continue;
-                }
+                    for (var k = 0; k != Chunk.SizeXy; k++)
+                    {
+                        var indexPointer = (int*)header + counter;
+                        var index = *indexPointer;
+                        var voxel = *((Voxel*)chunk.Handle.Pointer + index);
+                        var hasVisibilityFlag = voxel.Block > 0 && voxel.Block != VoxelDefinition.Water.Type;
+                        counter += 7;
 
-                block.VoxelLight = voxel.Lightness;
+                        if (!hasVisibilityFlag && !(voxel.Block < 16 && voxel.Lightness == 0))
+                        {
+                            continue;
+                        }
 
-                Unroll(indexPointer, 1, index, chunk, hasVisibilityFlag, block, null, chunk.VoxelCount.Top);
-                Unroll(indexPointer, 2, index, chunk, hasVisibilityFlag, block, null, chunk.VoxelCount.Bottom);
-                Unroll(indexPointer, 3, index, chunk, hasVisibilityFlag, block, chunk.PendingLeftVoxels, chunk.VoxelCount.Left);
-                Unroll(indexPointer, 4, index, chunk, hasVisibilityFlag, block, chunk.PendingRightVoxels, chunk.VoxelCount.Right);
-                Unroll(indexPointer, 5, index, chunk, hasVisibilityFlag, block, chunk.PendingFrontVoxels, chunk.VoxelCount.Front);
-                Unroll(indexPointer, 6, index, chunk, hasVisibilityFlag, block, chunk.PendingBackVoxels, chunk.VoxelCount.Back);
+                        block.VoxelLight = voxel.Lightness;
+
+                        Unroll(indexPointer, 1, index, chunk, hasVisibilityFlag, block, null, chunk.VoxelCount.Top);
+                        Unroll(indexPointer, 2, index, chunk, hasVisibilityFlag, block, null, chunk.VoxelCount.Bottom);
+                        Unroll(indexPointer, 3, index, chunk, hasVisibilityFlag, block, chunk.PendingLeftVoxels, chunk.VoxelCount.Left);
+                        Unroll(indexPointer, 4, index, chunk, hasVisibilityFlag, block, chunk.PendingRightVoxels, chunk.VoxelCount.Right);
+                        Unroll(indexPointer, 5, index, chunk, hasVisibilityFlag, block, chunk.PendingFrontVoxels, chunk.VoxelCount.Front);
+                        Unroll(indexPointer, 6, index, chunk, hasVisibilityFlag, block, chunk.PendingBackVoxels, chunk.VoxelCount.Back);
 
 
-                if (block.VisibilityFlag > 0)
-                {
-                    chunk.VisibilityFlags[index] = block.VisibilityFlag;
-                    block.VisibilityFlag = 0;
-                }
+                        if (block.VisibilityFlag > 0)
+                        {
+                            chunk.VisibilityFlags[index] = block.VisibilityFlag;
+                            block.VisibilityFlag = 0;
+                        }
 
-                if (voxel.Lightness != block.VoxelLight)
-                {
+                        if (voxel.Lightness != block.VoxelLight)
+                        {
 
-                    chunk.SetVoxelNoInline(index, new Voxel(voxel.Block, block.VoxelLight));
-                    chunk.LightPropagationVoxels.Add(index);
+                            chunk.SetVoxelNoInline(index, new Voxel(voxel.Block, block.VoxelLight));
+                            chunk.LightPropagationVoxels.Add(index);
+                        }
+                    }
                 }
             }
-
 
             sw.Stop();
 
             return new DataflowContext<Chunk>(context, chunk, sw.ElapsedMilliseconds, nameof(FullScanner));
         }
 
-        public unsafe DataflowContext<Chunk> Process3(DataflowContext<Chunk> context)
+        public unsafe DataflowContext<Chunk> Process(DataflowContext<Chunk> context)
         {
             var sw = Stopwatch.StartNew();
             var chunk = context.Payload;
@@ -341,11 +354,7 @@ namespace AppleCinnamon.Pipeline
 
                         if (j < chunk.CurrentHeight - 1) // top
                         {
-                            var neighbor = *((Voxel*)chunk.Handle.Pointer +
-                                             Help.GetFlatIndex(i, j + 1, k, chunk.CurrentHeight));
-                            //var neighbor = chunk.GetVoxel(Help.GetFlatIndex(i, j + 1, k, chunk.CurrentHeight));
-
-
+                            var neighbor = *((Voxel*)chunk.Handle.Pointer + Help.GetFlatIndex(i, j + 1, k, chunk.CurrentHeight));
                             if (hasVisibilityFlag)
                             {
                                 if (neighbor.Block < 16)
@@ -370,23 +379,24 @@ namespace AppleCinnamon.Pipeline
 
                         if (j > 0) // bottom
                         {
-                            var neighbor = *((Voxel*)chunk.Handle.Pointer +
-                                             Help.GetFlatIndex(i, j - 1, k, chunk.CurrentHeight));
-                            //var neighbor = chunk.GetVoxel(Help.GetFlatIndex(i, j - 1, k, chunk.CurrentHeight));
-
+                            var neighbor = *((Voxel*)chunk.Handle.Pointer + Help.GetFlatIndex(i, j - 1, k, chunk.CurrentHeight));
                             if (hasVisibilityFlag && neighbor.Block < 16)
                             {
                                 visibilityFlag += 2;
                                 chunk.VoxelCount.Bottom.Value++;
                             }
+                            else if (voxelLight < neighbor.Lightness - 1)
+                            {
+                                if (voxelLight < neighbor.Lightness - 1)
+                                {
+                                    voxelLight = (byte)(neighbor.Lightness - 1);
+                                }
+                            }
                         }
 
                         if (i > 0) //left
                         {
-                            var neighbor = *((Voxel*)chunk.Handle.Pointer +
-                                             Help.GetFlatIndex(i - 1, j, k, chunk.CurrentHeight));
-                            //var neighbor = chunk.GetVoxel(Help.GetFlatIndex(i - 1, j, k, chunk.CurrentHeight));
-
+                            var neighbor = *((Voxel*)chunk.Handle.Pointer + Help.GetFlatIndex(i - 1, j, k, chunk.CurrentHeight));
                             if (hasVisibilityFlag)
                             {
                                 if (neighbor.Block < 16)
@@ -405,9 +415,7 @@ namespace AppleCinnamon.Pipeline
 
                         if (i < Chunk.SizeXy - 1) // right
                         {
-                            var neighbor = *((Voxel*)chunk.Handle.Pointer +
-                                             Help.GetFlatIndex(i + 1, j, k, chunk.CurrentHeight));
-                            //var neighbor = chunk.GetVoxel(Help.GetFlatIndex(i + 1, j, k, chunk.CurrentHeight));
+                            var neighbor = *((Voxel*)chunk.Handle.Pointer + Help.GetFlatIndex(i + 1, j, k, chunk.CurrentHeight));
                             if (hasVisibilityFlag)
                             {
                                 if (neighbor.Block < 16)
@@ -425,10 +433,7 @@ namespace AppleCinnamon.Pipeline
 
                         if (k > 0) // front
                         {
-                            var neighbor = *((Voxel*)chunk.Handle.Pointer +
-                                             Help.GetFlatIndex(i, j, k - 1, chunk.CurrentHeight));
-                            //var neighbor = chunk.GetVoxel(Help.GetFlatIndex(i, j, k - 1, chunk.CurrentHeight));
-
+                            var neighbor = *((Voxel*)chunk.Handle.Pointer + Help.GetFlatIndex(i, j, k - 1, chunk.CurrentHeight));
                             if (hasVisibilityFlag)
                             {
                                 if (neighbor.Block < 16)
@@ -446,10 +451,7 @@ namespace AppleCinnamon.Pipeline
 
                         if (k < Chunk.SizeXy - 1) // back
                         {
-                            var neighbor = *((Voxel*)chunk.Handle.Pointer +
-                                             Help.GetFlatIndex(i, j, k + 1, chunk.CurrentHeight));
-                            //var neighbor = chunk.GetVoxel(Help.GetFlatIndex(i, j, k + 1, chunk.CurrentHeight));
-
+                            var neighbor = *((Voxel*)chunk.Handle.Pointer + Help.GetFlatIndex(i, j, k + 1, chunk.CurrentHeight));
                             if (hasVisibilityFlag)
                             {
                                 if (neighbor.Block < 16)
