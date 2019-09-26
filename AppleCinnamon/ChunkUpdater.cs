@@ -139,18 +139,18 @@ namespace AppleCinnamon
                     if (isRemoving)
                     {
                         neighbourChunk.VisibilityFlags[neighbourIndex] = (byte) (visibility + direction.Item2);
-                        neighbourChunk.VoxelCount[OppositeMapping[face]]++;
+                        neighbourChunk.VoxelCount[OppositeMapping[face]].Value++;
                     }
                     else
                     {
                         neighbourChunk.VisibilityFlags[neighbourIndex] = (byte)(visibility - direction.Item2);
-                        neighbourChunk.VoxelCount[OppositeMapping[face]]--;
+                        neighbourChunk.VoxelCount[OppositeMapping[face]].Value--;
                     }
                 }
                 else
                 {
                     newVisibilityFlag += AddMapping[direction.Item1];
-                    chunk.VoxelCount[face]++;
+                    chunk.VoxelCount[face].Value++;
                 }
             }
 
@@ -161,7 +161,7 @@ namespace AppleCinnamon
                     if ((oldVisibilityFlag & addMapping.Value) == addMapping.Value) // the given face was visible so far
                     {
                         var face = FaceMapping[addMapping.Key];
-                        chunk.VoxelCount[face]--;
+                        chunk.VoxelCount[face].Value--;
                     }
                 }
 

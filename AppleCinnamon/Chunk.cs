@@ -13,10 +13,15 @@ using Help = AppleCinnamon.System.Help;
 
 namespace AppleCinnamon
 {
+    public class RefInt
+    {
+        public int Value;
+    }
+
     public sealed class Chunk
     {
         public const int SliceHeight = 16;
-        public const int SizeXy = 16;
+        public const int SizeXy = 32;
         public const int SliceArea = SizeXy * SizeXy * SliceHeight;
 
         public int CurrentHeight;
@@ -36,7 +41,7 @@ namespace AppleCinnamon
         public List<int> LightPropagationVoxels;
         
 
-        public Cube<int> VoxelCount { get; }
+        public Cube<RefInt> VoxelCount { get; }
 
         public Int2 ChunkIndex { get; }
         public Vector3 OffsetVector { get; }
@@ -249,7 +254,7 @@ namespace AppleCinnamon
             Voxels2 = new Memory<Voxel>(voxels);
             Handle = Voxels2.Pin();
 
-            VoxelCount = new Cube<int>();
+            VoxelCount = new Cube<RefInt>(new RefInt(), new RefInt(), new RefInt(), new RefInt(), new RefInt(), new RefInt());
             PendingLeftVoxels = new List<int>(1024);
             PendingRightVoxels = new List<int>(1024);
             PendingFrontVoxels = new List<int>(1024);

@@ -18,8 +18,8 @@ namespace AppleCinnamon
         public void BuildChunk(Device device, Chunk chunk)
         {
             var faces = GetChunkFaces(chunk);
-            var visibleFacesCount = chunk.VoxelCount.Top + chunk.VoxelCount.Bottom + chunk.VoxelCount.Left +
-                                    chunk.VoxelCount.Right + chunk.VoxelCount.Front + chunk.VoxelCount.Back;
+            var visibleFacesCount = chunk.VoxelCount.Top.Value + chunk.VoxelCount.Bottom.Value + chunk.VoxelCount.Left.Value +
+                                    chunk.VoxelCount.Right.Value + chunk.VoxelCount.Front.Value + chunk.VoxelCount.Back.Value;
 
             if (visibleFacesCount == 0)
             {
@@ -171,12 +171,12 @@ namespace AppleCinnamon
 
         private Cube<ChunkFace> GetChunkFaces(Chunk chunk)
         {
-            var topCount = chunk.VoxelCount.Top;
-            var botCount = chunk.VoxelCount.Bottom;
-            var lefCount = chunk.VoxelCount.Left;
-            var rigCount = chunk.VoxelCount.Right;
-            var froCount = chunk.VoxelCount.Front;
-            var bacCount = chunk.VoxelCount.Back;
+            var topCount = chunk.VoxelCount.Top.Value;
+            var botCount = chunk.VoxelCount.Bottom.Value;
+            var lefCount = chunk.VoxelCount.Left.Value;
+            var rigCount = chunk.VoxelCount.Right.Value;
+            var froCount = chunk.VoxelCount.Front.Value;
+            var bacCount = chunk.VoxelCount.Back.Value;
 
             var topOffset = 0;
             var botOffset = topCount;

@@ -29,7 +29,7 @@ namespace AppleCinnamon.Pipeline
                 {
                     chunk.VisibilityFlags.TryGetValue(flatIndex, out var visibility);
                     chunk.VisibilityFlags[flatIndex] = (byte)(visibility + 4);
-                    chunk.VoxelCount.Left++;
+                    chunk.VoxelCount.Left.Value++;
                 }
             }
 
@@ -46,7 +46,7 @@ namespace AppleCinnamon.Pipeline
                 {
                     chunk.VisibilityFlags.TryGetValue(flatIndex, out var visibility);
                     chunk.VisibilityFlags[flatIndex] = (byte)(visibility + 8);
-                    chunk.VoxelCount.Right++;
+                    chunk.VoxelCount.Right.Value++;
                 }
             }
 
@@ -63,7 +63,7 @@ namespace AppleCinnamon.Pipeline
                 {
                     chunk.VisibilityFlags.TryGetValue(flatIndex, out var visibility);
                     chunk.VisibilityFlags[flatIndex] = (byte)(visibility + 16);
-                    chunk.VoxelCount.Front++;
+                    chunk.VoxelCount.Front.Value++;
                 }
             }
 
@@ -80,7 +80,7 @@ namespace AppleCinnamon.Pipeline
                 {
                     chunk.VisibilityFlags.TryGetValue(flatIndex, out var visibility);
                     chunk.VisibilityFlags[flatIndex] = (byte)(visibility + 32);
-                    chunk.VoxelCount.Back++;
+                    chunk.VoxelCount.Back.Value++;
                 }
 
             }
