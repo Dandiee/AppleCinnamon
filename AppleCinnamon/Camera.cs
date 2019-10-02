@@ -41,11 +41,11 @@ namespace AppleCinnamon
         public Vector3 Orientation { get; private set; }
         public bool IsPaused { get; private set; }
 
-        protected KeyboardState CurrentKeyboardState { get; private set; }
-        protected KeyboardState LastKeyboardState { get; private set; }
-        protected MouseState CurrentMouseState { get; private set; }
-        protected MouseState LastMouseState { get; private set; }
-        public VoxelRayCollisionResult CurrentCursor { get; protected set; }
+        private KeyboardState _currentKeyboardState;
+        private KeyboardState _lastKeyboardState;
+        private MouseState _currentMouseState;
+        private MouseState _lastMouseState;
+        public VoxelRayCollisionResult CurrentCursor { get; private set; }
 
         public static readonly IReadOnlyDictionary<Key, VoxelDefinition> KeyVoxelMapping = new Dictionary<Key, VoxelDefinition>
         {
@@ -97,8 +97,8 @@ namespace AppleCinnamon
                 return;
             }
 
-            CurrentKeyboardState = Keyboard.GetCurrentState();
-            CurrentMouseState = Mouse.GetCurrentState();
+            _currentKeyboardState = Keyboard.GetCurrentState();
+            _currentMouseState = Mouse.GetCurrentState();
 
             CollisionHelper.ApplyPlayerPhysics(this, chunkManager, (float)gameTime.ElapsedGameTime.TotalSeconds);
             UpdateMove(gameTime, chunkManager);
@@ -107,13 +107,13 @@ namespace AppleCinnamon
             UpdateCurrentCursor(boxDrawer, chunkManager);
             HandleDefaultInputs(chunkManager);
 
-            LastKeyboardState = CurrentKeyboardState;
-            LastMouseState = CurrentMouseState;
+            _lastKeyboardState = _currentKeyboardState;
+            _lastMouseState = _currentMouseState;
         }
 
         private void HandleDefaultInputs(ChunkManager chunkManager)
         {
-            if (LastMouseState == null)
+            if (_lastMouseState == null)
             {
                 return;
             }
@@ -121,29 +121,29 @@ namespace AppleCinnamon
             const int leftClickIndex = 0;
             const int rightClickIndex = 1;
 
-            if (!CurrentKeyboardState.IsPressed(Key.Escape) && LastKeyboardState.IsPressed(Key.Escape))
+            if (!_currentKeyboardState.IsPressed(Key.Escape) && _lastKeyboardState.IsPressed(Key.Escape))
             {
                 IsPaused = !IsPaused;
             }
 
-            if (!CurrentKeyboardState.IsPressed(Key.F1) && LastKeyboardState.IsPressed(Key.F1))
+            if (!_currentKeyboardState.IsPressed(Key.F1) && _lastKeyboardState.IsPressed(Key.F1))
             {
                 Game.IsBackFaceCullingEnabled = !Game.IsBackFaceCullingEnabled;
             }
 
-            if (!CurrentKeyboardState.IsPressed(Key.F2) && LastKeyboardState.IsPressed(Key.F2))
+            if (!_currentKeyboardState.IsPressed(Key.F2) && _lastKeyboardState.IsPressed(Key.F2))
             {
                 Game.IsViewFrustumCullingEnabled = !Game.IsViewFrustumCullingEnabled;
             }
 
-            if (!CurrentKeyboardState.IsPressed(Key.F3) && LastKeyboardState.IsPressed(Key.F3))
+            if (!_currentKeyboardState.IsPressed(Key.F3) && _lastKeyboardState.IsPressed(Key.F3))
             {
                 Game.ShowChunkBoundingBoxes = !Game.ShowChunkBoundingBoxes;
             }
 
             foreach (var keyVoxel in KeyVoxelMapping)
             {
-                if (CurrentKeyboardState.IsPressed(keyVoxel.Key))
+                if (_currentKeyboardState.IsPressed(keyVoxel.Key))
                 {
                     VoxelInHand = keyVoxel.Value;
                 }
@@ -151,7 +151,7 @@ namespace AppleCinnamon
 
             if (DateTime.Now - _lastModification > BuildCooldown)
             {
-                if (CurrentMouseState.Buttons[leftClickIndex])
+                if (_currentMouseState.Buttons[leftClickIndex])
                 {
                     if (CurrentCursor != null)
                     {
@@ -160,7 +160,7 @@ namespace AppleCinnamon
                     }
                 }
 
-                if (CurrentMouseState.Buttons[rightClickIndex])
+                if (_currentMouseState.Buttons[rightClickIndex])
                 {
                     if (CurrentCursor != null)
                     {
@@ -211,8 +211,8 @@ namespace AppleCinnamon
                 Velocity += WorldSettings.Gravity * -t;
             }
 
-            Yaw = MathUtil.Mod2PI(Yaw + CurrentMouseState.X * -MouseSensitivity); // MathUtil.Mod2PI(
-            Pitch = MathUtil.Clamp(Pitch + CurrentMouseState.Y * -MouseSensitivity, -MathUtil.PiOverTwo,
+            Yaw = MathUtil.Mod2PI(Yaw + _currentMouseState.X * -MouseSensitivity); // MathUtil.Mod2PI(
+            Pitch = MathUtil.Clamp(Pitch + _currentMouseState.Y * -MouseSensitivity, -MathUtil.PiOverTwo,
                 MathUtil.PiOverTwo);
 
 
@@ -220,22 +220,22 @@ namespace AppleCinnamon
             var directionNormal = new Double3(-direction.Z, 0, direction.X);
             var translationVector = Double3.Zero;
 
-            if (CurrentKeyboardState.IsPressed(Key.W))
+            if (_currentKeyboardState.IsPressed(Key.W))
             {
                 translationVector += direction;
             }
 
-            if (CurrentKeyboardState.IsPressed(Key.S))
+            if (_currentKeyboardState.IsPressed(Key.S))
             {
                 translationVector -= direction;
             }
 
-            if (CurrentKeyboardState.IsPressed(Key.A))
+            if (_currentKeyboardState.IsPressed(Key.A))
             {
                 translationVector -= directionNormal;
             }
 
-            if (CurrentKeyboardState.IsPressed(Key.D))
+            if (_currentKeyboardState.IsPressed(Key.D))
             {
                 translationVector += directionNormal;
             }
@@ -243,15 +243,15 @@ namespace AppleCinnamon
             if (translationVector != Double3.Zero)
             {
                 Velocity += Double3.Normalize(translationVector) * MovementSensitivity *
-                            (CurrentKeyboardState.IsPressed(Key.LeftShift) ? SprintSpeedFactor : 1);
+                            (_currentKeyboardState.IsPressed(Key.LeftShift) ? SprintSpeedFactor : 1);
             }
 
 
-            if ((!IsInAir || IsInWater) && CurrentKeyboardState.IsPressed(Key.Space))
+            if ((!IsInAir || IsInWater) && _currentKeyboardState.IsPressed(Key.Space))
             {
                 IsInAir = true;
                 Velocity = new Double3(Velocity.X,
-                    JumpVelocity * (CurrentKeyboardState.IsPressed(Key.LeftShift) ? SprintSpeedFactor : 1), Velocity.Z);
+                    JumpVelocity * (_currentKeyboardState.IsPressed(Key.LeftShift) ? SprintSpeedFactor : 1), Velocity.Z);
             }
 
 

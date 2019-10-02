@@ -7,6 +7,7 @@ using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
+using System.Windows.Forms;
 using AppleCinnamon.Pipeline;
 using AppleCinnamon.System;
 using AppleCinnamon.Vertices;
@@ -177,6 +178,8 @@ namespace AppleCinnamon
             var root = Game.ViewDistance * 2 + 1;
             if (!IsInitialized && _finalizedChunks == root * root)
             {
+                
+
                 BootTime = DateTime.Now - StartUpTime;
 
                 IsInitialized = true;

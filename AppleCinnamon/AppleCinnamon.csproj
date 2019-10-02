@@ -110,6 +110,7 @@
     <Compile Include="System\Direction.cs" />
     <Compile Include="System\Double3.cs" />
     <Compile Include="System\GameTime.cs" />
+    <Compile Include="System\IndexCache.cs" />
     <Compile Include="System\Int2.cs" />
     <Compile Include="System\TextureLoader.cs" />
     <Compile Include="System\TimerTick.cs" />

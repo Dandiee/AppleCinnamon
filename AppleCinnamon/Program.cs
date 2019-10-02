@@ -4,8 +4,10 @@ using AppleCinnamon.Pipeline;
 
 namespace AppleCinnamon
 {
+    
     class Program
     {
+        [STAThread]
         static void Main(string[] args)
         {
             var fs = new FullScanner();

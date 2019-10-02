@@ -271,9 +271,6 @@ namespace AppleCinnamon.Pipeline
             var sw = Stopwatch.StartNew();
 
 
-
-            
-
             var counter = 0;
             for (var i = 0; i != Chunk.SizeXy; i++)
             {

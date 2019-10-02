@@ -1,9 +1,12 @@
 ﻿using System.Linq;
+using System.Windows.Forms;
 using AppleCinnamon.System;
 using SharpDX;
 using SharpDX.Direct2D1;
+using SharpDX.DirectInput;
 using SharpDX.DirectWrite;
 using SharpDX.Mathematics.Interop;
+using TextAlignment = SharpDX.DirectWrite.TextAlignment;
 
 namespace AppleCinnamon
 {
@@ -14,6 +17,7 @@ namespace AppleCinnamon
         private readonly Graphics _graphics;
         private readonly TextFormat _leftAlignedTextFormat;
         private readonly TextFormat _rightAlignedTextFormat;
+        private readonly Keyboard _keyboard;
 
         public DebugLayout(Graphics graphics)
         {
@@ -26,6 +30,10 @@ namespace AppleCinnamon
             {
                 TextAlignment = TextAlignment.Trailing
             };
+
+            _keyboard = new Keyboard(new DirectInput());
+            _keyboard.Properties.BufferSize = 128;
+            _keyboard.Acquire();
         }
 
 
@@ -68,7 +76,8 @@ namespace AppleCinnamon
 
         private string BuildRightText(ChunkManager chunkManager, Game game)
         {
-            return string.Join("\r\n", chunkManager.PipelinePerformance.Select(s => $"{s.Key}: {s.Value:N0} ms")) + "\r\n" + 
+            return $"Chunk size {Chunk.SizeXy}, View distance: {Game.ViewDistance}, Slice: {Chunk.SliceHeight}\r\n" + 
+                   string.Join("\r\n", chunkManager.PipelinePerformance.Select(s => $"{s.Key}: {s.Value:N0} ms")) + "\r\n" + 
                    $"Total pipeline time: {chunkManager.PipelinePerformance.Values.Sum():N0} ms\r\n" + 
                    $"Boot time: {chunkManager.BootTime.TotalMilliseconds:N0} ms\r\n" + 
                    $"Average render time: {game.AverageRenderTime:F2}\r\n" +
@@ -83,6 +92,11 @@ namespace AppleCinnamon
         {
             var leftText = BuildLeftText(chunkManager, camera);
             var rightText = BuildRightText(chunkManager, game);
+
+            if (_keyboard.GetCurrentState().IsPressed(Key.C) && _keyboard.GetCurrentState().IsPressed(Key.LeftControl))
+            {
+                Clipboard.SetText(rightText);
+            }
 
             using (var leftTextLayout = new TextLayout(_graphics.DirectWrite, leftText, _leftAlignedTextFormat,
                 _graphics.RenderForm.Width - 20, _graphics.RenderForm.Height))
