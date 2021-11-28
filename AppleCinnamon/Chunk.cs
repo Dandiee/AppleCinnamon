@@ -46,9 +46,9 @@ namespace AppleCinnamon
         public Int2 ChunkIndex { get; }
         public Vector3 OffsetVector { get; }
         public Int2 Offset { get; }
-        //public Voxel[] Voxels;
-        public Memory<Voxel> Voxels2;
-        public MemoryHandle Handle;
+        public Voxel[] Voxels;
+        //public Memory<Voxel> Voxels2;
+        //public MemoryHandle Handle;
         public ConcurrentDictionary<Int2, Chunk> Neighbours { get; }
         public ChunkState State { get; set; }
         public BoundingBox BoundingBox;
@@ -56,35 +56,18 @@ namespace AppleCinnamon
         public Vector3 Center { get; private set; }
         public Vector2 Center2d { get; private set; }
 
-        // and still not as fast as direct array addressing :'(
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe Voxel GetVoxel(IntPtr arrayPtr, int i, int j, int k, int height) =>
-            *(Voxel*) IntPtr.Add(arrayPtr, (i + SizeXy * (j + height * k)) * 2);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe Voxel GetVoxel(IntPtr arrayPtr, int flatIndex) =>
-            *(Voxel*)IntPtr.Add(arrayPtr, flatIndex * 2);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe Voxel GetVoxelUnsafe(int flatIndex) => *((Voxel*) Handle.Pointer + flatIndex);
-
-
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        public static unsafe Voxel GetVoxelUnsafe(Chunk chunk, int flatIndex) => *((Voxel*)chunk.Handle.Pointer + flatIndex);
-
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe Voxel GetVoxel(int flatIndex) => *((Voxel*)Handle.Pointer + flatIndex);
+        public unsafe Voxel GetVoxel(int flatIndex) => Voxels[flatIndex];
 
         //[MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe void SetVoxel(int flatIndex, Voxel voxel) => *((Voxel*)Handle.Pointer + flatIndex) = voxel;
+        public unsafe void SetVoxel(int flatIndex, Voxel voxel) => Voxels[flatIndex] = voxel;
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        public unsafe Voxel GetVoxelNoInline(int flatIndex) => *((Voxel*)Handle.Pointer + flatIndex);
+        public unsafe Voxel GetVoxelNoInline(int flatIndex) => Voxels[flatIndex];
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        public unsafe void SetVoxelNoInline(int flatIndex, Voxel voxel) => *((Voxel*)Handle.Pointer + flatIndex) = voxel;
+        public unsafe void SetVoxelNoInline(int flatIndex, Voxel voxel) => Voxels[flatIndex] = voxel;
 
 
         public void ExtendUpward(int heightToFit)
@@ -119,7 +102,7 @@ namespace AppleCinnamon
             sw.Stop();
 
 
-            Voxels2 = new Memory<Voxel>(newVoxels);
+            Voxels = newVoxels;
 
             for (var i = 0; i < SizeXy; i++)
             {
@@ -251,8 +234,7 @@ namespace AppleCinnamon
             Neighbours = new ConcurrentDictionary<Int2, Chunk>();
             VisibilityFlags = new Dictionary<int, byte>();
 
-            Voxels2 = new Memory<Voxel>(voxels);
-            Handle = Voxels2.Pin();
+            Voxels = voxels;
 
             VoxelCount = new Cube<RefInt>(new RefInt(), new RefInt(), new RefInt(), new RefInt(), new RefInt(), new RefInt());
             PendingLeftVoxels = new List<int>(1024);

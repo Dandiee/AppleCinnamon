@@ -228,8 +228,9 @@ namespace AppleCinnamon
 
 
                     var sw = Stopwatch.StartNew();
-                    var renderedChunks = QuickChunks.Where(chunk =>
-                        chunk != null && Vector2.Dot(camera.LookAt2d, chunk.Center2d - camera.Position2d) > 0).ToList();
+                    var renderedChunks = Chunks.Values;// QuickChunks;
+                        //QuickChunks.Where(chunk =>
+                        //chunk != null && Vector2.Dot(camera.LookAt2d, chunk.Center2d - camera.Position2d) > 0).ToList();
                     sw.Stop();
 
                     var sw2 = Stopwatch.StartNew();
