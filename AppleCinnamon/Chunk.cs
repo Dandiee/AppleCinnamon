@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Windows.Forms;
+using AppleCinnamon.Pipeline;
 using AppleCinnamon.System;
 using SharpDX;
 using SharpDX.DXGI;
@@ -31,7 +33,7 @@ namespace AppleCinnamon
         private FaceBuffer _waterBuffer;
         public int VisibleFacesCount { get; set; }
 
-        public Dictionary<int, byte> VisibilityFlags;
+        public Dictionary<int, VisibilityFlag> VisibilityFlags;
         public List<int> TopMostWaterVoxels;
 
         public List<int> PendingLeftVoxels;
@@ -187,52 +189,48 @@ namespace AppleCinnamon
                 return Voxel.One;
             }
 
-            var cx = 0;
-            var cy = 0;
+            var chunk = i > 0 && i < 16 && k > 0 && k < 16 
+                ? this 
+                : Neighbours[new Int2((int)(-((i & 0b10000000_00000000_00000000_00000000) >> 31) + ((i / 16))),
+                    (int)(-((k & 0b10000000_00000000_00000000_00000000) >> 31) + ((k / 16))))];
 
-            if (i < 0)
-            {
-                cx = -1;
-                i = SizeXy - 1;
-            }
-            else if (i == SizeXy)
-            {
-                cx = 1;
-                i = 0;
-            }
-
-            if (k < 0)
-            {
-                cy = -1;
-                k = SizeXy - 1;
-            }
-            else if (k == SizeXy)
-            {
-                cy = 1;
-                k = 0;
-            }
-
-            if (cx == 0 && cy == 0)
-            {
-                return CurrentHeight <= j
-                    ? Voxel.Air
-                    : GetVoxel(Help.GetFlatIndex(i, j, k, CurrentHeight));
-            }
-
-            var chunk = Neighbours[new Int2(cx, cy)];
             return chunk.CurrentHeight <= j
-                   ? Voxel.Air
-                   : chunk.GetVoxel(Help.GetFlatIndex(i, j, k, chunk.CurrentHeight));
+                ? Voxel.Air
+                : chunk.GetVoxel(Help.GetFlatIndex(i & 15, j, k & 15, chunk.CurrentHeight));
         }
 
-      
+        public static IReadOnlyCollection<string> DoThing(IList<string> words, int range, Predicate<string> isRedactedFunc)
+        {
+            var allowedWords = new Stack<(int originalIndex, string word)>();
+
+            for (var i = 0; i < words.Count; i++)
+            {
+                var currentWord = words[i];
+
+                if (!isRedactedFunc(currentWord))
+                {
+                    allowedWords.Push((i, currentWord));
+                }
+                else
+                {
+                    while (allowedWords.Count > 0 && allowedWords.Peek().originalIndex > i - range)
+                    {
+                        allowedWords.Pop();
+                    }
+
+                    i += range;
+                }
+            }
+
+            return allowedWords.Select(s => s.word).ToList();
+        }
 
         public Chunk(
             Int2 chunkIndex,
             Voxel[] voxels)
         {
             Neighbours = new ConcurrentDictionary<Int2, Chunk>();
-            VisibilityFlags = new Dictionary<int, byte>();
+            VisibilityFlags = new Dictionary<int, VisibilityFlag>();
 
             Voxels = voxels;
 
@@ -253,6 +251,9 @@ namespace AppleCinnamon
 
             UpdateBoundingBox();
         }
+
+      
+        
 
         public void SetBuffers(FaceBuffer waterBuffer)
         {

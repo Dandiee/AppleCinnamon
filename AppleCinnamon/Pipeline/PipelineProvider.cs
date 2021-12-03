@@ -37,6 +37,7 @@ namespace AppleCinnamon.Pipeline
             };
 
             var pipeline = new TransformBlock<DataflowContext<Int2>, DataflowContext<Chunk>>(_chunkProvider.GetChunk, dataflowOptions);
+
             var sunlightInitializer = new TransformBlock<DataflowContext<Chunk>, DataflowContext<Chunk>>(_localSunlightInitializer.Process, dataflowOptions);
             var fullScan = new TransformBlock<DataflowContext<Chunk>, DataflowContext<Chunk>>(_fullScanner.Process, dataflowOptions);
             var localLightPropagation = new TransformBlock<DataflowContext<Chunk>, DataflowContext<Chunk>>(_localLightPropagationService.InitializeLocalLight, dataflowOptions);

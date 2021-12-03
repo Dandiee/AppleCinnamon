@@ -3,7 +3,6 @@ using System.Linq;
 using System.Windows.Forms;
 using AppleCinnamon.System;
 using SharpDX;
-using SharpDX.Windows;
 using Point = System.Drawing.Point;
 
 namespace AppleCinnamon
@@ -12,7 +11,7 @@ namespace AppleCinnamon
     {
         public static readonly Vector3 StartPosition = new Vector3(0, 256, 0);
 
-        public const int ViewDistance = 16;
+        public const int ViewDistance = 32;
         public static bool IsBackFaceCullingEnabled { get; set; }
         public static bool IsViewFrustumCullingEnabled { get; set; } = true;
         public static bool ShowChunkBoundingBoxes { get; set; } = false;
@@ -52,7 +51,7 @@ namespace AppleCinnamon
 
         private void StartLoop()
         {
-            RenderLoop.Run(_graphics.RenderForm, () =>
+            SharpDX.Windows.RenderLoop.Run(_graphics.RenderForm, () =>
             {
                 var now = DateTime.Now;
                 var elapsedTime = now - _lastTick;

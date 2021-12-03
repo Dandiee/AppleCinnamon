@@ -42,7 +42,8 @@ namespace AppleCinnamon
 
                 foreach (var faceInfo in offsetIterator)
                 {
-                    if ((visibilityFlag.Value & faceInfo.BuildInfo.DirectionFlag) == faceInfo.BuildInfo.DirectionFlag)
+                    // TODO: ha törik, emiatt
+                    if (((byte)visibilityFlag.Value & faceInfo.BuildInfo.DirectionFlag) == faceInfo.BuildInfo.DirectionFlag)
                     {
                         var neighbor = chunk.GetLocalWithNeighbours(index.X + faceInfo.BuildInfo.Direction.X, index.Y + faceInfo.BuildInfo.Direction.Y, index.Z + faceInfo.BuildInfo.Direction.Z);
                         AddFace(faceInfo, index.X, index.Y, index.Z, vertices, indexes, definition, chunk, neighbor, voxelPositionOffset);

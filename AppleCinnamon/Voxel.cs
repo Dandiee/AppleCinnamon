@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using AppleCinnamon.Settings;
 
 namespace AppleCinnamon
@@ -16,6 +17,7 @@ namespace AppleCinnamon
 
         [FieldOffset(1)]
         public readonly byte Lightness;
+        
 
         public VoxelDefinition GetDefinition() => VoxelDefinition.DefinitionByType[Block];
 

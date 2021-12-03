@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AppleCinnamon.Pipeline;
 using AppleCinnamon.Settings;
 using AppleCinnamon.System;
 using SharpDX;
@@ -10,24 +11,24 @@ namespace AppleCinnamon
 {
     public sealed class ChunkUpdater
     {
-        public static readonly Tuple<Int3, int>[] RemoveMapping =
+        public static readonly Tuple<Int3, VisibilityFlag>[] RemoveMapping =
         {
-            new Tuple<Int3, int>(Int3.UnitY, 2),
-            new Tuple<Int3, int>(-Int3.UnitY, 1),
-            new Tuple<Int3, int>(-Int3.UnitX, 8),
-            new Tuple<Int3, int>(Int3.UnitX, 4),
-            new Tuple<Int3, int>(-Int3.UnitZ, 32),
-            new Tuple<Int3, int>(Int3.UnitZ, 16)
+            new Tuple<Int3, VisibilityFlag>(Int3.UnitY, VisibilityFlag.Bottom),
+            new Tuple<Int3, VisibilityFlag>(-Int3.UnitY, VisibilityFlag.Top),
+            new Tuple<Int3, VisibilityFlag>(-Int3.UnitX, VisibilityFlag.Right),
+            new Tuple<Int3, VisibilityFlag>(Int3.UnitX, VisibilityFlag.Left),
+            new Tuple<Int3, VisibilityFlag>(-Int3.UnitZ, VisibilityFlag.Back),
+            new Tuple<Int3, VisibilityFlag>(Int3.UnitZ, VisibilityFlag.Front)
         };
 
-        public static readonly Dictionary<Int3, int> AddMapping = new Dictionary<Int3, int>
+        public static readonly Dictionary<Int3, VisibilityFlag> AddMapping = new Dictionary<Int3, VisibilityFlag>
         {
-            {Int3.UnitY, 1},
-            {-Int3.UnitY, 2},
-            {-Int3.UnitX, 4},
-            {Int3.UnitX, 8},
-            {-Int3.UnitZ, 16},
-            { Int3.UnitZ, 32},
+            {Int3.UnitY, VisibilityFlag.Top},
+            {-Int3.UnitY, VisibilityFlag.Bottom},
+            {-Int3.UnitX, VisibilityFlag.Left},
+            {Int3.UnitX, VisibilityFlag.Right},
+            {-Int3.UnitZ, VisibilityFlag.Front},
+            { Int3.UnitZ, VisibilityFlag.Back},
         };
 
 
@@ -119,7 +120,7 @@ namespace AppleCinnamon
         private void UpdateVisibilityFlags(Chunk chunk, Voxel oldVoxel, Voxel newVoxel, Int3 relativeIndex)
         {
             var isRemoving = newVoxel.Block == 0;
-            var newVisibilityFlag = 0;
+            var newVisibilityFlag = VisibilityFlag.None;
             chunk.VisibilityFlags.TryGetValue(relativeIndex.ToFlatIndex(chunk.CurrentHeight), out var oldVisibilityFlag);
 
             foreach (var direction in RemoveMapping)
@@ -138,18 +139,18 @@ namespace AppleCinnamon
 
                     if (isRemoving)
                     {
-                        neighbourChunk.VisibilityFlags[neighbourIndex] = (byte) (visibility + direction.Item2);
+                        neighbourChunk.VisibilityFlags[neighbourIndex] = visibility | direction.Item2;
                         neighbourChunk.VoxelCount[OppositeMapping[face]].Value++;
                     }
                     else
                     {
-                        neighbourChunk.VisibilityFlags[neighbourIndex] = (byte)(visibility - direction.Item2);
+                        neighbourChunk.VisibilityFlags[neighbourIndex] = visibility | direction.Item2;
                         neighbourChunk.VoxelCount[OppositeMapping[face]].Value--;
                     }
                 }
                 else
                 {
-                    newVisibilityFlag += AddMapping[direction.Item1];
+                    newVisibilityFlag |= AddMapping[direction.Item1];
                     chunk.VoxelCount[face].Value++;
                 }
             }
@@ -169,7 +170,7 @@ namespace AppleCinnamon
             }
             else
             {
-                chunk.VisibilityFlags[relativeIndex.ToFlatIndex(chunk.CurrentHeight)] = (byte)newVisibilityFlag;
+                chunk.VisibilityFlags[relativeIndex.ToFlatIndex(chunk.CurrentHeight)] = newVisibilityFlag;
             }
 
         }

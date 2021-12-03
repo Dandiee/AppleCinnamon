@@ -33,15 +33,17 @@ namespace AppleCinnamon.Settings
         public readonly Vector3 Translation;
         public readonly bool IsUnitSized;
 
+        public readonly float Height;
 
-        
+
+
 
         public static readonly VoxelDefinition[] DefinitionByType = new VoxelDefinition[255];
 
-        public static readonly VoxelDefinition Air = new VoxelDefinition(0, null, null, 0, Bool3.True, true, true, Vector3.One, Vector3.Zero, false);
+        public static readonly VoxelDefinition Air = new VoxelDefinition(0, null, null, 0, Bool3.True, true, true, Vector3.One, Vector3.Zero, false, 1);
         public static readonly VoxelDefinition Water = new BlockDefinitionBuilder(1).WithAllSideTexture(13, 12).AsSprite().AsPermeable().Build();
-        public static readonly VoxelDefinition Leaves = new BlockDefinitionBuilder(2).WithAllSideTexture(15, 0).Build();
-        public static readonly VoxelDefinition Lava = new BlockDefinitionBuilder(3).WithAllSideTexture(15, 15).Build();
+        public static readonly VoxelDefinition Leaves = new BlockDefinitionBuilder(2).WithAllSideTexture(15, 0).AsTransparent().Build();
+        public static readonly VoxelDefinition Lava = new BlockDefinitionBuilder(3).WithAllSideTexture(15, 15).AsTransparent().Build();
         
 
         //public static readonly VoxelDefinition Stone = new BlockDefinitionBuilder(10).WithAllSideTexture(1, 0).Build();
@@ -55,7 +57,7 @@ namespace AppleCinnamon.Settings
         
 
         public static readonly VoxelDefinition Grass = new BlockDefinitionBuilder(23).WithBottomTexture(2, 0).WithTopTexture(0, 0).WithSideTexture(3, 0).Build();
-        public static readonly VoxelDefinition Snow = new BlockDefinitionBuilder(24).WithBottomTexture(2, 0).WithTopTexture(0, 4).WithSideTexture(4, 4).Build();
+        public static readonly VoxelDefinition Snow = new BlockDefinitionBuilder(24).WithBottomTexture(2, 0).WithTopTexture(0, 4).WithSideTexture(4, 4).WithHeight(1f).Build();
         public static readonly VoxelDefinition EmitterStone = new BlockDefinitionBuilder(25).WithAllSideTexture(1, 0).AsPermeable().AsTransmittance().WithLightEmitting(6).WithTransmittance(true, true, true).WithSize(.2f, 1, .2f).Build();
         public static readonly VoxelDefinition Sand = new BlockDefinitionBuilder(26).WithAllSideTexture(1, 0).Build();
 
@@ -64,7 +66,8 @@ namespace AppleCinnamon.Settings
         public static bool operator ==(VoxelDefinition lhs, VoxelDefinition rhs) => lhs.Type == rhs.Type;
         public static bool operator !=(VoxelDefinition lhs, VoxelDefinition rhs) => lhs.Type != rhs.Type;
 
-        public VoxelDefinition(byte type, Cube<Vector2> textures, Cube<Int2> textureIndexes, byte lightEmitting, Bool3 isTransmittance, bool isTransparent, bool isPermeable, Vector3 size, Vector3 translation, bool isSprite)
+        public VoxelDefinition(byte type, Cube<Vector2> textures, Cube<Int2> textureIndexes, byte lightEmitting, Bool3 isTransmittance, 
+            bool isTransparent, bool isPermeable, Vector3 size, Vector3 translation, bool isSprite, float height)
         {
             Type = type;
             Textures = textures;
@@ -79,6 +82,7 @@ namespace AppleCinnamon.Settings
             Translation = translation;
             TransmittanceBytes = IsTransmittance.Bytes;
             IsSprite = isSprite;
+            Height = height;
         }
     }
 
@@ -96,6 +100,8 @@ namespace AppleCinnamon.Settings
 
         private readonly Cube<Vector2> _textures;
         private readonly Cube<Int2> _textureIndexes;
+
+        private float _height = 1;
 
         public BlockDefinitionBuilder(byte type)
         {
@@ -229,7 +235,14 @@ namespace AppleCinnamon.Settings
         public VoxelDefinition Build()
         {
             return new VoxelDefinition(_type, _textures, _textureIndexes, _lightEmitting, _isTransmittance, _isTransparent,
-                _isPermeable, _size, _translation, _isSprite);
+                _isPermeable, _size, _translation, _isSprite, _height);
+        }
+
+        public BlockDefinitionBuilder WithHeight(float f)
+        {
+            _height = f;
+            _size = new Vector3(_size.X, f, _size.Z);
+            return this;
         }
     }
 }

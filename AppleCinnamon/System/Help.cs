@@ -118,6 +118,14 @@ namespace AppleCinnamon.System
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void ToIndex(this int index, int height, out int i, out int j, out int k)
+        {
+            k = index / (Chunk.SizeXy * height);
+            j = (index - k * Chunk.SizeXy * height) / Chunk.SizeXy;
+            i = index - (k * Chunk.SizeXy * height + j * Chunk.SizeXy);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int ToFlatIndex(this Int3 index, int height) => index.X + Chunk.SizeXy * (index.Y + height * index.Z);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

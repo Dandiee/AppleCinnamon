@@ -28,7 +28,7 @@ namespace AppleCinnamon.Pipeline
                 if (neighbourDefinition.IsTransparent)
                 {
                     chunk.VisibilityFlags.TryGetValue(flatIndex, out var visibility);
-                    chunk.VisibilityFlags[flatIndex] = (byte)(visibility + 4);
+                    chunk.VisibilityFlags[flatIndex] = visibility | VisibilityFlag.Left;
                     chunk.VoxelCount.Left.Value++;
                 }
             }
@@ -45,7 +45,7 @@ namespace AppleCinnamon.Pipeline
                 if (neighbourDefinition.IsTransparent)
                 {
                     chunk.VisibilityFlags.TryGetValue(flatIndex, out var visibility);
-                    chunk.VisibilityFlags[flatIndex] = (byte)(visibility + 8);
+                    chunk.VisibilityFlags[flatIndex] = visibility | VisibilityFlag.Right;
                     chunk.VoxelCount.Right.Value++;
                 }
             }
@@ -62,7 +62,7 @@ namespace AppleCinnamon.Pipeline
                 if (neighbourDefinition.IsTransparent)
                 {
                     chunk.VisibilityFlags.TryGetValue(flatIndex, out var visibility);
-                    chunk.VisibilityFlags[flatIndex] = (byte)(visibility + 16);
+                    chunk.VisibilityFlags[flatIndex] = visibility | VisibilityFlag.Front;
                     chunk.VoxelCount.Front.Value++;
                 }
             }
@@ -79,7 +79,7 @@ namespace AppleCinnamon.Pipeline
                 if (neighbourDefinition.IsTransparent)
                 {
                     chunk.VisibilityFlags.TryGetValue(flatIndex, out var visibility);
-                    chunk.VisibilityFlags[flatIndex] = (byte)(visibility + 32);
+                    chunk.VisibilityFlags[flatIndex] = visibility | VisibilityFlag.Back;
                     chunk.VoxelCount.Back.Value++;
                 }
 
