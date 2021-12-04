@@ -19,15 +19,15 @@ namespace AppleCinnamon.Pipeline
             var sw = Stopwatch.StartNew();
             var chunk = context.Payload;
 
-            var lightPropagationVoxels = chunk.LightPropagationVoxels;
+            var lightPropagationVoxels = chunk.BuildingContext.LightPropagationVoxels;
 
             for (var c = 0; c < lightPropagationVoxels.Count; c++)
             {
                 PropagateLightSource(chunk, lightPropagationVoxels[c], lightPropagationVoxels);
             }
 
-            chunk.LightPropagationVoxels.Clear();
-            chunk.LightPropagationVoxels = null;
+            chunk.BuildingContext.LightPropagationVoxels.Clear();
+            chunk.BuildingContext.LightPropagationVoxels = null;
 
             sw.Stop();
 

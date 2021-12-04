@@ -2,6 +2,7 @@
 using System.Buffers;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -33,17 +34,19 @@ namespace AppleCinnamon
         private FaceBuffer _waterBuffer;
         public int VisibleFacesCount { get; set; }
 
-        public Dictionary<int, VisibilityFlag> VisibilityFlags;
+        
         public List<int> TopMostWaterVoxels;
 
-        public List<int> PendingLeftVoxels;
-        public List<int> PendingRightVoxels;
-        public List<int> PendingFrontVoxels;
-        public List<int> PendingBackVoxels;
-        public List<int> LightPropagationVoxels;
+        //public List<int> PendingLeftVoxels;
+        //public List<int> PendingRightVoxels;
+        //public List<int> PendingFrontVoxels;
+        //public List<int> PendingBackVoxels;
+
+        public readonly ChunkBuildingContext BuildingContext;
+
         
 
-        public Cube<RefInt> VoxelCount { get; }
+        //public Cube<RefInt> VoxelCount { get; }
 
         public Int2 ChunkIndex { get; }
         public Vector3 OffsetVector { get; }
@@ -95,8 +98,8 @@ namespace AppleCinnamon
                 }
             }
 
-            VisibilityFlags =
-                VisibilityFlags.ToDictionary(kvp => kvp.Key.ToIndex(CurrentHeight).ToFlatIndex(expectedHeight),
+            BuildingContext.VisibilityFlags  =
+                BuildingContext.VisibilityFlags.ToDictionary(kvp => kvp.Key.ToIndex(CurrentHeight).ToFlatIndex(expectedHeight),
                     kvp => kvp.Value);
 
             TopMostWaterVoxels = TopMostWaterVoxels.Select(s => s.ToIndex(CurrentHeight).ToFlatIndex(expectedHeight))
@@ -230,16 +233,18 @@ namespace AppleCinnamon
             Voxel[] voxels)
         {
             Neighbours = new ConcurrentDictionary<Int2, Chunk>();
-            VisibilityFlags = new Dictionary<int, VisibilityFlag>();
 
             Voxels = voxels;
 
-            VoxelCount = new Cube<RefInt>(new RefInt(), new RefInt(), new RefInt(), new RefInt(), new RefInt(), new RefInt());
-            PendingLeftVoxels = new List<int>(1024);
-            PendingRightVoxels = new List<int>(1024);
-            PendingFrontVoxels = new List<int>(1024);
-            PendingBackVoxels = new List<int>(1024);
-            LightPropagationVoxels = new List<int>(1024);
+            //VoxelCount = new Cube<RefInt>(new RefInt(), new RefInt(), new RefInt(), new RefInt(), new RefInt(), new RefInt());
+            //PendingLeftVoxels = new List<int>(1024);
+            //PendingRightVoxels = new List<int>(1024);
+            //PendingFrontVoxels = new List<int>(1024);
+            //PendingBackVoxels = new List<int>(1024);
+
+
+            BuildingContext = new ChunkBuildingContext();
+
             TopMostWaterVoxels = new List<int>(128);
             CurrentHeight = (voxels.Length / SliceArea) * SliceHeight;
             ChunkIndex = chunkIndex;

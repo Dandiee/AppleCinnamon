@@ -128,7 +128,8 @@ namespace AppleCinnamon.System
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int ToFlatIndex(this Int3 index, int height) => index.X + Chunk.SizeXy * (index.Y + height * index.Z);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [InlineMethod.Inline]
         public static int GetFlatIndex(int i, int j, int k, int height) => i + Chunk.SizeXy * (j + height * k);
     }
 }

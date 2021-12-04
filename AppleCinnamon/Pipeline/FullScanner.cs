@@ -23,173 +23,48 @@ namespace AppleCinnamon.Pipeline
         Back = 32
     }
 
+  
     public sealed class FullScanner
     {
-        [StructLayout(LayoutKind.Explicit)]
-        public struct FullScanNeighbourIndex
-        {
-            [FieldOffset(0)] public readonly int FlatIndex;
-
-            [FieldOffset(4)] public readonly byte Flag;
-
-            public FullScanNeighbourIndex(int flatIndex, byte flag)
-            {
-                FlatIndex = flatIndex;
-                Flag = flag;
-            }
-        }
-
-        [StructLayout(LayoutKind.Explicit)]
-        public struct FullScanIndex
-        {
-            [FieldOffset(0)] public readonly int FlatIndex;
-
-            [FieldOffset(4)] public readonly FullScanNeighbourIndex[] Neighbours;
-
-            public FullScanIndex(int flatIndex, FullScanNeighbourIndex[] neighbours)
-            {
-                FlatIndex = flatIndex;
-                Neighbours = neighbours;
-            }
-        }
-
-        public static int[] PreBuildIndexes(int sliceIndex)
-        {
-            var height = (sliceIndex + 1) * Chunk.SliceHeight;
-            var indexes = new int[Chunk.SizeXy * height * Chunk.SizeXy * 7];
-            var counter = 0;
-
-            for (var i = 0; i < Chunk.SizeXy; i++)
-            {
-                for (var j = 0; j < height; j++)
-                {
-                    for (var k = 0; k < Chunk.SizeXy; k++)
-                    {
-                        var head = counter * 7;
-                        indexes[head] = Help.GetFlatIndex(i, j, k, height);
-
-                        indexes[head + 1] = j < height - 1 ? Help.GetFlatIndex(i, j + 1, k, height) : -1;
-                        indexes[head + 2] = j > 0 ? Help.GetFlatIndex(i, j - 1, k, height) : -1;
-
-
-                        indexes[head + 3] = i > 0 ? Help.GetFlatIndex(i - 1, j, k, height) : -1;
-                        indexes[head + 4] = i < Chunk.SizeXy - 1 ? Help.GetFlatIndex(i + 1, j, k, height) : -1;
-
-                        indexes[head + 5] = k > 0 ? Help.GetFlatIndex(i, j, k - 1, height) : -1;
-                        indexes[head + 6] = k < Chunk.SizeXy - 1 ? Help.GetFlatIndex(i, j, k + 1, height) : -1;
-
-                        counter++;
-                    }
-                }
-            }
-
-            return indexes;
-        }
-
-        private static Dictionary<int, int[]> GetPendingVoxelIndexes(int sliceIndex)
-        {
-            var height = (sliceIndex + 1) * Chunk.SliceHeight;
-            var counter = 0;
-            var length = Chunk.SizeXy * height;
-
-            var leftIndexes = new int[length];
-            var rightIndexes = new int[length];
-            var frontIndexes = new int[length];
-            var backIndexes = new int[length];
-
-            for (var n = 0; n < Chunk.SizeXy; n++)
-            {
-                for (var j = 0; j < height; j++)
-                {
-                    leftIndexes[counter] = Help.GetFlatIndex(0, j, n, height);
-                    rightIndexes[counter] = Help.GetFlatIndex(Chunk.SizeXy - 1, j, n, height);
-                    frontIndexes[counter] = Help.GetFlatIndex(n, j, 0, height);
-                    backIndexes[counter] = Help.GetFlatIndex(n, j, Chunk.SizeXy - 1, height);
-
-                    counter++;
-                }
-            }
-
-            return new Dictionary<int, int[]>(4)
-            {
-                [4] = leftIndexes,
-                [8] = rightIndexes,
-                [16] = frontIndexes,
-                [32] = backIndexes,
-            };
-        }
-
-        private static readonly Dictionary<int, Func<Chunk, List<int>>> PendingVoxelActions =
-            new Dictionary<int, Func<Chunk, List<int>>>(4)
-            {
-                [4] = chunk => chunk.PendingLeftVoxels,
-                [8] = chunk => chunk.PendingRightVoxels,
-                [16] = chunk => chunk.PendingFrontVoxels,
-                [32] = chunk => chunk.PendingBackVoxels,
-            };
-
-
-        public class BlockIndex
-        {
-            public byte VisibilityFlag;
-            public byte VoxelLight;
-
-            public BlockIndex(byte voxelLight)
-            {
-                VoxelLight = voxelLight;
-                VisibilityFlag = 0;
-            }
-        }
-
-        /// 
-        /// Input: 3D Voxel Array with Sunlight Init
-        /// Output:
-        ///     - scanning each and every single voxel IN THE CHUNK (only locally)
-        ///     - find the visibiltiy flags (which side of the voxel is visible)
-        ///     - identify the lightsoruces (for later usages as light propogator)
-        
         public DataflowContext<Chunk> Process(DataflowContext<Chunk> context)
         {
-            
             var sw = Stopwatch.StartNew();
             var chunk = context.Payload;
 
             var height = chunk.CurrentHeight;
             var voxels = chunk.Voxels;
-            int i, j, k = 0;
-
-            for (i = 0; i < Chunk.SizeXy; i++)
+            
+            int i, j, k;
+            for (k = 0; k < Chunk.SizeXy; k++)
             {
                 for (j = 0; j < height; j++)
                 {
-                    for (k = 0; k < Chunk.SizeXy; k++)
+                    for (i = 0; i < Chunk.SizeXy; i++)
                     {
                         var flatIndex = Help.GetFlatIndex(i, j, k, chunk.CurrentHeight);
                         var voxel = voxels[flatIndex];
 
-                        var def = VoxelDefinition.DefinitionByType[voxel.Block];
-
-
-                        var hasSolidFaces = !def.IsTransparent;
-                        if (!hasSolidFaces && voxel.Lightness == 15)
+                        var definition = VoxelDefinition.DefinitionByType[voxel.Block];
+                        if (definition.IsTransparent && voxel.Lightness == 15)
                         {
                             continue;
                         }
 
                         var visibilityFlag = VisibilityFlag.None;
                         var voxelLight = voxel.Lightness;
-                        
+
 
                         if (j < chunk.CurrentHeight - 1) // top
                         {
                             var neighbor = chunk.Voxels[Help.GetFlatIndex(i, j + 1, k, chunk.CurrentHeight)];
-                            var nDef = VoxelDefinition.DefinitionByType[neighbor.Block];
-                            if (hasSolidFaces)
+                            var neighborDefinition = VoxelDefinition.DefinitionByType[neighbor.Block];
+
+                            if (definition.IsOpaque)
                             {
-                                if (nDef.IsTransparent)
+                                if (neighborDefinition.IsTransparent)
                                 {
                                     visibilityFlag |= VisibilityFlag.Top;
-                                    chunk.VoxelCount.Top.Value++;
+                                    chunk.BuildingContext.Top.VoxelCount++;
                                 }
                             }
                             else if (voxelLight < neighbor.Lightness - 1)
@@ -200,21 +75,21 @@ namespace AppleCinnamon.Pipeline
                                 }
                             }
                         }
-                        else if (hasSolidFaces)
+                        else if (definition.IsOpaque)
                         {
                             visibilityFlag += 1;
-                            chunk.VoxelCount.Top.Value++;
+                            chunk.BuildingContext.Top.VoxelCount++;
                         }
 
                         if (j > 0) // bottom
                         {
                             var neighbor = chunk.Voxels[Help.GetFlatIndex(i, j - 1, k, chunk.CurrentHeight)];
-                            var nDef = VoxelDefinition.DefinitionByType[neighbor.Block];
+                            var neighborDefinition = VoxelDefinition.DefinitionByType[neighbor.Block];
 
-                            if (hasSolidFaces && nDef.IsTransparent)
+                            if (definition.IsOpaque && neighborDefinition.IsTransparent)
                             {
                                 visibilityFlag |= VisibilityFlag.Bottom;
-                                chunk.VoxelCount.Bottom.Value++;
+                                chunk.BuildingContext.Bottom.VoxelCount++;
                             }
                             else if (voxelLight < neighbor.Lightness - 1)
                             {
@@ -225,101 +100,24 @@ namespace AppleCinnamon.Pipeline
                             }
                         }
 
-                        //if (i > 0) //left
-                        //{
-                        //    var neighbor = chunk.Voxels[Help.GetFlatIndex(i - 1, j, k, chunk.CurrentHeight)];
-                        //    var nDef = VoxelDefinition.DefinitionByType[neighbor.Block];
-                        //    if (hasSolidFaces)
-                        //    {
-                        //        if (nDef.IsTransparent || def.Height > nDef.Height)
-                        //        {
-                        //            visibilityFlag |= VisibilityFlag.Left;
-                        //            chunk.VoxelCount.Left.Value++;
-                        //        }
-                        //    }
-                        //    else if (voxelLight < neighbor.Lightness - 1)
-                        //    {
-                        //        voxelLight = (byte)(neighbor.Lightness - 1);
-                        //    }
-                        //}
-                        //else if (hasSolidFaces) chunk.PendingLeftVoxels.Add(flatIndex);
-
-
-                        asd(i, j, k, chunk, hasSolidFaces, def, flatIndex, ref visibilityFlag, ref voxelLight);
-
-
-                        if (i < Chunk.SizeXy - 1) // right
-                        {
-                            var neighbor = chunk.Voxels[Help.GetFlatIndex(i + 1, j, k, chunk.CurrentHeight)];
-                            var nDef = VoxelDefinition.DefinitionByType[neighbor.Block];
-
-                            if (hasSolidFaces)
-                            {
-                                if (nDef.IsTransparent || def.Height > nDef.Height)
-                                {
-                                    visibilityFlag |= VisibilityFlag.Right;
-                                    chunk.VoxelCount.Right.Value++;
-                                }
-                            }
-                            else if (voxelLight < neighbor.Lightness - 1)
-                            {
-                                voxelLight = (byte)(neighbor.Lightness - 1);
-                            }
-                        }
-                        else if (hasSolidFaces) chunk.PendingRightVoxels.Add(flatIndex);
-
-                        if (k > 0) // front
-                        {
-                            var neighbor = chunk.Voxels[Help.GetFlatIndex(i, j, k - 1, chunk.CurrentHeight)];
-                            var nDef = VoxelDefinition.DefinitionByType[neighbor.Block];
-
-                            if (hasSolidFaces)
-                            {
-                                if (nDef.IsTransparent || def.Height > nDef.Height)
-                                {
-                                    visibilityFlag |= VisibilityFlag.Front;
-                                    chunk.VoxelCount.Front.Value++;
-                                }
-                            }
-                            else if (voxelLight < neighbor.Lightness - 1)
-                            {
-                                voxelLight = (byte)(neighbor.Lightness - 1);
-                            }
-                        }
-                        else if (hasSolidFaces) chunk.PendingFrontVoxels.Add(flatIndex);
-
-                        if (k < Chunk.SizeXy - 1) // back
-                        {
-                            var neighbor = chunk.Voxels[Help.GetFlatIndex(i, j, k + 1, chunk.CurrentHeight)];
-                            var nDef = VoxelDefinition.DefinitionByType[neighbor.Block];
-
-                            if (hasSolidFaces)
-                            {
-                                if (nDef.IsTransparent || def.Height > nDef.Height)
-                                {
-                                    visibilityFlag |= VisibilityFlag.Back;
-                                    chunk.VoxelCount.Back.Value++;
-                                }
-                            }
-                            else if (voxelLight < neighbor.Lightness - 1)
-                            {
-                                voxelLight = (byte)(neighbor.Lightness - 1); // fixen 15
-                            }
-                        }
-                        else if (hasSolidFaces) chunk.PendingBackVoxels.Add(flatIndex);
-
+                        BuildHorizontalFace(i > 0,
+                            Help.GetFlatIndex(i - 1, j, k, chunk.CurrentHeight), chunk, definition, flatIndex, ref visibilityFlag, ref voxelLight, chunk.BuildingContext.Left);
+                        BuildHorizontalFace(i < Chunk.SizeXy - 1,
+                            Help.GetFlatIndex(i + 1, j, k, chunk.CurrentHeight), chunk, definition, flatIndex, ref visibilityFlag, ref voxelLight, chunk.BuildingContext.Right);
+                        BuildHorizontalFace(k > 0,                                      
+                            Help.GetFlatIndex(i, j, k - 1, chunk.CurrentHeight), chunk, definition, flatIndex, ref visibilityFlag, ref voxelLight, chunk.BuildingContext.Front);
+                        BuildHorizontalFace(k < Chunk.SizeXy - 1,                       
+                            Help.GetFlatIndex(i, j, k + 1, chunk.CurrentHeight), chunk, definition, flatIndex, ref visibilityFlag, ref voxelLight, chunk.BuildingContext.Back);
 
                         if (visibilityFlag != VisibilityFlag.None)
                         {
-                            chunk.VisibilityFlags[flatIndex] = visibilityFlag;
+                            chunk.BuildingContext.VisibilityFlags[flatIndex] = visibilityFlag;
                         }
 
                         if (voxel.Lightness != voxelLight)
                         {
-
-                            //chunk.Voxels[flatIndex] = new Voxel(voxel.Block, voxelLight);
-                            chunk.SetVoxelNoInline(flatIndex, new Voxel(voxel.Block, voxelLight));
-                            chunk.LightPropagationVoxels.Add(flatIndex);
+                            chunk.Voxels[flatIndex] = new Voxel(voxel.Block, voxelLight);
+                            chunk.BuildingContext.LightPropagationVoxels.Add(flatIndex);
                         }
                     }
                 }
@@ -331,18 +129,21 @@ namespace AppleCinnamon.Pipeline
             return new DataflowContext<Chunk>(context, chunk, sw.ElapsedMilliseconds, nameof(FullScanner));
         }
 
-        private void asd(int i, int j, int k, Chunk chunk, bool hasSolidFaces, VoxelDefinition def, int flatIndex, ref VisibilityFlag visibilityFlag, ref byte voxelLight)
+        [InlineMethod.Inline]
+        private void BuildHorizontalFace(bool isInChunk, int neighborFlatIndex, Chunk chunk, VoxelDefinition definition, 
+            int flatIndex, ref VisibilityFlag visibilityFlag, ref byte voxelLight, FaceBuildingContext context)
         {
-            if (i > 0) //left
+            if (isInChunk)
             {
-                var neighbor = chunk.Voxels[Help.GetFlatIndex(i - 1, j, k, chunk.CurrentHeight)];
-                var nDef = VoxelDefinition.DefinitionByType[neighbor.Block];
-                if (hasSolidFaces)
+                var neighbor = chunk.Voxels[neighborFlatIndex];
+                var neighborDefinition = VoxelDefinition.DefinitionByType[neighbor.Block];
+
+                if (definition.IsOpaque)
                 {
-                    if (nDef.IsTransparent || def.Height > nDef.Height)
+                    if (neighborDefinition.IsTransparent)
                     {
-                        visibilityFlag |= VisibilityFlag.Left;
-                        chunk.VoxelCount.Left.Value++;
+                        visibilityFlag |= context.Direction;
+                        context.VoxelCount++;
                     }
                 }
                 else if (voxelLight < neighbor.Lightness - 1)
@@ -350,7 +151,10 @@ namespace AppleCinnamon.Pipeline
                     voxelLight = (byte)(neighbor.Lightness - 1);
                 }
             }
-            else if (hasSolidFaces) chunk.PendingLeftVoxels.Add(flatIndex);
+            else if (definition.IsOpaque)
+            {
+                context.PendingVoxels.Add(flatIndex);
+            }
         }
     }
 

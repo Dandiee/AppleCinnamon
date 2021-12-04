@@ -18,9 +18,7 @@ namespace AppleCinnamon
         public void BuildChunk(Device device, Chunk chunk)
         {
             var faces = GetChunkFaces(chunk);
-            var visibleFacesCount = chunk.VoxelCount.Top.Value + chunk.VoxelCount.Bottom.Value + chunk.VoxelCount.Left.Value +
-                                    chunk.VoxelCount.Right.Value + chunk.VoxelCount.Front.Value + chunk.VoxelCount.Back.Value;
-
+            var visibleFacesCount = chunk.BuildingContext.Faces.Sum(s => s.VoxelCount);
             if (visibleFacesCount == 0)
             {
                 return;
@@ -30,7 +28,7 @@ namespace AppleCinnamon
             var indexes = new ushort[visibleFacesCount * 6];
             var offsetIterator = faces.GetAll().Select(s => s.Value).ToList();
 
-            foreach (var visibilityFlag in chunk.VisibilityFlags)
+            foreach (var visibilityFlag in chunk.BuildingContext.VisibilityFlags)
             {
                 var flatIndex = visibilityFlag.Key;
                 var index = flatIndex.ToIndex(chunk.CurrentHeight);
@@ -172,12 +170,12 @@ namespace AppleCinnamon
 
         private Cube<ChunkFace> GetChunkFaces(Chunk chunk)
         {
-            var topCount = chunk.VoxelCount.Top.Value;
-            var botCount = chunk.VoxelCount.Bottom.Value;
-            var lefCount = chunk.VoxelCount.Left.Value;
-            var rigCount = chunk.VoxelCount.Right.Value;
-            var froCount = chunk.VoxelCount.Front.Value;
-            var bacCount = chunk.VoxelCount.Back.Value;
+            var topCount = chunk.BuildingContext.Top.VoxelCount;
+            var botCount = chunk.BuildingContext.Bottom.VoxelCount;
+            var lefCount = chunk.BuildingContext.Left.VoxelCount;
+            var rigCount = chunk.BuildingContext.Right.VoxelCount;
+            var froCount = chunk.BuildingContext.Front.VoxelCount;
+            var bacCount = chunk.BuildingContext.Back.VoxelCount;
 
             var topOffset = 0;
             var botOffset = topCount;

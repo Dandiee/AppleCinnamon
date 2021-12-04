@@ -26,6 +26,7 @@ namespace AppleCinnamon.Settings
         public readonly byte TransmittanceBytes;
 
         public readonly bool IsTransparent;
+        public readonly bool IsOpaque;
 
         public readonly bool IsPermeable;
         public readonly bool IsSprite;
@@ -40,8 +41,8 @@ namespace AppleCinnamon.Settings
 
         public static readonly VoxelDefinition[] DefinitionByType = new VoxelDefinition[255];
 
-        public static readonly VoxelDefinition Air = new VoxelDefinition(0, null, null, 0, Bool3.True, true, true, Vector3.One, Vector3.Zero, false, 1);
-        public static readonly VoxelDefinition Water = new BlockDefinitionBuilder(1).WithAllSideTexture(13, 12).AsSprite().AsPermeable().Build();
+        public static readonly VoxelDefinition Air = new VoxelDefinition(0, null, null, 0, Bool3.True, true, true, Vector3.One, Vector3.Zero, false, 1, false);
+        public static readonly VoxelDefinition Water = new BlockDefinitionBuilder(1).WithAllSideTexture(13, 12).AsSprite().AsTransparent().AsPermeable().Build();
         public static readonly VoxelDefinition Leaves = new BlockDefinitionBuilder(2).WithAllSideTexture(15, 0).AsTransparent().Build();
         public static readonly VoxelDefinition Lava = new BlockDefinitionBuilder(3).WithAllSideTexture(15, 15).AsTransparent().Build();
         
@@ -67,7 +68,7 @@ namespace AppleCinnamon.Settings
         public static bool operator !=(VoxelDefinition lhs, VoxelDefinition rhs) => lhs.Type != rhs.Type;
 
         public VoxelDefinition(byte type, Cube<Vector2> textures, Cube<Int2> textureIndexes, byte lightEmitting, Bool3 isTransmittance, 
-            bool isTransparent, bool isPermeable, Vector3 size, Vector3 translation, bool isSprite, float height)
+            bool isTransparent, bool isPermeable, Vector3 size, Vector3 translation, bool isSprite, float height, bool isOpaque)
         {
             Type = type;
             Textures = textures;
@@ -75,6 +76,7 @@ namespace AppleCinnamon.Settings
             LightEmitting = lightEmitting;
             IsTransmittance = isTransmittance;
             IsTransparent = isTransparent;
+            IsOpaque = isOpaque;
             IsPermeable = isPermeable;
             Size = size;
             DefinitionByType[type] = this;
@@ -93,6 +95,7 @@ namespace AppleCinnamon.Settings
         private byte _lightEmitting;
         private Bool3 _isTransmittance;
         private bool _isTransparent;
+        private bool _isOpaque = true;
         private bool _isPermeable;
         private bool _isSprite;
         private Vector3 _size;
@@ -170,6 +173,7 @@ namespace AppleCinnamon.Settings
         public BlockDefinitionBuilder AsTransparent()
         {
             _isTransparent = true;
+            _isOpaque = false;
             return this;
         }
 
@@ -235,7 +239,7 @@ namespace AppleCinnamon.Settings
         public VoxelDefinition Build()
         {
             return new VoxelDefinition(_type, _textures, _textureIndexes, _lightEmitting, _isTransmittance, _isTransparent,
-                _isPermeable, _size, _translation, _isSprite, _height);
+                _isPermeable, _size, _translation, _isSprite, _height, _isOpaque);
         }
 
         public BlockDefinitionBuilder WithHeight(float f)

@@ -17,7 +17,7 @@ namespace AppleCinnamon.Pipeline
             var backChunk = chunk.Neighbours[new Int2(0, 1)];
 
 
-            foreach (var flatIndex in chunk.PendingLeftVoxels)
+            foreach (var flatIndex in chunk.BuildingContext.Left.PendingVoxels)
             {
                 var index = flatIndex.ToIndex(chunk.CurrentHeight);
                 var neighbour = leftChunk.CurrentHeight <= index.Y
@@ -27,13 +27,13 @@ namespace AppleCinnamon.Pipeline
                 var neighbourDefinition = VoxelDefinition.DefinitionByType[neighbour.Block];
                 if (neighbourDefinition.IsTransparent)
                 {
-                    chunk.VisibilityFlags.TryGetValue(flatIndex, out var visibility);
-                    chunk.VisibilityFlags[flatIndex] = visibility | VisibilityFlag.Left;
-                    chunk.VoxelCount.Left.Value++;
+                    chunk.BuildingContext.VisibilityFlags.TryGetValue(flatIndex, out var visibility);
+                    chunk.BuildingContext.VisibilityFlags[flatIndex] = visibility | VisibilityFlag.Left;
+                    chunk.BuildingContext.Left.VoxelCount++;
                 }
             }
 
-            foreach (var flatIndex in chunk.PendingRightVoxels)
+            foreach (var flatIndex in chunk.BuildingContext.Right.PendingVoxels)
             {
                 var index = flatIndex.ToIndex(chunk.CurrentHeight);
 
@@ -44,13 +44,13 @@ namespace AppleCinnamon.Pipeline
                 var neighbourDefinition = VoxelDefinition.DefinitionByType[neighbour.Block];
                 if (neighbourDefinition.IsTransparent)
                 {
-                    chunk.VisibilityFlags.TryGetValue(flatIndex, out var visibility);
-                    chunk.VisibilityFlags[flatIndex] = visibility | VisibilityFlag.Right;
-                    chunk.VoxelCount.Right.Value++;
+                    chunk.BuildingContext.VisibilityFlags.TryGetValue(flatIndex, out var visibility);
+                    chunk.BuildingContext.VisibilityFlags[flatIndex] = visibility | VisibilityFlag.Right;
+                    chunk.BuildingContext.Right.VoxelCount++;
                 }
             }
 
-            foreach (var flatIndex in chunk.PendingFrontVoxels)
+            foreach (var flatIndex in chunk.BuildingContext.Front.PendingVoxels)
             {
                 var index = flatIndex.ToIndex(chunk.CurrentHeight);
 
@@ -61,13 +61,13 @@ namespace AppleCinnamon.Pipeline
                 var neighbourDefinition = VoxelDefinition.DefinitionByType[neighbour.Block];
                 if (neighbourDefinition.IsTransparent)
                 {
-                    chunk.VisibilityFlags.TryGetValue(flatIndex, out var visibility);
-                    chunk.VisibilityFlags[flatIndex] = visibility | VisibilityFlag.Front;
-                    chunk.VoxelCount.Front.Value++;
+                    chunk.BuildingContext.VisibilityFlags.TryGetValue(flatIndex, out var visibility);
+                    chunk.BuildingContext.VisibilityFlags[flatIndex] = visibility | VisibilityFlag.Front;
+                    chunk.BuildingContext.Front.VoxelCount++;
                 }
             }
 
-            foreach (var flatIndex in chunk.PendingBackVoxels)
+            foreach (var flatIndex in chunk.BuildingContext.Back.PendingVoxels)
             {
                 var index = flatIndex.ToIndex(chunk.CurrentHeight);
 
@@ -78,9 +78,9 @@ namespace AppleCinnamon.Pipeline
                 var neighbourDefinition = VoxelDefinition.DefinitionByType[neighbour.Block];
                 if (neighbourDefinition.IsTransparent)
                 {
-                    chunk.VisibilityFlags.TryGetValue(flatIndex, out var visibility);
-                    chunk.VisibilityFlags[flatIndex] = visibility | VisibilityFlag.Back;
-                    chunk.VoxelCount.Back.Value++;
+                    chunk.BuildingContext.VisibilityFlags.TryGetValue(flatIndex, out var visibility);
+                    chunk.BuildingContext.VisibilityFlags[flatIndex] = visibility | VisibilityFlag.Back;
+                    chunk.BuildingContext.Back.VoxelCount++;
                 }
 
             }
@@ -95,16 +95,10 @@ namespace AppleCinnamon.Pipeline
 
         private void CleanUpMemory(Chunk chunk)
         {
-            chunk.PendingLeftVoxels.Clear();
-            chunk.PendingRightVoxels.Clear();
-            chunk.PendingFrontVoxels.Clear();
-            chunk.PendingBackVoxels.Clear();
-
-
-            chunk.PendingLeftVoxels = null;
-            chunk.PendingRightVoxels = null;
-            chunk.PendingFrontVoxels = null;
-            chunk.PendingBackVoxels = null;
+            foreach (var face in chunk.BuildingContext.Faces)
+            {
+                face.PendingVoxels.Clear();
+            }
         }
     }
 }
