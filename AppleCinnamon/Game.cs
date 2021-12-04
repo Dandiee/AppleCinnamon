@@ -9,9 +9,9 @@ namespace AppleCinnamon
 {
     public sealed class Game
     {
-        public static readonly Vector3 StartPosition = new Vector3(0, 256, 0);
+        public static readonly Vector3 StartPosition = new Vector3(0, 127, 0);
 
-        public const int ViewDistance = 16;
+        public const int ViewDistance = 8;
         public static bool IsBackFaceCullingEnabled { get; set; }
         public static bool IsViewFrustumCullingEnabled { get; set; } = true;
         public static bool ShowChunkBoundingBoxes { get; set; } = false;

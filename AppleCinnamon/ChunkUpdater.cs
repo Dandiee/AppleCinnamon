@@ -145,7 +145,7 @@ namespace AppleCinnamon
                     }
                     else
                     {
-                        neighbourChunk.BuildingContext.VisibilityFlags[neighbourIndex] = visibility | direction.Item2;
+                        neighbourChunk.BuildingContext.VisibilityFlags[neighbourIndex] = visibility ^ direction.Item2;
                         neighbourChunk.BuildingContext.Faces[(byte)OppositeMapping[face]].VoxelCount--;
                     }
                 }
