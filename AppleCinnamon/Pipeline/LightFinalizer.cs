@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Xml.Linq;
 using AppleCinnamon.Settings;
 using AppleCinnamon.System;
 using SharpDX;
+using SharpDX.Direct2D1;
 
 namespace AppleCinnamon.Pipeline
 {
@@ -40,19 +42,27 @@ namespace AppleCinnamon.Pipeline
 
             foreach (var corner in Corners)
             {
-                var cornerChunk = chunk.Neighbours[corner];
+                //var cornerChunk = chunk.Neighbours[corner];
+                var cornerChunk = chunk.Neighbours2[Help.GetChunkFlatIndex(corner)];
 
-                ProcessEdge(cornerChunk, chunk.Neighbours[new Int2(corner.X, 0)]);
-                ProcessEdge(cornerChunk, chunk.Neighbours[new Int2(0, corner.Y)]);
+                //ProcessEdge(cornerChunk, chunk.Neighbours[new Int2(corner.X, 0)]);
+                //ProcessEdge(cornerChunk, chunk.Neighbours[new Int2(0, corner.Y)]);
+
+                ProcessEdge(cornerChunk, chunk.Neighbours2[ Help.GetChunkFlatIndex(corner.X, 0)]);
+                ProcessEdge(cornerChunk, chunk.Neighbours2[Help.GetChunkFlatIndex(0, corner.Y)]);
             }
 
             foreach (var edge in Edges)
             {
-                var edgeChunk = chunk.Neighbours[edge];
+                //var edgeChunk = chunk.Neighbours[edge];
+                var edgeChunk = chunk.Neighbours2[Help.GetChunkFlatIndex(edge)];
 
                 var offset = new Int2(Math.Sign(edge.Y), Math.Sign(edge.X));
-                ProcessEdge(chunk.Neighbours[edge + offset], edgeChunk);
-                ProcessEdge(chunk.Neighbours[edge - offset], edgeChunk);
+                //ProcessEdge(chunk.Neighbours[edge + offset], edgeChunk);
+                //ProcessEdge(chunk.Neighbours[edge - offset], edgeChunk);
+
+                ProcessEdge(chunk.Neighbours2[Help.GetChunkFlatIndex(edge + offset)], edgeChunk);
+                ProcessEdge(chunk.Neighbours2[Help.GetChunkFlatIndex(edge - offset)], edgeChunk);
 
                 ProcessEdge(edgeChunk, chunk);
             }

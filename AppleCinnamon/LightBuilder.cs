@@ -59,7 +59,8 @@ namespace AppleCinnamon
 
                 if (brightest == null || brightest.Item3 < voxel.Lightness)
                 {
-                    brightest = new Tuple<Chunk, Int3, byte>(chunk.Neighbours[address.ChunkIndex],
+                    //brightest = new Tuple<Chunk, Int3, byte>(chunk.Neighbours[address.ChunkIndex],
+                    brightest = new Tuple<Chunk, Int3, byte>(chunk.Neighbours2[ Help.GetChunkFlatIndex(address.ChunkIndex)],
                         address.RelativeVoxelIndex, voxel.Lightness);
                 }
             }
@@ -191,7 +192,7 @@ namespace AppleCinnamon
                     //if (voxel.Lightness == 15 || definition.LightEmitting > 0)
                     if (voxel.Lightness >= originalLightness) // voxel.Lightness == 15 || definition.LightEmitting > 0)
                     {
-                        lightSources.Add(new Tuple<Chunk, Int3>(sourceChunk.Neighbours[address.ChunkIndex],
+                        lightSources.Add(new Tuple<Chunk, Int3>(sourceChunk.Neighbours2[Help.GetChunkFlatIndex(address.ChunkIndex)],
                             address.RelativeVoxelIndex));
                     }
                     else if (
@@ -199,7 +200,8 @@ namespace AppleCinnamon
                         //definition.IsTransmittance 
                         && voxel.Lightness > 0)
                     {
-                        var newChunk = sourceChunk.Neighbours[address.ChunkIndex];
+                        //var newChunk = sourceChunk.Neighbours[address.ChunkIndex];
+                        var newChunk = sourceChunk.Neighbours2[Help.GetChunkFlatIndex(address.ChunkIndex)];
                         newChunk.SetVoxel(address.RelativeVoxelIndex.ToFlatIndex(newChunk.CurrentHeight), new Voxel(voxel.Block, 0));
 
                         PropagateDarkness(newChunk, address.RelativeVoxelIndex, lightSources, voxel.Lightness);
@@ -226,7 +228,8 @@ namespace AppleCinnamon
                     // targetDefinition.IsTransmittance 
                     && targetVoxel.Lightness < sourceVoxel.Lightness - 1)
                 {
-                    var targetChunk = sourceChunk.Neighbours[targetAddress.ChunkIndex];
+                    //var targetChunk = sourceChunk.Neighbours[targetAddress.ChunkIndex];
+                    var targetChunk = sourceChunk.Neighbours2[Help.GetChunkFlatIndex(targetAddress.ChunkIndex)];
                     targetChunk.SetVoxel(targetAddress.RelativeVoxelIndex.ToFlatIndex(targetChunk.CurrentHeight),
                         new Voxel(targetVoxel.Block, (byte) (sourceVoxel.Lightness - 1)));
 

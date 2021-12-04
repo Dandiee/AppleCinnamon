@@ -11,10 +11,15 @@ namespace AppleCinnamon.Pipeline
             var sw = Stopwatch.StartNew();
             var chunk = context.Payload;
 
-            var leftChunk = chunk.Neighbours[new Int2(-1, 0)];
-            var rightChunk = chunk.Neighbours[new Int2(1, 0)];
-            var frontChunk = chunk.Neighbours[new Int2(0, -1)];
-            var backChunk = chunk.Neighbours[new Int2(0, 1)];
+            //var leftChunk = chunk.Neighbours[new Int2(-1, 0)];
+            //var rightChunk = chunk.Neighbours[new Int2(1, 0)];
+            //var frontChunk = chunk.Neighbours[new Int2(0, -1)];
+            //var backChunk = chunk.Neighbours[new Int2(0, 1)];
+
+            var leftChunk = chunk.Neighbours2[Help.GetChunkFlatIndex(-1, 0)];
+            var rightChunk = chunk.Neighbours2[Help.GetChunkFlatIndex(1, 0)];
+            var frontChunk = chunk.Neighbours2[Help.GetChunkFlatIndex(0, -1)];
+            var backChunk = chunk.Neighbours2[Help.GetChunkFlatIndex(0, 1)];
 
 
             foreach (var flatIndex in chunk.BuildingContext.Left.PendingVoxels)

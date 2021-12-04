@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace AppleCinnamon.System
 {
@@ -16,32 +14,8 @@ namespace AppleCinnamon.System
 
     public sealed class Cube<T>
     {
-        public T this[Face face]
-        {
-            get => Getters[face](this);
-            set => Setters[face](this, value);
-        }
-
-        private static readonly IReadOnlyDictionary<Face, Action<Cube<T>, T>> Setters = new Dictionary<Face, Action<Cube<T>, T>>
-        {
-            [Face.Top] = (cube, value) => cube.Top = value,
-            [Face.Bottom] = (cube, value) => cube.Bottom = value,
-            [Face.Left] = (cube, value) => cube.Left = value,
-            [Face.Right] = (cube, value) => cube.Right = value,
-            [Face.Front] = (cube, value) => cube.Front = value, // -Z
-            [Face.Back] = (cube, value) => cube.Back = value    // +Z
-        };
-
-        private static readonly IReadOnlyDictionary<Face, Func<Cube<T>, T>> Getters = new Dictionary<Face, Func<Cube<T>, T>>
-        {
-            [Face.Top] = cube => cube.Top,
-            [Face.Bottom] = cube => cube.Bottom,
-            [Face.Left] = cube => cube.Left,
-            [Face.Right] = cube => cube.Right,
-            [Face.Front] = cube => cube.Front,
-            [Face.Back] = cube => cube.Back
-        };
-
+        public readonly T[] Faces;
+        
         public T Top;
         public T Bottom;
         public T Left;
@@ -49,7 +23,6 @@ namespace AppleCinnamon.System
         public T Front;
         public T Back;
 
-        public Cube() { }
         public Cube(T top, T bottom, T left, T right, T front, T back)
         {
             Top = top;
@@ -58,27 +31,49 @@ namespace AppleCinnamon.System
             Right = right;
             Front = front;
             Back = back;
+
+            Faces = new[] { Top, Bottom, Left, Right, Front, Back };
         }
 
         public static Cube<T> CreateDefault(Func<T> factory)
         {
-            return new Cube<T>(factory(), factory(), factory(), factory(), factory(), factory());
+            return new(factory(), factory(), factory(), factory(), factory(), factory());
         }
 
-        public Cube<TNew> Transform<TNew>(Func<T, TNew> transformer)
+        public void SetTop(T value)
         {
-            return new Cube<TNew>(
-                transformer(Top),
-                transformer(Bottom),
-                transformer(Left),
-                transformer(Right),
-                transformer(Front),
-                transformer(Back));
+            Top = value;
+            Faces[(byte)Face.Top] = value;
         }
 
-        public IEnumerable<KeyValuePair<Face, T>> GetAll()
+        public void SetBottom(T value)
         {
-            return Getters.Select(g => new KeyValuePair<Face, T>(g.Key, g.Value(this)));
+            Bottom = value;
+            Faces[(byte)Face.Bottom] = value;
+        }
+
+        public void SetLeft(T value)
+        {
+            Left = value;
+            Faces[(byte)Face.Left] = value;
+        }
+
+        public void SetRight(T value)
+        {
+            Right = value;
+            Faces[(byte)Face.Right] = value;
+        }
+
+        public void SetFront(T value)
+        {
+            Front = value;
+            Faces[(byte)Face.Front] = value;
+        }
+
+        public void SetBack(T value)
+        {
+            Back = value;
+            Faces[(byte)Face.Back] = value;
         }
     }
 }

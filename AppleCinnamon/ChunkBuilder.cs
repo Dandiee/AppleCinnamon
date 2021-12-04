@@ -26,7 +26,6 @@ namespace AppleCinnamon
 
             var vertices = new VertexSolidBlock[visibleFacesCount * 4];
             var indexes = new ushort[visibleFacesCount * 6];
-            var offsetIterator = faces.GetAll().Select(s => s.Value).ToList();
 
             foreach (var visibilityFlag in chunk.BuildingContext.VisibilityFlags)
             {
@@ -38,9 +37,9 @@ namespace AppleCinnamon
 
                 var voxelPositionOffset = definition.Translation + chunk.OffsetVector + new Vector3(index.X, index.Y, index.Z);
 
-                foreach (var faceInfo in offsetIterator)
+
+                foreach (var faceInfo in faces.Faces)
                 {
-                    // TODO: ha törik, emiatt
                     if (((byte)visibilityFlag.Value & faceInfo.BuildInfo.DirectionFlag) == faceInfo.BuildInfo.DirectionFlag)
                     {
                         var neighbor = chunk.GetLocalWithNeighbours(index.X + faceInfo.BuildInfo.Direction.X, index.Y + faceInfo.BuildInfo.Direction.Y, index.Z + faceInfo.BuildInfo.Direction.Z);
@@ -116,15 +115,15 @@ namespace AppleCinnamon
         public void AddFace(ChunkFace face, int relativeIndexX, int relativeIndexY, int relativeIndexZ, VertexSolidBlock[] vertices, ushort[] indexes, VoxelDefinition definition, Chunk chunk, Voxel neighbor, Vector3 voxelPositionOffset)
         {
             // Face specific base variables
-            var textureUv = definition.TextureIndexes[face.BuildInfo.Face];
+            var textureUv = definition.TextureIndexes.Faces[(byte)face.BuildInfo.Face];
             var offset = face.Offset + face.ProcessedVoxels;
             var vertexIndex = offset * 4;
             var indexIndex = offset * 6;
 
             // Initialize ambient neighbours
-            var ambientNeighbourIndex = face.BuildInfo.FirstNeighbourIndex;
-            var ambientNeighbourVoxel = chunk.GetLocalWithNeighbours(relativeIndexX + ambientNeighbourIndex.X, relativeIndexY + ambientNeighbourIndex.Y, relativeIndexZ + ambientNeighbourIndex.Z);
-            var ambientNeighbourDefinition = VoxelDefinition.DefinitionByType[ambientNeighbourVoxel.Block];
+            var ambientNeighborIndex = face.BuildInfo.FirstNeighbourIndex;
+            var ambientNeighborVoxel = chunk.GetLocalWithNeighbours(relativeIndexX + ambientNeighborIndex.X, relativeIndexY + ambientNeighborIndex.Y, relativeIndexZ + ambientNeighborIndex.Z);
+            var ambientNeighborDefinition = VoxelDefinition.DefinitionByType[ambientNeighborVoxel.Block];
 
             // Visit all ambient neighbours
             foreach (var vertexInfo in face.BuildInfo.VerticesInfo)
@@ -134,18 +133,18 @@ namespace AppleCinnamon
                     vertexInfo.Position.Y * definition.Size.Y + voxelPositionOffset.Y,
                     vertexInfo.Position.Z * definition.Size.Z + voxelPositionOffset.Z);
 
-                var totalNeighbourLight = ambientNeighbourVoxel.Lightness;
-                var numberOfAmbientNeighbours = ambientNeighbourDefinition.IsTransparent ? 0 : 1;
+                var totalNeighbourLight = ambientNeighborVoxel.Lightness;
+                var numberOfAmbientNeighbours = ambientNeighborDefinition.IsTransparent ? 0 : 1;
 
                 foreach (var ambientIndex in vertexInfo.AmbientOcclusionNeighbors)
                 {
-                    ambientNeighbourIndex = ambientIndex;
-                    ambientNeighbourVoxel = chunk.GetLocalWithNeighbours(relativeIndexX + ambientNeighbourIndex.X, relativeIndexY + ambientNeighbourIndex.Y, relativeIndexZ + ambientNeighbourIndex.Z);
-                    ambientNeighbourDefinition = VoxelDefinition.DefinitionByType[ambientNeighbourVoxel.Block];
+                    ambientNeighborIndex = ambientIndex;
+                    ambientNeighborVoxel = chunk.GetLocalWithNeighbours(relativeIndexX + ambientNeighborIndex.X, relativeIndexY + ambientNeighborIndex.Y, relativeIndexZ + ambientNeighborIndex.Z);
+                    ambientNeighborDefinition = VoxelDefinition.DefinitionByType[ambientNeighborVoxel.Block];
 
-                    if (ambientNeighbourDefinition.IsTransparent)
+                    if (ambientNeighborDefinition.IsTransparent)
                     {
-                        totalNeighbourLight += ambientNeighbourVoxel.Lightness;
+                        totalNeighbourLight += ambientNeighborVoxel.Lightness;
                     }
                     else
                     {
@@ -208,7 +207,7 @@ namespace AppleCinnamon
         public static readonly Vector3 BotRigBac = new Vector3(+.5f, -.5f, +.5f);
 
         public static readonly Cube<Vector3[]> FaceVertices =
-            new Cube<Vector3[]>(
+            new(
                 new[] { TopLefFro, TopRigFro, TopRigBac, TopLefBac },
                 new[] { BotRigFro, BotLefFro, BotLefBac, BotRigBac },
                 new[] { TopLefFro, TopLefBac, BotLefBac, BotLefFro },
@@ -312,9 +311,9 @@ namespace AppleCinnamon
             DirectionFlag = FaceVisibilityFlagMapping[face];
             Face = face;
             Direction = FaceDirectionMapping[face];
-            VerticesInfo = FaceVertices[face].Select((vector, index) =>
-                new VertexBuildInfo(index, vector, AmbientIndexes[face][index], UvOffsetIndexes[index])).ToArray();
-            FirstNeighbourIndex = FirstAmbientIndexes[face];
+            VerticesInfo = FaceVertices.Faces[(byte)face].Select((vector, index) =>
+                new VertexBuildInfo(index, vector, AmbientIndexes.Faces[(byte)face][index], UvOffsetIndexes[index])).ToArray();
+            FirstNeighbourIndex = FirstAmbientIndexes.Faces[(byte)face];
         }
     }
 

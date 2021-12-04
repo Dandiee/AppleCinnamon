@@ -54,7 +54,9 @@ namespace AppleCinnamon
         public Voxel[] Voxels;
         //public Memory<Voxel> Voxels2;
         //public MemoryHandle Handle;
-        public ConcurrentDictionary<Int2, Chunk> Neighbours { get; }
+        //public Dictionary<Int2, Chunk> Neighbours { get; }
+        public Chunk[] Neighbours2 { get; }
+
         public ChunkState State { get; set; }
         public BoundingBox BoundingBox;
         public Vector3 ChunkIndexVector { get; }
@@ -138,53 +140,26 @@ namespace AppleCinnamon
         {
             if (j < 0 || j >= CurrentHeight)
             {
-                address = new VoxelAddress();
+                address = VoxelAddress.Zero;
                 return Voxel.One;
             }
 
-            var cx = 0;
-            var cy = 0;
+            var cx = (int)(-((i & 0b10000000_00000000_00000000_00000000) >> 31) + ((i / 16)));
+            var cy = (int)(-((k & 0b10000000_00000000_00000000_00000000) >> 31) + ((k / 16)));
 
-            if (i < 0)
-            {
-                cx = -1;
-                i = SizeXy - 1;
-            }
-            else if (i == SizeXy)
-            {
-                cx = 1;
-                i = 0;
-            }
+            i = i & 15;
+            k = k & 15;
 
-            if (k < 0)
-            {
-                cy = -1;
-                k = SizeXy - 1;
-            }
-            else if (k == SizeXy)
-            {
-                cy = 1;
-                k = 0;
-            }
+            var chunk = Neighbours2[Help.GetChunkFlatIndex(cx, cy)];
+            address = new VoxelAddress(new Int2(cx, cy), new Int3(i, j, k));
 
-            if (cx == 0 && cy == 0)
-            {
-                address = new VoxelAddress(Int2.Zero, new Int3(i, j, k));
-                return CurrentHeight <= j
-                    ? Voxel.Air
-                    : GetVoxel(Help.GetFlatIndex(i, j, k, CurrentHeight));
-            }
-
-            var neighbourIndex = new Int2(cx, cy);
-            address = new VoxelAddress(neighbourIndex, new Int3(i, j, k));
-
-            var chunk = Neighbours[new Int2(cx, cy)];
-            return chunk.CurrentHeight <= j
+            return CurrentHeight <= j
                 ? Voxel.Air
                 : chunk.GetVoxel(Help.GetFlatIndex(i, j, k, chunk.CurrentHeight));
         }
 
-        [MethodImpl(MethodImplOptions.NoInlining)]
+        //[MethodImpl(MethodImplOptions.NoInlining)]
+        [InlineMethod.Inline]
         public Voxel GetLocalWithNeighbours(int i, int j, int k)
         {
             if (j < 0)
@@ -192,47 +167,22 @@ namespace AppleCinnamon
                 return Voxel.One;
             }
 
-            var chunk = i > 0 && i < 16 && k > 0 && k < 16 
-                ? this 
-                : Neighbours[new Int2((int)(-((i & 0b10000000_00000000_00000000_00000000) >> 31) + ((i / 16))),
-                    (int)(-((k & 0b10000000_00000000_00000000_00000000) >> 31) + ((k / 16))))];
+            var chunk = Neighbours2[Help.GetChunkFlatIndex(
+                (int) (-((i & 0b10000000_00000000_00000000_00000000) >> 31) + ((i / 16))),
+                (int) (-((k & 0b10000000_00000000_00000000_00000000) >> 31) + ((k / 16))))];
 
             return chunk.CurrentHeight <= j
                 ? Voxel.Air
                 : chunk.GetVoxel(Help.GetFlatIndex(i & 15, j, k & 15, chunk.CurrentHeight));
         }
 
-        public static IReadOnlyCollection<string> DoThing(IList<string> words, int range, Predicate<string> isRedactedFunc)
-        {
-            var allowedWords = new Stack<(int originalIndex, string word)>();
-
-            for (var i = 0; i < words.Count; i++)
-            {
-                var currentWord = words[i];
-
-                if (!isRedactedFunc(currentWord))
-                {
-                    allowedWords.Push((i, currentWord));
-                }
-                else
-                {
-                    while (allowedWords.Count > 0 && allowedWords.Peek().originalIndex > i - range)
-                    {
-                        allowedWords.Pop();
-                    }
-
-                    i += range;
-                }
-            }
-
-            return allowedWords.Select(s => s.word).ToList();
-        }
 
         public Chunk(
             Int2 chunkIndex,
             Voxel[] voxels)
         {
-            Neighbours = new ConcurrentDictionary<Int2, Chunk>();
+            //Neighbours = new Dictionary<Int2, Chunk>();
+            Neighbours2 = new Chunk[9];
 
             Voxels = voxels;
 

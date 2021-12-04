@@ -133,7 +133,8 @@ namespace AppleCinnamon
 
                 if (!neighbourDefinition.IsTransparent)
                 {
-                    var neighbourChunk = chunk.Neighbours[neighbourAddress.ChunkIndex];
+                    //var neighbourChunk = chunk.Neighbours[neighbourAddress.ChunkIndex];
+                    var neighbourChunk = chunk.Neighbours2[Help.GetChunkFlatIndex(neighbourAddress.ChunkIndex)];
                     var neighbourIndex = neighbourAddress.RelativeVoxelIndex.ToFlatIndex(neighbourChunk.CurrentHeight);
                     neighbourChunk.BuildingContext.VisibilityFlags.TryGetValue(neighbourIndex, out var visibility);
 

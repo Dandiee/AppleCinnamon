@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using AppleCinnamon.System;
 
 namespace AppleCinnamon.Pipeline
@@ -50,17 +51,23 @@ namespace AppleCinnamon.Pipeline
                     {
                         var index = new Int2(i, k);
                         var inverseIndex = -index;
-                        neighbourChunk.Neighbours[inverseIndex] = chunk;
-                        chunk.Neighbours[index] = neighbourChunk;
+                        
+                        //neighbourChunk.Neighbours[inverseIndex] = chunk;
+                        neighbourChunk.Neighbours2[Help.GetChunkFlatIndex(inverseIndex)] = chunk;
 
-                        if (neighbourChunk.Neighbours.Count == 9 &&
+                        //chunk.Neighbours[index] = neighbourChunk;
+                        chunk.Neighbours2[Help.GetChunkFlatIndex(index)] = neighbourChunk;
+
+                        //if (neighbourChunk.Neighbours.Count == 9 &&
+                        if (neighbourChunk.Neighbours2.Count(s =>s != null) == 9 &&
                             neighbourChunk.State < ChunkState.DispatchedToDisplay)
                         {
                             neighbourChunk.State = ChunkState.DispatchedToDisplay;
                             yield return neighbourChunk;
                         }
 
-                        if (chunk.Neighbours.Count == 9 &&
+                        //if (chunk.Neighbours.Count == 9 &&
+                        if (chunk.Neighbours2.Count(s => s != null) == 9 &&
                             chunk.State < ChunkState.DispatchedToDisplay && chunk != neighbourChunk)
                         {
                             chunk.State = ChunkState.DispatchedToDisplay;

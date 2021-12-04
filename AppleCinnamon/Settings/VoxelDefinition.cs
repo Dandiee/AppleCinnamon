@@ -109,8 +109,8 @@ namespace AppleCinnamon.Settings
         public BlockDefinitionBuilder(byte type)
         {
             _type = type;
-            _textures = new Cube<Vector2>();
-            _textureIndexes = new Cube<Int2>();
+            _textures = Cube<Vector2>.CreateDefault(() => Vector2.Zero);
+            _textureIndexes = Cube<Int2>.CreateDefault(() => Int2.Zero);
             _size = Vector3.One;
         }
 
@@ -182,16 +182,16 @@ namespace AppleCinnamon.Settings
         public BlockDefinitionBuilder WithTopTexture(Int2 uv) => WithTopTexture(uv.X, uv.Y);
         public BlockDefinitionBuilder WithTopTexture(int u, int v)
         {
-            _textures.Top = new Vector2(u / 16f, v / 16f);
-            _textureIndexes.Top = new Int2(u, v);
+            _textures.SetTop(new Vector2(u / 16f, v / 16f));
+            _textureIndexes.SetTop(new Int2(u, v));
             return this;
         }
 
         public BlockDefinitionBuilder WithBottomTexture(Int2 uv) => WithBottomTexture(uv.X, uv.Y);
         public BlockDefinitionBuilder WithBottomTexture(int u, int v)
         {
-            _textures.Bottom = new Vector2(u / 16f, v / 16f);
-            _textureIndexes.Bottom = new Int2(u, v);
+            _textures.SetBottom(new Vector2(u / 16f, v / 16f));
+            _textureIndexes.SetBottom(new Int2(u, v));
             return this;
         }
 
@@ -200,16 +200,16 @@ namespace AppleCinnamon.Settings
         public BlockDefinitionBuilder WithSideTexture(int u, int v)
         {
             var coords = new Vector2(u / 16f, v / 16f);
-            _textures.Left = coords;
-            _textures.Right = coords;
-            _textures.Front = coords;
-            _textures.Back = coords;
+            _textures.SetLeft (coords);
+            _textures.SetRight( coords);
+            _textures.SetFront( coords);
+            _textures.SetBack (coords);
 
 
-            _textureIndexes.Left = new Int2(u, v);
-            _textureIndexes.Right = new Int2(u, v);
-            _textureIndexes.Front = new Int2(u, v);
-            _textureIndexes.Back = new Int2(u, v);
+            _textureIndexes.SetLeft(new Int2(u, v));
+            _textureIndexes.SetRight(new Int2(u, v));
+            _textureIndexes.SetFront(new Int2(u, v));
+            _textureIndexes.SetBack(new Int2(u, v));
 
             return this;
         }
@@ -218,20 +218,20 @@ namespace AppleCinnamon.Settings
         public BlockDefinitionBuilder WithAllSideTexture(int u, int v)
         {
             var coords = new Vector2(u / 16f, v / 16f);
-            _textures.Left = coords;
-            _textures.Right = coords;
-            _textures.Front = coords;
-            _textures.Back = coords;
-            _textures.Top = coords;
-            _textures.Bottom = coords;
+            _textures.SetLeft   (coords);
+            _textures.SetRight  (coords);
+            _textures.SetFront  (coords);
+            _textures.SetBack   (coords);
+            _textures.SetTop    (coords);
+            _textures.SetBottom (coords);
 
 
-            _textureIndexes.Left = new Int2(u, v);
-            _textureIndexes.Right = new Int2(u, v);
-            _textureIndexes.Front = new Int2(u, v);
-            _textureIndexes.Back = new Int2(u, v);
-            _textureIndexes.Top = new Int2(u, v);
-            _textureIndexes.Bottom = new Int2(u, v);
+            _textureIndexes.SetLeft(new Int2(u, v));
+            _textureIndexes.SetRight  (new Int2(u, v));
+            _textureIndexes.SetFront  (new Int2(u, v));
+            _textureIndexes.SetBack   (new Int2(u, v));
+            _textureIndexes.SetTop    (new Int2(u, v));
+            _textureIndexes.SetBottom (new Int2(u, v));
 
             return this;
         }
