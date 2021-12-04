@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using AppleCinnamon.Settings;
 using AppleCinnamon.System;
 using SharpDX;
@@ -19,53 +18,41 @@ namespace AppleCinnamon.Pipeline
             var sw = Stopwatch.StartNew();
             var chunk = context.Payload;
 
-            var lightPropagationVoxels = chunk.BuildingContext.LightPropagationVoxels;
-
-            for (var c = 0; c < lightPropagationVoxels.Count; c++)
+            while (chunk.BuildingContext.LightPropagationVoxels.Count > 0)
             {
-                PropagateLightSource(chunk, lightPropagationVoxels[c], lightPropagationVoxels);
-            }
+                var lightSourceFlatIndex = chunk.BuildingContext.LightPropagationVoxels.Dequeue();
 
-            chunk.BuildingContext.LightPropagationVoxels.Clear();
-            chunk.BuildingContext.LightPropagationVoxels = null;
+                var voxelLightness = chunk.GetVoxel(lightSourceFlatIndex).Lightness;
+                var index = lightSourceFlatIndex.ToIndex(chunk.CurrentHeight);
 
-            sw.Stop();
-
-            return new DataflowContext<Chunk>(context, context.Payload, sw.ElapsedMilliseconds, nameof(LocalLightPropagationService));
-        }
-
-
-        private void PropagateLightSource(Chunk chunk, int lightSourceFlatIndex, List<int> lightSources)
-        {
-            var voxelLightness = chunk.GetVoxel(lightSourceFlatIndex).Lightness;
-            var index = lightSourceFlatIndex.ToIndex(chunk.CurrentHeight);
-
-            foreach (var direction in Directions)
-            {
-                var neighbourX = index.X + direction.X;
-                if ((neighbourX & Chunk.SizeXy) == 0)
+                foreach (var direction in Directions)
                 {
-                    var neighbourY = index.Y + direction.Y;
-                    if (neighbourY > 0 && neighbourY < chunk.CurrentHeight)
+                    var neighborX = index.X + direction.X;
+                    if ((neighborX & Chunk.SizeXy) == 0)
                     {
-                        var neighbourZ = index.Z + direction.Z;
-                        if ((neighbourZ & Chunk.SizeXy) == 0)
+                        var neighborY = index.Y + direction.Y;
+                        if (neighborY > 0 && neighborY < chunk.CurrentHeight)
                         {
-                            var neighbourIndex = new Int3(neighbourX, neighbourY, neighbourZ);
-                            var neighbourFlatIndex = neighbourIndex.ToFlatIndex(chunk.CurrentHeight);
-                            var neighbourVoxel = chunk.GetVoxelNoInline(neighbourFlatIndex);
-                            var neighborDefinition = VoxelDefinition.DefinitionByType[neighbourVoxel.Block];
-
-                            if (neighborDefinition.IsTransparent && neighbourVoxel.Lightness < voxelLightness - 1)
+                            var neighborZ = index.Z + direction.Z;
+                            if ((neighborZ & Chunk.SizeXy) == 0)
                             {
-                                chunk.SetVoxelNoInline(neighbourFlatIndex, new Voxel(neighbourVoxel.Block, (byte)(voxelLightness - 1)));
-
-                                lightSources.Add(neighbourFlatIndex);
+                                var neighborFlatIndex = Help.GetFlatIndex(neighborX, neighborY, neighborZ, chunk.CurrentHeight);
+                                var neighborVoxel = chunk.GetVoxelNoInline(neighborFlatIndex);
+                                
+                                if (VoxelDefinition.DefinitionByType[neighborVoxel.Block].IsTransparent && neighborVoxel.Lightness < voxelLightness - 1)
+                                {
+                                    chunk.SetVoxelNoInline(neighborFlatIndex, new Voxel(neighborVoxel.Block, (byte)(voxelLightness - 1)));
+                                    chunk.BuildingContext.LightPropagationVoxels.Enqueue(neighborFlatIndex);
+                                }
                             }
                         }
                     }
                 }
             }
+
+            sw.Stop();
+
+            return new DataflowContext<Chunk>(context, context.Payload, sw.ElapsedMilliseconds, nameof(LocalLightPropagationService));
         }
     }
 }

@@ -125,28 +125,28 @@ namespace AppleCinnamon
 
             foreach (var direction in RemoveMapping)
             {
-                var neighbour = relativeIndex + direction.Item1;
-                var neighbourVoxel =
-                    chunk.GetLocalWithNeighbours(neighbour.X, neighbour.Y, neighbour.Z, out var neighbourAddress);
-                var neighbourDefinition = VoxelDefinition.DefinitionByType[neighbourVoxel.Block];
+                var neighbor = relativeIndex + direction.Item1;
+                var neighborVoxel =
+                    chunk.GetLocalWithneighbors(neighbor.X, neighbor.Y, neighbor.Z, out var neighborAddress);
+                var neighborDefinition = VoxelDefinition.DefinitionByType[neighborVoxel.Block];
                 var face = FaceMapping[direction.Item1];
 
-                if (!neighbourDefinition.IsTransparent)
+                if (!neighborDefinition.IsTransparent)
                 {
-                    //var neighbourChunk = chunk.Neighbours[neighbourAddress.ChunkIndex];
-                    var neighbourChunk = chunk.Neighbours2[Help.GetChunkFlatIndex(neighbourAddress.ChunkIndex)];
-                    var neighbourIndex = neighbourAddress.RelativeVoxelIndex.ToFlatIndex(neighbourChunk.CurrentHeight);
-                    neighbourChunk.BuildingContext.VisibilityFlags.TryGetValue(neighbourIndex, out var visibility);
+                    //var neighborChunk = chunk.neighbors[neighborAddress.ChunkIndex];
+                    var neighborChunk = chunk.neighbors2[Help.GetChunkFlatIndex(neighborAddress.ChunkIndex)];
+                    var neighborIndex = neighborAddress.RelativeVoxelIndex.ToFlatIndex(neighborChunk.CurrentHeight);
+                    neighborChunk.BuildingContext.VisibilityFlags.TryGetValue(neighborIndex, out var visibility);
 
                     if (isRemoving)
                     {
-                        neighbourChunk.BuildingContext.VisibilityFlags[neighbourIndex] = visibility | direction.Item2;
-                        neighbourChunk.BuildingContext.Faces[(byte)OppositeMapping[face]].VoxelCount++;
+                        neighborChunk.BuildingContext.VisibilityFlags[neighborIndex] = visibility | direction.Item2;
+                        neighborChunk.BuildingContext.Faces[(byte)OppositeMapping[face]].VoxelCount++;
                     }
                     else
                     {
-                        neighbourChunk.BuildingContext.VisibilityFlags[neighbourIndex] = visibility ^ direction.Item2;
-                        neighbourChunk.BuildingContext.Faces[(byte)OppositeMapping[face]].VoxelCount--;
+                        neighborChunk.BuildingContext.VisibilityFlags[neighborIndex] = visibility ^ direction.Item2;
+                        neighborChunk.BuildingContext.Faces[(byte)OppositeMapping[face]].VoxelCount--;
                     }
                 }
                 else

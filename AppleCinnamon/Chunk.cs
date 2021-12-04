@@ -54,8 +54,8 @@ namespace AppleCinnamon
         public Voxel[] Voxels;
         //public Memory<Voxel> Voxels2;
         //public MemoryHandle Handle;
-        //public Dictionary<Int2, Chunk> Neighbours { get; }
-        public Chunk[] Neighbours2 { get; }
+        //public Dictionary<Int2, Chunk> neighbors { get; }
+        public Chunk[] neighbors2 { get; }
 
         public ChunkState State { get; set; }
         public BoundingBox BoundingBox;
@@ -136,7 +136,7 @@ namespace AppleCinnamon
             Center2d = new Vector2(position.X, position.Z);
         }
 
-        public Voxel GetLocalWithNeighbours(int i, int j, int k, out VoxelAddress address)
+        public Voxel GetLocalWithneighbors(int i, int j, int k, out VoxelAddress address)
         {
             if (j < 0 || j >= CurrentHeight)
             {
@@ -147,27 +147,24 @@ namespace AppleCinnamon
             var cx = (int)(-((i & 0b10000000_00000000_00000000_00000000) >> 31) + ((i / 16)));
             var cy = (int)(-((k & 0b10000000_00000000_00000000_00000000) >> 31) + ((k / 16)));
 
-            i = i & 15;
-            k = k & 15;
-
-            var chunk = Neighbours2[Help.GetChunkFlatIndex(cx, cy)];
-            address = new VoxelAddress(new Int2(cx, cy), new Int3(i, j, k));
+            var chunk = neighbors2[Help.GetChunkFlatIndex(cx, cy)];
+            address = new VoxelAddress(new Int2(cx, cy), new Int3(i & 15, j, k & 15));
 
             return CurrentHeight <= j
                 ? Voxel.Air
-                : chunk.GetVoxel(Help.GetFlatIndex(i, j, k, chunk.CurrentHeight));
+                : chunk.GetVoxel(Help.GetFlatIndex(address.RelativeVoxelIndex.X, j, address.RelativeVoxelIndex.Z, chunk.CurrentHeight));
         }
 
         //[MethodImpl(MethodImplOptions.NoInlining)]
         [InlineMethod.Inline]
-        public Voxel GetLocalWithNeighbours(int i, int j, int k)
+        public Voxel GetLocalWithneighbors(int i, int j, int k)
         {
             if (j < 0)
             {
                 return Voxel.One;
             }
 
-            var chunk = Neighbours2[Help.GetChunkFlatIndex(
+            var chunk = neighbors2[Help.GetChunkFlatIndex(
                 (int) (-((i & 0b10000000_00000000_00000000_00000000) >> 31) + ((i / 16))),
                 (int) (-((k & 0b10000000_00000000_00000000_00000000) >> 31) + ((k / 16))))];
 
@@ -181,8 +178,8 @@ namespace AppleCinnamon
             Int2 chunkIndex,
             Voxel[] voxels)
         {
-            //Neighbours = new Dictionary<Int2, Chunk>();
-            Neighbours2 = new Chunk[9];
+            //neighbors = new Dictionary<Int2, Chunk>();
+            neighbors2 = new Chunk[9];
 
             Voxels = voxels;
 

@@ -11,84 +11,17 @@ namespace AppleCinnamon.Pipeline
             var sw = Stopwatch.StartNew();
             var chunk = context.Payload;
 
-            //var leftChunk = chunk.Neighbours[new Int2(-1, 0)];
-            //var rightChunk = chunk.Neighbours[new Int2(1, 0)];
-            //var frontChunk = chunk.Neighbours[new Int2(0, -1)];
-            //var backChunk = chunk.Neighbours[new Int2(0, 1)];
-
-            var leftChunk = chunk.Neighbours2[Help.GetChunkFlatIndex(-1, 0)];
-            var rightChunk = chunk.Neighbours2[Help.GetChunkFlatIndex(1, 0)];
-            var frontChunk = chunk.Neighbours2[Help.GetChunkFlatIndex(0, -1)];
-            var backChunk = chunk.Neighbours2[Help.GetChunkFlatIndex(0, 1)];
+            var leftChunk = chunk.neighbors2[Help.GetChunkFlatIndex(-1, 0)];
+            var rightChunk = chunk.neighbors2[Help.GetChunkFlatIndex(1, 0)];
+            var frontChunk = chunk.neighbors2[Help.GetChunkFlatIndex(0, -1)];
+            var backChunk = chunk.neighbors2[Help.GetChunkFlatIndex(0, 1)];
 
 
-            foreach (var flatIndex in chunk.BuildingContext.Left.PendingVoxels)
-            {
-                var index = flatIndex.ToIndex(chunk.CurrentHeight);
-                var neighbour = leftChunk.CurrentHeight <= index.Y
-                    ? Voxel.Air
-                    : leftChunk.GetVoxel(Help.GetFlatIndex(Chunk.SizeXy - 1, index.Y, index.Z, leftChunk.CurrentHeight));
-
-                var neighbourDefinition = VoxelDefinition.DefinitionByType[neighbour.Block];
-                if (neighbourDefinition.IsTransparent)
-                {
-                    chunk.BuildingContext.VisibilityFlags.TryGetValue(flatIndex, out var visibility);
-                    chunk.BuildingContext.VisibilityFlags[flatIndex] = visibility | VisibilityFlag.Left;
-                    chunk.BuildingContext.Left.VoxelCount++;
-                }
-            }
-
-            foreach (var flatIndex in chunk.BuildingContext.Right.PendingVoxels)
-            {
-                var index = flatIndex.ToIndex(chunk.CurrentHeight);
-
-                var neighbour = rightChunk.CurrentHeight <= index.Y
-                    ? Voxel.Air
-                    : rightChunk.GetVoxel(Help.GetFlatIndex(0, index.Y, index.Z, rightChunk.CurrentHeight));
-
-                var neighbourDefinition = VoxelDefinition.DefinitionByType[neighbour.Block];
-                if (neighbourDefinition.IsTransparent)
-                {
-                    chunk.BuildingContext.VisibilityFlags.TryGetValue(flatIndex, out var visibility);
-                    chunk.BuildingContext.VisibilityFlags[flatIndex] = visibility | VisibilityFlag.Right;
-                    chunk.BuildingContext.Right.VoxelCount++;
-                }
-            }
-
-            foreach (var flatIndex in chunk.BuildingContext.Front.PendingVoxels)
-            {
-                var index = flatIndex.ToIndex(chunk.CurrentHeight);
-
-                var neighbour = frontChunk.CurrentHeight <= index.Y
-                    ? Voxel.Air
-                    : frontChunk.GetVoxel(Help.GetFlatIndex(index.X, index.Y, Chunk.SizeXy - 1, frontChunk.CurrentHeight));
-
-                var neighbourDefinition = VoxelDefinition.DefinitionByType[neighbour.Block];
-                if (neighbourDefinition.IsTransparent)
-                {
-                    chunk.BuildingContext.VisibilityFlags.TryGetValue(flatIndex, out var visibility);
-                    chunk.BuildingContext.VisibilityFlags[flatIndex] = visibility | VisibilityFlag.Front;
-                    chunk.BuildingContext.Front.VoxelCount++;
-                }
-            }
-
-            foreach (var flatIndex in chunk.BuildingContext.Back.PendingVoxels)
-            {
-                var index = flatIndex.ToIndex(chunk.CurrentHeight);
-
-                var neighbour = backChunk.CurrentHeight <= index.Y
-                    ? Voxel.Air
-                    : backChunk.GetVoxel(Help.GetFlatIndex(index.X, index.Y, 0, backChunk.CurrentHeight));
-
-                var neighbourDefinition = VoxelDefinition.DefinitionByType[neighbour.Block];
-                if (neighbourDefinition.IsTransparent)
-                {
-                    chunk.BuildingContext.VisibilityFlags.TryGetValue(flatIndex, out var visibility);
-                    chunk.BuildingContext.VisibilityFlags[flatIndex] = visibility | VisibilityFlag.Back;
-                    chunk.BuildingContext.Back.VoxelCount++;
-                }
-
-            }
+            ProcessSide(chunk, leftChunk, chunk.BuildingContext.Left);
+            ProcessSide(chunk, rightChunk, chunk.BuildingContext.Right);
+            ProcessSide(chunk, frontChunk, chunk.BuildingContext.Front);
+            ProcessSide(chunk, backChunk, chunk.BuildingContext.Back);
+            
 
             sw.Stop();
 
@@ -96,6 +29,26 @@ namespace AppleCinnamon.Pipeline
 
 
             return new DataflowContext<Chunk>(context, chunk, sw.ElapsedMilliseconds, nameof(GlobalVisibilityFinalizer));
+        }
+
+
+        [InlineMethod.Inline]
+        private static void ProcessSide(Chunk chunk, Chunk neighborChunk, FaceBuildingContext context)
+        {
+            foreach (var flatIndex in context.PendingVoxels)
+            {
+                var index = flatIndex.ToIndex(chunk.CurrentHeight);
+                var neighbor = neighborChunk.CurrentHeight <= index.Y
+                    ? Voxel.Air
+                    : neighborChunk.GetVoxel(context.GetNeighborIndex(index, neighborChunk.CurrentHeight));
+
+                if (VoxelDefinition.DefinitionByType[neighbor.Block].IsTransparent)
+                {
+                    chunk.BuildingContext.VisibilityFlags.TryGetValue(flatIndex, out var visibility);
+                    chunk.BuildingContext.VisibilityFlags[flatIndex] = visibility | context.Direction;
+                    context.VoxelCount++;
+                }
+            }
         }
 
         private void CleanUpMemory(Chunk chunk)

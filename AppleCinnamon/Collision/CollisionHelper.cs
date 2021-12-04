@@ -172,8 +172,8 @@ namespace AppleCinnamon.Collision
 
                 if (timeOfImpact > 0 && timeOfImpact < realElapsedTime && earliestTimeOfImpact > timeOfImpact)
                 {
-                    var neighbour = chunkManager.GetVoxel(absoluteIndex + Int3.UnitX);
-                    if (neighbour.HasValue && neighbour.Value.GetDefinition().IsPermeable)
+                    var neighbor = chunkManager.GetVoxel(absoluteIndex + Int3.UnitX);
+                    if (neighbor.HasValue && neighbor.Value.GetDefinition().IsPermeable)
                     {
                         result = -Vector3.UnitX * penetrationDepth;
                         earliestTimeOfImpact = timeOfImpact;
@@ -191,8 +191,8 @@ namespace AppleCinnamon.Collision
 
                 if (timeOfImpact > 0 && timeOfImpact < realElapsedTime && earliestTimeOfImpact > timeOfImpact)
                 {
-                    var neighbour = chunkManager.GetVoxel(absoluteIndex - Int3.UnitX);
-                    if (neighbour.HasValue && neighbour.Value.GetDefinition().IsPermeable)
+                    var neighbor = chunkManager.GetVoxel(absoluteIndex - Int3.UnitX);
+                    if (neighbor.HasValue && neighbor.Value.GetDefinition().IsPermeable)
                     {
                         result = Vector3.UnitX * penetrationDepth;
                         earliestTimeOfImpact = timeOfImpact;
@@ -209,8 +209,8 @@ namespace AppleCinnamon.Collision
 
                 if (timeOfImpact > 0 && timeOfImpact < realElapsedTime && earliestTimeOfImpact > timeOfImpact)
                 {
-                    var neighbour = chunkManager.GetVoxel(absoluteIndex + Int3.UnitZ);
-                    if (neighbour.HasValue && neighbour.Value.GetDefinition().IsPermeable)
+                    var neighbor = chunkManager.GetVoxel(absoluteIndex + Int3.UnitZ);
+                    if (neighbor.HasValue && neighbor.Value.GetDefinition().IsPermeable)
                     {
                         result = -Vector3.UnitZ * penetrationDepth;
                         earliestTimeOfImpact = timeOfImpact;
@@ -228,8 +228,8 @@ namespace AppleCinnamon.Collision
 
                 if (timeOfImpact > 0 && timeOfImpact < realElapsedTime && earliestTimeOfImpact > timeOfImpact)
                 {
-                    var neighbour = chunkManager.GetVoxel(absoluteIndex - Int3.UnitZ);
-                    if (neighbour.HasValue && neighbour.Value.GetDefinition().IsPermeable)
+                    var neighbor = chunkManager.GetVoxel(absoluteIndex - Int3.UnitZ);
+                    if (neighbor.HasValue && neighbor.Value.GetDefinition().IsPermeable)
                     {
                         result = Vector3.UnitZ * penetrationDepth;
                         earliestTimeOfImpact = timeOfImpact;
@@ -247,8 +247,8 @@ namespace AppleCinnamon.Collision
 
                 if (timeOfImpact > 0 && timeOfImpact < realElapsedTime && earliestTimeOfImpact > timeOfImpact)
                 {
-                    var neighbour = chunkManager.GetVoxel(absoluteIndex + Int3.UnitY);
-                    if (neighbour.HasValue && neighbour.Value.GetDefinition().IsPermeable)
+                    var neighbor = chunkManager.GetVoxel(absoluteIndex + Int3.UnitY);
+                    if (neighbor.HasValue && neighbor.Value.GetDefinition().IsPermeable)
                     {
                         result = -Vector3.UnitY * penetrationDepth;
                         earliestTimeOfImpact = timeOfImpact;
@@ -266,8 +266,8 @@ namespace AppleCinnamon.Collision
 
                 if (timeOfImpact > 0 && timeOfImpact < realElapsedTime && earliestTimeOfImpact > timeOfImpact)
                 {
-                    var neighbour = chunkManager.GetVoxel(absoluteIndex - Int3.UnitY);
-                    if (neighbour.HasValue && neighbour.Value.GetDefinition().IsPermeable)
+                    var neighbor = chunkManager.GetVoxel(absoluteIndex - Int3.UnitY);
+                    if (neighbor.HasValue && neighbor.Value.GetDefinition().IsPermeable)
                     {
                         result = Vector3.UnitY * penetrationDepth;
                         earliestTimeOfImpact = timeOfImpact;

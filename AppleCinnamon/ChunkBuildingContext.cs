@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using AppleCinnamon.Pipeline;
 using AppleCinnamon.System;
+using SharpDX;
 
 namespace AppleCinnamon
 {
@@ -16,7 +18,7 @@ namespace AppleCinnamon
         public readonly FaceBuildingContext[] Faces;
 
         public Dictionary<int, VisibilityFlag> VisibilityFlags = new();
-        public List<int> LightPropagationVoxels = new(1024);
+        public Queue<int> LightPropagationVoxels = new(1024);
 
         public ChunkBuildingContext()
         {
@@ -44,15 +46,29 @@ namespace AppleCinnamon
                 [Face.Back] = VisibilityFlag.Back,
             };
 
+        private static readonly IReadOnlyDictionary<Face, Func<Int3, int, int>> NeighborIndexFuncs =
+            new Dictionary<Face, Func<Int3, int, int>>
+            {
+                [Face.Left] = (ijk, height) => Help.GetFlatIndex(Chunk.SizeXy - 1, ijk.Y, ijk.Z, height),
+                [Face.Right] = (ijk, height) => Help.GetFlatIndex(0, ijk.Y, ijk.Z, height),
+                [Face.Front] = (ijk, height) => Help.GetFlatIndex(ijk.X, ijk.Y, Chunk.SizeXy - 1, height),
+                [Face.Back] = (ijk, height) => Help.GetFlatIndex(ijk.X, ijk.Y, 0, height)
+            };
+
         public FaceBuildingContext(Face face)
         {
             Face = face;
             Direction = FaceMapping[face];
+            if (NeighborIndexFuncs.TryGetValue(face, out var getNeighborIndex))
+            {
+                GetNeighborIndex = getNeighborIndex;
+            }
         }
 
         public readonly Face Face;
         public readonly VisibilityFlag Direction;
         public readonly List<int> PendingVoxels = new();
+        public readonly Func<Int3, int, int> GetNeighborIndex;
         public int VoxelCount;
     }
     

@@ -117,7 +117,7 @@ namespace AppleCinnamon.Pipeline
                         if (voxel.Lightness != voxelLight)
                         {
                             chunk.Voxels[flatIndex] = new Voxel(voxel.Block, voxelLight);
-                            chunk.BuildingContext.LightPropagationVoxels.Add(flatIndex);
+                            chunk.BuildingContext.LightPropagationVoxels.Enqueue(flatIndex);
                         }
                     }
                 }

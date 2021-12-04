@@ -42,7 +42,7 @@ namespace AppleCinnamon
                 {
                     if (((byte)visibilityFlag.Value & faceInfo.BuildInfo.DirectionFlag) == faceInfo.BuildInfo.DirectionFlag)
                     {
-                        var neighbor = chunk.GetLocalWithNeighbours(index.X + faceInfo.BuildInfo.Direction.X, index.Y + faceInfo.BuildInfo.Direction.Y, index.Z + faceInfo.BuildInfo.Direction.Z);
+                        var neighbor = chunk.GetLocalWithneighbors(index.X + faceInfo.BuildInfo.Direction.X, index.Y + faceInfo.BuildInfo.Direction.Y, index.Z + faceInfo.BuildInfo.Direction.Z);
                         AddFace(faceInfo, index.X, index.Y, index.Z, vertices, indexes, definition, chunk, neighbor, voxelPositionOffset);
                     }
                 }
@@ -120,12 +120,12 @@ namespace AppleCinnamon
             var vertexIndex = offset * 4;
             var indexIndex = offset * 6;
 
-            // Initialize ambient neighbours
-            var ambientNeighborIndex = face.BuildInfo.FirstNeighbourIndex;
-            var ambientNeighborVoxel = chunk.GetLocalWithNeighbours(relativeIndexX + ambientNeighborIndex.X, relativeIndexY + ambientNeighborIndex.Y, relativeIndexZ + ambientNeighborIndex.Z);
+            // Initialize ambient neighbors
+            var ambientNeighborIndex = face.BuildInfo.FirstneighborIndex;
+            var ambientNeighborVoxel = chunk.GetLocalWithneighbors(relativeIndexX + ambientNeighborIndex.X, relativeIndexY + ambientNeighborIndex.Y, relativeIndexZ + ambientNeighborIndex.Z);
             var ambientNeighborDefinition = VoxelDefinition.DefinitionByType[ambientNeighborVoxel.Block];
 
-            // Visit all ambient neighbours
+            // Visit all ambient neighbors
             foreach (var vertexInfo in face.BuildInfo.VerticesInfo)
             {
                 var position = new Vector3(
@@ -133,28 +133,28 @@ namespace AppleCinnamon
                     vertexInfo.Position.Y * definition.Size.Y + voxelPositionOffset.Y,
                     vertexInfo.Position.Z * definition.Size.Z + voxelPositionOffset.Z);
 
-                var totalNeighbourLight = ambientNeighborVoxel.Lightness;
-                var numberOfAmbientNeighbours = ambientNeighborDefinition.IsTransparent ? 0 : 1;
+                var totalneighborLight = ambientNeighborVoxel.Lightness;
+                var numberOfAmbientneighbors = ambientNeighborDefinition.IsTransparent ? 0 : 1;
 
                 foreach (var ambientIndex in vertexInfo.AmbientOcclusionNeighbors)
                 {
                     ambientNeighborIndex = ambientIndex;
-                    ambientNeighborVoxel = chunk.GetLocalWithNeighbours(relativeIndexX + ambientNeighborIndex.X, relativeIndexY + ambientNeighborIndex.Y, relativeIndexZ + ambientNeighborIndex.Z);
+                    ambientNeighborVoxel = chunk.GetLocalWithneighbors(relativeIndexX + ambientNeighborIndex.X, relativeIndexY + ambientNeighborIndex.Y, relativeIndexZ + ambientNeighborIndex.Z);
                     ambientNeighborDefinition = VoxelDefinition.DefinitionByType[ambientNeighborVoxel.Block];
 
                     if (ambientNeighborDefinition.IsTransparent)
                     {
-                        totalNeighbourLight += ambientNeighborVoxel.Lightness;
+                        totalneighborLight += ambientNeighborVoxel.Lightness;
                     }
                     else
                     {
-                        numberOfAmbientNeighbours++;
+                        numberOfAmbientneighbors++;
                     }
                 }
 
                 vertices[vertexIndex + vertexInfo.Index] = new VertexSolidBlock(position, textureUv.X + vertexInfo.TextureIndex.X,
-                    textureUv.Y + vertexInfo.TextureIndex.Y, neighbor.Lightness, totalNeighbourLight,
-                    numberOfAmbientNeighbours);
+                    textureUv.Y + vertexInfo.TextureIndex.Y, neighbor.Lightness, totalneighborLight,
+                    numberOfAmbientneighbors);
             }
 
             indexes[indexIndex] = (ushort)vertexIndex;
@@ -302,7 +302,7 @@ namespace AppleCinnamon
         public readonly byte DirectionFlag;
         public readonly Face Face;
         public readonly Int3 Direction;
-        public readonly Int3 FirstNeighbourIndex;
+        public readonly Int3 FirstneighborIndex;
         public readonly VertexBuildInfo[] VerticesInfo;
 
         private FaceBuildInfo(Face face)
@@ -313,7 +313,7 @@ namespace AppleCinnamon
             Direction = FaceDirectionMapping[face];
             VerticesInfo = FaceVertices.Faces[(byte)face].Select((vector, index) =>
                 new VertexBuildInfo(index, vector, AmbientIndexes.Faces[(byte)face][index], UvOffsetIndexes[index])).ToArray();
-            FirstNeighbourIndex = FirstAmbientIndexes.Faces[(byte)face];
+            FirstneighborIndex = FirstAmbientIndexes.Faces[(byte)face];
         }
     }
 

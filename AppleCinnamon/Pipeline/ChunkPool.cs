@@ -24,7 +24,7 @@ namespace AppleCinnamon.Pipeline
                 yield break;
             }
 
-            var readyChunks = SetNeighbours(chunk);
+            var readyChunks = Setneighbors(chunk);
 
             foreach (var readyChunk in readyChunks)
             {
@@ -40,35 +40,35 @@ namespace AppleCinnamon.Pipeline
         }
 
 
-        private IEnumerable<Chunk> SetNeighbours(Chunk chunk)
+        private IEnumerable<Chunk> Setneighbors(Chunk chunk)
         {
             for (var i = -1; i <= 1; i++)
             {
                 for (var k = -1; k <= 1; k++)
                 {
-                    var neighbourChunkIndex = new Int2(chunk.ChunkIndex.X + i, chunk.ChunkIndex.Y + k);
-                    if (_chunks.TryGetValue(neighbourChunkIndex, out var neighbourChunk))
+                    var neighborChunkIndex = new Int2(chunk.ChunkIndex.X + i, chunk.ChunkIndex.Y + k);
+                    if (_chunks.TryGetValue(neighborChunkIndex, out var neighborChunk))
                     {
                         var index = new Int2(i, k);
                         var inverseIndex = -index;
                         
-                        //neighbourChunk.Neighbours[inverseIndex] = chunk;
-                        neighbourChunk.Neighbours2[Help.GetChunkFlatIndex(inverseIndex)] = chunk;
+                        //neighborChunk.neighbors[inverseIndex] = chunk;
+                        neighborChunk.neighbors2[Help.GetChunkFlatIndex(inverseIndex)] = chunk;
 
-                        //chunk.Neighbours[index] = neighbourChunk;
-                        chunk.Neighbours2[Help.GetChunkFlatIndex(index)] = neighbourChunk;
+                        //chunk.neighbors[index] = neighborChunk;
+                        chunk.neighbors2[Help.GetChunkFlatIndex(index)] = neighborChunk;
 
-                        //if (neighbourChunk.Neighbours.Count == 9 &&
-                        if (neighbourChunk.Neighbours2.Count(s =>s != null) == 9 &&
-                            neighbourChunk.State < ChunkState.DispatchedToDisplay)
+                        //if (neighborChunk.neighbors.Count == 9 &&
+                        if (neighborChunk.neighbors2.Count(s =>s != null) == 9 &&
+                            neighborChunk.State < ChunkState.DispatchedToDisplay)
                         {
-                            neighbourChunk.State = ChunkState.DispatchedToDisplay;
-                            yield return neighbourChunk;
+                            neighborChunk.State = ChunkState.DispatchedToDisplay;
+                            yield return neighborChunk;
                         }
 
-                        //if (chunk.Neighbours.Count == 9 &&
-                        if (chunk.Neighbours2.Count(s => s != null) == 9 &&
-                            chunk.State < ChunkState.DispatchedToDisplay && chunk != neighbourChunk)
+                        //if (chunk.neighbors.Count == 9 &&
+                        if (chunk.neighbors2.Count(s => s != null) == 9 &&
+                            chunk.State < ChunkState.DispatchedToDisplay && chunk != neighborChunk)
                         {
                             chunk.State = ChunkState.DispatchedToDisplay;
                             yield return chunk;

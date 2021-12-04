@@ -1,20 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Runtime.CompilerServices;
-using System.Xml.Linq;
 using AppleCinnamon.Settings;
 using AppleCinnamon.System;
 using SharpDX;
-using SharpDX.Direct2D1;
 
 namespace AppleCinnamon.Pipeline
 {
     public sealed class LightFinalizer
     {
-        private static readonly Int2[] Corners = { new Int2(-1, -1), new Int2(-1, +1), new Int2(+1, -1), new Int2(+1, +1) };
+        private static readonly Int2[] Corners = { new(-1, -1), new(-1, +1), new(+1, -1), new(+1, +1) };
         private static readonly Int2[] Edges = { Int2.UniX, -Int2.UniX, Int2.UniY, -Int2.UniY };
-        public static readonly Int3[] Directions = { Int3.UnitY, -Int3.UnitY, -Int3.UnitX, Int3.UnitX, -Int3.UnitZ, Int3.UnitZ };
+
         private static readonly IDictionary<Int2, Int2[]> EdgeMapping = new Dictionary<Int2, Int2[]>
         {
             [Int2.UniX] = new[] { new Int2(15, 0), new Int2(0, 0) },
@@ -25,12 +22,12 @@ namespace AppleCinnamon.Pipeline
 
         public static readonly Tuple<Int3, Bool3>[] Directions2 =
         {
-            new Tuple<Int3, Bool3>(Int3.UnitY, Bool3.UnitY),
-            new Tuple<Int3, Bool3>(-Int3.UnitY, Bool3.UnitY),
-            new Tuple<Int3, Bool3>(-Int3.UnitX, Bool3.UnitX),
-            new Tuple<Int3, Bool3>(Int3.UnitX, Bool3.UnitX),
-            new Tuple<Int3, Bool3>(-Int3.UnitZ, Bool3.UnitZ),
-            new Tuple<Int3, Bool3>(Int3.UnitZ, Bool3.UnitZ)
+            new(Int3.UnitY, Bool3.UnitY),
+            new(-Int3.UnitY, Bool3.UnitY),
+            new(-Int3.UnitX, Bool3.UnitX),
+            new(Int3.UnitX, Bool3.UnitX),
+            new(-Int3.UnitZ, Bool3.UnitZ),
+            new(Int3.UnitZ, Bool3.UnitZ)
         };
 
 
@@ -42,27 +39,19 @@ namespace AppleCinnamon.Pipeline
 
             foreach (var corner in Corners)
             {
-                //var cornerChunk = chunk.Neighbours[corner];
-                var cornerChunk = chunk.Neighbours2[Help.GetChunkFlatIndex(corner)];
-
-                //ProcessEdge(cornerChunk, chunk.Neighbours[new Int2(corner.X, 0)]);
-                //ProcessEdge(cornerChunk, chunk.Neighbours[new Int2(0, corner.Y)]);
-
-                ProcessEdge(cornerChunk, chunk.Neighbours2[ Help.GetChunkFlatIndex(corner.X, 0)]);
-                ProcessEdge(cornerChunk, chunk.Neighbours2[Help.GetChunkFlatIndex(0, corner.Y)]);
+                var cornerChunk = chunk.neighbors2[Help.GetChunkFlatIndex(corner)];
+                ProcessEdge(cornerChunk, chunk.neighbors2[ Help.GetChunkFlatIndex(corner.X, 0)]);
+                ProcessEdge(cornerChunk, chunk.neighbors2[Help.GetChunkFlatIndex(0, corner.Y)]);
             }
 
             foreach (var edge in Edges)
             {
-                //var edgeChunk = chunk.Neighbours[edge];
-                var edgeChunk = chunk.Neighbours2[Help.GetChunkFlatIndex(edge)];
+                var edgeChunk = chunk.neighbors2[Help.GetChunkFlatIndex(edge)];
 
                 var offset = new Int2(Math.Sign(edge.Y), Math.Sign(edge.X));
-                //ProcessEdge(chunk.Neighbours[edge + offset], edgeChunk);
-                //ProcessEdge(chunk.Neighbours[edge - offset], edgeChunk);
 
-                ProcessEdge(chunk.Neighbours2[Help.GetChunkFlatIndex(edge + offset)], edgeChunk);
-                ProcessEdge(chunk.Neighbours2[Help.GetChunkFlatIndex(edge - offset)], edgeChunk);
+                ProcessEdge(chunk.neighbors2[Help.GetChunkFlatIndex(edge + offset)], edgeChunk);
+                ProcessEdge(chunk.neighbors2[Help.GetChunkFlatIndex(edge - offset)], edgeChunk);
 
                 ProcessEdge(edgeChunk, chunk);
             }
@@ -89,32 +78,22 @@ namespace AppleCinnamon.Pipeline
             {
                 for (var j = height - 1; j > 0; j--)
                 {
-
                     var sourceIndexX = source.X + step.X * n;
                     var sourceIndexY = source.Y + step.Y * n;
-
                     var sourceIndex = Help.GetFlatIndex(sourceIndexX, j, sourceIndexY, sourceChunk.CurrentHeight);
-                    //var sourceVoxel = sourceChunk.Voxels[sourceIndex];
                     var sourceVoxel = sourceChunk.GetVoxelNoInline(sourceIndex);
-
                     var sourceDefinition = VoxelDefinition.DefinitionByType[sourceVoxel.Block];
-
-                    if (!sourceDefinition.IsTransparent)
+                    if (sourceDefinition.IsOpaque)
                     {
                         continue;
                     }
 
                     var targetIndexX = target.X + step.X * n;
                     var targetIndexY = target.Y + step.Y * n;
-
                     var targetIndex = Help.GetFlatIndex(targetIndexX, j, targetIndexY, targetChunk.CurrentHeight);
-                    //var targetVoxel = targetChunk.Voxels[targetIndex];
                     var targetVoxel = targetChunk.GetVoxelNoInline(targetIndex);
-
-
                     var targetDefinition = VoxelDefinition.DefinitionByType[targetVoxel.Block];
-
-                    if (!targetDefinition.IsTransparent)
+                    if (targetDefinition.IsOpaque)
                     {
                         continue;
                     }
@@ -145,25 +124,25 @@ namespace AppleCinnamon.Pipeline
             {
                 foreach (var direction in Directions2)
                 {
-                    var neighbourIndexX = sourceIndexX + direction.Item1.X;
-                    var neighbourIndexY = sourceIndexY + direction.Item1.Y;
-                    var neighbourIndexZ = sourceIndexZ + direction.Item1.Z;
+                    var neighborIndexX = sourceIndexX + direction.Item1.X;
+                    var neighborIndexY = sourceIndexY + direction.Item1.Y;
+                    var neighborIndexZ = sourceIndexZ + direction.Item1.Z;
 
-                    if ((neighbourIndexX & Chunk.SizeXy) == 0 &&
-                        (neighbourIndexZ & Chunk.SizeXy) == 0 &&
-                        neighbourIndexZ > 0 && neighbourIndexZ < chunk.CurrentHeight)
+                    if ((neighborIndexX & Chunk.SizeXy) == 0 &&
+                        (neighborIndexZ & Chunk.SizeXy) == 0 &&
+                        neighborIndexZ > 0 && neighborIndexZ < chunk.CurrentHeight)
                     {
-                        var neighbourIndex = Help.GetFlatIndex(neighbourIndexX, neighbourIndexY, neighbourIndexZ, chunk.CurrentHeight);
-                        var neighbourVoxel = chunk.GetVoxelNoInline(neighbourIndex);
-                        if (neighbourVoxel.Lightness < sourceVoxel.Lightness - 1)
+                        var neighborIndex = Help.GetFlatIndex(neighborIndexX, neighborIndexY, neighborIndexZ, chunk.CurrentHeight);
+                        var neighborVoxel = chunk.GetVoxelNoInline(neighborIndex);
+                        if (neighborVoxel.Lightness < sourceVoxel.Lightness - 1)
                         {
-                            var targetDefinition = VoxelDefinition.DefinitionByType[neighbourVoxel.Block];
+                            var targetDefinition = VoxelDefinition.DefinitionByType[neighborVoxel.Block];
                             if (targetDefinition.IsTransparent)
                             {
-                                var newTargetVoxel = new Voxel(neighbourVoxel.Block, (byte)(sourceVoxel.Lightness - 1));
-                                chunk.SetVoxelNoInline(neighbourIndex, newTargetVoxel);
+                                var newTargetVoxel = new Voxel(neighborVoxel.Block, (byte)(sourceVoxel.Lightness - 1));
+                                chunk.SetVoxelNoInline(neighborIndex, newTargetVoxel);
 
-                                PropagateSunlight(chunk, neighbourIndexX, neighbourIndexY, neighbourIndexZ, targetDefinition, newTargetVoxel);
+                                PropagateSunlight(chunk, neighborIndexX, neighborIndexY, neighborIndexZ, targetDefinition, newTargetVoxel);
                             }
                         }
                     }

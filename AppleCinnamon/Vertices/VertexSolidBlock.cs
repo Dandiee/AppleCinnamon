@@ -14,14 +14,14 @@ namespace AppleCinnamon.Vertices
             new InputElement("VISIBILITY", 0, Format.R32_UInt, 12, 0) //3+2
         };
 
-        public VertexSolidBlock(Vector3 position, int u, int v, byte baseLight, byte totalNeighbourLights, int numberOfAmbientNeighbours)
+        public VertexSolidBlock(Vector3 position, int u, int v, byte baseLight, byte totalneighborLights, int numberOfAmbientneighbors)
         {
             Position = position;
             Color = 0;
             Color |= (uint)(u << 0);
             Color |= (uint)(v << 4);
             Color |= (uint)(baseLight << 8);
-            Color |= (uint)(numberOfAmbientNeighbours << 12);
+            Color |= (uint)(numberOfAmbientneighbors << 12);
         }
 
         public Vector3 Position;
