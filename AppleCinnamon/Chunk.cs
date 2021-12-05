@@ -18,7 +18,7 @@ namespace AppleCinnamon
     public sealed class Chunk
     {
         public const int SliceHeight = 16;
-        public const int SizeXy = 16;
+        public const int SizeXy = 32;
         public const int SliceArea = SizeXy * SizeXy * SliceHeight;
 
         public int CurrentHeight;
@@ -138,11 +138,11 @@ namespace AppleCinnamon
                 return Voxel.One;
             }
 
-            var cx = (int)(-((i & 0b10000000_00000000_00000000_00000000) >> 31) + ((i / 16)));
-            var cy = (int)(-((k & 0b10000000_00000000_00000000_00000000) >> 31) + ((k / 16)));
+            var cx = (int)(-((i & 0b10000000_00000000_00000000_00000000) >> 31) + ((i / SizeXy)));
+            var cy = (int)(-((k & 0b10000000_00000000_00000000_00000000) >> 31) + ((k / SizeXy)));
 
             var chunk = neighbors2[Help.GetChunkFlatIndex(cx, cy)];
-            address = new VoxelAddress(new Int2(cx, cy), new Int3(i & 15, j, k & 15));
+            address = new VoxelAddress(new Int2(cx, cy), new Int3(i & (SizeXy-1), j, k & (SizeXy - 1)));
 
             return chunk.CurrentHeight <= j
                 ? Voxel.Air
@@ -159,12 +159,12 @@ namespace AppleCinnamon
             }
 
             var chunk = neighbors2[Help.GetChunkFlatIndex(
-                (int) (-((i & 0b10000000_00000000_00000000_00000000) >> 31) + ((i / 16))),
-                (int) (-((k & 0b10000000_00000000_00000000_00000000) >> 31) + ((k / 16))))];
+                (int) (-((i & 0b10000000_00000000_00000000_00000000) >> 31) + ((i / SizeXy))),
+                (int) (-((k & 0b10000000_00000000_00000000_00000000) >> 31) + ((k / SizeXy))))];
 
             return chunk.CurrentHeight <= j
                 ? Voxel.Air
-                : chunk.GetVoxel(Help.GetFlatIndex(i & 15, j, k & 15, chunk.CurrentHeight));
+                : chunk.GetVoxel(Help.GetFlatIndex(i & (SizeXy-1), j, k & (SizeXy - 1), chunk.CurrentHeight));
         }
 
 

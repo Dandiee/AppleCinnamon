@@ -7,11 +7,11 @@ using Point = System.Drawing.Point;
 
 namespace AppleCinnamon
 {
-    public sealed class Game
+    public sealed class Game : IDisposable
     {
         public static readonly Vector3 StartPosition = new(0, 127, 0);
 
-        public const int ViewDistance = 92;
+        public const int ViewDistance = 16;
         public static bool IsBackFaceCullingEnabled { get; set; }
         public static bool IsViewFrustumCullingEnabled { get; set; } = true;
         public static bool ShowChunkBoundingBoxes { get; set; } = false;
@@ -106,6 +106,11 @@ namespace AppleCinnamon
             
                 
             
+        }
+
+        public void Dispose()
+        {
+            _chunkManager?.Dispose();
         }
     }
 }

@@ -14,10 +14,10 @@ namespace AppleCinnamon.Pipeline
 
         private static readonly IDictionary<Int2, Int2[]> EdgeMapping = new Dictionary<Int2, Int2[]>
         {
-            [Int2.UniX] = new[] { new Int2(15, 0), new Int2(0, 0) },
-            [-Int2.UniX] = new[] { new Int2(0, 0), new Int2(15, 0) },
-            [Int2.UniY] = new[] { new Int2(0, 15), new Int2(0, 0) },
-            [-Int2.UniY] = new[] { new Int2(0, 0), new Int2(0, 15) }
+            [Int2.UniX] = new[] { new Int2(Chunk.SizeXy - 1, 0), new Int2(0, 0) },
+            [-Int2.UniX] = new[] { new Int2(0, 0), new Int2(Chunk.SizeXy - 1, 0) },
+            [Int2.UniY] = new[] { new Int2(0, Chunk.SizeXy - 1), new Int2(0, 0) },
+            [-Int2.UniY] = new[] { new Int2(0, 0), new Int2(0, Chunk.SizeXy - 1) }
         };
 
         public static readonly Tuple<Int3, Bool3>[] Directions2 =

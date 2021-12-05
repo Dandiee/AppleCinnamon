@@ -19,7 +19,7 @@ using Vector4 = SharpDX.Vector4;
 
 namespace AppleCinnamon
 {
-    public sealed class ChunkManager
+    public sealed class ChunkManager : IDisposable
     {
 
         //public const int ViewDistance = 8;
@@ -49,6 +49,11 @@ namespace AppleCinnamon
         private readonly Graphics _graphics;
         private Effect _solidBlockEffect;
         private Effect _waterBlockEffect;
+        private EffectPass _solidBlockEffectPass;
+        private EffectPass _waterBlockEffectPass;
+        private InputLayout _solidBlockInputLayout;
+        private InputLayout _waterBlockInputLayout;
+
         public readonly ConcurrentDictionary<Int2, Chunk> Chunks;
         public readonly List<Chunk> QuickChunks;
         private readonly ConcurrentDictionary<Int2, object> _queuedChunks;
@@ -83,18 +88,18 @@ namespace AppleCinnamon
 
         private void LoadContent()
         {
-            _solidBlockEffect = new Effect(_graphics.Device,
-                ShaderBytecode.CompileFromFile("Content/Effect/SolidBlockEffect.fx", "fx_5_0"));
-
+            _solidBlockEffect = new Effect(_graphics.Device, ShaderBytecode.CompileFromFile("Content/Effect/SolidBlockEffect.fx", "fx_5_0"));
+            _solidBlockEffectPass = _solidBlockEffect.GetTechniqueByIndex(0).GetPassByIndex(0);
+            _solidBlockInputLayout = new InputLayout(_graphics.Device, _solidBlockEffectPass.Description.Signature, VertexSolidBlock.InputElements);
             _solidBlockEffect.GetVariableByName("Textures").AsShaderResource().SetResource(
                 new ShaderResourceView(_graphics.Device,
                     TextureLoader.CreateTexture2DFromBitmap(_graphics.Device,
                         TextureLoader.LoadBitmap(new ImagingFactory2(), "Content/Texture/terrain.png"))));
 
 
-            _waterBlockEffect = new Effect(_graphics.Device,
-                ShaderBytecode.CompileFromFile("Content/Effect/WaterEffect.fx", "fx_5_0"));
-
+            _waterBlockEffect = new Effect(_graphics.Device, ShaderBytecode.CompileFromFile("Content/Effect/WaterEffect.fx", "fx_5_0"));
+            _waterBlockEffectPass = _waterBlockEffect.GetTechniqueByIndex(0).GetPassByIndex(0);
+            _waterBlockInputLayout = new InputLayout(_graphics.Device, _waterBlockEffectPass.Description.Signature, VertexWater.InputElements);
             _waterBlockEffect.GetVariableByName("Textures").AsShaderResource().SetResource(
                 new ShaderResourceView(_graphics.Device,
                     TextureLoader.CreateTexture2DFromBitmap(_graphics.Device,
@@ -190,8 +195,6 @@ namespace AppleCinnamon
             var root = Game.ViewDistance * 2 + 1;
             if (!IsInitialized && _finalizedChunks == root * root)
             {
-                
-
                 BootTime = DateTime.Now - StartUpTime;
 
                 IsInitialized = true;
@@ -224,65 +227,45 @@ namespace AppleCinnamon
                 return;
             }
 
-            if (Game.RenderSolid && Chunks.Count > 0)
+            if (Chunks.Count > 0)
             {
-                using (var inputLayout = new InputLayout(_graphics.Device,
-                    _solidBlockEffect.GetTechniqueByIndex(0).GetPassByIndex(0).Description.Signature,
-                    VertexSolidBlock.InputElements))
+                var chunksToRender = Chunks
+                    .Where(chunk => !Game.IsViewFrustumCullingEnabled || camera.BoundingFrustum.Contains(ref chunk.Value.BoundingBox) != ContainmentType.Disjoint)
+                    .ToList();
+
+                if (Game.RenderSolid)
                 {
-                    _graphics.Device.ImmediateContext.InputAssembler.InputLayout = inputLayout;
+                    _graphics.Device.ImmediateContext.InputAssembler.InputLayout = _solidBlockInputLayout;
                     _graphics.Device.ImmediateContext.InputAssembler.PrimitiveTopology = PrimitiveTopology.TriangleList;
-
-                    var pass = _solidBlockEffect.GetTechniqueByIndex(0).GetPassByIndex(0);
-                    pass.Apply(_graphics.Device.ImmediateContext);
-                    var filtered = 0;
-
-
+                    _solidBlockEffectPass.Apply(_graphics.Device.ImmediateContext);
 
                     var sw = Stopwatch.StartNew();
                     sw.Stop();
 
                     var sw2 = Stopwatch.StartNew();
-                    foreach (var chunk in Chunks.Values)
+                    foreach (var chunk in chunksToRender)
                     {
-                        if (!Game.IsViewFrustumCullingEnabled || camera.BoundingFrustum.Contains(ref chunk.BoundingBox) != ContainmentType.Disjoint)
-                        {
-                            chunk.DrawSmarter(_graphics.Device, camera.CurrentChunkIndexVector);
-                            _renderedChunks++;
-                        }
+                        chunk.Value.DrawSmarter(_graphics.Device, camera.CurrentChunkIndexVector);
+                        _renderedChunks++;
                     }
+
                     sw2.Stop();
                     QuickTest = sw.ElapsedMilliseconds + " / " + sw2.ElapsedMilliseconds;
-                    //sw2.Stop();
                 }
-
-                //sw.Stop();
-                //QuickTest = $"{sw.ElapsedMilliseconds} {sw1.ElapsedMilliseconds} - {sw2.ElapsedMilliseconds}";
 
                 if (Game.RenderWater)
                 {
-                    using (var inputLayout = new InputLayout(_graphics.Device,
-                        _waterBlockEffect.GetTechniqueByIndex(0).GetPassByIndex(0).Description.Signature,
-                        VertexWater.InputElements))
+                    _graphics.Device.ImmediateContext.OutputMerger.SetBlendState(_waterBlendState);
+                    _graphics.Device.ImmediateContext.InputAssembler.InputLayout = _waterBlockInputLayout;
+                    _graphics.Device.ImmediateContext.InputAssembler.PrimitiveTopology = PrimitiveTopology.TriangleList;
+                    _waterBlockEffectPass.Apply(_graphics.Device.ImmediateContext);
+
+                    foreach (var chunk in chunksToRender)
                     {
-                        _graphics.Device.ImmediateContext.OutputMerger.SetBlendState(_waterBlendState);
-                        _graphics.Device.ImmediateContext.InputAssembler.InputLayout = inputLayout;
-                        _graphics.Device.ImmediateContext.InputAssembler.PrimitiveTopology = PrimitiveTopology.TriangleList;
-
-                        var pass = _waterBlockEffect.GetTechniqueByIndex(0).GetPassByIndex(0);
-                        pass.Apply(_graphics.Device.ImmediateContext);
-
-                        foreach (var chunk in Chunks)
-                        {
-                            var bb = chunk.Value.BoundingBox;
-                            if (camera.BoundingFrustum.Contains(ref bb) != ContainmentType.Disjoint)
-                            {
-                                chunk.Value.DrawWater(_graphics.Device);
-                            }
-                        }
-
-                        _graphics.Device.ImmediateContext.OutputMerger.SetBlendState(null);
+                        chunk.Value.DrawWater(_graphics.Device);
                     }
+
+                    _graphics.Device.ImmediateContext.OutputMerger.SetBlendState(null);
                 }
             }
         }
@@ -368,5 +351,16 @@ namespace AppleCinnamon
             }
         }
         public void SetBlock(Int3 absoluteIndex, byte voxel) => _chunkUpdater.SetVoxel(absoluteIndex, voxel);
+
+        public void Dispose()
+        {
+            _solidBlockEffect?.Dispose();
+            _waterBlockEffect?.Dispose();
+            _solidBlockEffectPass?.Dispose();
+            _waterBlockEffectPass?.Dispose();
+            _solidBlockInputLayout?.Dispose();
+            _waterBlockInputLayout?.Dispose();
+            _waterBlendState?.Dispose();
+        }
     }
 }
