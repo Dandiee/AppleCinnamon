@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Numerics;
 using System.Runtime.CompilerServices;
 using SharpDX;
 using Vector3 = SharpDX.Vector3;
@@ -11,7 +10,7 @@ namespace AppleCinnamon.System
     {
         public static Vector3 ToVector3(this Int3 lhs)
         {
-            return new Vector3(lhs.X, lhs.Y, lhs.Z);
+            return new(lhs.X, lhs.Y, lhs.Z);
         }
 
         public static bool IsEpsilon(this float number)
@@ -27,12 +26,12 @@ namespace AppleCinnamon.System
 
         public static Double3 ToDouble3(this Vector3 vector)
         {
-            return new Double3(vector);
+            return new(vector);
         }
 
         public static Vector3 ToVector3(this Vector4 v)
         {
-            return new Vector3(v.X, v.Y, v.Z);
+            return new(v.X, v.Y, v.Z);
         }
 
         public static float Distance(this float lhs, float rhs)
@@ -42,10 +41,10 @@ namespace AppleCinnamon.System
 
         public static Vector3 Add(this Vector3 vector, Int3 index)
         {
-            return new Vector3(vector.X + index.X, vector.Y + index.Y, vector.Z + index.Z);
+            return new(vector.X + index.X, vector.Y + index.Y, vector.Z + index.Z);
         }
 
-        public static Int3 Round(this Vector3 vector) => new Int3(
+        public static Int3 Round(this Vector3 vector) => new(
             (int) Math.Round(vector.X),
             (int) Math.Round(vector.Y),
             (int) Math.Round(vector.Z));

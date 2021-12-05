@@ -13,8 +13,8 @@ namespace AppleCinnamon.Vertices
 
         public static readonly InputElement[] InputElements =
         {
-            new InputElement("POSITION", 0, Format.R32G32B32_Float, 0, 0), //0
-            new InputElement("TEXCOORD", 0, Format.R32G32B32_Float, 12, 0) //3+2
+            new("POSITION", 0, Format.R32G32B32_Float, 0, 0), //0
+            new("TEXCOORD", 0, Format.R32G32B32_Float, 12, 0) //3+2
         };
 
         public VertexPositionColor(Vector3 position, Color3 color)

@@ -1,5 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 using AppleCinnamon.Settings;
 
 namespace AppleCinnamon
@@ -7,10 +6,10 @@ namespace AppleCinnamon
     [StructLayout(LayoutKind.Explicit)]
     public struct Voxel
     {
-        public static readonly Voxel One = new Voxel(1, 15);
-        public static readonly Voxel Zero = new Voxel(0, 0);
-        public static readonly Voxel Invalid = new Voxel(255, 255);
-        public static readonly Voxel Air = new Voxel(0, 15);
+        public static readonly Voxel One = new(1, 15);
+        public static readonly Voxel Zero = new(0, 0);
+        public static readonly Voxel Invalid = new(255, 255);
+        public static readonly Voxel Air = new(0, 15);
 
         [FieldOffset(0)]
         public readonly byte Block;

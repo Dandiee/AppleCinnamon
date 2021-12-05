@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Runtime;
 using AppleCinnamon.Pipeline;
 
 namespace AppleCinnamon
@@ -8,7 +7,7 @@ namespace AppleCinnamon
     class Program
     {
         [STAThread]
-        static void Main(string[] args)
+        static void Main()
         {
             var fs = new FullScanner();
 

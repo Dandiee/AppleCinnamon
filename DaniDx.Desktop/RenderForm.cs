@@ -43,7 +43,6 @@
 * THE SOFTWARE.
 */
 
-using System.Diagnostics;
 using SharpDX.Mathematics.Interop;
 using System;
 using System.ComponentModel;

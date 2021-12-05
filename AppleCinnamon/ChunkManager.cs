@@ -3,11 +3,9 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
-using System.Windows.Forms;
 using AppleCinnamon.Pipeline;
 using AppleCinnamon.System;
 using AppleCinnamon.Vertices;
@@ -17,7 +15,6 @@ using SharpDX.Direct3D;
 using SharpDX.Direct3D11;
 using SharpDX.WIC;
 using Vector2 = SharpDX.Vector2;
-using Vector3 = SharpDX.Vector3;
 using Vector4 = SharpDX.Vector4;
 
 namespace AppleCinnamon
@@ -58,6 +55,8 @@ namespace AppleCinnamon
         private readonly ChunkUpdater _chunkUpdater;
         private readonly PipelineProvider _pipelineProvider;
         private int _currentWaterTextureOffsetIndex;
+
+        private BlendState _waterBlendState;
 
 
         private TransformBlock<DataflowContext<Int2>, DataflowContext<Chunk>> _pipeline;
@@ -101,6 +100,19 @@ namespace AppleCinnamon
                     TextureLoader.CreateTexture2DFromBitmap(_graphics.Device,
                         TextureLoader.LoadBitmap(new ImagingFactory2(), "Content/Texture/custom_water_still.png"))));
 
+
+            var blendStateDescription = new BlendStateDescription { AlphaToCoverageEnable = false };
+
+            blendStateDescription.RenderTarget[0].IsBlendEnabled = true;
+            blendStateDescription.RenderTarget[0].SourceBlend = BlendOption.SourceAlpha;
+            blendStateDescription.RenderTarget[0].DestinationBlend = BlendOption.InverseSourceAlpha;
+            blendStateDescription.RenderTarget[0].BlendOperation = BlendOperation.Add;
+            blendStateDescription.RenderTarget[0].SourceAlphaBlend = BlendOption.Zero;
+            blendStateDescription.RenderTarget[0].DestinationAlphaBlend = BlendOption.Zero;
+            blendStateDescription.RenderTarget[0].AlphaBlendOperation = BlendOperation.Add;
+            blendStateDescription.RenderTarget[0].RenderTargetWriteMask = ColorWriteMaskFlags.All;
+
+            _waterBlendState = new BlendState(_graphics.Device, blendStateDescription);
 
             Task.Run(UpdateWaterTexture);
         }
@@ -212,7 +224,7 @@ namespace AppleCinnamon
                 return;
             }
 
-            if (Chunks.Count > 0)
+            if (Game.RenderSolid && Chunks.Count > 0)
             {
                 using (var inputLayout = new InputLayout(_graphics.Device,
                     _solidBlockEffect.GetTechniqueByIndex(0).GetPassByIndex(0).Description.Signature,
@@ -228,16 +240,11 @@ namespace AppleCinnamon
 
 
                     var sw = Stopwatch.StartNew();
-                    var renderedChunks = Chunks.Values;// QuickChunks;
-                        //QuickChunks.Where(chunk =>
-                        //chunk != null && Vector2.Dot(camera.LookAt2d, chunk.Center2d - camera.Position2d) > 0).ToList();
                     sw.Stop();
 
                     var sw2 = Stopwatch.StartNew();
-                    foreach (var chunk in renderedChunks)
+                    foreach (var chunk in Chunks.Values)
                     {
-                        chunk.DrawSmarter(_graphics.Device, camera.CurrentChunkIndexVector);
-                        
                         if (!Game.IsViewFrustumCullingEnabled || camera.BoundingFrustum.Contains(ref chunk.BoundingBox) != ContainmentType.Disjoint)
                         {
                             chunk.DrawSmarter(_graphics.Device, camera.CurrentChunkIndexVector);
@@ -252,41 +259,31 @@ namespace AppleCinnamon
                 //sw.Stop();
                 //QuickTest = $"{sw.ElapsedMilliseconds} {sw1.ElapsedMilliseconds} - {sw2.ElapsedMilliseconds}";
 
-                //using (var inputLayout = new InputLayout(_graphics.Device,
-                //    _waterBlockEffect.GetTechniqueByIndex(0).GetPassByIndex(0).Description.Signature,
-                //    VertexWater.InputElements))
-                //{
-                //    var blendStateDescription = new BlendStateDescription { AlphaToCoverageEnable = false };
+                if (Game.RenderWater)
+                {
+                    using (var inputLayout = new InputLayout(_graphics.Device,
+                        _waterBlockEffect.GetTechniqueByIndex(0).GetPassByIndex(0).Description.Signature,
+                        VertexWater.InputElements))
+                    {
+                        _graphics.Device.ImmediateContext.OutputMerger.SetBlendState(_waterBlendState);
+                        _graphics.Device.ImmediateContext.InputAssembler.InputLayout = inputLayout;
+                        _graphics.Device.ImmediateContext.InputAssembler.PrimitiveTopology = PrimitiveTopology.TriangleList;
 
-                //    blendStateDescription.RenderTarget[0].IsBlendEnabled = true;
-                //    blendStateDescription.RenderTarget[0].SourceBlend = BlendOption.SourceAlpha;
-                //    blendStateDescription.RenderTarget[0].DestinationBlend = BlendOption.InverseSourceAlpha;
-                //    blendStateDescription.RenderTarget[0].BlendOperation = BlendOperation.Add;
-                //    blendStateDescription.RenderTarget[0].SourceAlphaBlend = BlendOption.Zero;
-                //    blendStateDescription.RenderTarget[0].DestinationAlphaBlend = BlendOption.Zero;
-                //    blendStateDescription.RenderTarget[0].AlphaBlendOperation = BlendOperation.Add;
-                //    blendStateDescription.RenderTarget[0].RenderTargetWriteMask = ColorWriteMaskFlags.All;
+                        var pass = _waterBlockEffect.GetTechniqueByIndex(0).GetPassByIndex(0);
+                        pass.Apply(_graphics.Device.ImmediateContext);
 
-                //    var blendState = new BlendState(_graphics.Device, blendStateDescription);
-                //    _graphics.Device.ImmediateContext.OutputMerger.SetBlendState(blendState);
+                        foreach (var chunk in Chunks)
+                        {
+                            var bb = chunk.Value.BoundingBox;
+                            if (camera.BoundingFrustum.Contains(ref bb) != ContainmentType.Disjoint)
+                            {
+                                chunk.Value.DrawWater(_graphics.Device);
+                            }
+                        }
 
-                //    _graphics.Device.ImmediateContext.InputAssembler.InputLayout = inputLayout;
-                //    _graphics.Device.ImmediateContext.InputAssembler.PrimitiveTopology = PrimitiveTopology.TriangleList;
-
-                //    var pass = _waterBlockEffect.GetTechniqueByIndex(0).GetPassByIndex(0);
-                //    pass.Apply(_graphics.Device.ImmediateContext);
-
-                //    foreach (var chunk in Chunks.Values)
-                //    {
-                //        var bb = chunk.BoundingBox;
-                //        if (camera.BoundingFrustum.Contains(ref bb) != ContainmentType.Disjoint)
-                //        {
-                //            chunk.DrawWater(_graphics.Device);
-                //        }
-                //    }
-
-                //    _graphics.Device.ImmediateContext.OutputMerger.SetBlendState(null);
-                //}
+                        _graphics.Device.ImmediateContext.OutputMerger.SetBlendState(null);
+                    }
+                }
             }
         }
 
@@ -346,23 +343,28 @@ namespace AppleCinnamon
             }
         }
 
-
+        private Int2? _lastQueueIndex;
         private void QueueChunksByIndex(Int2 currentChunkIndex)
         {
-            foreach (var relativeChunkIndex in GetSurroundingChunks(Game.ViewDistance))
+            if (!_lastQueueIndex.HasValue || _lastQueueIndex != currentChunkIndex)
             {
-                var chunkIndex = currentChunkIndex + relativeChunkIndex;
-                if (!_queuedChunks.ContainsKey(chunkIndex) && !Chunks.ContainsKey(chunkIndex))
+                foreach (var relativeChunkIndex in GetSurroundingChunks(Game.ViewDistance))
                 {
-                    if (!_queuedChunks.TryAdd(chunkIndex, null))
+                    var chunkIndex = currentChunkIndex + relativeChunkIndex;
+                    if (!_queuedChunks.ContainsKey(chunkIndex) && !Chunks.ContainsKey(chunkIndex))
                     {
-                        throw new Exception("asdasd");
+                        if (!_queuedChunks.TryAdd(chunkIndex, null))
+                        {
+                            throw new Exception("asdasd");
+                        }
+
+                        Interlocked.Increment(ref _queuedChunksCount);
+
+                        _pipeline.Post(new DataflowContext<Int2>(chunkIndex, _graphics.Device));
                     }
-
-                    Interlocked.Increment(ref _queuedChunksCount);
-
-                    _pipeline.Post(new DataflowContext<Int2>(chunkIndex, _graphics.Device));
                 }
+
+                _lastQueueIndex = currentChunkIndex;
             }
         }
         public void SetBlock(Int3 absoluteIndex, byte voxel) => _chunkUpdater.SetVoxel(absoluteIndex, voxel);

@@ -141,6 +141,21 @@ namespace AppleCinnamon
                 Game.ShowChunkBoundingBoxes = !Game.ShowChunkBoundingBoxes;
             }
 
+            if (!_currentKeyboardState.IsPressed(Key.F4) && _lastKeyboardState.IsPressed(Key.F4))
+            {
+                Game.RenderWater = !Game.RenderWater;
+            }
+
+            if (!_currentKeyboardState.IsPressed(Key.F5) && _lastKeyboardState.IsPressed(Key.F5))
+            {
+                Game.RenderSolid = !Game.RenderSolid;
+            }
+
+            if (!_currentKeyboardState.IsPressed(Key.F12) && _lastKeyboardState.IsPressed(Key.F12))
+            {
+                Game.Debug = !Game.Debug;
+            }
+
             foreach (var keyVoxel in KeyVoxelMapping)
             {
                 if (_currentKeyboardState.IsPressed(keyVoxel.Key))

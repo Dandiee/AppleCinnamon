@@ -2,8 +2,8 @@
 {
 	public struct Int2
 	{
-        public static readonly Int2 UniX = new Int2(1, 0);
-        public static readonly Int2 UniY = new Int2(0, 1);
+        public static readonly Int2 UniX = new(1, 0);
+        public static readonly Int2 UniY = new(0, 1);
 
         public bool Equals(Int2 other)
         {
@@ -44,7 +44,7 @@
 
         public static Int2 operator -(Int2 lhs)
         {
-            return new Int2(-lhs.X, -lhs.Y);
+            return new(-lhs.X, -lhs.Y);
         }
 
 
@@ -60,24 +60,24 @@
 
 		public static Int2 operator +(Int2 lhs, Int2 rhs)
 		{
-			return new Int2(lhs.X + rhs.X, lhs.Y + rhs.Y);
+			return new(lhs.X + rhs.X, lhs.Y + rhs.Y);
 		}
 
 		public static Int2 operator -(Int2 lhs, Int2 rhs)
 		{
-			return new Int2(lhs.X - rhs.X, lhs.Y - rhs.Y);
+			return new(lhs.X - rhs.X, lhs.Y - rhs.Y);
 		}
 
 		public static Int2 operator *(Int2 lhs, Int2 rhs)
 		{
-			return new Int2(lhs.X * rhs.X, lhs.Y * rhs.Y);
+			return new(lhs.X * rhs.X, lhs.Y * rhs.Y);
 		}
 
         public static Int2 operator *(Int2 lhs, int rhs)
         {
-            return new Int2(lhs.X * rhs, lhs.Y * rhs);
+            return new(lhs.X * rhs, lhs.Y * rhs);
         }
 
-        public static readonly Int2 Zero = new Int2();
+        public static readonly Int2 Zero = new();
     }
 }

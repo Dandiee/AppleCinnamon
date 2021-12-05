@@ -1,7 +1,6 @@
 ﻿using System;
 using AppleCinnamon.Settings;
 using AppleCinnamon.System;
-using SimplexNoise;
 
 namespace AppleCinnamon.Pipeline
 {

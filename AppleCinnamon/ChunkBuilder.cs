@@ -13,7 +13,7 @@ namespace AppleCinnamon
 {
     public sealed class ChunkBuilder
     {
-        private static readonly Vector2[] WaterUvOffsets = { Vector2.Zero, new Vector2(1, 0), new Vector2(1, 1 / 32f), new Vector2(0, 1 / 32f) };
+        private static readonly Vector2[] WaterUvOffsets = { Vector2.Zero, new(1, 0), new(1, 1 / 32f), new(0, 1 / 32f) };
 
         public void BuildChunk(Device device, Chunk chunk)
         {
@@ -197,14 +197,14 @@ namespace AppleCinnamon
 
     public sealed class FaceBuildInfo
     {
-        public static readonly Vector3 TopLefFro = new Vector3(-.5f, +.5f, -.5f);
-        public static readonly Vector3 TopRigFro = new Vector3(+.5f, +.5f, -.5f);
-        public static readonly Vector3 TopLefBac = new Vector3(-.5f, +.5f, +.5f);
-        public static readonly Vector3 TopRigBac = new Vector3(+.5f, +.5f, +.5f);
-        public static readonly Vector3 BotLefFro = new Vector3(-.5f, -.5f, -.5f);
-        public static readonly Vector3 BotLefBac = new Vector3(-.5f, -.5f, +.5f);
-        public static readonly Vector3 BotRigFro = new Vector3(+.5f, -.5f, -.5f);
-        public static readonly Vector3 BotRigBac = new Vector3(+.5f, -.5f, +.5f);
+        public static readonly Vector3 TopLefFro = new(-.5f, +.5f, -.5f);
+        public static readonly Vector3 TopRigFro = new(+.5f, +.5f, -.5f);
+        public static readonly Vector3 TopLefBac = new(-.5f, +.5f, +.5f);
+        public static readonly Vector3 TopRigBac = new(+.5f, +.5f, +.5f);
+        public static readonly Vector3 BotLefFro = new(-.5f, -.5f, -.5f);
+        public static readonly Vector3 BotLefBac = new(-.5f, -.5f, +.5f);
+        public static readonly Vector3 BotRigFro = new(+.5f, -.5f, -.5f);
+        public static readonly Vector3 BotRigBac = new(+.5f, -.5f, +.5f);
 
         public static readonly Cube<Vector3[]> FaceVertices =
             new(
@@ -216,7 +216,7 @@ namespace AppleCinnamon
                 new[] { TopLefBac, TopRigBac, BotRigBac, BotLefBac }
             );
 
-        public static readonly Cube<Int3> FirstAmbientIndexes = new Cube<Int3>(
+        public static readonly Cube<Int3> FirstAmbientIndexes = new(
             new Int3(-1, 1, 0),
             new Int3(1, -1, 0),
             new Int3(-1, 0, -1),
@@ -225,7 +225,7 @@ namespace AppleCinnamon
             new Int3(-1, 0, 1)
         );
 
-        public static readonly Cube<Int3[][]> AmbientIndexes = new Cube<Int3[][]>(
+        public static readonly Cube<Int3[][]> AmbientIndexes = new(
             new[]
             {
                 new[] {new Int3(-1, 1, -1), new Int3(0, 1, -1)},
@@ -270,7 +270,7 @@ namespace AppleCinnamon
             }
         );
 
-        public static readonly Dictionary<Face, Int3> FaceDirectionMapping = new Dictionary<Face, Int3>
+        public static readonly Dictionary<Face, Int3> FaceDirectionMapping = new()
         {
             {Face.Top, new Int3(0, 1, 0)},
             {Face.Bottom, new Int3(0, -1, 0)},
@@ -280,7 +280,7 @@ namespace AppleCinnamon
             {Face.Back, new Int3(0, 0, 1)},
         };
 
-        public static readonly Dictionary<Face, byte> FaceVisibilityFlagMapping = new Dictionary<Face, byte>
+        public static readonly Dictionary<Face, byte> FaceVisibilityFlagMapping = new()
         {
             {Face.Top, 1},
             {Face.Bottom, 2},
@@ -290,14 +290,14 @@ namespace AppleCinnamon
             {Face.Back, 32},
         };
 
-        public static readonly Int2[] UvOffsetIndexes = { new Int2(0, 0), new Int2(1, 0), new Int2(1, 1), new Int2(0, 1) };
+        public static readonly Int2[] UvOffsetIndexes = { new(0, 0), new(1, 0), new(1, 1), new(0, 1) };
 
-        public static readonly FaceBuildInfo Top = new FaceBuildInfo(Face.Top);
-        public static readonly FaceBuildInfo Bottom = new FaceBuildInfo(Face.Bottom);
-        public static readonly FaceBuildInfo Left = new FaceBuildInfo(Face.Left);
-        public static readonly FaceBuildInfo Right = new FaceBuildInfo(Face.Right);
-        public static readonly FaceBuildInfo Front = new FaceBuildInfo(Face.Front);
-        public static readonly FaceBuildInfo Back = new FaceBuildInfo(Face.Back);
+        public static readonly FaceBuildInfo Top = new(Face.Top);
+        public static readonly FaceBuildInfo Bottom = new(Face.Bottom);
+        public static readonly FaceBuildInfo Left = new(Face.Left);
+        public static readonly FaceBuildInfo Right = new(Face.Right);
+        public static readonly FaceBuildInfo Front = new(Face.Front);
+        public static readonly FaceBuildInfo Back = new(Face.Back);
 
         public readonly byte DirectionFlag;
         public readonly Face Face;

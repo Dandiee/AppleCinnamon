@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using AppleCinnamon.System;
@@ -15,26 +14,34 @@ namespace AppleCinnamon.Pipeline
             _chunks = new ConcurrentDictionary<Int2, Chunk>();
         }
 
+        public static HashSet<Int2> checkehc = new();
+        public static HashSet<Int2> removedcd = new();
         public IEnumerable<DataflowContext<Chunk>> Process(DataflowContext<Chunk> context)
         {
             var chunk = context.Payload;
 
             if (!_chunks.TryAdd(chunk.ChunkIndex, chunk))
             {
+                
                 yield break;
             }
+            else
+            {
+                checkehc.Add(chunk.ChunkIndex);
+            }
 
-            var readyChunks = Setneighbors(chunk);
+            var readyChunks = Setneighbors(chunk).ToList();
 
             foreach (var readyChunk in readyChunks)
             {
                 if (_chunks.TryRemove(readyChunk.ChunkIndex, out _))
                 {
+                    removedcd.Add(readyChunk.ChunkIndex);
                     yield return new DataflowContext<Chunk>(context, readyChunk);
                 }
                 else
                 {
-                    throw new Exception("asdasdasd");
+                    //throw new Exception("asdasdasd");
                 }
             }
         }

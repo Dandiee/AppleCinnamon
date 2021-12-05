@@ -1,13 +1,11 @@
-﻿using System.Drawing.Design;
-using AppleCinnamon.System;
-using Microsoft.Win32.SafeHandles;
+﻿using AppleCinnamon.System;
 using SharpDX;
 
 namespace AppleCinnamon
 {
     public struct VoxelAddress
     {
-        public static readonly VoxelAddress Zero = new VoxelAddress();
+        public static readonly VoxelAddress Zero = new();
 
         public Int2 ChunkIndex { get; }
         public Int3 RelativeVoxelIndex { get; }

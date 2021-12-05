@@ -9,12 +9,15 @@ namespace AppleCinnamon
 {
     public sealed class Game
     {
-        public static readonly Vector3 StartPosition = new Vector3(0, 127, 0);
+        public static readonly Vector3 StartPosition = new(0, 127, 0);
 
-        public const int ViewDistance = 8;
+        public const int ViewDistance = 92;
         public static bool IsBackFaceCullingEnabled { get; set; }
         public static bool IsViewFrustumCullingEnabled { get; set; } = true;
         public static bool ShowChunkBoundingBoxes { get; set; } = false;
+        public static bool RenderWater { get; set; } = true;
+        public static bool RenderSolid { get; set; } = true;
+        public static bool Debug { get; set; } = true;
 
         private readonly ChunkManager _chunkManager;
         private readonly Camera _camera;
@@ -95,7 +98,14 @@ namespace AppleCinnamon
         {
             _boxDrawer.Update(_camera);
             _camera.Update(gameTime, _chunkManager, _boxDrawer);
-            _chunkManager.Update(_camera);
+            if (Game.Debug)
+            {
+
+                _chunkManager.Update(_camera);
+            }
+            
+                
+            
         }
     }
 }

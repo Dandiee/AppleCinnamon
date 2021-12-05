@@ -1,13 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using AppleCinnamon.Settings;
 using AppleCinnamon.System;
-using SharpDX.Direct2D1;
 
 namespace AppleCinnamon.Pipeline
 {

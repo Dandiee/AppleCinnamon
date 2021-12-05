@@ -5,10 +5,10 @@ namespace AppleCinnamon.System
 {
     public struct Double3
     {
-        public static readonly Double3 Zero = new Double3();
-        public static readonly Double3 UnitX = new Double3(1, 0, 0);
-        public static readonly Double3 UnitY = new Double3(0, 1, 0);
-        public static readonly Double3 UnitZ = new Double3(0, 0, 1);
+        public static readonly Double3 Zero = new();
+        public static readonly Double3 UnitX = new(1, 0, 0);
+        public static readonly Double3 UnitY = new(0, 1, 0);
+        public static readonly Double3 UnitZ = new(0, 0, 1);
 
         public double X { get; }
         public double Y { get; }
@@ -23,25 +23,25 @@ namespace AppleCinnamon.System
             Z = z;
         }
 
-        public static Double3 operator +(Double3 lhs, Double3 rhs) => new Double3(lhs.X + rhs.X, lhs.Y + rhs.Y, lhs.Z + rhs.Z);
-        public static Double3 operator +(Double3 lhs, Vector3 rhs) => new Double3(lhs.X + rhs.X, lhs.Y + rhs.Y, lhs.Z + rhs.Z);
-        public static Double3 operator +(Vector3 lhs, Double3 rhs) => new Double3(lhs.X + rhs.X, lhs.Y + rhs.Y, lhs.Z + rhs.Z);
-        public static Double3 operator -(Double3 lhs, Double3 rhs) => new Double3(lhs.X - rhs.X, lhs.Y - rhs.Y, lhs.Z - rhs.Z);
-        public static Double3 operator *(Double3 lhs, Double3 rhs) => new Double3(lhs.X * rhs.X, lhs.Y * rhs.Y, lhs.Z * rhs.Z);
+        public static Double3 operator +(Double3 lhs, Double3 rhs) => new(lhs.X + rhs.X, lhs.Y + rhs.Y, lhs.Z + rhs.Z);
+        public static Double3 operator +(Double3 lhs, Vector3 rhs) => new(lhs.X + rhs.X, lhs.Y + rhs.Y, lhs.Z + rhs.Z);
+        public static Double3 operator +(Vector3 lhs, Double3 rhs) => new(lhs.X + rhs.X, lhs.Y + rhs.Y, lhs.Z + rhs.Z);
+        public static Double3 operator -(Double3 lhs, Double3 rhs) => new(lhs.X - rhs.X, lhs.Y - rhs.Y, lhs.Z - rhs.Z);
+        public static Double3 operator *(Double3 lhs, Double3 rhs) => new(lhs.X * rhs.X, lhs.Y * rhs.Y, lhs.Z * rhs.Z);
         public static Double3 operator *(Double3 lhs, double rhs) => rhs * lhs;
-        public static Double3 operator *(double lhs, Double3 rhs) => new Double3(lhs * rhs.X, lhs * rhs.Y, lhs * rhs.Z);
+        public static Double3 operator *(double lhs, Double3 rhs) => new(lhs * rhs.X, lhs * rhs.Y, lhs * rhs.Z);
         public static Double3 operator +(Double3 lhs, double rhs) => rhs + lhs;
-        public static Double3 operator +(double lhs, Double3 rhs) => new Double3(lhs + rhs.X, lhs + rhs.Y, lhs + rhs.Z);
+        public static Double3 operator +(double lhs, Double3 rhs) => new(lhs + rhs.X, lhs + rhs.Y, lhs + rhs.Z);
         public static Double3 operator -(Double3 lhs, double rhs) => rhs - lhs;
-        public static Double3 operator -(double lhs, Double3 rhs) => new Double3(lhs - rhs.X, lhs - rhs.Y, lhs - rhs.Z);
+        public static Double3 operator -(double lhs, Double3 rhs) => new(lhs - rhs.X, lhs - rhs.Y, lhs - rhs.Z);
         public static Double3 operator /(Double3 lhs, double rhs) => rhs / lhs;
-        public static Double3 operator /(double lhs, Double3 rhs) => new Double3(lhs / rhs.X, lhs / rhs.Y, lhs / rhs.Z);
+        public static Double3 operator /(double lhs, Double3 rhs) => new(lhs / rhs.X, lhs / rhs.Y, lhs / rhs.Z);
 
-        public static Double3 operator /(Double3 lhs, Double3 rhs) => new Double3(lhs.X / rhs.X, lhs.Y / rhs.Y, lhs.Z / rhs.Z);
+        public static Double3 operator /(Double3 lhs, Double3 rhs) => new(lhs.X / rhs.X, lhs.Y / rhs.Y, lhs.Z / rhs.Z);
         public static bool operator ==(Double3 lhs, Double3 rhs) => lhs.X == rhs.X && lhs.Y ==rhs.Y && lhs.Z == rhs.Z;
         public static bool operator !=(Double3 lhs, Double3 rhs) => !(lhs == rhs);
 
-        public Vector3 ToVector3() => new Vector3((float)X, (float)Y, (float)Z);
+        public Vector3 ToVector3() => new((float)X, (float)Y, (float)Z);
 
         public double Length() => Math.Sqrt(X * X + Y * Y + Z * Z);
 

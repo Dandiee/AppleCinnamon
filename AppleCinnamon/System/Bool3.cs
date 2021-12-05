@@ -5,12 +5,12 @@ namespace AppleCinnamon.System
 {
     public struct Bool3
     {
-        public static readonly Bool3 True = new Bool3(true);
-        public static readonly Bool3 False = new Bool3(false);
+        public static readonly Bool3 True = new(true);
+        public static readonly Bool3 False = new(false);
 
-        public static readonly Bool3 UnitX = new Bool3(true, false, false);
-        public static readonly Bool3 UnitY = new Bool3(false, true, false);
-        public static readonly Bool3 UnitZ = new Bool3(false, false, true);
+        public static readonly Bool3 UnitX = new(true, false, false);
+        public static readonly Bool3 UnitY = new(false, true, false);
+        public static readonly Bool3 UnitZ = new(false, false, true);
 
         public readonly bool X;
         public readonly bool Y;
@@ -47,7 +47,7 @@ namespace AppleCinnamon.System
         public static bool operator !=(Bool3 lhs, bool rhs) => lhs._isTrue != rhs;
         public static bool operator ==(bool lhs, Bool3 rhs) => rhs._isTrue == lhs;
         public static bool operator !=(bool lhs, Bool3 rhs) => rhs._isTrue != lhs;
-        public static Bool3 operator &(Bool3 lhs, Bool3 rhs) => new Bool3(lhs.X && rhs.X, lhs.Y && rhs.Y, lhs.Z && rhs.Z);
+        public static Bool3 operator &(Bool3 lhs, Bool3 rhs) => new(lhs.X && rhs.X, lhs.Y && rhs.Y, lhs.Z && rhs.Z);
 
 
         public bool Equals(Bool3 other)

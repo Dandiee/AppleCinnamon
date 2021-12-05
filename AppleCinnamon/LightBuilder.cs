@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using AppleCinnamon.Settings;
 using AppleCinnamon.System;
 using SharpDX;
-using SharpDX.DirectInput;
 
 namespace AppleCinnamon
 {
@@ -11,12 +10,12 @@ namespace AppleCinnamon
     {
         public static readonly Tuple<Int3, Bool3>[] Directions =
         {
-            new Tuple<Int3, Bool3>(Int3.UnitY, Bool3.UnitY),
-            new Tuple<Int3, Bool3>(-Int3.UnitY, Bool3.UnitY),
-            new Tuple<Int3, Bool3>(-Int3.UnitX, Bool3.UnitX),
-            new Tuple<Int3, Bool3>(Int3.UnitX, Bool3.UnitX),
-            new Tuple<Int3, Bool3>(-Int3.UnitZ, Bool3.UnitZ),
-            new Tuple<Int3, Bool3>(Int3.UnitZ, Bool3.UnitZ)
+            new(Int3.UnitY, Bool3.UnitY),
+            new(-Int3.UnitY, Bool3.UnitY),
+            new(-Int3.UnitX, Bool3.UnitX),
+            new(Int3.UnitX, Bool3.UnitX),
+            new(-Int3.UnitZ, Bool3.UnitZ),
+            new(Int3.UnitZ, Bool3.UnitZ)
         };
 
         public void UpdateLighting(Chunk chunk, Int3 relativeIndex, Voxel oldVoxel, Voxel newVoxel)

@@ -10,8 +10,8 @@ namespace AppleCinnamon.Vertices
 
         public static readonly InputElement[] InputElements = 
         {
-            new InputElement("POSITION", 0, Format.R32G32B32_Float, 0, 0), //0
-            new InputElement("VISIBILITY", 0, Format.R32_UInt, 12, 0) //3+2
+            new("POSITION", 0, Format.R32G32B32_Float, 0, 0), //0
+            new("VISIBILITY", 0, Format.R32_UInt, 12, 0) //3+2
         };
 
         public VertexSolidBlock(Vector3 position, int u, int v, byte baseLight, byte totalneighborLights, int numberOfAmbientneighbors)

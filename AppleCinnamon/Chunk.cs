@@ -1,13 +1,7 @@
-﻿using System;
-using System.Buffers;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Windows.Forms;
-using AppleCinnamon.Pipeline;
 using AppleCinnamon.System;
 using SharpDX;
 using SharpDX.DXGI;
@@ -150,7 +144,7 @@ namespace AppleCinnamon
             var chunk = neighbors2[Help.GetChunkFlatIndex(cx, cy)];
             address = new VoxelAddress(new Int2(cx, cy), new Int3(i & 15, j, k & 15));
 
-            return CurrentHeight <= j
+            return chunk.CurrentHeight <= j
                 ? Voxel.Air
                 : chunk.GetVoxel(Help.GetFlatIndex(address.RelativeVoxelIndex.X, j, address.RelativeVoxelIndex.Z, chunk.CurrentHeight));
         }
@@ -260,7 +254,22 @@ namespace AppleCinnamon
             {
                 device.ImmediateContext.InputAssembler.SetVertexBuffers(0, ChunkBuffer.Binding);
                 device.ImmediateContext.InputAssembler.SetIndexBuffer(ChunkBuffer.IndexBuffer, Format.R16_UInt, 0);
+                //var count = ChunkBuffer.Offsets[Int3.UnitY].Count;
+                //var offset = ChunkBuffer.Offsets[Int3.UnitY].Offset;
+                //device.ImmediateContext.DrawIndexed(count * 6, offset, 0);
+
+                //foreach (var face in ChunkBuffer.Offsets)
+                //{
+                //    //if (face.Key == Int3.UnitX)
+                //    {
+                //        device.ImmediateContext.DrawIndexed(face.Value.Count * 6, face.Value.Offset, 0);
+                //    }
+                //}
+
                 device.ImmediateContext.DrawIndexed(VisibleFacesCount * 6, 0, 0);
+
+                //device.ImmediateContext.DrawIndexed(100 * 6, 0, 0);
+
             }
             else
             {

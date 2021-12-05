@@ -13,15 +13,15 @@ namespace AppleCinnamon
     {
         public static readonly Tuple<Int3, VisibilityFlag>[] RemoveMapping =
         {
-            new Tuple<Int3, VisibilityFlag>(Int3.UnitY, VisibilityFlag.Bottom),
-            new Tuple<Int3, VisibilityFlag>(-Int3.UnitY, VisibilityFlag.Top),
-            new Tuple<Int3, VisibilityFlag>(-Int3.UnitX, VisibilityFlag.Right),
-            new Tuple<Int3, VisibilityFlag>(Int3.UnitX, VisibilityFlag.Left),
-            new Tuple<Int3, VisibilityFlag>(-Int3.UnitZ, VisibilityFlag.Back),
-            new Tuple<Int3, VisibilityFlag>(Int3.UnitZ, VisibilityFlag.Front)
+            new(Int3.UnitY, VisibilityFlag.Bottom),
+            new(-Int3.UnitY, VisibilityFlag.Top),
+            new(-Int3.UnitX, VisibilityFlag.Right),
+            new(Int3.UnitX, VisibilityFlag.Left),
+            new(-Int3.UnitZ, VisibilityFlag.Back),
+            new(Int3.UnitZ, VisibilityFlag.Front)
         };
 
-        public static readonly Dictionary<Int3, VisibilityFlag> AddMapping = new Dictionary<Int3, VisibilityFlag>
+        public static readonly Dictionary<Int3, VisibilityFlag> AddMapping = new()
         {
             {Int3.UnitY, VisibilityFlag.Top},
             {-Int3.UnitY, VisibilityFlag.Bottom},
@@ -32,7 +32,7 @@ namespace AppleCinnamon
         };
 
 
-        public static readonly Dictionary<Int3, Face> FaceMapping = new Dictionary<Int3, Face>
+        public static readonly Dictionary<Int3, Face> FaceMapping = new()
         {
             {Int3.UnitY, Face.Top},
             {-Int3.UnitY, Face.Bottom},
@@ -45,7 +45,7 @@ namespace AppleCinnamon
 
 
 
-        public static readonly Dictionary<Face, Face> OppositeMapping = new Dictionary<Face, Face>
+        public static readonly Dictionary<Face, Face> OppositeMapping = new()
         {
             {Face.Top, Face.Bottom},
             {Face.Bottom, Face.Top},
@@ -75,7 +75,7 @@ namespace AppleCinnamon
         }
 
         public void SetVoxel(Int3 absoluteIndex, byte voxel)
-        {
+         {
             if (_isUpdateInProgress)
             {
                 return;

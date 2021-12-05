@@ -90,7 +90,7 @@ namespace AppleCinnamon.Pipeline
         public double Compute(double x, double y)
         {
             var amplitude = 1.0; //_baseAmplitude;
-            var frequency = 1.0; //baseFrequency;
+            var frequency = 0.2; //baseFrequency;
 
             double sum = 0;
             for (var i = 0; i < _baseNoise.Length; i++)
