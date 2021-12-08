@@ -23,6 +23,14 @@ namespace AppleCinnamon
             var oldDefinition = oldVoxel.GetDefinition();
             var newDefinition = newVoxel.GetDefinition();
 
+            //if (oldDefinition.IsSolidTransparent || newDefinition.IsSolidTransparent )
+            //{
+            //    chunk.SetVoxel(relativeIndex.ToFlatIndex(chunk.CurrentHeight),
+            //        new Voxel(newDefinition.Type, oldVoxel.Lightness));
+
+            //    return;
+            //}
+
             if (newVoxel.Block == 0) // remove
             {
                 if (oldDefinition.LightEmitting > 0) // emitter
@@ -186,18 +194,21 @@ namespace AppleCinnamon
 
                 var definition = voxel.GetDefinition();
 
-                if ((definition.IsTransmittance.Bytes & direction.Item2.Bytes) > 0)
+                //if ((definition.IsTransmittance.Bytes & direction.Item2.Bytes) > 0)
+                if (definition.IsTransparent)
                 {
                     //if (voxel.Lightness == 15 || definition.LightEmitting > 0)
                     if (voxel.Lightness >= originalLightness) // voxel.Lightness == 15 || definition.LightEmitting > 0)
                     {
-                        lightSources.Add(new Tuple<Chunk, Int3>(sourceChunk.neighbors2[Help.GetChunkFlatIndex(address.ChunkIndex)],
-                            address.RelativeVoxelIndex));
+                        lightSources.Add(new Tuple<Chunk, Int3>(
+                            sourceChunk.neighbors2[Help.GetChunkFlatIndex(address.ChunkIndex)], address.RelativeVoxelIndex));
                     }
                     else if (
-                        ((direction.Item2 & definition.IsTransmittance) == direction.Item2)
+                        //((direction.Item2 & definition.IsTransmittance) == direction.Item2)
+                        
                         //definition.IsTransmittance 
-                        && voxel.Lightness > 0)
+                        //&& 
+                        voxel.Lightness > 0)
                     {
                         //var newChunk = sourceChunk.neighbors[address.ChunkIndex];
                         var newChunk = sourceChunk.neighbors2[Help.GetChunkFlatIndex(address.ChunkIndex)];
@@ -214,6 +225,7 @@ namespace AppleCinnamon
             var sourceVoxel = sourceChunk.CurrentHeight <= sourceIndex.Y
                               ? Voxel.Air
                               : sourceChunk.GetVoxel(sourceIndex.ToFlatIndex(sourceChunk.CurrentHeight));
+            var sourceDefinition = VoxelDefinition.DefinitionByType[sourceVoxel.Block];
 
             foreach (var direction in Directions)
             {
@@ -223,14 +235,15 @@ namespace AppleCinnamon
                 var targetDefinition = targetVoxel.GetDefinition();
 
                 if (
-                    ((direction.Item2 & targetDefinition.IsTransmittance) == direction.Item2)
+                    //((direction.Item2 & targetDefinition.IsTransmittance) == direction.Item2)
                     // targetDefinition.IsTransmittance 
-                    && targetVoxel.Lightness < sourceVoxel.Lightness - 1)
+                    targetDefinition.IsTransparent
+                    && targetVoxel.Lightness < (sourceVoxel.Lightness - sourceDefinition.Transmittance))
                 {
                     //var targetChunk = sourceChunk.neighbors[targetAddress.ChunkIndex];
                     var targetChunk = sourceChunk.neighbors2[Help.GetChunkFlatIndex(targetAddress.ChunkIndex)];
                     targetChunk.SetVoxel(targetAddress.RelativeVoxelIndex.ToFlatIndex(targetChunk.CurrentHeight),
-                        new Voxel(targetVoxel.Block, (byte) (sourceVoxel.Lightness - 1)));
+                        new Voxel(targetVoxel.Block, (byte) ((sourceVoxel.Lightness - sourceDefinition.Transmittance))));
 
                     PropagateLightness(targetChunk, targetAddress.RelativeVoxelIndex);
                 }

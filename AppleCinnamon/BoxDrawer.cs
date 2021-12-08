@@ -50,7 +50,6 @@ namespace AppleCinnamon
                 using (var inputLayout = new InputLayout(_graphics.Device, _pass.Description.Signature,
                     VertexPositionColor.InputElements))
                 {
-
                     _graphics.Device.ImmediateContext.InputAssembler.InputLayout = inputLayout;
                     _graphics.Device.ImmediateContext.InputAssembler.PrimitiveTopology = PrimitiveTopology.LineList;
                     _graphics.Device.ImmediateContext.InputAssembler.SetIndexBuffer(_indexBuffer, Format.R16_UInt, 0);
@@ -80,8 +79,8 @@ namespace AppleCinnamon
 
             if (Game.ShowChunkBoundingBoxes)
             {
-                boundingBoxes.AddRange(chunkManager.Chunks.Values.Select(s =>
-                    new ValueTuple<BoundingBox, Color>(s.BoundingBox, Color.Red)));
+                //boundingBoxes.AddRange(chunkManager.Chunks.Values.Select(s =>
+                //    new ValueTuple<BoundingBox, Color>(s.BoundingBox, Color.Red)));
             }
 
             if (camera.CurrentCursor != null)
@@ -125,27 +124,6 @@ namespace AppleCinnamon
 
             indexes[indexOffset + 0] = (ushort)(vertexOffset + 0);
             indexes[indexOffset + 1] = (ushort)(vertexOffset + 1);
-            indexes[indexOffset + 2] = (ushort)(vertexOffset + 1);
-            indexes[indexOffset + 3] = (ushort)(vertexOffset + 3);
-            indexes[indexOffset + 4] = (ushort)(vertexOffset + 3);
-            indexes[indexOffset + 5] = (ushort)(vertexOffset + 2);
-            indexes[indexOffset + 6] = (ushort)(vertexOffset + 2);
-            indexes[indexOffset + 7] = (ushort)(vertexOffset + 0);
-
-            indexes[indexOffset + 8] =  (ushort)(vertexOffset + 4);
-            indexes[indexOffset + 9] =  (ushort)(vertexOffset + 6);
-            indexes[indexOffset + 10] = (ushort)(vertexOffset + 6);
-            indexes[indexOffset + 11] = (ushort)(vertexOffset + 7);
-            indexes[indexOffset + 12] = (ushort)(vertexOffset + 7);
-            indexes[indexOffset + 13] = (ushort)(vertexOffset + 5);
-            indexes[indexOffset + 14] = (ushort)(vertexOffset + 5);
-            indexes[indexOffset + 15] = (ushort)(vertexOffset + 4);
-                                        
-            indexes[indexOffset + 16] = (ushort)(vertexOffset + 0);
-            indexes[indexOffset + 17] = (ushort)(vertexOffset + 4);
-            indexes[indexOffset + 18] = (ushort)(vertexOffset + 1);
-            indexes[indexOffset + 19] = (ushort)(vertexOffset + 6);
-            indexes[indexOffset + 20] = (ushort)(vertexOffset + 2);
             indexes[indexOffset + 21] = (ushort)(vertexOffset + 5);
             indexes[indexOffset + 22] = (ushort)(vertexOffset + 3);
             indexes[indexOffset + 23] = (ushort)(vertexOffset + 7);

@@ -16,6 +16,7 @@ namespace AppleCinnamon
         public readonly FaceBuildingContext Back;
 
         public readonly FaceBuildingContext[] Faces;
+        public readonly List<int> TransparentBlocks = new();
 
         public Dictionary<int, VisibilityFlag> VisibilityFlags = new();
         public Queue<int> LightPropagationVoxels = new(1024);

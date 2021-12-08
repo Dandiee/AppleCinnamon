@@ -35,7 +35,7 @@ VertexShaderOutput VertexShaderFunction(VertexShaderInput input)
     VertexShaderOutput output = (VertexShaderOutput)0;
 	float4 position = float4(input.Position.xyz, 1);
 	
-	float u = (input.Asd & 15) * 1.0/16.0;
+	float u = (input.Asd & 15) * 1.0 / 16.0;
 	float v = ((input.Asd & 240) >> 4) * 1.0/16.0;
 	float l = ((input.Asd & 3840) >> 8) / 16.0;
 	float a = 1.0 - (((input.Asd & 12288) >> 12) / 3.0);
@@ -54,6 +54,8 @@ VertexShaderOutput VertexShaderFunction(VertexShaderInput input)
 float4 PixelShaderFunction(VertexShaderOutput input) : SV_Target
 {
 	float4 textureColor = Textures.Sample(SampleType, input.TexCoords) * input.AmbientOcclusion;   
+	// transparent solids
+	clip(textureColor.a == 0 ? -1 : 1);
 	float4 finalColor = (1.0 - input.FogFactor) * textureColor + (input.FogFactor) * FogColor;
 	return finalColor;
 }

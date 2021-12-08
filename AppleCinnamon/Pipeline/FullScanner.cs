@@ -17,7 +17,7 @@ namespace AppleCinnamon.Pipeline
         Back = 32
     }
 
-  
+
     public sealed class FullScanner
     {
         public DataflowContext<Chunk> Process(DataflowContext<Chunk> context)
@@ -27,7 +27,7 @@ namespace AppleCinnamon.Pipeline
 
             var height = chunk.CurrentHeight;
             var voxels = chunk.Voxels;
-            
+
             int i, j, k;
             for (k = 0; k < Chunk.SizeXy; k++)
             {
@@ -39,7 +39,14 @@ namespace AppleCinnamon.Pipeline
                         var voxel = voxels[flatIndex];
 
                         var definition = VoxelDefinition.DefinitionByType[voxel.Block];
-                        if (definition.IsTransparent && voxel.Lightness == 15)
+
+                        //if (definition.IsSolidTransparent)
+                        //{
+                        //    chunk.BuildingContext.TransparentBlocks.Add(flatIndex);
+                        //}
+
+                        // not sure...
+                        if (!definition.IsBlock && voxel.Lightness == 15)
                         {
                             continue;
                         }
@@ -98,9 +105,9 @@ namespace AppleCinnamon.Pipeline
                             Help.GetFlatIndex(i - 1, j, k, chunk.CurrentHeight), chunk, definition, flatIndex, ref visibilityFlag, ref voxelLight, chunk.BuildingContext.Left);
                         BuildHorizontalFace(i < Chunk.SizeXy - 1,
                             Help.GetFlatIndex(i + 1, j, k, chunk.CurrentHeight), chunk, definition, flatIndex, ref visibilityFlag, ref voxelLight, chunk.BuildingContext.Right);
-                        BuildHorizontalFace(k > 0,                                      
+                        BuildHorizontalFace(k > 0,
                             Help.GetFlatIndex(i, j, k - 1, chunk.CurrentHeight), chunk, definition, flatIndex, ref visibilityFlag, ref voxelLight, chunk.BuildingContext.Front);
-                        BuildHorizontalFace(k < Chunk.SizeXy - 1,                       
+                        BuildHorizontalFace(k < Chunk.SizeXy - 1,
                             Help.GetFlatIndex(i, j, k + 1, chunk.CurrentHeight), chunk, definition, flatIndex, ref visibilityFlag, ref voxelLight, chunk.BuildingContext.Back);
 
                         if (visibilityFlag != VisibilityFlag.None)
@@ -124,7 +131,7 @@ namespace AppleCinnamon.Pipeline
         }
 
         [InlineMethod.Inline]
-        private void BuildHorizontalFace(bool isInChunk, int neighborFlatIndex, Chunk chunk, VoxelDefinition definition, 
+        private void BuildHorizontalFace(bool isInChunk, int neighborFlatIndex, Chunk chunk, VoxelDefinition definition,
             int flatIndex, ref VisibilityFlag visibilityFlag, ref byte voxelLight, FaceBuildingContext context)
         {
             if (isInChunk)

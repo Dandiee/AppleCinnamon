@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using AppleCinnamon.Pipeline;
@@ -9,6 +10,43 @@ using SharpDX;
 
 namespace AppleCinnamon
 {
+    public readonly struct BlockUpdateDirection
+    {
+        private static readonly IReadOnlyDictionary<VisibilityFlag, Face> Mapping = new Dictionary<VisibilityFlag, Face>
+        {
+            [VisibilityFlag.Top] = Face.Top,
+            [VisibilityFlag.Bottom] = Face.Bottom,
+            [VisibilityFlag.Left] = Face.Left,
+            [VisibilityFlag.Right] = Face.Right,
+            [VisibilityFlag.Front] = Face.Front,
+            [VisibilityFlag.Back] = Face.Back,
+        };
+
+        public readonly Int3 Step;
+        public readonly VisibilityFlag Direction;
+        public readonly VisibilityFlag OppositeDirection;
+        public readonly Face Face;
+        public readonly Face OppositeFace;
+
+        private BlockUpdateDirection(Int3 step, VisibilityFlag direction, VisibilityFlag oppositeDirection)
+        {
+            Step = step;
+            Direction = direction;
+            OppositeDirection = oppositeDirection;
+            Face = Mapping[direction];
+            OppositeFace = Mapping[oppositeDirection];
+        }
+
+        public static BlockUpdateDirection[] All = {
+            new (Int3.UnitY, VisibilityFlag.Top, VisibilityFlag.Bottom),
+            new ( -Int3.UnitY, VisibilityFlag.Bottom, VisibilityFlag.Top),
+            new (-Int3.UnitX, VisibilityFlag.Left, VisibilityFlag.Right),
+            new (Int3.UnitX, VisibilityFlag.Right, VisibilityFlag.Left),
+            new (-Int3.UnitZ, VisibilityFlag.Front, VisibilityFlag.Back),
+            new (Int3.UnitZ, VisibilityFlag.Back, VisibilityFlag.Front)
+        };
+    }
+
     public sealed class ChunkUpdater
     {
         public static readonly Tuple<Int3, VisibilityFlag>[] RemoveMapping =
@@ -23,23 +61,23 @@ namespace AppleCinnamon
 
         public static readonly Dictionary<Int3, VisibilityFlag> AddMapping = new()
         {
-            {Int3.UnitY, VisibilityFlag.Top},
-            {-Int3.UnitY, VisibilityFlag.Bottom},
-            {-Int3.UnitX, VisibilityFlag.Left},
-            {Int3.UnitX, VisibilityFlag.Right},
-            {-Int3.UnitZ, VisibilityFlag.Front},
-            { Int3.UnitZ, VisibilityFlag.Back},
+            { Int3.UnitY, VisibilityFlag.Top },
+            { -Int3.UnitY, VisibilityFlag.Bottom },
+            { -Int3.UnitX, VisibilityFlag.Left },
+            { Int3.UnitX, VisibilityFlag.Right },
+            { -Int3.UnitZ, VisibilityFlag.Front },
+            { Int3.UnitZ, VisibilityFlag.Back },
         };
 
 
         public static readonly Dictionary<Int3, Face> FaceMapping = new()
         {
-            {Int3.UnitY, Face.Top},
-            {-Int3.UnitY, Face.Bottom},
-            {-Int3.UnitX, Face.Left},
-            {Int3.UnitX, Face.Right},
-            {-Int3.UnitZ, Face.Front},
-            { Int3.UnitZ, Face.Back},
+            { Int3.UnitY, Face.Top },
+            { -Int3.UnitY, Face.Bottom },
+            { -Int3.UnitX, Face.Left },
+            { Int3.UnitX, Face.Right },
+            { -Int3.UnitZ, Face.Front },
+            { Int3.UnitZ, Face.Back },
         };
 
 
@@ -47,12 +85,12 @@ namespace AppleCinnamon
 
         public static readonly Dictionary<Face, Face> OppositeMapping = new()
         {
-            {Face.Top, Face.Bottom},
-            {Face.Bottom, Face.Top},
-            {Face.Left, Face.Right},
-            {Face.Right, Face.Left},
-            {Face.Front, Face.Back},
-            {Face.Back, Face.Front},
+            { Face.Top, Face.Bottom },
+            { Face.Bottom, Face.Top },
+            { Face.Left, Face.Right },
+            { Face.Right, Face.Left },
+            { Face.Front, Face.Back },
+            { Face.Back, Face.Front },
         };
 
 
@@ -75,7 +113,7 @@ namespace AppleCinnamon
         }
 
         public void SetVoxel(Int3 absoluteIndex, byte voxel)
-         {
+        {
             if (_isUpdateInProgress)
             {
                 return;
@@ -119,61 +157,99 @@ namespace AppleCinnamon
 
         private void UpdateVisibilityFlags(Chunk chunk, Voxel oldVoxel, Voxel newVoxel, Int3 relativeIndex)
         {
-            var isRemoving = newVoxel.Block == 0;
-            var newVisibilityFlag = VisibilityFlag.None;
-            chunk.BuildingContext.VisibilityFlags.TryGetValue(relativeIndex.ToFlatIndex(chunk.CurrentHeight), out var oldVisibilityFlag);
+            var flatIndex = relativeIndex.ToFlatIndex(chunk.CurrentHeight);
+            var newDefinition = VoxelDefinition.DefinitionByType[newVoxel.Block];
+            var oldDefinition = VoxelDefinition.DefinitionByType[oldVoxel.Block];
 
-            foreach (var direction in RemoveMapping)
+            var newVisibilityFlag = VisibilityFlag.None;
+            var hadVisibility = chunk.BuildingContext.VisibilityFlags.TryGetValue(flatIndex, out var oldVisibilityFlag);
+
+            foreach (var direction in BlockUpdateDirection.All)
             {
-                var neighbor = relativeIndex + direction.Item1;
+                var neighbor = relativeIndex + direction.Step;
                 var neighborVoxel =
                     chunk.GetLocalWithneighbors(neighbor.X, neighbor.Y, neighbor.Z, out var neighborAddress);
                 var neighborDefinition = VoxelDefinition.DefinitionByType[neighborVoxel.Block];
-                var face = FaceMapping[direction.Item1];
 
-                if (!neighborDefinition.IsTransparent)
+                var neighborChunk = chunk.neighbors2[Help.GetChunkFlatIndex(neighborAddress.ChunkIndex)];
+                var neighborIndex = neighborAddress.RelativeVoxelIndex.ToFlatIndex(neighborChunk.CurrentHeight);
+
+
+
+                // old one was visible
+                if (oldDefinition.IsBlock && neighborDefinition.IsTransparent)
                 {
-                    //var neighborChunk = chunk.neighbors[neighborAddress.ChunkIndex];
-                    var neighborChunk = chunk.neighbors2[Help.GetChunkFlatIndex(neighborAddress.ChunkIndex)];
-                    var neighborIndex = neighborAddress.RelativeVoxelIndex.ToFlatIndex(neighborChunk.CurrentHeight);
-                    neighborChunk.BuildingContext.VisibilityFlags.TryGetValue(neighborIndex, out var visibility);
-
-                    if (isRemoving)
+                    // but its not visible anymore
+                    if (!newDefinition.IsBlock || neighborDefinition.IsOpaque)
                     {
-                        neighborChunk.BuildingContext.VisibilityFlags[neighborIndex] = visibility | direction.Item2;
-                        neighborChunk.BuildingContext.Faces[(byte)OppositeMapping[face]].VoxelCount++;
+                        //chunk.BuildingContext.VisibilityFlags[flatIndex] ^= direction.Item2;
+                        if (hadVisibility)
+                        {
+                            chunk.BuildingContext.Faces[(byte) direction.Face].VoxelCount--;
+                        }
                     }
-                    else
+                }
+
+                // old one wasnt visible
+                if (!oldDefinition.IsBlock || neighborDefinition.IsOpaque)
+                {
+                    // but its visible now
+                    if (newDefinition.IsBlock && neighborDefinition.IsTransparent)
                     {
-                        neighborChunk.BuildingContext.VisibilityFlags[neighborIndex] = visibility ^ direction.Item2;
-                        neighborChunk.BuildingContext.Faces[(byte)OppositeMapping[face]].VoxelCount--;
+                        newVisibilityFlag |= direction.Direction;
+                        chunk.BuildingContext.Faces[(byte)direction.Face].VoxelCount++;
+                    }
+                }
+
+                var hadNeighborVisibility = neighborChunk.BuildingContext.VisibilityFlags.TryGetValue(neighborIndex, out var neighborOldVisibilityFlag);
+
+
+                // neighbor was visible
+                if (neighborDefinition.IsBlock && oldDefinition.IsTransparent)
+                {
+                    // and its not visible anymore
+                    if (!neighborDefinition.IsBlock || newDefinition.IsOpaque)
+                    {
+                        neighborOldVisibilityFlag ^= direction.OppositeDirection;
+                        neighborChunk.BuildingContext.Faces[(byte)direction.OppositeFace].VoxelCount--;
+                    }
+                }
+
+                // neighbor wasnt visible
+                if (!neighborDefinition.IsBlock || oldDefinition.IsOpaque)
+                {
+                    // but its visible now
+                    if (neighborDefinition.IsBlock && newDefinition.IsTransparent)
+                    {
+                        neighborOldVisibilityFlag |= direction.OppositeDirection;
+                        neighborChunk.BuildingContext.Faces[(byte)direction.OppositeFace].VoxelCount++;
+                    }
+                }
+
+                if (neighborOldVisibilityFlag == VisibilityFlag.None)
+                {
+                    if (hadNeighborVisibility)
+                    {
+                        neighborChunk.BuildingContext.VisibilityFlags.Remove(neighborIndex);
                     }
                 }
                 else
                 {
-                    newVisibilityFlag |= AddMapping[direction.Item1];
-                    chunk.BuildingContext.Faces[(byte)face].VoxelCount++;
+                    neighborChunk.BuildingContext.VisibilityFlags[neighborIndex] = neighborOldVisibilityFlag;
                 }
             }
 
-            if (isRemoving)
+            if (newVisibilityFlag == VisibilityFlag.None)
             {
-                foreach (var addMapping in AddMapping)
+                if (hadVisibility)
                 {
-                    if ((oldVisibilityFlag & addMapping.Value) == addMapping.Value) // the given face was visible so far
-                    {
-                        var face = FaceMapping[addMapping.Key];
-                        chunk.BuildingContext.Faces[(byte)face].VoxelCount--;
-                    }
+                    chunk.BuildingContext.VisibilityFlags.Remove(flatIndex);
                 }
-
-                chunk.BuildingContext.VisibilityFlags.Remove(relativeIndex.ToFlatIndex(chunk.CurrentHeight));
             }
             else
             {
-                chunk.BuildingContext.VisibilityFlags[relativeIndex.ToFlatIndex(chunk.CurrentHeight)] = newVisibilityFlag;
+                chunk.BuildingContext.VisibilityFlags[flatIndex] = newVisibilityFlag;
             }
-
         }
     }
 }

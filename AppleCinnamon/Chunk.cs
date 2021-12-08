@@ -24,11 +24,12 @@ namespace AppleCinnamon
         public int CurrentHeight;
 
         public ChunkBuffer ChunkBuffer;
+        public ChunkBuffer TransparentBlockBuffer;
 
         private FaceBuffer _waterBuffer;
         public int VisibleFacesCount { get; set; }
 
-        
+
         public List<int> TopMostWaterVoxels;
 
         //public List<int> PendingLeftVoxels;
@@ -38,7 +39,7 @@ namespace AppleCinnamon
 
         public readonly ChunkBuildingContext BuildingContext;
 
-        
+
 
         //public Cube<RefInt> VoxelCount { get; }
 
@@ -77,7 +78,7 @@ namespace AppleCinnamon
             var expectedHeight = expectedSlices * SliceHeight;
 
             var newVoxels = new Voxel[SizeXy * expectedHeight * SizeXy];
-            
+
             // In case of local sliced array addressing, a simple copy does the trick
             // Array.Copy(Voxels, newVoxels, Voxels.Length);
             var sw = Stopwatch.StartNew();
@@ -94,7 +95,7 @@ namespace AppleCinnamon
                 }
             }
 
-            BuildingContext.VisibilityFlags  =
+            BuildingContext.VisibilityFlags =
                 BuildingContext.VisibilityFlags.ToDictionary(kvp => kvp.Key.ToIndex(CurrentHeight).ToFlatIndex(expectedHeight),
                     kvp => kvp.Value);
 
@@ -142,7 +143,7 @@ namespace AppleCinnamon
             var cy = (int)(-((k & 0b10000000_00000000_00000000_00000000) >> 31) + ((k / SizeXy)));
 
             var chunk = neighbors2[Help.GetChunkFlatIndex(cx, cy)];
-            address = new VoxelAddress(new Int2(cx, cy), new Int3(i & (SizeXy-1), j, k & (SizeXy - 1)));
+            address = new VoxelAddress(new Int2(cx, cy), new Int3(i & (SizeXy - 1), j, k & (SizeXy - 1)));
 
             return chunk.CurrentHeight <= j
                 ? Voxel.Air
@@ -159,12 +160,12 @@ namespace AppleCinnamon
             }
 
             var chunk = neighbors2[Help.GetChunkFlatIndex(
-                (int) (-((i & 0b10000000_00000000_00000000_00000000) >> 31) + ((i / SizeXy))),
-                (int) (-((k & 0b10000000_00000000_00000000_00000000) >> 31) + ((k / SizeXy))))];
+                (int)(-((i & 0b10000000_00000000_00000000_00000000) >> 31) + ((i / SizeXy))),
+                (int)(-((k & 0b10000000_00000000_00000000_00000000) >> 31) + ((k / SizeXy))))];
 
             return chunk.CurrentHeight <= j
                 ? Voxel.Air
-                : chunk.GetVoxel(Help.GetFlatIndex(i & (SizeXy-1), j, k & (SizeXy - 1), chunk.CurrentHeight));
+                : chunk.GetVoxel(Help.GetFlatIndex(i & (SizeXy - 1), j, k & (SizeXy - 1), chunk.CurrentHeight));
         }
 
 
@@ -197,9 +198,6 @@ namespace AppleCinnamon
 
             UpdateBoundingBox();
         }
-
-      
-        
 
         public void SetBuffers(FaceBuffer waterBuffer)
         {
@@ -298,6 +296,8 @@ namespace AppleCinnamon
                 }
             }
         }
+
+
 
         public void DrawWater(Device device)
         {

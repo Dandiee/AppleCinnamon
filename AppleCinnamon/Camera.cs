@@ -49,9 +49,10 @@ namespace AppleCinnamon
 
         public static readonly IReadOnlyDictionary<Key, VoxelDefinition> KeyVoxelMapping = new Dictionary<Key, VoxelDefinition>
         {
-            [Key.F1] = VoxelDefinition.Sand,
-            [Key.F2] = VoxelDefinition.EmitterStone,
-            [Key.F3] = VoxelDefinition.Snow
+            [Key.D1] = VoxelDefinition.Sand,
+            [Key.D2] = VoxelDefinition.EmitterStone,
+            [Key.D3] = VoxelDefinition.Snow,
+            [Key.D4] = VoxelDefinition.Leaves,
         };
 
         public Camera(Graphics graphics)

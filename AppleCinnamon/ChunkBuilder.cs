@@ -46,15 +46,44 @@ namespace AppleCinnamon
                         AddFace(faceInfo, index.X, index.Y, index.Z, vertices, indexes, definition, chunk, neighbor, voxelPositionOffset);
                     }
                 }
-
             }
 
             chunk.ChunkBuffer = new ChunkBuffer(device, vertices, indexes, faces);
+            chunk.TransparentBlockBuffer = AddTransparentBlocks(chunk, device);
 
             chunk.VisibleFacesCount = visibleFacesCount;
             var waterBuffer = AddWaterFace(chunk, device);
 
             chunk.SetBuffers(waterBuffer);
+        }
+
+        private ChunkBuffer AddTransparentBlocks(Chunk chunk, Device device)
+        {
+            if (chunk.BuildingContext.TransparentBlocks.Count == 0) return null;
+
+            var faceCount = chunk.BuildingContext.TransparentBlocks.Count * 6;
+            var vertices = new VertexSolidBlock[faceCount * 4];
+            var indexes = new ushort[faceCount * 6];
+            var faces = GetSolidTransparentChunkFaces(chunk);
+
+            foreach (var flatIndex in chunk.BuildingContext.TransparentBlocks)
+            {
+                var index = flatIndex.ToIndex(chunk.CurrentHeight);
+
+                var voxel = chunk.GetVoxel(flatIndex);
+                var definition = VoxelDefinition.DefinitionByType[voxel.Block];
+
+                var voxelPositionOffset = definition.Translation + chunk.OffsetVector + new Vector3(index.X, index.Y, index.Z);
+
+
+                foreach (var faceInfo in faces.Faces)
+                {
+                    var neighbor = chunk.GetLocalWithneighbors(index.X + faceInfo.BuildInfo.Direction.X, index.Y + faceInfo.BuildInfo.Direction.Y, index.Z + faceInfo.BuildInfo.Direction.Z);
+                    AddFace(faceInfo, index.X, index.Y, index.Z, vertices, indexes, definition, chunk, neighbor, voxelPositionOffset);
+                }
+            }
+
+            return new ChunkBuffer(device, vertices, indexes, faces);
         }
 
         private FaceBuffer AddWaterFace(Chunk chunk, Device device)
@@ -112,7 +141,8 @@ namespace AppleCinnamon
 
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void AddFace(ChunkFace face, int relativeIndexX, int relativeIndexY, int relativeIndexZ, VertexSolidBlock[] vertices, ushort[] indexes, VoxelDefinition definition, Chunk chunk, Voxel neighbor, Vector3 voxelPositionOffset)
+        public void AddFace(ChunkFace face, int relativeIndexX, int relativeIndexY, int relativeIndexZ, VertexSolidBlock[] vertices,
+            ushort[] indexes, VoxelDefinition definition, Chunk chunk, Voxel neighbor, Vector3 voxelPositionOffset)
         {
             // Face specific base variables
             var textureUv = definition.TextureIndexes.Faces[(byte)face.BuildInfo.Face];
@@ -190,6 +220,29 @@ namespace AppleCinnamon
                 new ChunkFace(rigOffset, rigCount, FaceBuildInfo.Right),
                 new ChunkFace(froOffset, froCount, FaceBuildInfo.Front),
                 new ChunkFace(bacOffset, bacCount, FaceBuildInfo.Back));
+
+            return result;
+        }
+
+
+        private Cube<ChunkFace> GetSolidTransparentChunkFaces(Chunk chunk)
+        {
+            var voxelCount = chunk.BuildingContext.TransparentBlocks.Count;
+            
+            var topOffset = 0;
+            var botOffset = voxelCount;
+            var lefOffset = botOffset + voxelCount;
+            var rigOffset = lefOffset + voxelCount;
+            var froOffset = rigOffset + voxelCount;
+            var bacOffset = froOffset + voxelCount;
+
+            var result = new Cube<ChunkFace>(
+                new ChunkFace(topOffset, voxelCount, FaceBuildInfo.Top),
+                new ChunkFace(botOffset, voxelCount, FaceBuildInfo.Bottom),
+                new ChunkFace(lefOffset, voxelCount, FaceBuildInfo.Left),
+                new ChunkFace(rigOffset, voxelCount, FaceBuildInfo.Right),
+                new ChunkFace(froOffset, voxelCount, FaceBuildInfo.Front),
+                new ChunkFace(bacOffset, voxelCount, FaceBuildInfo.Back));
 
             return result;
         }
@@ -272,22 +325,22 @@ namespace AppleCinnamon
 
         public static readonly Dictionary<Face, Int3> FaceDirectionMapping = new()
         {
-            {Face.Top, new Int3(0, 1, 0)},
-            {Face.Bottom, new Int3(0, -1, 0)},
-            {Face.Left, new Int3(-1, 0, 0)},
-            {Face.Right, new Int3(1, 0, 0)},
-            {Face.Front, new Int3(0, 0, -1)},
-            {Face.Back, new Int3(0, 0, 1)},
+            { Face.Top, new Int3(0, 1, 0) },
+            { Face.Bottom, new Int3(0, -1, 0) },
+            { Face.Left, new Int3(-1, 0, 0) },
+            { Face.Right, new Int3(1, 0, 0) },
+            { Face.Front, new Int3(0, 0, -1) },
+            { Face.Back, new Int3(0, 0, 1) },
         };
 
         public static readonly Dictionary<Face, byte> FaceVisibilityFlagMapping = new()
         {
-            {Face.Top, 1},
-            {Face.Bottom, 2},
-            {Face.Left, 4},
-            {Face.Right, 8},
-            {Face.Front, 16},
-            {Face.Back, 32},
+            { Face.Top, 1 },
+            { Face.Bottom, 2 },
+            { Face.Left, 4 },
+            { Face.Right, 8 },
+            { Face.Front, 16 },
+            { Face.Back, 32 },
         };
 
         public static readonly Int2[] UvOffsetIndexes = { new(0, 0), new(1, 0), new(1, 1), new(0, 1) };
@@ -307,7 +360,7 @@ namespace AppleCinnamon
 
         private FaceBuildInfo(Face face)
         {
-            
+
             DirectionFlag = FaceVisibilityFlagMapping[face];
             Face = face;
             Direction = FaceDirectionMapping[face];
