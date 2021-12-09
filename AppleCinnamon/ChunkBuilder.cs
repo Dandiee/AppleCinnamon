@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using AppleCinnamon.Pipeline;
 using AppleCinnamon.Settings;
 using AppleCinnamon.System;
 using AppleCinnamon.Vertices;
@@ -45,7 +46,7 @@ namespace AppleCinnamon
                     if (((byte)visibilityFlag.Value & faceInfo.BuildInfo.DirectionFlag) == faceInfo.BuildInfo.DirectionFlag)
                     {
                         var neighbor = chunk.GetLocalWithneighbors(index.X + faceInfo.BuildInfo.Direction.X, index.Y + faceInfo.BuildInfo.Direction.Y, index.Z + faceInfo.BuildInfo.Direction.Z);
-                        AddFace(faceInfo, index.X, index.Y, index.Z, vertices, indexes, definition, chunk, neighbor, voxelPositionOffset);
+                        AddFace(faceInfo, voxel, index.X, index.Y, index.Z, vertices, indexes, definition, chunk, neighbor, voxelPositionOffset);
                     }
                 }
             }
@@ -81,7 +82,7 @@ namespace AppleCinnamon
                 foreach (var faceInfo in faces.Faces)
                 {
                     var neighbor = chunk.GetLocalWithneighbors(index.X + faceInfo.BuildInfo.Direction.X, index.Y + faceInfo.BuildInfo.Direction.Y, index.Z + faceInfo.BuildInfo.Direction.Z);
-                    AddFace(faceInfo, index.X, index.Y, index.Z, vertices, indexes, definition, chunk, neighbor, voxelPositionOffset);
+                    AddFace(faceInfo, voxel, index.X, index.Y, index.Z, vertices, indexes, definition, chunk, neighbor, voxelPositionOffset);
                 }
             }
 
@@ -142,7 +143,7 @@ namespace AppleCinnamon
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void AddFace(ChunkFace face, int relativeIndexX, int relativeIndexY, int relativeIndexZ, VertexSolidBlock[] vertices,
+        public void AddFace(ChunkFace face, Voxel voxel, int relativeIndexX, int relativeIndexY, int relativeIndexZ, VertexSolidBlock[] vertices,
             ushort[] indexes, VoxelDefinition definition, Chunk chunk, Voxel neighbor, Vector3 voxelPositionOffset)
         {
             // Face specific base variables
@@ -183,10 +184,13 @@ namespace AppleCinnamon
                     }
                 }
 
-               
+                var hue = (definition.HueFaces & face.Direction) == face.Direction
+                    ? voxel.HueIndex
+                    : (byte)0;
+                
                 vertices[vertexIndex + vertexInfo.Index] = new VertexSolidBlock(position, textureUv.X + vertexInfo.TextureIndex.X,
                     textureUv.Y + vertexInfo.TextureIndex.Y, neighbor.Lightness, totalneighborLight,
-                    numberOfAmbientneighbors);
+                    numberOfAmbientneighbors, hue);
             }
 
             indexes[indexIndex] = (ushort)vertexIndex;
@@ -216,12 +220,12 @@ namespace AppleCinnamon
             var bacOffset = froOffset + froCount;
 
             var result = new Cube<ChunkFace>(
-                new ChunkFace(topOffset, topCount, FaceBuildInfo.Top),
-                new ChunkFace(botOffset, botCount, FaceBuildInfo.Bottom),
-                new ChunkFace(lefOffset, lefCount, FaceBuildInfo.Left),
-                new ChunkFace(rigOffset, rigCount, FaceBuildInfo.Right),
-                new ChunkFace(froOffset, froCount, FaceBuildInfo.Front),
-                new ChunkFace(bacOffset, bacCount, FaceBuildInfo.Back));
+                new ChunkFace(topOffset, topCount, FaceBuildInfo.Top, VisibilityFlag.Top),
+                new ChunkFace(botOffset, botCount, FaceBuildInfo.Bottom, VisibilityFlag.Bottom),
+                new ChunkFace(lefOffset, lefCount, FaceBuildInfo.Left, VisibilityFlag.Left),
+                new ChunkFace(rigOffset, rigCount, FaceBuildInfo.Right, VisibilityFlag.Right),
+                new ChunkFace(froOffset, froCount, FaceBuildInfo.Front, VisibilityFlag.Front),
+                new ChunkFace(bacOffset, bacCount, FaceBuildInfo.Back, VisibilityFlag.Back));
 
             return result;
         }
@@ -239,12 +243,12 @@ namespace AppleCinnamon
             var bacOffset = froOffset + voxelCount;
 
             var result = new Cube<ChunkFace>(
-                new ChunkFace(topOffset, voxelCount, FaceBuildInfo.Top),
-                new ChunkFace(botOffset, voxelCount, FaceBuildInfo.Bottom),
-                new ChunkFace(lefOffset, voxelCount, FaceBuildInfo.Left),
-                new ChunkFace(rigOffset, voxelCount, FaceBuildInfo.Right),
-                new ChunkFace(froOffset, voxelCount, FaceBuildInfo.Front),
-                new ChunkFace(bacOffset, voxelCount, FaceBuildInfo.Back));
+                new ChunkFace(topOffset, voxelCount,    FaceBuildInfo.Top, VisibilityFlag.Top),
+                new ChunkFace(botOffset, voxelCount,  FaceBuildInfo.Bottom, VisibilityFlag.Bottom),
+                new ChunkFace(lefOffset, voxelCount, FaceBuildInfo.Left, VisibilityFlag.Left),
+                new ChunkFace(rigOffset, voxelCount, FaceBuildInfo.Right, VisibilityFlag.Right),
+                new ChunkFace(froOffset, voxelCount, FaceBuildInfo.Front, VisibilityFlag.Front),
+                new ChunkFace(bacOffset, voxelCount, FaceBuildInfo.Back, VisibilityFlag.Back));
 
             return result;
         }
@@ -420,12 +424,14 @@ namespace AppleCinnamon
         public readonly int Count;
         public readonly FaceBuildInfo BuildInfo;
         public int ProcessedVoxels;
+        public readonly VisibilityFlag Direction;
 
-        public ChunkFace(int offset, int count, FaceBuildInfo buildInfo)
+        public ChunkFace(int offset, int count, FaceBuildInfo buildInfo, VisibilityFlag direction)
         {
             Offset = offset;
             Count = count;
             BuildInfo = buildInfo;
+            Direction = direction;
         }
     }
 }

@@ -102,8 +102,7 @@ namespace AppleCinnamon.Pipeline
                                     neighborVoxel.Lightness < sourceVoxel.Lightness - brightnessLoss)
                                 {
                                     chunk.SetVoxelNoInline(neighborFlatIndex,
-                                        new Voxel(neighborVoxel.Block,
-                                            (byte) (sourceVoxel.Lightness - brightnessLoss)));
+                                        neighborVoxel.SetLight((byte) (sourceVoxel.Lightness - brightnessLoss)));
                                     localLightSources.Enqueue(neighborFlatIndex);
                                 }
                             }
@@ -149,7 +148,7 @@ namespace AppleCinnamon.Pipeline
                         var targetChunk =
                             source.sourceChunk.neighbors2[Help.GetChunkFlatIndex(targetAddress.ChunkIndex)];
                         targetChunk.SetVoxel(targetAddress.RelativeVoxelIndex.ToFlatIndex(targetChunk.CurrentHeight),
-                            new Voxel(targetVoxel.Block, (byte)((sourceVoxel.Lightness - brightnessLoss))));
+                            targetVoxel.SetLight((byte)(sourceVoxel.Lightness - brightnessLoss)));
                         queue.Enqueue(
                             new GlobalLighntessPropogationRecord(targetChunk, targetAddress.RelativeVoxelIndex));
                     }

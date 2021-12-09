@@ -102,7 +102,7 @@ namespace AppleCinnamon.Pipeline
                     var sourceToTargetDrop = VoxelDefinition.GetBrightnessLoss(sourceDefinition, targetDefinition, sourceDirection);
                     if (targetVoxel.Lightness < sourceVoxel.Lightness - sourceToTargetDrop)
                     {
-                        var newTargetVoxel = new Voxel(targetVoxel.Block, (byte)(sourceVoxel.Lightness - sourceToTargetDrop));
+                        var newTargetVoxel = targetVoxel.SetLight((byte)(sourceVoxel.Lightness - sourceToTargetDrop));
                         targetChunk.SetVoxelNoInline(targetFlatIndex, newTargetVoxel);
                         //PropagateLight(new PropagateLightRecord(targetChunk, targetIndexX, j, targetIndexY, targetDefinition, newTargetVoxel));
                         LocalLightPropagationService.InitializeLocalLight(targetChunk, targetFlatIndex);

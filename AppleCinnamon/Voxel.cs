@@ -17,7 +17,10 @@ namespace AppleCinnamon
 
         [FieldOffset(1)]
         public readonly byte Lightness;
-        
+
+        [FieldOffset(2)]
+        public readonly byte HueIndex;
+
 
         public VoxelDefinition GetDefinition() => VoxelDefinition.DefinitionByType[Block];
 
@@ -25,7 +28,18 @@ namespace AppleCinnamon
         {
             Block = block;
             Lightness = lightness;
+
+            HueIndex = 0;
         }
+
+        public Voxel(byte block, byte lightness, byte hueIndex)
+        {
+            Block = block;
+            Lightness = lightness;
+            HueIndex = hueIndex;
+        }
+
+        public Voxel SetLight(byte light) => new(Block, light, HueIndex);
     }
 
     //public static class VoxelExtensions

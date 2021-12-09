@@ -112,6 +112,8 @@ namespace AppleCinnamon
             _lightUpdater = new LightUpdater();
         }
 
+        private static readonly Random _random = new(456);
+
         public void SetVoxel(Int3 absoluteIndex, byte voxel)
         {
             if (_isUpdateInProgress)
@@ -131,7 +133,12 @@ namespace AppleCinnamon
 
                 var flatIndex = address.Value.RelativeVoxelIndex.ToFlatIndex(chunk.CurrentHeight);
                 var oldVoxel = chunk.GetVoxel(flatIndex);
-                var newVoxel = new Voxel(voxel, VoxelDefinition.DefinitionByType[voxel].LightEmitting);
+                var newDefinition = VoxelDefinition.DefinitionByType[voxel];
+                var newVoxel = newDefinition.HueFaces != VisibilityFlag.None
+                    ? new Voxel(voxel, newDefinition.LightEmitting, (byte) _random.Next(1, 8))
+                    : new Voxel(voxel, newDefinition.LightEmitting);
+
+
                 chunk.SetVoxel(flatIndex, newVoxel);
 
                 UpdateVisibilityFlags(chunk, oldVoxel, newVoxel, address.Value.RelativeVoxelIndex);

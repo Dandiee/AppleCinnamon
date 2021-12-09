@@ -53,6 +53,7 @@ namespace AppleCinnamon
             [Key.D2] = VoxelDefinition.EmitterStone,
             [Key.D3] = VoxelDefinition.Snow,
             [Key.D4] = VoxelDefinition.Leaves,
+            [Key.D5] = VoxelDefinition.Wood,
         };
 
         public Camera(Graphics graphics)

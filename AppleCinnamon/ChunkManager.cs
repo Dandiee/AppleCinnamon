@@ -101,7 +101,7 @@ namespace AppleCinnamon
             _solidBlockEffect.GetVariableByName("Textures").AsShaderResource().SetResource(
                 new ShaderResourceView(_graphics.Device,
                     TextureLoader.CreateTexture2DFromBitmap(_graphics.Device,
-                        TextureLoader.LoadBitmap(new ImagingFactory2(), "Content/Texture/terrain_highdef.png"))));
+                        TextureLoader.LoadBitmap(new ImagingFactory2(), "Content/Texture/terrain.png"))));
 
 
             _waterBlockEffect = new Effect(_graphics.Device, ShaderBytecode.CompileFromFile("Content/Effect/WaterEffect.fx", "fx_5_0"));

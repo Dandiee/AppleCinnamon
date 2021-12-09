@@ -14,7 +14,7 @@ namespace AppleCinnamon.Vertices
             new("VISIBILITY", 0, Format.R32_UInt, 12, 0) //3+2
         };
 
-        public VertexSolidBlock(Vector3 position, int u, int v, byte baseLight, byte totalneighborLights, int numberOfAmbientneighbors)
+        public VertexSolidBlock(Vector3 position, int u, int v, byte baseLight, byte totalneighborLights, int numberOfAmbientneighbors, byte hueIndex)
         {
             var lightCalc = baseLight + totalneighborLights;
 
@@ -24,6 +24,7 @@ namespace AppleCinnamon.Vertices
             Color |= (uint)(v << 4); // 4 bits
             Color |= (uint)(lightCalc << 8);
             Color |= (uint)(numberOfAmbientneighbors << 14);
+            Color |= (uint)(hueIndex << 18);
         }
 
         public Vector3 Position;

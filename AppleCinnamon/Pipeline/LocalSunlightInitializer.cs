@@ -24,7 +24,7 @@ namespace AppleCinnamon.Pipeline
 
                         if (voxel.Block == VoxelDefinition.Air.Type)
                         {
-                            chunk.SetVoxel(flatIndex, new Voxel(voxel.Block, 15));
+                            chunk.SetVoxel(flatIndex, voxel.SetLight(15));
                         }
                         else break;
 
