@@ -75,12 +75,6 @@ namespace AppleCinnamon.Pipeline
 
                         var definition = VoxelDefinition.DefinitionByType[voxel.Block];
 
-                        //if (definition.IsSolidTransparent)
-                        //{
-                        //    chunk.BuildingContext.TransparentBlocks.Add(flatIndex);
-                        //}
-
-                        // not sure...
                         if (!definition.IsBlock && voxel.Lightness == 15)
                         {
                             continue;
@@ -103,11 +97,12 @@ namespace AppleCinnamon.Pipeline
                                     chunk.BuildingContext.Top.VoxelCount++;
                                 }
                             }
-                            else if (voxelLight < neighbor.Lightness - 1)
+                            else
                             {
-                                if (voxelLight < neighbor.Lightness - 1)
+                                var lightDrop = VoxelDefinition.GetBrightnessLoss(neighborDefinition, definition, Face.Bottom);
+                                if (voxelLight < neighbor.Lightness - lightDrop)
                                 {
-                                    voxelLight = (byte)(neighbor.Lightness - 1);
+                                    voxelLight = (byte)(neighbor.Lightness - lightDrop);
                                 }
                             }
                         }
@@ -116,6 +111,9 @@ namespace AppleCinnamon.Pipeline
                             visibilityFlag += 1;
                             chunk.BuildingContext.Top.VoxelCount++;
                         }
+
+
+                       
 
                         if (j > 0) // bottom
                         {
@@ -127,11 +125,12 @@ namespace AppleCinnamon.Pipeline
                                 visibilityFlag |= VisibilityFlag.Bottom;
                                 chunk.BuildingContext.Bottom.VoxelCount++;
                             }
-                            else if (voxelLight < neighbor.Lightness - 1)
+                            else
                             {
-                                if (voxelLight < neighbor.Lightness - 1)
+                                var lightDrop = VoxelDefinition.GetBrightnessLoss(neighborDefinition, definition, Face.Top);
+                                if (voxelLight < neighbor.Lightness - lightDrop)
                                 {
-                                    voxelLight = (byte)(neighbor.Lightness - 1);
+                                    voxelLight = (byte)(neighbor.Lightness - lightDrop);
                                 }
                             }
                         }
@@ -177,15 +176,18 @@ namespace AppleCinnamon.Pipeline
                 if (definition.IsBlock)
                 {
                     if ((neighborDefinition.CoverFlags & context.OppositeDirection) == 0) 
-                    //if (neighborDefinition.IsTransparent)
                     {
                         visibilityFlag |= context.Direction;
                         context.VoxelCount++;
                     }
                 }
-                else if (voxelLight < neighbor.Lightness - 1)
+                else
                 {
-                    voxelLight = (byte)(neighbor.Lightness - 1);
+                    var lightDrop = VoxelDefinition.GetBrightnessLoss(neighborDefinition, definition, context.OppositeFace);
+                    if (voxelLight < neighbor.Lightness - lightDrop)
+                    {
+                        voxelLight = (byte)(neighbor.Lightness - lightDrop);
+                    }
                 }
             }
             else if (definition.IsBlock)

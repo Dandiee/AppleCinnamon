@@ -7,31 +7,33 @@ using SharpDX;
 
 namespace AppleCinnamon
 {
+    public readonly struct LightDirections
+    {
+        public readonly Face Direction;
+        public readonly Int3 Step;
+        public readonly Bool3 Bools;
+
+        public LightDirections(Face direction, Int3 step, Bool3 bools)
+        {
+            Direction = direction;
+            Step = step;
+            Bools = bools;
+        }
+
+        public static readonly LightDirections[] All =
+        {
+            new(Face.Top, Int3.UnitY, Bool3.UnitY),
+            new(Face.Bottom, -Int3.UnitY, Bool3.UnitY),
+            new(Face.Left, -Int3.UnitX, Bool3.UnitX),
+            new(Face.Right, Int3.UnitX, Bool3.UnitX),
+            new(Face.Front, -Int3.UnitZ, Bool3.UnitZ),
+            new(Face.Back, Int3.UnitZ, Bool3.UnitZ)
+        };
+    }
+
     public sealed class LightUpdater
     {
-        private readonly struct LightDirections
-        {
-            public readonly Face Direction;
-            public readonly Int3 Step;
-            public readonly Bool3 Bools;
-
-            public LightDirections(Face direction, Int3 step, Bool3 bools)
-            {
-                Direction = direction;
-                Step = step;
-                Bools = bools;
-            }
-
-            public static readonly LightDirections[] All =
-            {
-                new(Face.Top, Int3.UnitY, Bool3.UnitY),
-                new(Face.Bottom, -Int3.UnitY, Bool3.UnitY),
-                new(Face.Left, -Int3.UnitX, Bool3.UnitX),
-                new(Face.Right, Int3.UnitX, Bool3.UnitX),
-                new(Face.Front, -Int3.UnitZ, Bool3.UnitZ),
-                new(Face.Back, Int3.UnitZ, Bool3.UnitZ)
-            };
-        }
+        
 
         //public static readonly Tuple<Int3, Bool3>[] Directions =
         //{
@@ -197,7 +199,7 @@ namespace AppleCinnamon
             for (var j = relativeIndex.Y - 1; j > 0; j--)
             {
                 var voxel = chunk.GetVoxel(Help.GetFlatIndex(relativeIndex.X, j, relativeIndex.Z, chunk.CurrentHeight));
-                //if (voxel.GetDefinition().IsTransparent)
+                // TODO: ez nem jó, nem elég csak azt mondani hogy > 0
                 if (voxel.GetDefinition().TransmittanceQuarters[(byte)Face.Bottom] > 0)
                 {
                     var resetVoxelIndex = new Int3(relativeIndex.X, j, relativeIndex.Z);

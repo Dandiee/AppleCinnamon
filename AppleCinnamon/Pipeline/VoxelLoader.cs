@@ -11,7 +11,7 @@ namespace AppleCinnamon.Pipeline
             _voxelGenerator = new VoxelGenerator(seed);
         }
 
-        public Voxel[] GetVoxels(Int2 chunkIndex)
+        public Chunk GetVoxels(Int2 chunkIndex)
         {
             return _voxelGenerator.GenerateVoxels(chunkIndex);
         }

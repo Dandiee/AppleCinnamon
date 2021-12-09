@@ -18,8 +18,8 @@ namespace AppleCinnamon.Pipeline
         public DataflowContext<Chunk> GetChunk(DataflowContext<Int2> context)
         {
             var sw = Stopwatch.StartNew();
-            var voxels = _voxelLoader.GetVoxels(context.Payload);
-            var chunk = new Chunk(context.Payload, voxels);
+            var chunk = _voxelLoader.GetVoxels(context.Payload);
+            //var chunk = new Chunk(context.Payload, voxels);
             sw.Stop();
 
             return new DataflowContext<Chunk>(context, chunk, sw.ElapsedMilliseconds, nameof(ChunkProvider));

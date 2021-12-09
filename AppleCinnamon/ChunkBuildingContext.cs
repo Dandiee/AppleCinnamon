@@ -59,6 +59,7 @@ namespace AppleCinnamon
         public FaceBuildingContext(Face face)
         {
             Face = face;
+            OppositeFace = face.GetOpposite();
             Direction = FaceMapping[face];
             OppositeDirection = Direction.GetOpposite();
             if (NeighborIndexFuncs.TryGetValue(face, out var getNeighborIndex))
@@ -68,6 +69,7 @@ namespace AppleCinnamon
         }
 
         public readonly Face Face;
+        public readonly Face OppositeFace;
         public readonly VisibilityFlag Direction;
         public readonly VisibilityFlag OppositeDirection;
         public readonly List<int> PendingVoxels = new();
