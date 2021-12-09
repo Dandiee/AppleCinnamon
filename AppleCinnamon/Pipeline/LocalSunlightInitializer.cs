@@ -24,9 +24,7 @@ namespace AppleCinnamon.Pipeline
                     {
                         var index = new Int3(i, j, k);
                         var flatIndex = index.ToFlatIndex(chunk.CurrentHeight);
-
                         var voxel = chunk.GetVoxelNoInline(flatIndex);
-
                         if (!topMostFound)
                         {
                             if (voxel.Block == 0)

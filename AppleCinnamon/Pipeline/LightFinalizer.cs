@@ -83,7 +83,7 @@ namespace AppleCinnamon.Pipeline
                     var sourceIndex = Help.GetFlatIndex(sourceIndexX, j, sourceIndexY, sourceChunk.CurrentHeight);
                     var sourceVoxel = sourceChunk.GetVoxelNoInline(sourceIndex);
                     var sourceDefinition = VoxelDefinition.DefinitionByType[sourceVoxel.Block];
-                    if (sourceDefinition.IsOpaque)
+                    if (sourceDefinition.IsBlock) // TODO: baj, sok
                     {
                         continue;
                     }
@@ -93,7 +93,7 @@ namespace AppleCinnamon.Pipeline
                     var targetIndex = Help.GetFlatIndex(targetIndexX, j, targetIndexY, targetChunk.CurrentHeight);
                     var targetVoxel = targetChunk.GetVoxelNoInline(targetIndex);
                     var targetDefinition = VoxelDefinition.DefinitionByType[targetVoxel.Block];
-                    if (targetDefinition.IsOpaque)
+                    if (targetDefinition.IsBlock)
                     {
                         continue;
                     }
@@ -120,7 +120,8 @@ namespace AppleCinnamon.Pipeline
 
         private void PropagateSunlight(Chunk chunk, int sourceIndexX, int sourceIndexY, int sourceIndexZ, VoxelDefinition sourceDefinition, Voxel sourceVoxel)
         {
-            if (sourceDefinition.IsTransparent && sourceVoxel.Lightness > 0)
+            if (sourceDefinition.TransmittanceQuarters[(byte)Face.Bottom] > 0 && sourceVoxel.Lightness > 0) 
+            //if (sourceDefinition.IsTransparent && sourceVoxel.Lightness > 0)
             {
                 foreach (var direction in Directions2)
                 {
@@ -137,7 +138,8 @@ namespace AppleCinnamon.Pipeline
                         if (neighborVoxel.Lightness < sourceVoxel.Lightness - 1)
                         {
                             var targetDefinition = VoxelDefinition.DefinitionByType[neighborVoxel.Block];
-                            if (targetDefinition.IsTransparent)
+                            if (sourceDefinition.TransmittanceQuarters[(byte)Face.Bottom] > 0)
+                            //if (targetDefinition.IsTransparent)
                             {
                                 var newTargetVoxel = new Voxel(neighborVoxel.Block, (byte)(sourceVoxel.Lightness - 1));
                                 chunk.SetVoxelNoInline(neighborIndex, newTargetVoxel);

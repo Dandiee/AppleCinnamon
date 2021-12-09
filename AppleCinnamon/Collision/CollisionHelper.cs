@@ -30,7 +30,10 @@ namespace AppleCinnamon.Collision
                 if (voxel.Value.Block > 0 && voxel.Value.Block != VoxelDefinition.Water.Type)
                 {
                     var voxelDefinition = voxel.Value.GetDefinition();
-                    if (voxelDefinition.IsUnitSized)
+
+                    return new VoxelRayCollisionResult(index, -direction, voxelDefinition, voxel.Value);
+                    
+                    /*if (voxelDefinition.IsUnitSized)
                     {
                         return new VoxelRayCollisionResult(index, -direction, voxelDefinition, voxel.Value);
                     }
@@ -43,7 +46,7 @@ namespace AppleCinnamon.Collision
                         {
                             return new VoxelRayCollisionResult(index, -direction, voxelDefinition, voxel.Value);
                         }
-                    }
+                    }*/
                 }
 
                 var xTarget = index.X + Math.Sign(ray.Direction.X) / 2f;

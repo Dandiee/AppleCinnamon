@@ -16,7 +16,6 @@ namespace AppleCinnamon.Pipeline
             var frontChunk = chunk.neighbors2[Help.GetChunkFlatIndex(0, -1)];
             var backChunk = chunk.neighbors2[Help.GetChunkFlatIndex(0, 1)];
 
-
             ProcessSide(chunk, leftChunk, chunk.BuildingContext.Left);
             ProcessSide(chunk, rightChunk, chunk.BuildingContext.Right);
             ProcessSide(chunk, frontChunk, chunk.BuildingContext.Front);
@@ -38,15 +37,21 @@ namespace AppleCinnamon.Pipeline
             foreach (var flatIndex in context.PendingVoxels)
             {
                 var index = flatIndex.ToIndex(chunk.CurrentHeight);
+                var voxel = chunk.Voxels[flatIndex];
                 var neighbor = neighborChunk.CurrentHeight <= index.Y
                     ? Voxel.Air
                     : neighborChunk.GetVoxel(context.GetNeighborIndex(index, neighborChunk.CurrentHeight));
 
-                if (VoxelDefinition.DefinitionByType[neighbor.Block].IsTransparent)
+                var voxelDefinition = VoxelDefinition.DefinitionByType[voxel.Block];
+                if (voxelDefinition.IsBlock)
                 {
-                    chunk.BuildingContext.VisibilityFlags.TryGetValue(flatIndex, out var visibility);
-                    chunk.BuildingContext.VisibilityFlags[flatIndex] = visibility | context.Direction;
-                    context.VoxelCount++;
+                    var neighborDefinition = VoxelDefinition.DefinitionByType[neighbor.Block];
+                    if ((neighborDefinition.CoverFlags & context.OppositeDirection) == 0) 
+                    {
+                        chunk.BuildingContext.VisibilityFlags.TryGetValue(flatIndex, out var visibility);
+                        chunk.BuildingContext.VisibilityFlags[flatIndex] = visibility | context.Direction;
+                        context.VoxelCount++;
+                    }
                 }
             }
         }

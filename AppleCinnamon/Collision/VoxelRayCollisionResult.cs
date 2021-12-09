@@ -20,7 +20,8 @@ namespace AppleCinnamon.Collision
             Definition = definition;
             Voxel = voxel;
             var position = absoluteVoxelIndex.ToVector3();
-            var size = definition.Size / 2f * 1.01f;
+            //var size = definition.Size / 2f * 1.01f;
+            var size = 1 / 2f * 1.01f;
             BoundingBox = new BoundingBox(position - size, position + size);
         }
     }

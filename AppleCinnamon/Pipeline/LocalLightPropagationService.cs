@@ -38,8 +38,12 @@ namespace AppleCinnamon.Pipeline
                             {
                                 var neighborFlatIndex = Help.GetFlatIndex(neighborX, neighborY, neighborZ, chunk.CurrentHeight);
                                 var neighborVoxel = chunk.GetVoxelNoInline(neighborFlatIndex);
-                                
-                                if (VoxelDefinition.DefinitionByType[neighborVoxel.Block].IsTransparent && neighborVoxel.Lightness < voxelLightness - 1)
+                                var neighborDefinition = VoxelDefinition.DefinitionByType[neighborVoxel.Block];
+
+                                if (
+                                    //neighborDefinition.IsTransparent 
+                                    neighborDefinition.TransmittanceQuarters[(byte)Face.Bottom] > 0
+                                    && neighborVoxel.Lightness < voxelLightness - 1)
                                 {
                                     chunk.SetVoxelNoInline(neighborFlatIndex, new Voxel(neighborVoxel.Block, (byte)(voxelLightness - 1)));
                                     chunk.BuildingContext.LightPropagationVoxels.Enqueue(neighborFlatIndex);

@@ -1,4 +1,5 @@
 ﻿using System.Runtime.InteropServices;
+using AppleCinnamon.Pipeline;
 using AppleCinnamon.Settings;
 
 namespace AppleCinnamon
@@ -26,4 +27,10 @@ namespace AppleCinnamon
             Lightness = lightness;
         }
     }
+
+    //public static class VoxelExtensions
+    //{
+    //    public static bool IsFaceVisible(this Voxel current, Voxel neighbor, VisibilityFlag neighborFace)
+    //        => current.(newDefinition.CoverFlags & direction.OppositeDirection) == 0;
+    //}
 }

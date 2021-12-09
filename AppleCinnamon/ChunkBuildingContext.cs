@@ -60,6 +60,7 @@ namespace AppleCinnamon
         {
             Face = face;
             Direction = FaceMapping[face];
+            OppositeDirection = Direction.GetOpposite();
             if (NeighborIndexFuncs.TryGetValue(face, out var getNeighborIndex))
             {
                 GetNeighborIndex = getNeighborIndex;
@@ -68,6 +69,7 @@ namespace AppleCinnamon
 
         public readonly Face Face;
         public readonly VisibilityFlag Direction;
+        public readonly VisibilityFlag OppositeDirection;
         public readonly List<int> PendingVoxels = new();
         public readonly Func<Int3, int, int> GetNeighborIndex;
         public int VoxelCount;

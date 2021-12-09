@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using AppleCinnamon.Settings;
 using AppleCinnamon.System;
@@ -14,7 +15,36 @@ namespace AppleCinnamon.Pipeline
         Left = 4,
         Right = 8,
         Front = 16,
-        Back = 32
+        Back = 32,
+        All = 63
+    }
+
+    public static class VisibilityFlagExtensions
+    {
+        private static readonly IReadOnlyDictionary<VisibilityFlag, VisibilityFlag> OppositeMapping =
+            new Dictionary<VisibilityFlag, VisibilityFlag>
+            {
+                [VisibilityFlag.Top] = VisibilityFlag.Bottom,
+                [VisibilityFlag.Bottom] = VisibilityFlag.Top,
+                [VisibilityFlag.Left] = VisibilityFlag.Right,
+                [VisibilityFlag.Right] = VisibilityFlag.Left,
+                [VisibilityFlag.Front] = VisibilityFlag.Back,
+                [VisibilityFlag.Back] = VisibilityFlag.Bottom,
+            };
+
+        public static VisibilityFlag GetOpposite(this VisibilityFlag flag)
+            => OppositeMapping[flag];
+    }
+
+    [Flags]
+    public enum TransmittanceFlags : byte
+    {
+        None = 0,
+        Quarter1 = 1,
+        Quarter2 = 2,
+        Quarter3 = 4,
+        Quarter4 = 8,
+        All = 15
     }
 
 
@@ -35,6 +65,11 @@ namespace AppleCinnamon.Pipeline
                 {
                     for (i = 0; i < Chunk.SizeXy; i++)
                     {
+                        //if (chunk.ChunkIndex.X == 0 && chunk.ChunkIndex.Y == -1 && i == 1 && j == 120 && k == 31)
+                        //{
+
+                        //}
+
                         var flatIndex = Help.GetFlatIndex(i, j, k, chunk.CurrentHeight);
                         var voxel = voxels[flatIndex];
 
@@ -60,9 +95,9 @@ namespace AppleCinnamon.Pipeline
                             var neighbor = chunk.Voxels[Help.GetFlatIndex(i, j + 1, k, chunk.CurrentHeight)];
                             var neighborDefinition = VoxelDefinition.DefinitionByType[neighbor.Block];
 
-                            if (definition.IsOpaque)
+                            if (definition.IsBlock)
                             {
-                                if (neighborDefinition.IsTransparent)
+                                if ((neighborDefinition.CoverFlags & VisibilityFlag.Bottom) == VisibilityFlag.None)
                                 {
                                     visibilityFlag |= VisibilityFlag.Top;
                                     chunk.BuildingContext.Top.VoxelCount++;
@@ -76,7 +111,7 @@ namespace AppleCinnamon.Pipeline
                                 }
                             }
                         }
-                        else if (definition.IsOpaque)
+                        else if (definition.IsBlock)
                         {
                             visibilityFlag += 1;
                             chunk.BuildingContext.Top.VoxelCount++;
@@ -87,7 +122,7 @@ namespace AppleCinnamon.Pipeline
                             var neighbor = chunk.Voxels[Help.GetFlatIndex(i, j - 1, k, chunk.CurrentHeight)];
                             var neighborDefinition = VoxelDefinition.DefinitionByType[neighbor.Block];
 
-                            if (definition.IsOpaque && neighborDefinition.IsTransparent)
+                            if (definition.IsFaceVisible(neighborDefinition, VisibilityFlag.Top))
                             {
                                 visibilityFlag |= VisibilityFlag.Bottom;
                                 chunk.BuildingContext.Bottom.VoxelCount++;
@@ -139,9 +174,10 @@ namespace AppleCinnamon.Pipeline
                 var neighbor = chunk.Voxels[neighborFlatIndex];
                 var neighborDefinition = VoxelDefinition.DefinitionByType[neighbor.Block];
 
-                if (definition.IsOpaque)
+                if (definition.IsBlock)
                 {
-                    if (neighborDefinition.IsTransparent)
+                    if ((neighborDefinition.CoverFlags & context.OppositeDirection) == 0) 
+                    //if (neighborDefinition.IsTransparent)
                     {
                         visibilityFlag |= context.Direction;
                         context.VoxelCount++;
@@ -152,7 +188,7 @@ namespace AppleCinnamon.Pipeline
                     voxelLight = (byte)(neighbor.Lightness - 1);
                 }
             }
-            else if (definition.IsOpaque)
+            else if (definition.IsBlock)
             {
                 context.PendingVoxels.Add(flatIndex);
             }

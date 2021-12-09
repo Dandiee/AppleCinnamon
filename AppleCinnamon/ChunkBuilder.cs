@@ -35,7 +35,7 @@ namespace AppleCinnamon
                 var voxel = chunk.GetVoxel(flatIndex);
                 var definition = VoxelDefinition.DefinitionByType[voxel.Block];
 
-                var voxelPositionOffset = definition.Translation + chunk.OffsetVector + new Vector3(index.X, index.Y, index.Z);
+                var voxelPositionOffset = /*definition.Translation + */chunk.OffsetVector + new Vector3(index.X, index.Y, index.Z);
 
 
                 foreach (var faceInfo in faces.Faces)
@@ -73,7 +73,7 @@ namespace AppleCinnamon
                 var voxel = chunk.GetVoxel(flatIndex);
                 var definition = VoxelDefinition.DefinitionByType[voxel.Block];
 
-                var voxelPositionOffset = definition.Translation + chunk.OffsetVector + new Vector3(index.X, index.Y, index.Z);
+                var voxelPositionOffset = /*definition.Translation + */chunk.OffsetVector + new Vector3(index.X, index.Y, index.Z);
 
 
                 foreach (var faceInfo in faces.Faces)
@@ -158,13 +158,18 @@ namespace AppleCinnamon
             // Visit all ambient neighbors
             foreach (var vertexInfo in face.BuildInfo.VerticesInfo)
             {
+                //var position = new Vector3(
+                //    vertexInfo.Position.X * definition.Size.X + voxelPositionOffset.X,
+                //    vertexInfo.Position.Y * definition.Size.Y + voxelPositionOffset.Y,
+                //    vertexInfo.Position.Z * definition.Size.Z + voxelPositionOffset.Z);
+
                 var position = new Vector3(
-                    vertexInfo.Position.X * definition.Size.X + voxelPositionOffset.X,
-                    vertexInfo.Position.Y * definition.Size.Y + voxelPositionOffset.Y,
-                    vertexInfo.Position.Z * definition.Size.Z + voxelPositionOffset.Z);
+                    vertexInfo.Position.X + voxelPositionOffset.X,
+                    vertexInfo.Position.Y + voxelPositionOffset.Y,
+                    vertexInfo.Position.Z + voxelPositionOffset.Z);
 
                 var totalneighborLight = ambientNeighborVoxel.Lightness;
-                var numberOfAmbientneighbors = ambientNeighborDefinition.IsTransparent ? 0 : 1;
+                var numberOfAmbientneighbors = !ambientNeighborDefinition.IsBlock ? 0 : 1;
 
                 foreach (var ambientIndex in vertexInfo.AmbientOcclusionNeighbors)
                 {
@@ -172,7 +177,7 @@ namespace AppleCinnamon
                     ambientNeighborVoxel = chunk.GetLocalWithneighbors(relativeIndexX + ambientNeighborIndex.X, relativeIndexY + ambientNeighborIndex.Y, relativeIndexZ + ambientNeighborIndex.Z);
                     ambientNeighborDefinition = VoxelDefinition.DefinitionByType[ambientNeighborVoxel.Block];
 
-                    if (ambientNeighborDefinition.IsTransparent)
+                    if (!ambientNeighborDefinition.IsBlock)
                     {
                         totalneighborLight += ambientNeighborVoxel.Lightness;
                     }

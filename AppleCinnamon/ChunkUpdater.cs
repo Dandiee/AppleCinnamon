@@ -177,10 +177,10 @@ namespace AppleCinnamon
 
 
                 // old one was visible
-                if (oldDefinition.IsBlock && neighborDefinition.IsTransparent)
+                if (oldDefinition.IsFaceVisible(neighborDefinition, direction.OppositeDirection))
                 {
                     // but its not visible anymore
-                    if (!newDefinition.IsBlock || neighborDefinition.IsOpaque)
+                    if (!newDefinition.IsFaceVisible(neighborDefinition, direction.OppositeDirection))
                     {
                         //chunk.BuildingContext.VisibilityFlags[flatIndex] ^= direction.Item2;
                         if (hadVisibility)
@@ -191,10 +191,10 @@ namespace AppleCinnamon
                 }
 
                 // old one wasnt visible
-                if (!oldDefinition.IsBlock || neighborDefinition.IsOpaque)
+                if (!oldDefinition.IsFaceVisible(neighborDefinition, direction.OppositeDirection))
                 {
                     // but its visible now
-                    if (newDefinition.IsBlock && neighborDefinition.IsTransparent)
+                    if (newDefinition.IsFaceVisible(neighborDefinition, direction.OppositeDirection))
                     {
                         newVisibilityFlag |= direction.Direction;
                         chunk.BuildingContext.Faces[(byte)direction.Face].VoxelCount++;
@@ -205,10 +205,11 @@ namespace AppleCinnamon
 
 
                 // neighbor was visible
-                if (neighborDefinition.IsBlock && oldDefinition.IsTransparent)
+
+                if (neighborDefinition.IsFaceVisible(oldDefinition, direction.Direction))
                 {
                     // and its not visible anymore
-                    if (!neighborDefinition.IsBlock || newDefinition.IsOpaque)
+                    if (!neighborDefinition.IsFaceVisible(newDefinition, direction.Direction))
                     {
                         neighborOldVisibilityFlag ^= direction.OppositeDirection;
                         neighborChunk.BuildingContext.Faces[(byte)direction.OppositeFace].VoxelCount--;
@@ -216,10 +217,11 @@ namespace AppleCinnamon
                 }
 
                 // neighbor wasnt visible
-                if (!neighborDefinition.IsBlock || oldDefinition.IsOpaque)
+
+                if (!neighborDefinition.IsFaceVisible(oldDefinition, direction.Direction))
                 {
                     // but its visible now
-                    if (neighborDefinition.IsBlock && newDefinition.IsTransparent)
+                    if (neighborDefinition.IsFaceVisible(newDefinition, direction.Direction))
                     {
                         neighborOldVisibilityFlag |= direction.OppositeDirection;
                         neighborChunk.BuildingContext.Faces[(byte)direction.OppositeFace].VoxelCount++;
