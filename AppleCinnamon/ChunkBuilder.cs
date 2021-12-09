@@ -158,11 +158,6 @@ namespace AppleCinnamon
             // Visit all ambient neighbors
             foreach (var vertexInfo in face.BuildInfo.VerticesInfo)
             {
-                //var position = new Vector3(
-                //    vertexInfo.Position.X * definition.Size.X + voxelPositionOffset.X,
-                //    vertexInfo.Position.Y * definition.Size.Y + voxelPositionOffset.Y,
-                //    vertexInfo.Position.Z * definition.Size.Z + voxelPositionOffset.Z);
-
                 var position = new Vector3(
                     vertexInfo.Position.X + voxelPositionOffset.X,
                     vertexInfo.Position.Y + voxelPositionOffset.Y,
