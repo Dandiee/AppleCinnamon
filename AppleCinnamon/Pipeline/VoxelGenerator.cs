@@ -1,6 +1,7 @@
 ﻿using System;
 using AppleCinnamon.Settings;
 using AppleCinnamon.System;
+using SimplexNoise;
 
 namespace AppleCinnamon.Pipeline
 {
@@ -14,7 +15,7 @@ namespace AppleCinnamon.Pipeline
         public VoxelGenerator(int seed)
         {
             _random = new Random(seed);
-
+            Noise.Seed = seed;
             _daniNoise = new DaniNoise(8, _random);
             // Noise.Seed = seed;
         }
@@ -60,7 +61,7 @@ namespace AppleCinnamon.Pipeline
 
                     if (height < 100) // water level
                     {
-                        for (var j = height; j < 100 ; j++)
+                        for (var j = height; j < 100; j++)
                         {
                             var flatIndex = Help.GetFlatIndex(i, j, k, currentHeight);
                             voxels[flatIndex] = new Voxel(VoxelDefinition.Water.Type, 0);
@@ -78,6 +79,78 @@ namespace AppleCinnamon.Pipeline
                     // voxels[i + Chunk.SizeXy * (height + Chunk.Height * k)] = new Voxel(4, 0);
                 }
             }
+
+            return chunk;
+        }
+
+
+
+
+
+
+        public Chunk GenerateVoxels3D(Int2 chunkIndex)
+        {
+            var maxHeight = 128;
+            var voxels = new Voxel[Chunk.SizeXy * Chunk.SizeXy * maxHeight];
+
+            var chunk = new Chunk(chunkIndex, voxels);
+
+
+            for (var i = 0; i < Chunk.SizeXy; i++)
+            {
+                for (var k = 0; k < Chunk.SizeXy; k++)
+                {
+                    for (var j = 0; j <= maxHeight - 1; j++)
+                    {
+
+                        var pixel = Noise.CalcPixel3D(i + (chunk.ChunkIndex.X * Chunk.SizeXy), j, k + chunk.ChunkIndex.Y * Chunk.SizeXy, .015f);
+                        if (pixel < 128)// && pixel > 16)
+                        {
+                            voxels[Help.GetFlatIndex(i, j, k, maxHeight)] = new Voxel(VoxelDefinition.Stone.Type, 0);
+                        }
+                    }
+
+                    voxels[Help.GetFlatIndex(i, 1, k, maxHeight)] = new Voxel(VoxelDefinition.Stone.Type, 0);
+
+                }
+            }
+
+            return chunk;
+        }
+
+        public Chunk GenerateVoxelsMock(Int2 chunkIndex)
+        {
+            var maxHeight = 128;
+            var voxels = new Voxel[Chunk.SizeXy * Chunk.SizeXy * maxHeight];
+
+            var chunk = new Chunk(chunkIndex, voxels);
+
+
+            for (var i = 0; i < Chunk.SizeXy; i++)
+            {
+                for (var k = 0; k < Chunk.SizeXy; k++)
+                {
+
+                    if (chunk.ChunkIndex == new Int2(-1, 0))
+                    {
+                        voxels[Help.GetFlatIndex(i, 3, k, maxHeight)] = new Voxel(VoxelDefinition.Stone.Type, 0);
+                    }
+
+
+                    voxels[Help.GetFlatIndex(i, 1, k, maxHeight)] = new Voxel(VoxelDefinition.Stone.Type, 0);
+
+                }
+            }
+
+            //if (chunk.ChunkIndex == Int2.Zero)
+            //{
+            //    voxels[Help.GetFlatIndex(0, 3, 8, maxHeight)] = new Voxel(VoxelDefinition.Stone.Type, 0);
+            //    voxels[Help.GetFlatIndex(1, 3, 8, maxHeight)] = new Voxel(VoxelDefinition.Stone.Type, 0);
+            //    voxels[Help.GetFlatIndex(2, 3, 8, maxHeight)] = new Voxel(VoxelDefinition.Stone.Type, 0);
+            //    voxels[Help.GetFlatIndex(3, 3, 8, maxHeight)] = new Voxel(VoxelDefinition.Stone.Type, 0);
+            //}
+
+           
 
             return chunk;
         }

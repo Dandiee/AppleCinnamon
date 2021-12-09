@@ -65,11 +65,6 @@ namespace AppleCinnamon.Pipeline
                 {
                     for (i = 0; i < Chunk.SizeXy; i++)
                     {
-                        //if (chunk.ChunkIndex.X == 0 && chunk.ChunkIndex.Y == -1 && i == 1 && j == 120 && k == 31)
-                        //{
-
-                        //}
-
                         var flatIndex = Help.GetFlatIndex(i, j, k, chunk.CurrentHeight);
                         var voxel = voxels[flatIndex];
 

@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.Collections.Generic;
+using System.Diagnostics;
 using AppleCinnamon.Settings;
 using AppleCinnamon.System;
 using SharpDX;
@@ -18,9 +19,62 @@ namespace AppleCinnamon.Pipeline
             var sw = Stopwatch.StartNew();
             var chunk = context.Payload;
 
-            while (chunk.BuildingContext.LightPropagationVoxels.Count > 0)
+            InitializeLocalLight(chunk, chunk.BuildingContext.LightPropagationVoxels);
+
+            //while (chunk.BuildingContext.LightPropagationVoxels.Count > 0)
+            //{
+            //    var lightSourceFlatIndex = chunk.BuildingContext.LightPropagationVoxels.Dequeue();
+            //    var sourceVoxel = chunk.GetVoxel(lightSourceFlatIndex);
+            //    var sourceDefinition = VoxelDefinition.DefinitionByType[sourceVoxel.Block];
+            //    var index = lightSourceFlatIndex.ToIndex(chunk.CurrentHeight);
+
+                
+
+            //    foreach (var direction in LightDirections.All)
+            //    {
+            //        var neighborX = index.X + direction.Step.X;
+            //        if ((neighborX & Chunk.SizeXy) == 0)
+            //        {
+            //            var neighborY = index.Y + direction.Step.Y;
+            //            if (neighborY > 0 && neighborY < chunk.CurrentHeight)
+            //            {
+            //                var neighborZ = index.Z + direction.Step.Z;
+            //                if ((neighborZ & Chunk.SizeXy) == 0)
+            //                {
+            //                    var neighborFlatIndex = Help.GetFlatIndex(neighborX, neighborY, neighborZ, chunk.CurrentHeight);
+            //                    var neighborVoxel = chunk.GetVoxelNoInline(neighborFlatIndex);
+            //                    var neighborDefinition = VoxelDefinition.DefinitionByType[neighborVoxel.Block];
+
+            //                    var brightnessLoss = VoxelDefinition.GetBrightnessLoss(sourceDefinition, neighborDefinition, direction.Direction);
+            //                    if (brightnessLoss != 0 && neighborVoxel.Lightness < sourceVoxel.Lightness - brightnessLoss)
+            //                    {
+            //                        chunk.SetVoxelNoInline(neighborFlatIndex, new Voxel(neighborVoxel.Block, (byte)(sourceVoxel.Lightness - brightnessLoss)));
+            //                        chunk.BuildingContext.LightPropagationVoxels.Enqueue(neighborFlatIndex);
+            //                    }
+            //                }
+            //            }
+            //        }
+            //    }
+            //}
+
+            sw.Stop();
+
+            return new DataflowContext<Chunk>(context, context.Payload, sw.ElapsedMilliseconds, nameof(LocalLightPropagationService));
+        }
+
+
+        public static void InitializeLocalLight(Chunk chunk, int localLightSources)
+        {
+            var queue = new Queue<int>();
+            queue.Enqueue(localLightSources);
+            InitializeLocalLight(chunk, queue);
+        }
+
+        public static void InitializeLocalLight(Chunk chunk, Queue<int> localLightSources)
+        {
+            while (localLightSources.Count > 0)
             {
-                var lightSourceFlatIndex = chunk.BuildingContext.LightPropagationVoxels.Dequeue();
+                var lightSourceFlatIndex = localLightSources.Dequeue();
                 var sourceVoxel = chunk.GetVoxel(lightSourceFlatIndex);
                 var sourceDefinition = VoxelDefinition.DefinitionByType[sourceVoxel.Block];
                 var index = lightSourceFlatIndex.ToIndex(chunk.CurrentHeight);
@@ -44,17 +98,13 @@ namespace AppleCinnamon.Pipeline
                                 if (brightnessLoss != 0 && neighborVoxel.Lightness < sourceVoxel.Lightness - brightnessLoss)
                                 {
                                     chunk.SetVoxelNoInline(neighborFlatIndex, new Voxel(neighborVoxel.Block, (byte)(sourceVoxel.Lightness - brightnessLoss)));
-                                    chunk.BuildingContext.LightPropagationVoxels.Enqueue(neighborFlatIndex);
+                                    localLightSources.Enqueue(neighborFlatIndex);
                                 }
                             }
                         }
                     }
                 }
             }
-
-            sw.Stop();
-
-            return new DataflowContext<Chunk>(context, context.Payload, sw.ElapsedMilliseconds, nameof(LocalLightPropagationService));
         }
     }
 }
