@@ -37,8 +37,8 @@ VertexShaderOutput VertexShaderFunction(VertexShaderInput input)
 	
 	float u = (input.Asd & 15) * 1.0 / 16.0;
 	float v = ((input.Asd & 240) >> 4) * 1.0/16.0;
-	float l = ((input.Asd & 3840) >> 8) / 16.0 + 0.2;
-	float a = 1.0 - (((input.Asd & 12288) >> 12) / 3.0);
+	float l = ((input.Asd & 16128) >> 8) / 60.0f  + 0.2f;
+	float a = 1.0 - (((input.Asd & 49152) >> 14) / 3.0);
 	
     output.Position = mul(position, WorldViewProjection);
 	output.TexCoords = float2(u, v);

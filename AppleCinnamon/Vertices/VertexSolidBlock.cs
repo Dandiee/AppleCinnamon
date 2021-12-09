@@ -16,14 +16,14 @@ namespace AppleCinnamon.Vertices
 
         public VertexSolidBlock(Vector3 position, int u, int v, byte baseLight, byte totalneighborLights, int numberOfAmbientneighbors)
         {
-            var lightCalc = (baseLight + totalneighborLights )/ 5;
+            var lightCalc = baseLight + totalneighborLights;
 
-            Position = position;
+            Position = position; // 32
             Color = 0;
-            Color |= (uint)(u << 0);
-            Color |= (uint)(v << 4);
+            Color |= (uint)(u << 0); // 4 bits
+            Color |= (uint)(v << 4); // 4 bits
             Color |= (uint)(lightCalc << 8);
-            Color |= (uint)(numberOfAmbientneighbors << 12);
+            Color |= (uint)(numberOfAmbientneighbors << 14);
         }
 
         public Vector3 Position;

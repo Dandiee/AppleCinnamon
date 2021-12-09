@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using AppleCinnamon.Settings;
@@ -139,7 +141,6 @@ namespace AppleCinnamon
                 Buffer.Create(device, BindFlags.IndexBuffer, indexes));
         }
 
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void AddFace(ChunkFace face, int relativeIndexX, int relativeIndexY, int relativeIndexZ, VertexSolidBlock[] vertices,
             ushort[] indexes, VoxelDefinition definition, Chunk chunk, Voxel neighbor, Vector3 voxelPositionOffset)
@@ -182,6 +183,7 @@ namespace AppleCinnamon
                     }
                 }
 
+               
                 vertices[vertexIndex + vertexInfo.Index] = new VertexSolidBlock(position, textureUv.X + vertexInfo.TextureIndex.X,
                     textureUv.Y + vertexInfo.TextureIndex.Y, neighbor.Lightness, totalneighborLight,
                     numberOfAmbientneighbors);
