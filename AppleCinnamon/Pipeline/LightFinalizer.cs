@@ -20,6 +20,14 @@ namespace AppleCinnamon.Pipeline
             [-Int2.UniY] = new[] { new Int2(0, 0), new Int2(0, Chunk.SizeXy - 1) }
         };
 
+        private static readonly IDictionary<Int2, Face> DirFaceMapping = new Dictionary<Int2, Face>
+        {
+            [Int2.UniX] = Face.Left,
+            [-Int2.UniX] = Face.Right,
+            [Int2.UniY] = Face.Front,
+            [-Int2.UniY] = Face.Back
+        };
+
         public static readonly Tuple<Int3, Bool3>[] Directions2 =
         {
             new(Int3.UnitY, Bool3.UnitY),
@@ -78,47 +86,71 @@ namespace AppleCinnamon.Pipeline
             {
                 for (var j = height - 1; j > 0; j--)
                 {
+
+                    // this whole thing is an educated first guess
+
                     var sourceIndexX = source.X + step.X * n;
                     var sourceIndexY = source.Y + step.Y * n;
-                    var sourceIndex = Help.GetFlatIndex(sourceIndexX, j, sourceIndexY, sourceChunk.CurrentHeight);
-                    var sourceVoxel = sourceChunk.GetVoxelNoInline(sourceIndex);
+                    var sourceFlatIndex = Help.GetFlatIndex(sourceIndexX, j, sourceIndexY, sourceChunk.CurrentHeight);
+                    var sourceVoxel = sourceChunk.GetVoxelNoInline(sourceFlatIndex);
                     var sourceDefinition = VoxelDefinition.DefinitionByType[sourceVoxel.Block];
-                    if (sourceDefinition.IsBlock) // TODO: baj, sok
+                    if (sourceDefinition.IsOpaque)
                     {
                         continue;
                     }
 
                     var targetIndexX = target.X + step.X * n;
                     var targetIndexY = target.Y + step.Y * n;
-                    var targetIndex = Help.GetFlatIndex(targetIndexX, j, targetIndexY, targetChunk.CurrentHeight);
-                    var targetVoxel = targetChunk.GetVoxelNoInline(targetIndex);
+                    var targetFlatIndex = Help.GetFlatIndex(targetIndexX, j, targetIndexY, targetChunk.CurrentHeight);
+                    var targetVoxel = targetChunk.GetVoxelNoInline(targetFlatIndex);
                     var targetDefinition = VoxelDefinition.DefinitionByType[targetVoxel.Block];
-                    if (targetDefinition.IsBlock)
+                    if (targetDefinition.IsOpaque)
                     {
                         continue;
                     }
 
-                    var lightDifference = targetVoxel.Lightness - sourceVoxel.Lightness;
-                    if (Math.Abs(lightDifference) > 1)
+                    var sourceToTargetDir = targetChunk.ChunkIndex - sourceChunk.ChunkIndex;
+                    var sourceDirection = DirFaceMapping[sourceToTargetDir];
+                    var sourceToTargetDrop = VoxelDefinition.GetBrightnessLoss(sourceDefinition, targetDefinition, sourceDirection);
+                    if (targetVoxel.Lightness < sourceVoxel.Lightness - sourceToTargetDrop)
                     {
-                        if (lightDifference > 0) // target -> source
-                        {
-                            var newSourceVoxel = new Voxel(sourceVoxel.Block, (byte)(targetVoxel.Lightness - 1));
-                            sourceChunk.SetVoxelNoInline(sourceIndex, newSourceVoxel);
-                            PropagateSunlight(sourceChunk, sourceIndexX, j, sourceIndexY, sourceDefinition, newSourceVoxel);
-                        }
-                        else // source -> target
-                        {
-                            var newTargetVoxel = new Voxel(targetVoxel.Block, (byte)(sourceVoxel.Lightness - 1));
-                            targetChunk.SetVoxelNoInline(targetIndex, newTargetVoxel);
-                            PropagateSunlight(targetChunk, targetIndexX, j, targetIndexY, targetDefinition, newTargetVoxel);
-                        }
+                        var newTargetVoxel = new Voxel(targetVoxel.Block, (byte)(sourceVoxel.Lightness - sourceToTargetDrop));
+                        targetChunk.SetVoxelNoInline(targetFlatIndex, newTargetVoxel);
+                        PropagateLight(targetChunk, targetIndexX, j, targetIndexY, targetDefinition, newTargetVoxel);
                     }
+
+
+                    var targetToSourceDir = sourceChunk.ChunkIndex - targetChunk.ChunkIndex;
+                    var targetDirection = DirFaceMapping[targetToSourceDir];
+                    var targetToSourceDrop = VoxelDefinition.GetBrightnessLoss(targetDefinition, sourceDefinition, targetDirection);
+                    if (sourceVoxel.Lightness < targetVoxel.Lightness - targetToSourceDrop)
+                    {
+                        var newSourceVoxel = new Voxel(sourceVoxel.Block, (byte)(targetVoxel.Lightness - targetToSourceDrop));
+                        sourceChunk.SetVoxelNoInline(sourceFlatIndex, newSourceVoxel);
+                        PropagateLight(sourceChunk, sourceIndexX, j, sourceIndexY, sourceDefinition, newSourceVoxel);
+                    }
+
+                    //var lightDifference = targetVoxel.Lightness - sourceVoxel.Lightness;
+                    //if (Math.Abs(lightDifference) > 1)
+                    //{
+                    //    if (lightDifference > 0) // target -> source
+                    //    {
+                    //        var newSourceVoxel = new Voxel(sourceVoxel.Block, (byte)(targetVoxel.Lightness - 1));
+                    //        sourceChunk.SetVoxelNoInline(sourceFlatIndex, newSourceVoxel);
+                    //        PropagateLight(sourceChunk, sourceIndexX, j, sourceIndexY, sourceDefinition, newSourceVoxel);
+                    //    }
+                    //    else // source -> target
+                    //    {
+                    //        var newTargetVoxel = new Voxel(targetVoxel.Block, (byte)(sourceVoxel.Lightness - 1));
+                    //        targetChunk.SetVoxelNoInline(targetFlatIndex, newTargetVoxel);
+                    //        PropagateLight(targetChunk, targetIndexX, j, targetIndexY, targetDefinition, newTargetVoxel);
+                    //    }
+                    //}
                 }
             }
         }
 
-        private void PropagateSunlight(Chunk chunk, int sourceIndexX, int sourceIndexY, int sourceIndexZ, VoxelDefinition sourceDefinition, Voxel sourceVoxel)
+        private void PropagateLight(Chunk chunk, int sourceIndexX, int sourceIndexY, int sourceIndexZ, VoxelDefinition sourceDefinition, Voxel sourceVoxel)
         {
             if (sourceDefinition.TransmittanceQuarters[(byte)Face.Bottom] > 0 && sourceVoxel.Lightness > 0) 
             //if (sourceDefinition.IsTransparent && sourceVoxel.Lightness > 0)
@@ -144,7 +176,7 @@ namespace AppleCinnamon.Pipeline
                                 var newTargetVoxel = new Voxel(neighborVoxel.Block, (byte)(sourceVoxel.Lightness - 1));
                                 chunk.SetVoxelNoInline(neighborIndex, newTargetVoxel);
 
-                                PropagateSunlight(chunk, neighborIndexX, neighborIndexY, neighborIndexZ, targetDefinition, newTargetVoxel);
+                                PropagateLight(chunk, neighborIndexX, neighborIndexY, neighborIndexZ, targetDefinition, newTargetVoxel);
                             }
                         }
                     }

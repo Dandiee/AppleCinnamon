@@ -78,6 +78,7 @@ namespace AppleCinnamon.Settings
 
         public readonly bool IsSprite;
         public readonly bool IsBlock;
+        public readonly bool IsOpaque;
         public readonly bool IsNotBlock;
         public readonly VisibilityFlag CoverFlags;
 
@@ -150,8 +151,13 @@ namespace AppleCinnamon.Settings
             IsSprite = isSprite;
             IsBlock = isBlock;
             IsNotBlock = !isBlock;
+            IsOpaque = transmittanceQuarters[0] == TransmittanceFlags.None &&
+                       transmittanceQuarters[1] == TransmittanceFlags.None &&
+                       transmittanceQuarters[2] == TransmittanceFlags.None &&
+                       transmittanceQuarters[3] == TransmittanceFlags.None;
 
             RegisteredDefinitions.Add(type);
+            
         }
 
         static VoxelDefinition()
