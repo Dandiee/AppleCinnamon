@@ -28,7 +28,7 @@ namespace AppleCinnamon.Pipeline
             //    var sourceDefinition = VoxelDefinition.DefinitionByType[sourceVoxel.Block];
             //    var index = lightSourceFlatIndex.ToIndex(chunk.CurrentHeight);
 
-                
+
 
             //    foreach (var direction in LightDirections.All)
             //    {
@@ -59,7 +59,8 @@ namespace AppleCinnamon.Pipeline
 
             sw.Stop();
 
-            return new DataflowContext<Chunk>(context, context.Payload, sw.ElapsedMilliseconds, nameof(LocalLightPropagationService));
+            return new DataflowContext<Chunk>(context, context.Payload, sw.ElapsedMilliseconds,
+                nameof(LocalLightPropagationService));
         }
 
 
@@ -90,14 +91,19 @@ namespace AppleCinnamon.Pipeline
                             var neighborZ = index.Z + direction.Step.Z;
                             if ((neighborZ & Chunk.SizeXy) == 0)
                             {
-                                var neighborFlatIndex = Help.GetFlatIndex(neighborX, neighborY, neighborZ, chunk.CurrentHeight);
+                                var neighborFlatIndex =
+                                    Help.GetFlatIndex(neighborX, neighborY, neighborZ, chunk.CurrentHeight);
                                 var neighborVoxel = chunk.GetVoxelNoInline(neighborFlatIndex);
                                 var neighborDefinition = VoxelDefinition.DefinitionByType[neighborVoxel.Block];
 
-                                var brightnessLoss = VoxelDefinition.GetBrightnessLoss(sourceDefinition, neighborDefinition, direction.Direction);
-                                if (brightnessLoss != 0 && neighborVoxel.Lightness < sourceVoxel.Lightness - brightnessLoss)
+                                var brightnessLoss = VoxelDefinition.GetBrightnessLoss(sourceDefinition,
+                                    neighborDefinition, direction.Direction);
+                                if (brightnessLoss != 0 &&
+                                    neighborVoxel.Lightness < sourceVoxel.Lightness - brightnessLoss)
                                 {
-                                    chunk.SetVoxelNoInline(neighborFlatIndex, new Voxel(neighborVoxel.Block, (byte)(sourceVoxel.Lightness - brightnessLoss)));
+                                    chunk.SetVoxelNoInline(neighborFlatIndex,
+                                        new Voxel(neighborVoxel.Block,
+                                            (byte) (sourceVoxel.Lightness - brightnessLoss)));
                                     localLightSources.Enqueue(neighborFlatIndex);
                                 }
                             }
@@ -105,6 +111,57 @@ namespace AppleCinnamon.Pipeline
                     }
                 }
             }
+        }
+
+        public class GlobalLighntessPropogationRecord
+        {
+            public Chunk sourceChunk;
+            public Int3 sourceIndex;
+
+            public GlobalLighntessPropogationRecord(Chunk soureChunk, Int3 sourceIndex)
+            {
+                this.sourceChunk = soureChunk;
+                this.sourceIndex = sourceIndex;
+            }
+        }
+
+        public static void GlobalPropagateLightness(Queue<GlobalLighntessPropogationRecord> queue)
+        {
+            while (queue.Count > 0)
+            {
+                var source = queue.Dequeue();
+                var sourceVoxel = source.sourceChunk.CurrentHeight <= source.sourceIndex.Y
+                    ? Voxel.Air
+                    : source.sourceChunk.GetVoxel(source.sourceIndex.ToFlatIndex(source.sourceChunk.CurrentHeight));
+                var sourceDefinition = VoxelDefinition.DefinitionByType[sourceVoxel.Block];
+
+                foreach (var direction in LightDirections.All)
+                {
+                    var targetIndex = source.sourceIndex + direction.Step;
+                    var targetVoxel = source.sourceChunk.GetLocalWithneighbors(targetIndex.X, targetIndex.Y,
+                        targetIndex.Z, out var targetAddress);
+                    var targetDefinition = targetVoxel.GetDefinition();
+
+                    var brightnessLoss =
+                        VoxelDefinition.GetBrightnessLoss(sourceDefinition, targetDefinition, direction.Direction);
+                    if (brightnessLoss != 0 && targetVoxel.Lightness < sourceVoxel.Lightness - brightnessLoss)
+                    {
+                        var targetChunk =
+                            source.sourceChunk.neighbors2[Help.GetChunkFlatIndex(targetAddress.ChunkIndex)];
+                        targetChunk.SetVoxel(targetAddress.RelativeVoxelIndex.ToFlatIndex(targetChunk.CurrentHeight),
+                            new Voxel(targetVoxel.Block, (byte)((sourceVoxel.Lightness - brightnessLoss))));
+                        queue.Enqueue(
+                            new GlobalLighntessPropogationRecord(targetChunk, targetAddress.RelativeVoxelIndex));
+                    }
+                }
+            }
+        }
+
+        public static void GlobalPropagateLightness(Chunk chunk, Int3 relativeIndex)
+        {
+            var queue = new Queue<GlobalLighntessPropogationRecord>();
+            queue.Enqueue(new GlobalLighntessPropogationRecord(chunk, relativeIndex));
+            GlobalPropagateLightness(queue);
         }
     }
 }

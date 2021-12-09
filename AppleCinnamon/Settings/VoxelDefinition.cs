@@ -82,6 +82,7 @@ namespace AppleCinnamon.Settings
         public readonly bool IsNotBlock;
         public readonly VisibilityFlag CoverFlags;
 
+        public readonly bool IsLightEmitter;
         public readonly byte LightEmitting;
         public readonly byte[] DimFactors;
         public readonly TransmittanceFlags[] TransmittanceQuarters;
@@ -126,8 +127,8 @@ namespace AppleCinnamon.Settings
 
         public static readonly VoxelDefinition Grass = new BlockDefinitionBuilder(23).WithBottomTexture(2, 0).WithTopTexture(0, 0).WithSideTexture(3, 0).Build();
         public static readonly VoxelDefinition Snow = new BlockDefinitionBuilder(24).WithBottomTexture(2, 0).WithTopTexture(0, 4).WithSideTexture(4, 4).WithHeight(1f).Build();
-        public static readonly VoxelDefinition EmitterStone = new BlockDefinitionBuilder(25).WithAllSideTexture(1, 0).AsPermeable().WithLightEmitting(6).WithSize(.2f, 1, .2f).Build();
-        public static readonly VoxelDefinition Sand = new BlockDefinitionBuilder(26).WithAllSideTexture(1, 0).Build();
+        public static readonly VoxelDefinition EmitterStone = new BlockDefinitionBuilder(25).WithAllSideTexture(1, 0).AsPermeable().WithLightEmitting(14).Build();
+        public static readonly VoxelDefinition Sand = new BlockDefinitionBuilder(26).WithAllSideTexture(2, 1).Build();
 
         //public static readonly VoxelDefinition Snow = new BlockDefinitionBuilder(4).WithAllSideTexture(2, 4).WithSize(1, 0.2f, 1).WithTranslation(0, -0.4f, 0).WithTransmittance(true, true, true).AsPermeable().Build();
 
@@ -157,7 +158,7 @@ namespace AppleCinnamon.Settings
                        transmittanceQuarters[3] == TransmittanceFlags.None;
 
             RegisteredDefinitions.Add(type);
-            
+            IsLightEmitter = LightEmitting > 0;
         }
 
         static VoxelDefinition()
@@ -229,6 +230,8 @@ namespace AppleCinnamon.Settings
                 throw new ArgumentException("Light emitting must be at least 1");
             }
 
+            WithDimFactors(1);
+            WithTransmittanceQuarters(TransmittanceFlags.All);
             _lightEmitting = lightEmitting;
 
             return this;

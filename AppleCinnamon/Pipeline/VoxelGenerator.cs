@@ -106,11 +106,11 @@ namespace AppleCinnamon.Pipeline
                         var pixel = Noise.CalcPixel3D(i + (chunk.ChunkIndex.X * Chunk.SizeXy), j, k + chunk.ChunkIndex.Y * Chunk.SizeXy, .015f);
                         if (pixel < 128)// && pixel > 16)
                         {
-                            voxels[Help.GetFlatIndex(i, j, k, maxHeight)] = new Voxel(VoxelDefinition.Stone.Type, 0);
+                            voxels[Help.GetFlatIndex(i, j, k, maxHeight)] = new Voxel(VoxelDefinition.Sand.Type, 0);
                         }
                     }
 
-                    voxels[Help.GetFlatIndex(i, 1, k, maxHeight)] = new Voxel(VoxelDefinition.Stone.Type, 0);
+                    voxels[Help.GetFlatIndex(i, 1, k, maxHeight)] = new Voxel(VoxelDefinition.Sand.Type, 0);
 
                 }
             }

@@ -60,7 +60,7 @@ namespace AppleCinnamon
 
             if (newVoxel.Block == 0) // remove
             {
-                if (oldDefinition.LightEmitting > 0) // emitter
+                if (oldDefinition.IsLightEmitter) // emitter
                 {
                     RemoveEmitter(chunk, relativeIndex, oldVoxel);
                 }
@@ -71,7 +71,7 @@ namespace AppleCinnamon
             }
             else // add
             {
-                if (newDefinition.LightEmitting > 0) // emitter
+                if (newDefinition.IsLightEmitter) // emitter
                 {
                     AddEmitter(chunk, relativeIndex, newVoxel, newDefinition);
                 }
@@ -105,11 +105,25 @@ namespace AppleCinnamon
         private void AddEmitter(Chunk chunk, Int3 relativeIndex, Voxel newVoxel, VoxelDefinition newDefinition)
         {
             var brightestneighbor = GetBrightestneighbor(chunk, relativeIndex);
+            var sourceDefinition = VoxelDefinition.DefinitionByType[newVoxel.Block];
 
-            chunk.SetVoxel(relativeIndex.ToFlatIndex(chunk.CurrentHeight),
-                new Voxel(newVoxel.Block, Math.Max(brightestneighbor.Item3, newDefinition.LightEmitting)));
-            LocalLightPropagationService.InitializeLocalLight(chunk, Help.GetFlatIndex(relativeIndex.X, relativeIndex.Y, relativeIndex.Z, chunk.CurrentHeight));
-            //PropagateLightness(new LighntessPropogationRecord(chunk, relativeIndex));
+            var queue = new Queue<LocalLightPropagationService.GlobalLighntessPropogationRecord>();
+
+            /*foreach (var direction in LightDirections.All)
+            {
+                var targetIndex = relativeIndex + direction.Step;
+                var targetVoxel = chunk.GetLocalWithneighbors(targetIndex, out var targetAddress);
+                if (targetVoxel.Lightness < sourceDefinition.LightEmitting)
+                {
+                    var targetChunk = chunk.neighbors2[Help.GetChunkFlatIndex(targetAddress.ChunkIndex)];
+                    var targetFlatIndex = targetAddress.RelativeVoxelIndex.ToFlatIndex(targetChunk.CurrentHeight);
+
+                    targetChunk.Voxels[targetFlatIndex] = new Voxel(targetVoxel.Block, sourceDefinition.LightEmitting);
+                    queue.Enqueue(new LocalLightPropagationService.GlobalLighntessPropogationRecord(targetChunk, targetAddress.RelativeVoxelIndex));
+                }
+            }*/
+            
+            LocalLightPropagationService.GlobalPropagateLightness(chunk, relativeIndex);
         }
 
         private void RemoveEmitter(Chunk chunk, Int3 relativeIndex, Voxel oldVoxel)
@@ -130,8 +144,7 @@ namespace AppleCinnamon
             // propagate lightness
             foreach (var lightSource in lightSources)
             {
-                LocalLightPropagationService.InitializeLocalLight(lightSource.Item1, lightSource.Item2.ToFlatIndex(lightSource.Item1.CurrentHeight));
-                //PropagateLightness(new LighntessPropogationRecord(lightSource.Item1, lightSource.Item2));
+                LocalLightPropagationService.GlobalPropagateLightness(lightSource.Item1, lightSource.Item2);
             }
         }
 
@@ -166,8 +179,7 @@ namespace AppleCinnamon
             // propagate lightness
             foreach (var lightSource in lightSources)
             {
-                LocalLightPropagationService.InitializeLocalLight(lightSource.Item1, lightSource.Item2.ToFlatIndex(lightSource.Item1.CurrentHeight));
-                //PropagateLightness(new LighntessPropogationRecord(lightSource.Item1, lightSource.Item2));
+                LocalLightPropagationService.GlobalPropagateLightness(lightSource.Item1, lightSource.Item2);
             }
         }
 
@@ -190,8 +202,7 @@ namespace AppleCinnamon
 
             foreach (var lightSource in lightSources)
             {
-                LocalLightPropagationService.InitializeLocalLight(lightSource.Item1, lightSource.Item2.ToFlatIndex(lightSource.Item1.CurrentHeight));
-                //PropagateLightness(new LighntessPropogationRecord(lightSource.Item1, lightSource.Item2));
+                LocalLightPropagationService.GlobalPropagateLightness(lightSource.Item1, lightSource.Item2);
             }
         }
 

@@ -131,6 +131,8 @@ namespace AppleCinnamon
             Center2d = new Vector2(position.X, position.Z);
         }
 
+        public Voxel GetLocalWithneighbors(Int3 ijk, out VoxelAddress address) => GetLocalWithneighbors(ijk.X, ijk.Y, ijk.Z, out address);
+
         public Voxel GetLocalWithneighbors(int i, int j, int k, out VoxelAddress address)
         {
             if (j < 0 || j >= CurrentHeight)
@@ -149,6 +151,8 @@ namespace AppleCinnamon
                 ? Voxel.Air
                 : chunk.GetVoxel(Help.GetFlatIndex(address.RelativeVoxelIndex.X, j, address.RelativeVoxelIndex.Z, chunk.CurrentHeight));
         }
+
+        public Voxel GetLocalWithneighbors(Int3 ijk) => GetLocalWithneighbors(ijk.X, ijk.Y, ijk.Z);
 
         //[MethodImpl(MethodImplOptions.NoInlining)]
         [InlineMethod.Inline]
