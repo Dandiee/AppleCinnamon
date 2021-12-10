@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using AppleCinnamon.Helper;
 using AppleCinnamon.Pipeline;
-using AppleCinnamon.System;
 using SharpDX;
 
 namespace AppleCinnamon.Settings
@@ -43,15 +43,14 @@ namespace AppleCinnamon.Settings
                         var sourceQuarters = sourceDef.TransmittanceQuarters[direction];
                         var targetQuarters = targetDef.TransmittanceQuarters[direction];
 
-                        var overlap = sourceQuarters & targetQuarters;
+                        var overlap = (byte)sourceQuarters & (byte)targetQuarters;
                         var overlapCount = HammingWeight((uint)overlap);
 
-                        
                         var flatIndex = sourceDef.Type + length * (targetDef.Type + length * direction);
 
                         result[flatIndex] = (byte)(overlapCount == 0
                             ? 0
-                            : targetDef.DimFactors[direction] + overlapCount - 4);
+                            : targetDef.DimFactors[direction] + 4 - overlapCount);
                     }
                 }
             }
@@ -395,8 +394,8 @@ namespace AppleCinnamon.Settings
 
     public static class VoxelDefinitionExtensions
     {
-        [InlineMethod.Inline]
-        public static bool IsFaceVisible(this VoxelDefinition current, VoxelDefinition neighbor, VisibilityFlag neighborFace)
-            => current.IsBlock && (neighbor.CoverFlags & neighborFace) == 0;
+        //[InlineMethod.Inline]
+        public static bool IsFaceVisible(this VoxelDefinition current, VoxelDefinition neighbor, VisibilityFlag neighborFace, VisibilityFlag currentFace)
+            => current.IsBlock && ((neighbor.CoverFlags & neighborFace) == 0 || (current.CoverFlags & currentFace) == 0);
     }
 }

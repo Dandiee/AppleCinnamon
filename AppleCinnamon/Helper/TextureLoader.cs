@@ -4,7 +4,7 @@ using SharpDX.DXGI;
 using SharpDX.WIC;
 using Device = SharpDX.Direct3D11.Device;
 
-namespace AppleCinnamon.System
+namespace AppleCinnamon.Helper
 {
     public sealed class TextureLoader
     {

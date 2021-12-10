@@ -1,5 +1,5 @@
-﻿using AppleCinnamon.Settings;
-using AppleCinnamon.System;
+﻿using AppleCinnamon.Helper;
+using AppleCinnamon.Settings;
 using SharpDX;
 
 namespace AppleCinnamon.Collision

@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using AppleCinnamon.Helper;
 using AppleCinnamon.Settings;
-using AppleCinnamon.System;
 
 namespace AppleCinnamon.Pipeline
 {
@@ -90,7 +90,7 @@ namespace AppleCinnamon.Pipeline
 
                             if (definition.IsBlock)
                             {
-                                if ((neighborDefinition.CoverFlags & VisibilityFlag.Bottom) == VisibilityFlag.None)
+                                if ((neighborDefinition.CoverFlags & VisibilityFlag.Bottom) == 0 || (definition.CoverFlags & VisibilityFlag.Top) == 0)
                                 {
                                     visibilityFlag |= VisibilityFlag.Top;
                                     chunk.BuildingContext.Top.VoxelCount++;
@@ -119,7 +119,7 @@ namespace AppleCinnamon.Pipeline
                             var neighbor = chunk.Voxels[Help.GetFlatIndex(i, j - 1, k, chunk.CurrentHeight)];
                             var neighborDefinition = VoxelDefinition.DefinitionByType[neighbor.Block];
 
-                            if (definition.IsFaceVisible(neighborDefinition, VisibilityFlag.Top))
+                            if (definition.IsFaceVisible(neighborDefinition, VisibilityFlag.Top, VisibilityFlag.Bottom))
                             {
                                 visibilityFlag |= VisibilityFlag.Bottom;
                                 chunk.BuildingContext.Bottom.VoxelCount++;
@@ -179,7 +179,7 @@ namespace AppleCinnamon.Pipeline
 
                 if (definition.IsBlock)
                 {
-                    if ((neighborDefinition.CoverFlags & context.OppositeDirection) == 0) 
+                    if ((neighborDefinition.CoverFlags & context.OppositeDirection) == 0 || (definition.CoverFlags & context.Direction) == 0) 
                     {
                         visibilityFlag |= context.Direction;
                         context.VoxelCount++;

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace AppleCinnamon.System
+namespace AppleCinnamon.Helper
 {
     public sealed class GameTime
     {

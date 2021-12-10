@@ -1,6 +1,6 @@
 ﻿using System.Linq;
 using System.Windows.Forms;
-using AppleCinnamon.System;
+using AppleCinnamon.Helper;
 using SharpDX;
 using SharpDX.Direct2D1;
 using SharpDX.DirectInput;

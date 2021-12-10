@@ -2,11 +2,11 @@
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using AppleCinnamon.System;
+using AppleCinnamon.Helper;
 using SharpDX;
 using SharpDX.DXGI;
 using Device = SharpDX.Direct3D11.Device;
-using Help = AppleCinnamon.System.Help;
+using Help = AppleCinnamon.Helper.Help;
 
 namespace AppleCinnamon
 {

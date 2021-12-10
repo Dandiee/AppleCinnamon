@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
+using AppleCinnamon.Helper;
 using AppleCinnamon.Settings;
-using AppleCinnamon.System;
 using SharpDX;
 
 namespace AppleCinnamon.Pipeline
@@ -95,6 +95,11 @@ namespace AppleCinnamon.Pipeline
                                     Help.GetFlatIndex(neighborX, neighborY, neighborZ, chunk.CurrentHeight);
                                 var neighborVoxel = chunk.GetVoxelNoInline(neighborFlatIndex);
                                 var neighborDefinition = VoxelDefinition.DefinitionByType[neighborVoxel.Block];
+
+                                if (neighborDefinition.Type == VoxelDefinition.SlabBottom.Type)
+                                {
+
+                                }
 
                                 var brightnessLoss = VoxelDefinition.GetBrightnessLoss(sourceDefinition,
                                     neighborDefinition, direction.Direction);

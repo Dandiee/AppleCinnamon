@@ -30,6 +30,7 @@
   <ItemGroup>
 	<PackageReference Include="Fody" PrivateAssets="all" Version="6.6.0" />
 	<PackageReference Include="InlineIL.Fody" PrivateAssets="all" Version="1.7.1" />
+	<!--<PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />-->
   </ItemGroup>
 
   <ItemGroup>

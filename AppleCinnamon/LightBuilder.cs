@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using AppleCinnamon.Helper;
 using AppleCinnamon.Pipeline;
 using AppleCinnamon.Settings;
-using AppleCinnamon.System;
 using SharpDX;
 
 namespace AppleCinnamon

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 
-namespace AppleCinnamon.System
+namespace AppleCinnamon.Helper
 {
     public sealed class TimerTick
     {

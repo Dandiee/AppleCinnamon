@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Windows.Forms;
-using AppleCinnamon.System;
+using AppleCinnamon.Helper;
 using SharpDX;
 using Point = System.Drawing.Point;
 

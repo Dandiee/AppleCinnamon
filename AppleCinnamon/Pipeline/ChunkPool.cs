@@ -1,7 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using AppleCinnamon.System;
+using AppleCinnamon.Helper;
 
 namespace AppleCinnamon.Pipeline
 {

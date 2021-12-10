@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using AppleCinnamon.Collision;
+using AppleCinnamon.Helper;
 using AppleCinnamon.Settings;
-using AppleCinnamon.System;
 using SharpDX;
 using SharpDX.DirectInput;
 

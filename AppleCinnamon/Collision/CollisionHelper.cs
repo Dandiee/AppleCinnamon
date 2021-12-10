@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
+using AppleCinnamon.Helper;
 using AppleCinnamon.Settings;
-using AppleCinnamon.System;
 using SharpDX;
 
 namespace AppleCinnamon.Collision

@@ -1,4 +1,4 @@
-﻿namespace AppleCinnamon.System
+﻿namespace AppleCinnamon.Helper
 {
     public class IndexCache
     {

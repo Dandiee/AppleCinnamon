@@ -1,6 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using System.Diagnostics;
-using AppleCinnamon.System;
+using AppleCinnamon.Helper;
 
 namespace AppleCinnamon.Pipeline
 {

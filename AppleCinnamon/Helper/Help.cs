@@ -4,7 +4,7 @@ using SharpDX;
 using Vector3 = SharpDX.Vector3;
 using Vector4 = SharpDX.Vector4;
 
-namespace AppleCinnamon.System
+namespace AppleCinnamon.Helper
 {
     public static class Help
     {

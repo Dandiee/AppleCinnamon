@@ -1,7 +1,7 @@
 ﻿using System;
 using SharpDX;
 
-namespace AppleCinnamon.System
+namespace AppleCinnamon.Helper
 {
     public struct Bool3
     {
