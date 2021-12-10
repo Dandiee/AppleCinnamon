@@ -134,7 +134,7 @@ namespace AppleCinnamon
                 AddSpriteFace(chunk, FaceBuildInfo.SpriteVertices.Left, positionOffset, voxel,
                     definition.TextureIndexes.Faces[(byte)Face.Left], vertices, indexes, vertexOffset, n, 0);
 
-                AddSpriteFace(chunk, FaceBuildInfo.SpriteVertices.Right, positionOffset, voxel, 
+                AddSpriteFace(chunk, FaceBuildInfo.SpriteVertices.Right, positionOffset, voxel,
                     definition.TextureIndexes.Faces[(byte)Face.Right], vertices, indexes, vertexOffset, n, secondFaceOffset);
             }
 
@@ -142,7 +142,7 @@ namespace AppleCinnamon
             return new FaceBuffer(indexes.Length, VertexSprite.Size, Buffer.Create(device, BindFlags.VertexBuffer, vertices), Buffer.Create(device, BindFlags.IndexBuffer, indexes));
         }
 
-        private static void AddSpriteFace(Chunk chunk, Vector3[] faceOffsetVertices, Vector3 positionOffset, Voxel voxel, Int2 textureIndicies, 
+        private static void AddSpriteFace(Chunk chunk, Vector3[] faceOffsetVertices, Vector3 positionOffset, Voxel voxel, Int2 textureIndicies,
             VertexSprite[] vertices, ushort[] indexes, int vertexOffset, int vertexIndex, int faceOffset)
         {
             for (var m = 0; m < faceOffsetVertices.Length; m++)
@@ -152,7 +152,7 @@ namespace AppleCinnamon
                 vertices[vertexOffset + m + faceOffset * 4] = new VertexSprite(position, textureIndicies.X + textureOffset.X, textureIndicies.Y + textureOffset.Y, voxel.Lightness);
             }
 
-            var indexOffset = (vertexIndex * 6 * 2) + (faceOffset * 6 *2);
+            var indexOffset = (vertexIndex * 6 * 2) + (faceOffset * 6 * 2);
 
             indexes[indexOffset + 0] = (ushort)(vertexOffset + 0 + faceOffset * 4);
             indexes[indexOffset + 1] = (ushort)(vertexOffset + 2 + faceOffset * 4);
@@ -161,10 +161,10 @@ namespace AppleCinnamon
             indexes[indexOffset + 4] = (ushort)(vertexOffset + 1 + faceOffset * 4);
             indexes[indexOffset + 5] = (ushort)(vertexOffset + 2 + faceOffset * 4);
 
-            indexes[indexOffset + 6] = (ushort)(vertexOffset +  2 + faceOffset * 4);
-            indexes[indexOffset + 7] = (ushort)(vertexOffset +  1 + faceOffset * 4);
-            indexes[indexOffset + 8] = (ushort)(vertexOffset +  0 + faceOffset * 4);
-            indexes[indexOffset + 9] = (ushort)(vertexOffset +  3 + faceOffset * 4);
+            indexes[indexOffset + 6] = (ushort)(vertexOffset + 2 + faceOffset * 4);
+            indexes[indexOffset + 7] = (ushort)(vertexOffset + 1 + faceOffset * 4);
+            indexes[indexOffset + 8] = (ushort)(vertexOffset + 0 + faceOffset * 4);
+            indexes[indexOffset + 9] = (ushort)(vertexOffset + 3 + faceOffset * 4);
             indexes[indexOffset + 10] = (ushort)(vertexOffset + 2 + faceOffset * 4);
             indexes[indexOffset + 11] = (ushort)(vertexOffset + 0 + faceOffset * 4);
         }
@@ -179,11 +179,6 @@ namespace AppleCinnamon
             var vertexIndex = offset * 4;
             var indexIndex = offset * 6;
 
-            // Initialize ambient neighbors
-            var ambientNeighborIndex = face.BuildInfo.FirstneighborIndex;
-            var ambientNeighborVoxel = chunk.GetLocalWithneighbors(relativeIndexX + ambientNeighborIndex.X, relativeIndexY + ambientNeighborIndex.Y, relativeIndexZ + ambientNeighborIndex.Z);
-            var ambientNeighborDefinition = VoxelDefinition.DefinitionByType[ambientNeighborVoxel.Block];
-
             // Visit all ambient neighbors
             foreach (var vertexInfo in face.BuildInfo.VerticesInfo)
             {
@@ -192,32 +187,31 @@ namespace AppleCinnamon
                     vertexInfo.Position.Y * definition.Size.Y + voxelPositionOffset.Y,
                     vertexInfo.Position.Z * definition.Size.Z + voxelPositionOffset.Z);
 
-                var totalneighborLight = ambientNeighborVoxel.Lightness;
-                var numberOfAmbientneighbors = (!ambientNeighborDefinition.IsBlock && ambientNeighborDefinition.IsFullSized) ? 0 : 1;
+                byte totalNeighborLight = 0;
+                var numberOfAmbientNeighbors = 0;
 
                 foreach (var ambientIndex in vertexInfo.AmbientOcclusionNeighbors)
                 {
-                    ambientNeighborIndex = ambientIndex;
-                    ambientNeighborVoxel = chunk.GetLocalWithneighbors(relativeIndexX + ambientNeighborIndex.X, relativeIndexY + ambientNeighborIndex.Y, relativeIndexZ + ambientNeighborIndex.Z);
-                    ambientNeighborDefinition = VoxelDefinition.DefinitionByType[ambientNeighborVoxel.Block];
+                    var ambientNeighborVoxel = chunk.GetLocalWithneighbors(relativeIndexX + ambientIndex.X, relativeIndexY + ambientIndex.Y, relativeIndexZ + ambientIndex.Z);
+                    var ambientNeighborDefinition = VoxelDefinition.DefinitionByType[ambientNeighborVoxel.Block];
 
                     if (!ambientNeighborDefinition.IsBlock)
                     {
-                        totalneighborLight += ambientNeighborVoxel.Lightness;
+                        totalNeighborLight += ambientNeighborVoxel.Lightness;
                     }
                     else if (ambientNeighborDefinition.IsFullSized)
                     {
-                        numberOfAmbientneighbors++;
+                        numberOfAmbientNeighbors++;
                     }
                 }
 
                 var hue = (definition.HueFaces & face.Direction) == face.Direction
                     ? voxel.HueIndex
                     : (byte)0;
-                
+
                 vertices[vertexIndex + vertexInfo.Index] = new VertexSolidBlock(position, textureUv.X + vertexInfo.TextureIndex.X,
-                    textureUv.Y + vertexInfo.TextureIndex.Y, neighbor.Lightness, totalneighborLight,
-                    numberOfAmbientneighbors, hue);
+                    textureUv.Y + vertexInfo.TextureIndex.Y, neighbor.Lightness, totalNeighborLight,
+                    numberOfAmbientNeighbors, hue);
             }
 
             indexes[indexIndex] = (ushort)vertexIndex;
@@ -261,7 +255,7 @@ namespace AppleCinnamon
         private Cube<ChunkFace> GetSolidTransparentChunkFaces(Chunk chunk)
         {
             var voxelCount = chunk.BuildingContext.TransparentBlocks.Count;
-            
+
             var topOffset = 0;
             var botOffset = voxelCount;
             var lefOffset = botOffset + voxelCount;
@@ -270,8 +264,8 @@ namespace AppleCinnamon
             var bacOffset = froOffset + voxelCount;
 
             var result = new Cube<ChunkFace>(
-                new ChunkFace(topOffset, voxelCount,    FaceBuildInfo.Top, VisibilityFlag.Top),
-                new ChunkFace(botOffset, voxelCount,  FaceBuildInfo.Bottom, VisibilityFlag.Bottom),
+                new ChunkFace(topOffset, voxelCount, FaceBuildInfo.Top, VisibilityFlag.Top),
+                new ChunkFace(botOffset, voxelCount, FaceBuildInfo.Bottom, VisibilityFlag.Bottom),
                 new ChunkFace(lefOffset, voxelCount, FaceBuildInfo.Left, VisibilityFlag.Left),
                 new ChunkFace(rigOffset, voxelCount, FaceBuildInfo.Right, VisibilityFlag.Right),
                 new ChunkFace(froOffset, voxelCount, FaceBuildInfo.Front, VisibilityFlag.Front),
@@ -324,45 +318,45 @@ namespace AppleCinnamon
         public static readonly Cube<Int3[][]> AmbientIndexes = new(
             new[]
             {
-                new[] {new Int3(-1, 1, -1), new Int3(0, 1, -1)},
-                new[] {new Int3(1, 1, -1), new Int3(1, 1, 0)},
-                new[] {new Int3(1, 1, 1), new Int3(0, 1, 1)},
-                new[] {new Int3(-1, 1, 0), new Int3(-1, 1, 1)}
+                new[] { new Int3(-1, 1, 0), new Int3(-1, 1, -1), new Int3(0, 1, -1)},
+                new[] { new Int3(0, 1, -1), new Int3(1, 1, -1), new Int3(1, 1, 0)},
+                new[] { new Int3(1, 1, 0), new Int3(1, 1, 1), new Int3(0, 1, 1)},
+                new[] { new Int3(0, 1, 1), new Int3(-1, 1, 1), new Int3(-1, 1, 0) }
             },
             new[]
             {
-                new[] {new Int3(1, -1, -1), new Int3(0, -1, -1)},
-                new[] {new Int3(-1, -1, -1), new Int3(-1, -1, 0)},
-                new[] {new Int3(-1, -1, 1), new Int3(0, -1, 1)},
-                new[] {new Int3(1, -1, 1), new Int3(1, -1, 0)}
+                new[] { new Int3(1, -1, 0), new Int3(1, -1, -1), new Int3(0, -1, -1)},
+                new[] { new Int3(0, -1, -1), new Int3(-1, -1, -1), new Int3(-1, -1, 0)},
+                new[] { new Int3(-1, -1, 0), new Int3(-1, -1, 1), new Int3(0, -1, 1)},
+                new[] { new Int3(0, -1, 1), new Int3(1, -1, 1), new Int3(1, -1, 0)}
             },
             new[]
             {
-                new[] {new Int3(-1, 1, -1), new Int3(-1, 1, 0)},
-                new[] {new Int3(-1, 1, 1), new Int3(-1, 0, 1)},
-                new[] {new Int3(-1, -1, 1), new Int3(-1, -1, 0)},
-                new[] {new Int3(-1, -1, -1), new Int3(-1, 0, -1)}
+                new[] { new Int3(-1, 0, -1), new Int3(-1, 1, -1),  new Int3(-1, 1, 0)},
+                new[] { new Int3(-1, 1, 0), new Int3(-1, 1, 1),   new Int3(-1, 0, 1)},
+                new[] { new Int3(-1, 0, 1), new Int3(-1, -1, 1),  new Int3(-1, -1, 0)},
+                new[] { new Int3(-1, -1, 0), new Int3(-1, -1, -1), new Int3(-1, 0, -1)}
             },
             new[]
             {
-                new[] {new Int3(1, 1, 1), new Int3(1, 1, 0)},
-                new[] {new Int3(1, 1, -1), new Int3(1, 0, -1)},
-                new[] {new Int3(1, -1, -1), new Int3(1, -1, 0)},
-                new[] {new Int3(1, 0, 1), new Int3(1, -1, 1), }
+                new[] { new Int3(1, 0, 1), new Int3(1, 1, 1), new Int3(1, 1, 0)},
+                new[] { new Int3(1, 1, 0), new Int3(1, 1, -1), new Int3(1, 0, -1)},
+                new[] { new Int3(1, 0, -1), new Int3(1, -1, -1), new Int3(1, -1, 0)},
+                new[] { new Int3(1, -1, 0), new Int3(1, -1, 1), new Int3(1, 0, 1) }
             },
             new[]
             {
-                new[] {new Int3(1, 1, -1), new Int3(0, 1, -1)},
-                new[] {new Int3(-1, 1, -1), new Int3(-1, 0, -1)},
-                new[] {new Int3(-1, -1, -1), new Int3(0, -1, -1)},
-                new[] {new Int3(1, 0, -1), new Int3(1, -1, -1)}
+                new[] { new Int3(1, 0, -1), new Int3(1, 1, -1), new Int3(0, 1, -1)},
+                new[] { new Int3(0, 1, -1), new Int3(-1, 1, -1), new Int3(-1, 0, -1)},
+                new[] { new Int3(-1, 0, -1), new Int3(-1, -1, -1), new Int3(0, -1, -1)},
+                new[] { new Int3(0, -1, -1), new Int3(1, -1, -1), new Int3(1, 0, -1)}
             },
             new[]
             {
-                new[] {new Int3(-1, 1, 1), new Int3(0, 1, 1)},
-                new[] {new Int3(1, 1, 1), new Int3(1, 0, 1)},
-                new[] {new Int3(1, -1, 1), new Int3(0, -1, 1)},
-                new[] {new Int3(-1, -1, 1), new Int3(-1, 0, 1)}
+                new[] { new Int3(-1, 0, 1), new Int3(-1, 1, 1), new Int3(0, 1, 1)},
+                new[] { new Int3(0, 1, 1), new Int3(1, 1, 1), new Int3(1, 0, 1)},
+                new[] { new Int3(1, 0, 1), new Int3(1, -1, 1), new Int3(0, -1, 1)},
+                new[] { new Int3(0, -1, 1), new Int3(-1, -1, 1), new Int3(-1, 0, 1)}
             }
         );
 
@@ -398,7 +392,7 @@ namespace AppleCinnamon
         public readonly byte DirectionFlag;
         public readonly Face Face;
         public readonly Int3 Direction;
-        public readonly Int3 FirstneighborIndex;
+        //public readonly Int3 FirstneighborIndex;
         public readonly VertexBuildInfo[] VerticesInfo;
 
         private FaceBuildInfo(Face face)
@@ -409,7 +403,6 @@ namespace AppleCinnamon
             Direction = FaceDirectionMapping[face];
             VerticesInfo = FaceVertices.Faces[(byte)face].Select((vector, index) =>
                 new VertexBuildInfo(index, vector, AmbientIndexes.Faces[(byte)face][index], UvOffsetIndexes[index])).ToArray();
-            FirstneighborIndex = FirstAmbientIndexes.Faces[(byte)face];
         }
     }
 
