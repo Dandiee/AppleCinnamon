@@ -31,7 +31,7 @@ namespace AppleCinnamon.Pipeline
         }
 
 
-        [InlineMethod.Inline]
+        //[InlineMethod.Inline]
         private static void ProcessSide(Chunk chunk, Chunk neighborChunk, FaceBuildingContext context)
         {
             foreach (var flatIndex in context.PendingVoxels)

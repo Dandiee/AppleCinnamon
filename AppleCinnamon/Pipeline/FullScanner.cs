@@ -30,7 +30,7 @@ namespace AppleCinnamon.Pipeline
                 [VisibilityFlag.Left] = VisibilityFlag.Right,
                 [VisibilityFlag.Right] = VisibilityFlag.Left,
                 [VisibilityFlag.Front] = VisibilityFlag.Back,
-                [VisibilityFlag.Back] = VisibilityFlag.Bottom,
+                [VisibilityFlag.Back] = VisibilityFlag.Front,
             };
 
         public static VisibilityFlag GetOpposite(this VisibilityFlag flag)
@@ -134,6 +134,11 @@ namespace AppleCinnamon.Pipeline
                             }
                         }
 
+                        if (chunk.ChunkIndex == new Int2(0, -1) && i == 9 && j == 122 && k == 25)
+                        {
+
+                        }
+
                         BuildHorizontalFace(i > 0,
                             Help.GetFlatIndex(i - 1, j, k, chunk.CurrentHeight), chunk, definition, flatIndex, ref visibilityFlag, ref voxelLight, chunk.BuildingContext.Left);
                         BuildHorizontalFace(i < Chunk.SizeXy - 1,
@@ -163,7 +168,7 @@ namespace AppleCinnamon.Pipeline
             return new DataflowContext<Chunk>(context, chunk, sw.ElapsedMilliseconds, nameof(FullScanner));
         }
 
-        [InlineMethod.Inline]
+        //[InlineMethod.Inline]
         private void BuildHorizontalFace(bool isInChunk, int neighborFlatIndex, Chunk chunk, VoxelDefinition definition,
             int flatIndex, ref VisibilityFlag visibilityFlag, ref byte voxelLight, FaceBuildingContext context)
         {

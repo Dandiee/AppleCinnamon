@@ -80,6 +80,7 @@ namespace AppleCinnamon.Settings
         public readonly bool IsBlock;
         public readonly bool IsOpaque;
         public readonly bool IsNotBlock;
+        public readonly bool IsFullSized;
         public readonly VisibilityFlag CoverFlags;
         public readonly VisibilityFlag HueFaces;
 
@@ -87,6 +88,9 @@ namespace AppleCinnamon.Settings
         public readonly byte LightEmitting;
         public readonly byte[] DimFactors;
         public readonly TransmittanceFlags[] TransmittanceQuarters;
+
+        public readonly Vector3 Offset;
+        public readonly Vector3 Size;
 
         public static readonly VoxelDefinition[] DefinitionByType = new VoxelDefinition[255];
 
@@ -97,7 +101,7 @@ namespace AppleCinnamon.Settings
                 {
                     TransmittanceFlags.All, TransmittanceFlags.All, TransmittanceFlags.All, TransmittanceFlags.All,
                     TransmittanceFlags.All, TransmittanceFlags.All
-                }, VisibilityFlag.None);
+                }, VisibilityFlag.None, Vector3.Zero, Vector3.One);
 
         public static readonly VoxelDefinition Water = new BlockDefinitionBuilder(1).WithAllSideTexture(13, 12)
             .AsFluid()
@@ -142,7 +146,9 @@ namespace AppleCinnamon.Settings
             .WithAllSideTexture(1, 0)
             .WithDimFactors(1)
             .WithTransmittanceQuarters(TransmittanceFlags.Top)
-            //.WithSize(1, 0.5f, 1)
+            .WithSize(1, 0.5f, 1)
+            .WithOffset(0, -.25f, 0)
+            .WithCoverFlags(VisibilityFlag.Bottom)
             .Build();
 
 
@@ -150,7 +156,9 @@ namespace AppleCinnamon.Settings
         public static bool operator ==(VoxelDefinition lhs, VoxelDefinition rhs) => lhs is not null && rhs is not null && lhs.Type == rhs.Type;
         public static bool operator !=(VoxelDefinition lhs, VoxelDefinition rhs) => !(lhs == rhs);
 
-        public VoxelDefinition(byte type, Cube<Vector2> textures, Cube<Int2> textureIndexes, byte lightEmitting, bool isPermeable, bool isSprite, bool isBlock, VisibilityFlag coverFlags, byte[] dimFactors, TransmittanceFlags[] transmittanceQuarters, VisibilityFlag hueFaces)
+        public VoxelDefinition(byte type, Cube<Vector2> textures, Cube<Int2> textureIndexes, byte lightEmitting, bool isPermeable, 
+            bool isSprite, bool isBlock, VisibilityFlag coverFlags, byte[] dimFactors, TransmittanceFlags[] transmittanceQuarters, 
+            VisibilityFlag hueFaces, Vector3 offset, Vector3 size)
         {
             CoverFlags = coverFlags;
             DimFactors = dimFactors;
@@ -172,6 +180,9 @@ namespace AppleCinnamon.Settings
             RegisteredDefinitions.Add(type);
             IsLightEmitter = LightEmitting > 0;
             HueFaces = hueFaces;
+            Offset = offset;
+            Size = size;
+            IsFullSized = Offset == Vector3.Zero || Size == Vector3.One;
         }
 
         static VoxelDefinition()
@@ -197,8 +208,8 @@ namespace AppleCinnamon.Settings
         private bool _isPermeable;
         private byte _transmittance;
         private bool _isSprite;
-        private Vector3 _size;
-        private Vector3 _translation;
+        private Vector3 _size = Vector3.One;
+        private Vector3 _offset = Vector3.Zero;
         private VisibilityFlag _hueFaces;
 
         private VisibilityFlag _coverFlags = VisibilityFlag.All;
@@ -233,6 +244,12 @@ namespace AppleCinnamon.Settings
         {
             _size = new Vector3(x, y, z);
 
+            return this;
+        }
+
+        public BlockDefinitionBuilder WithOffset(float x, float y, float z)
+        {
+            _offset = new Vector3(x, y, z);
             return this;
         }
 
@@ -328,7 +345,7 @@ namespace AppleCinnamon.Settings
         public VoxelDefinition Build()
         {
             return new(_type, _textures, _textureIndexes, _lightEmitting,
-                _isPermeable, _isSprite, _isBlock, _coverFlags, _dimFactors, _transmittanceQuarters, _hueFaces);
+                _isPermeable, _isSprite, _isBlock, _coverFlags, _dimFactors, _transmittanceQuarters, _hueFaces, _offset, _size);
         }
 
         public BlockDefinitionBuilder WithHeight(float f)
