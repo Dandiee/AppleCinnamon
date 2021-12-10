@@ -56,9 +56,9 @@ namespace AppleCinnamon
         private EffectPass _waterBlockEffectPass;
         private InputLayout _waterBlockInputLayout;
 
-        private Effect _bbBlockEffect;
-        private EffectPass _bbBlockEffectPass;
-        private InputLayout _bbBlockInputLayout;
+        private Effect _spriteBlockEffect;
+        private EffectPass _spriteBlockEffectPass;
+        private InputLayout _spriteBlockInputLayout;
 
         public readonly ConcurrentDictionary<Int2, Chunk> Chunks;
         public readonly List<Chunk> QuickChunks;
@@ -96,13 +96,19 @@ namespace AppleCinnamon
         {
             _solidBlockEffect = new Effect(_graphics.Device, ShaderBytecode.CompileFromFile("Content/Effect/SolidBlockEffect.fx", "fx_5_0"));
             _solidBlockEffectPass = _solidBlockEffect.GetTechniqueByIndex(0).GetPassByIndex(0);
-            
             _solidBlockInputLayout = new InputLayout(_graphics.Device, _solidBlockEffectPass.Description.Signature, VertexSolidBlock.InputElements);
             _solidBlockEffect.GetVariableByName("Textures").AsShaderResource().SetResource(
                 new ShaderResourceView(_graphics.Device,
                     TextureLoader.CreateTexture2DFromBitmap(_graphics.Device,
-                        TextureLoader.LoadBitmap(new ImagingFactory2(), "Content/Texture/terrain.png"))));
+                        TextureLoader.LoadBitmap(new ImagingFactory2(), "Content/Texture/terrain3.png"))));
 
+            _spriteBlockEffect = new Effect(_graphics.Device, ShaderBytecode.CompileFromFile("Content/Effect/SpriteEffetct.fx", "fx_5_0"));
+            _spriteBlockEffectPass = _spriteBlockEffect.GetTechniqueByIndex(0).GetPassByIndex(0);
+            _spriteBlockInputLayout = new InputLayout(_graphics.Device, _spriteBlockEffectPass.Description.Signature, VertexSprite.InputElements);
+            _spriteBlockEffect.GetVariableByName("Textures").AsShaderResource().SetResource(
+                new ShaderResourceView(_graphics.Device,
+                    TextureLoader.CreateTexture2DFromBitmap(_graphics.Device,
+                        TextureLoader.LoadBitmap(new ImagingFactory2(), "Content/Texture/terrain3.png"))));
 
             _waterBlockEffect = new Effect(_graphics.Device, ShaderBytecode.CompileFromFile("Content/Effect/WaterEffect.fx", "fx_5_0"));
             _waterBlockEffectPass = _waterBlockEffect.GetTechniqueByIndex(0).GetPassByIndex(0);
@@ -112,10 +118,7 @@ namespace AppleCinnamon
                     TextureLoader.CreateTexture2DFromBitmap(_graphics.Device,
                         TextureLoader.LoadBitmap(new ImagingFactory2(), "Content/Texture/custom_water_still.png"))));
 
-            _bbBlockEffect = new Effect(_graphics.Device, ShaderBytecode.CompileFromFile("Content/Effect/BoxDrawerEffect.fx", "fx_5_0"));
-            _bbBlockEffectPass = _bbBlockEffect.GetTechniqueByIndex(0).GetPassByIndex(0);
-            _bbBlockInputLayout = new InputLayout(_graphics.Device, _bbBlockEffectPass.Description.Signature, VertexBox.InputElements);
-
+            
 
             var blendStateDescription = new BlendStateDescription { AlphaToCoverageEnable = false };
 
@@ -253,9 +256,9 @@ namespace AppleCinnamon
                     var vertexBuffer = SharpDX.Direct3D11.Buffer.Create(_graphics.Device, BindFlags.VertexBuffer, vertices);
                     var binding = new VertexBufferBinding(vertexBuffer, VertexBox.Size, 0);
                     
-                    _graphics.Device.ImmediateContext.InputAssembler.InputLayout = _bbBlockInputLayout;
+                    _graphics.Device.ImmediateContext.InputAssembler.InputLayout = _spriteBlockInputLayout;
                     _graphics.Device.ImmediateContext.InputAssembler.PrimitiveTopology = PrimitiveTopology.LineStrip;
-                    _bbBlockEffectPass.Apply(_graphics.Device.ImmediateContext);
+                    _spriteBlockEffectPass.Apply(_graphics.Device.ImmediateContext);
                     _graphics.Device.ImmediateContext.InputAssembler.SetVertexBuffers(0, binding);
                     _graphics.Device.ImmediateContext.Draw(vertices.Length, 0);
                     _graphics.Device.ImmediateContext.GeometryShader.Set(null);
@@ -279,27 +282,22 @@ namespace AppleCinnamon
                     
                 }
 
-                
 
                 
-                if (false)
+
+                if (true)
                 {
-
-                    _graphics.Device.ImmediateContext.InputAssembler.InputLayout = _solidBlockInputLayout;
+                    
+                    _graphics.Device.ImmediateContext.InputAssembler.InputLayout = _spriteBlockInputLayout;
                     _graphics.Device.ImmediateContext.InputAssembler.PrimitiveTopology = PrimitiveTopology.TriangleList;
-                    _solidBlockEffectPass.Apply(_graphics.Device.ImmediateContext);
+                    _spriteBlockEffectPass.Apply(_graphics.Device.ImmediateContext);
 
 
                     foreach (var chunk in chunksToRender)
                     {
-                        if (chunk.Value.TransparentBlockBuffer != null)
+                        if (chunk.Value.BuildingContext.SpriteBlocks.Count > 0)
                         {
-                            _graphics.Device.ImmediateContext.InputAssembler.SetVertexBuffers(0,
-                                chunk.Value.TransparentBlockBuffer.Binding);
-                            _graphics.Device.ImmediateContext.InputAssembler.SetIndexBuffer(
-                                chunk.Value.TransparentBlockBuffer.IndexBuffer, Format.R16_UInt, 0);
-                            _graphics.Device.ImmediateContext.DrawIndexed(
-                                chunk.Value.BuildingContext.TransparentBlocks.Count * 6 * 6, 0, 0);
+                            chunk.Value.DrawSprite(_graphics.Device);
                         }
                     }
 
@@ -308,6 +306,7 @@ namespace AppleCinnamon
 
                 if (Game.RenderWater)
                 {
+
                     _graphics.Device.ImmediateContext.OutputMerger.SetBlendState(_waterBlendState);
                     _graphics.Device.ImmediateContext.InputAssembler.InputLayout = _waterBlockInputLayout;
                     _graphics.Device.ImmediateContext.InputAssembler.PrimitiveTopology = PrimitiveTopology.TriangleList;
@@ -357,7 +356,8 @@ namespace AppleCinnamon
             _solidBlockEffect.GetVariableByName("EyePosition").AsVector().Set(camera.Position.ToVector3());
             _waterBlockEffect.GetVariableByName("WorldViewProjection").AsMatrix().SetMatrix(camera.WorldViewProjection);
 
-            _bbBlockEffect.GetVariableByName("WorldViewProjection").AsMatrix().SetMatrix(camera.WorldViewProjection);
+            _spriteBlockEffect.GetVariableByName("WorldViewProjection").AsMatrix().SetMatrix(camera.WorldViewProjection);
+            //_spriteBlockEffect.GetVariableByName("EyePosition").AsMatrix().SetMatrix(camera.WorldViewProjection);
 
             if (camera.IsInWater)
             {

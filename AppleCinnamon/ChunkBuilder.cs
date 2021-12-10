@@ -52,41 +52,12 @@ namespace AppleCinnamon
             }
 
             chunk.ChunkBuffer = new ChunkBuffer(device, vertices, indexes, faces);
-            chunk.TransparentBlockBuffer = AddTransparentBlocks(chunk, device);
 
             chunk.VisibleFacesCount = visibleFacesCount;
             var waterBuffer = AddWaterFace(chunk, device);
+            var spriteBuffer = AddSpriteFace(chunk, device);
 
-            chunk.SetBuffers(waterBuffer);
-        }
-
-        private ChunkBuffer AddTransparentBlocks(Chunk chunk, Device device)
-        {
-            if (chunk.BuildingContext.TransparentBlocks.Count == 0) return null;
-
-            var faceCount = chunk.BuildingContext.TransparentBlocks.Count * 6;
-            var vertices = new VertexSolidBlock[faceCount * 4];
-            var indexes = new ushort[faceCount * 6];
-            var faces = GetSolidTransparentChunkFaces(chunk);
-
-            foreach (var flatIndex in chunk.BuildingContext.TransparentBlocks)
-            {
-                var index = flatIndex.ToIndex(chunk.CurrentHeight);
-
-                var voxel = chunk.GetVoxel(flatIndex);
-                var definition = VoxelDefinition.DefinitionByType[voxel.Block];
-
-                var voxelPositionOffset = /*definition.Translation + */chunk.OffsetVector + new Vector3(index.X, index.Y, index.Z);
-
-
-                foreach (var faceInfo in faces.Faces)
-                {
-                    var neighbor = chunk.GetLocalWithneighbors(index.X + faceInfo.BuildInfo.Direction.X, index.Y + faceInfo.BuildInfo.Direction.Y, index.Z + faceInfo.BuildInfo.Direction.Z);
-                    AddFace(faceInfo, voxel, index.X, index.Y, index.Z, vertices, indexes, definition, chunk, neighbor, voxelPositionOffset);
-                }
-            }
-
-            return new ChunkBuffer(device, vertices, indexes, faces);
+            chunk.SetBuffers(waterBuffer, spriteBuffer);
         }
 
         private FaceBuffer AddWaterFace(Chunk chunk, Device device)
@@ -140,6 +111,62 @@ namespace AppleCinnamon
                 VertexWater.Size,
                 Buffer.Create(device, BindFlags.VertexBuffer, vertices),
                 Buffer.Create(device, BindFlags.IndexBuffer, indexes));
+        }
+
+        private FaceBuffer AddSpriteFace(Chunk chunk, Device device)
+        {
+            if (chunk.BuildingContext.SpriteBlocks.Count == 0) return null;
+            var vertices = new VertexSprite[chunk.BuildingContext.SpriteBlocks.Count * 4 * 2];
+            var indexes = new ushort[chunk.BuildingContext.SpriteBlocks.Count * 6 * 2 * 2];
+
+            var secondFaceOffset = chunk.BuildingContext.SpriteBlocks.Count;
+
+            for (var n = 0; n < chunk.BuildingContext.SpriteBlocks.Count; n++)
+            {
+                var flatIndex = chunk.BuildingContext.SpriteBlocks[n];
+                var index = flatIndex.ToIndex(chunk.CurrentHeight);
+
+                var vertexOffset = n * 4;
+                var positionOffset = new Vector3(index.X, index.Y, index.Z);
+                var voxel = chunk.GetVoxel(flatIndex);
+                var definition = VoxelDefinition.DefinitionByType[voxel.Block];
+
+                AddSpriteFace(chunk, FaceBuildInfo.SpriteVertices.Left, positionOffset, voxel,
+                    definition.TextureIndexes.Faces[(byte)Face.Left], vertices, indexes, vertexOffset, n, 0);
+
+                AddSpriteFace(chunk, FaceBuildInfo.SpriteVertices.Right, positionOffset, voxel, 
+                    definition.TextureIndexes.Faces[(byte)Face.Right], vertices, indexes, vertexOffset, n, secondFaceOffset);
+            }
+
+            //return null;
+            return new FaceBuffer(indexes.Length, VertexSprite.Size, Buffer.Create(device, BindFlags.VertexBuffer, vertices), Buffer.Create(device, BindFlags.IndexBuffer, indexes));
+        }
+
+        private static void AddSpriteFace(Chunk chunk, Vector3[] faceOffsetVertices, Vector3 positionOffset, Voxel voxel, Int2 textureIndicies, 
+            VertexSprite[] vertices, ushort[] indexes, int vertexOffset, int vertexIndex, int faceOffset)
+        {
+            for (var m = 0; m < faceOffsetVertices.Length; m++)
+            {
+                var position = faceOffsetVertices[m] + chunk.OffsetVector + positionOffset;
+                var textureOffset = FaceBuildInfo.UvOffsetIndexes[m];
+                vertices[vertexOffset + m + faceOffset * 4] = new VertexSprite(position, textureIndicies.X + textureOffset.X, textureIndicies.Y + textureOffset.Y, voxel.Lightness);
+            }
+
+            var indexOffset = (vertexIndex * 6 * 2) + (faceOffset * 6 *2);
+
+            indexes[indexOffset + 0] = (ushort)(vertexOffset + 0 + faceOffset * 4);
+            indexes[indexOffset + 1] = (ushort)(vertexOffset + 2 + faceOffset * 4);
+            indexes[indexOffset + 2] = (ushort)(vertexOffset + 3 + faceOffset * 4);
+            indexes[indexOffset + 3] = (ushort)(vertexOffset + 0 + faceOffset * 4);
+            indexes[indexOffset + 4] = (ushort)(vertexOffset + 1 + faceOffset * 4);
+            indexes[indexOffset + 5] = (ushort)(vertexOffset + 2 + faceOffset * 4);
+
+            indexes[indexOffset + 6] = (ushort)(vertexOffset +  2 + faceOffset * 4);
+            indexes[indexOffset + 7] = (ushort)(vertexOffset +  1 + faceOffset * 4);
+            indexes[indexOffset + 8] = (ushort)(vertexOffset +  0 + faceOffset * 4);
+            indexes[indexOffset + 9] = (ushort)(vertexOffset +  3 + faceOffset * 4);
+            indexes[indexOffset + 10] = (ushort)(vertexOffset + 2 + faceOffset * 4);
+            indexes[indexOffset + 11] = (ushort)(vertexOffset + 0 + faceOffset * 4);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -273,6 +300,16 @@ namespace AppleCinnamon
                 new[] { TopRigBac, TopRigFro, BotRigFro, BotRigBac },
                 new[] { TopRigFro, TopLefFro, BotLefFro, BotRigFro },
                 new[] { TopLefBac, TopRigBac, BotRigBac, BotLefBac }
+            );
+
+        public static readonly Cube<Vector3[]> SpriteVertices =
+            new(
+                null,
+                null,
+                new[] { TopLefFro, TopRigBac, BotRigBac, BotLefFro },
+                new[] { TopRigFro, TopLefBac, BotLefBac, BotRigFro, },
+                null,
+                null
             );
 
         public static readonly Cube<Int3> FirstAmbientIndexes = new(

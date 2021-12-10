@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using AppleCinnamon.Settings;
 using AppleCinnamon.System;
 
@@ -44,6 +45,9 @@ namespace AppleCinnamon.Pipeline
         Quarter2 = 2,
         Quarter3 = 4,
         Quarter4 = 8,
+
+        Top = 3,
+        Bottom = 12,
         All = 15
     }
 

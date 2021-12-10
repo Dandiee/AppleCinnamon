@@ -109,7 +109,7 @@ namespace AppleCinnamon.Settings
 
         public static readonly VoxelDefinition Leaves = new BlockDefinitionBuilder(2).WithAllSideTexture(4, 8)
             .WithCoverFlags(VisibilityFlag.None)
-            .WithDimFactors(2)
+            .WithDimFactors(4)
             .WithHue(VisibilityFlag.All)
             .WithTransmittanceQuarters(TransmittanceFlags.All)
             .Build();
@@ -128,12 +128,22 @@ namespace AppleCinnamon.Settings
         
 
 
-        public static readonly VoxelDefinition Grass = new BlockDefinitionBuilder(23).WithBottomTexture(2, 0).WithTopTexture(0, 0).WithSideTexture(3, 0).Build();
+        public static readonly VoxelDefinition Grass = new BlockDefinitionBuilder(23).WithBottomTexture(2, 0).WithTopTexture(0, 0).WithSideTexture(3, 0).WithHue(VisibilityFlag.Top).Build();
         public static readonly VoxelDefinition Snow = new BlockDefinitionBuilder(24).WithBottomTexture(2, 0).WithTopTexture(0, 4).WithSideTexture(4, 4).WithHeight(1f).Build();
         public static readonly VoxelDefinition EmitterStone = new BlockDefinitionBuilder(25).WithAllSideTexture(1, 0).AsPermeable().WithLightEmitting(14).Build();
         public static readonly VoxelDefinition Sand = new BlockDefinitionBuilder(26).WithAllSideTexture(2, 1).Build();
         public static readonly VoxelDefinition Wood = new BlockDefinitionBuilder(27).WithSideTexture(4, 1).WithTopTexture(5, 1).WithTopTexture(5, 1).Build();
-        //public static readonly VoxelDefinition Snow = new BlockDefinitionBuilder(4).WithAllSideTexture(2, 4).WithSize(1, 0.2f, 1).WithTranslation(0, -0.4f, 0).WithTransmittance(true, true, true).AsPermeable().Build();
+        public static readonly VoxelDefinition Weed = new BlockDefinitionBuilder(28).WithAllSideTexture(14, 5)
+            .WithSize(.6f, .8f, .6f).AsSprite().Build();
+        public static readonly VoxelDefinition Flower = new BlockDefinitionBuilder(29)
+            .WithAllSideTexture(12, 0).WithSize(.6f, .8f, .6f).AsSprite().Build();
+        
+        public static readonly VoxelDefinition SlabBottom = new BlockDefinitionBuilder(30)
+            .WithAllSideTexture(1, 0)
+            .WithDimFactors(1)
+            .WithTransmittanceQuarters(TransmittanceFlags.Top)
+            //.WithSize(1, 0.5f, 1)
+            .Build();
 
 
 
@@ -230,6 +240,11 @@ namespace AppleCinnamon.Settings
         {
             _isSprite = true;
             _isBlock = false;
+            _isPermeable = true;
+            WithTransmittanceQuarters(TransmittanceFlags.All);
+            WithCoverFlags(VisibilityFlag.None);
+            WithDimFactors(1);
+
             return this;
         }
 

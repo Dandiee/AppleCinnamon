@@ -28,6 +28,30 @@ namespace AppleCinnamon.Vertices
 
     }
 
+    public struct VertexSprite
+    {
+        public const int Size = 16;
+
+        public static readonly InputElement[] InputElements =
+        {
+            new("POSITION", 0, Format.R32G32B32_Float, 0, 0), //0
+            new("VISIBILITY", 0, Format.R32_UInt, 12, 0) //3+2
+        };
+
+        public VertexSprite(Vector3 position, int u, int v, byte baseLight)
+        {
+            Position = position; // 32
+            Color = 0;
+            Color |= (uint)(u << 0); // 4 bits
+            Color |= (uint)(v << 4); // 4 bits
+            Color |= (uint)(baseLight << 8);
+        }
+
+        public Vector3 Position;
+        public uint Color;
+
+    }
+
     public struct VertexBox
     {
         public const int Size = 36;

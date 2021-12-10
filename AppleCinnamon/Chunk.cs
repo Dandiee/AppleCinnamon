@@ -24,9 +24,9 @@ namespace AppleCinnamon
         public int CurrentHeight;
 
         public ChunkBuffer ChunkBuffer;
-        public ChunkBuffer TransparentBlockBuffer;
 
         private FaceBuffer _waterBuffer;
+        private FaceBuffer _spriteBuffer;
         public int VisibleFacesCount { get; set; }
 
 
@@ -203,7 +203,7 @@ namespace AppleCinnamon
             UpdateBoundingBox();
         }
 
-        public void SetBuffers(FaceBuffer waterBuffer)
+        public void SetBuffers(FaceBuffer waterBuffer, FaceBuffer spriteBuffer)
         {
 
             if (_waterBuffer != null)
@@ -219,6 +219,21 @@ namespace AppleCinnamon
             }
 
             _waterBuffer = waterBuffer;
+
+
+            if (_spriteBuffer != null)
+            {
+                if (!_spriteBuffer.IndexBuffer.IsDisposed)
+                {
+                    _spriteBuffer.IndexBuffer?.Dispose();
+                }
+                if (!_spriteBuffer.VertexBuffer.IsDisposed)
+                {
+                    _spriteBuffer.VertexBuffer?.Dispose();
+                }
+            }
+
+            _spriteBuffer = spriteBuffer;
         }
 
 
@@ -310,6 +325,16 @@ namespace AppleCinnamon
                 device.ImmediateContext.InputAssembler.SetVertexBuffers(0, _waterBuffer.Binding);
                 device.ImmediateContext.InputAssembler.SetIndexBuffer(_waterBuffer.IndexBuffer, Format.R16_UInt, 0);
                 device.ImmediateContext.DrawIndexed(_waterBuffer.IndexCount, 0, 0);
+            }
+        }
+
+        public void DrawSprite(Device device)
+        {
+            if (_spriteBuffer != null && _spriteBuffer.IndexCount > 0)
+            {
+                device.ImmediateContext.InputAssembler.SetVertexBuffers(0, _spriteBuffer.Binding);
+                device.ImmediateContext.InputAssembler.SetIndexBuffer(_spriteBuffer.IndexBuffer, Format.R16_UInt, 0);
+                device.ImmediateContext.DrawIndexed(_spriteBuffer.IndexCount, 0, 0);
             }
         }
     }

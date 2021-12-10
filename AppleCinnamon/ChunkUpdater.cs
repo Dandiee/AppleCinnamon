@@ -142,6 +142,7 @@ namespace AppleCinnamon
                 chunk.SetVoxel(flatIndex, newVoxel);
 
                 UpdateVisibilityFlags(chunk, oldVoxel, newVoxel, address.Value.RelativeVoxelIndex);
+                UpdateSprites(chunk, oldVoxel, newVoxel, address.Value.RelativeVoxelIndex);
                 _lightUpdater.UpdateLighting(chunk, address.Value.RelativeVoxelIndex, oldVoxel, newVoxel);
                 _chunkBuilder.BuildChunk(_graphics.Device, chunk);
 
@@ -161,6 +162,21 @@ namespace AppleCinnamon
             }
         }
 
+        private void UpdateSprites(Chunk chunk, Voxel oldVoxel, Voxel newVoxel, Int3 relativeIndex)
+        {
+            var oldDefinition = VoxelDefinition.DefinitionByType[oldVoxel.Block];
+            var newDefinition = VoxelDefinition.DefinitionByType[newVoxel.Block];
+            var flatIndex = relativeIndex.ToFlatIndex(chunk.CurrentHeight);
+
+            if (oldDefinition.IsSprite && !newDefinition.IsSprite)
+            {
+                chunk.BuildingContext.SpriteBlocks.Remove(flatIndex);
+            }
+            else if (!oldDefinition.IsSprite && newDefinition.IsSprite)
+            {
+                chunk.BuildingContext.SpriteBlocks.Add(flatIndex);
+            }
+        }
 
         private void UpdateVisibilityFlags(Chunk chunk, Voxel oldVoxel, Voxel newVoxel, Int3 relativeIndex)
         {

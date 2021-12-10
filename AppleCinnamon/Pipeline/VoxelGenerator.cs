@@ -70,11 +70,32 @@ namespace AppleCinnamon.Pipeline
                         chunk.TopMostWaterVoxels.Add(Help.GetFlatIndex(i, 99, k, currentHeight));
                     }
 
+
+                    var isSnow = height > (128 + _random.Next(5));
+
                     voxels[Help.GetFlatIndex(i, height - 1, k, currentHeight)] =
-                        new Voxel(
-                            height > (128 + _random.Next(5))
-                                ? VoxelDefinition.Snow.Type
-                                : VoxelDefinition.Grass.Type, 0);
+                        isSnow
+                            ? new Voxel(VoxelDefinition.Snow.Type, 0)
+                            : new Voxel(VoxelDefinition.Grass.Type, 0, (byte) _random.Next(1, 9));
+
+                    if (!isSnow && _random.Next(5) == 0)
+                    {
+                        var flatIndex = Help.GetFlatIndex(i, height, k, currentHeight);
+
+                        var isFlower = _random.Next() % 2 == 0;
+                        var targetType = isFlower ? VoxelDefinition.SlabBottom : VoxelDefinition.Weed;
+
+                        voxels[flatIndex] = new Voxel(targetType.Type, 0);
+                        if (targetType.IsSprite)
+                        {
+                            chunk.BuildingContext.SpriteBlocks.Add(flatIndex);
+                        }
+                    }
+
+                        // new Voxel(
+                        //     height > (128 + _random.Next(5))
+                        //         ? VoxelDefinition.Snow.Type
+                        //         : VoxelDefinition.Grass.Type, 0);
 
                     // voxels[i + Chunk.SizeXy * (height + Chunk.Height * k)] = new Voxel(4, 0);
                 }
