@@ -102,7 +102,7 @@ namespace AppleCinnamon.Pipeline
                 }
             }
 
-            LocalLightPropagationService.InitializeLocalLight(targetChunk, queue);
+            LightingService.LocalPropagate(targetChunk, queue);
         }
     }
 }
