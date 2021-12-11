@@ -95,12 +95,9 @@ namespace AppleCinnamon
                 }
             }
 
-            BuildingContext.VisibilityFlags =
-                BuildingContext.VisibilityFlags.ToDictionary(kvp => kvp.Key.ToIndex(CurrentHeight).ToFlatIndex(expectedHeight),
-                    kvp => kvp.Value);
-
-            TopMostWaterVoxels = TopMostWaterVoxels.Select(s => s.ToIndex(CurrentHeight).ToFlatIndex(expectedHeight))
-                .ToList();
+            BuildingContext.VisibilityFlags = BuildingContext.VisibilityFlags.ToDictionary(kvp => kvp.Key.ToIndex(CurrentHeight).ToFlatIndex(expectedHeight),kvp => kvp.Value);
+            TopMostWaterVoxels = TopMostWaterVoxels.Select(s => s.ToIndex(CurrentHeight).ToFlatIndex(expectedHeight)).ToList();
+            BuildingContext.SpriteBlocks = BuildingContext.SpriteBlocks.Select(s => s.ToIndex(CurrentHeight).ToFlatIndex(expectedHeight)).ToList();
             sw.Stop();
 
 

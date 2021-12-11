@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 
@@ -6,7 +7,7 @@ namespace AppleCinnamon.Pipeline.Context
 {
     public abstract class PipelineBlock
     {
-        public static readonly IDictionary<Type, long> ElapsedTimes = new Dictionary<Type, long>();
+        public static readonly ConcurrentDictionary<Type, long> ElapsedTimes = new ();
     }
 
     public abstract class PipelineBlock<TInput, TOutput> : PipelineBlock

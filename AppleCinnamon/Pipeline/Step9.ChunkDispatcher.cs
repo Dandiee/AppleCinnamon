@@ -12,16 +12,11 @@ namespace AppleCinnamon.Pipeline
     public sealed class ChunkDispatcher : PipelineBlock<Chunk, Chunk>
     {
         private readonly ChunkBuilder _chunkBuilder;
-        private readonly ConcurrentDictionary<Int2, Chunk> _chunks;
-        private readonly HashSet<Int2> _dispatchedChunks;
         
         public ChunkDispatcher(Device device)
         {
             _chunkBuilder = new ChunkBuilder(device);
-            _chunks = new ConcurrentDictionary<Int2, Chunk>();
-            _dispatchedChunks = new HashSet<Int2>();
         }
-
 
         public override Chunk Process(Chunk chunk)
         {

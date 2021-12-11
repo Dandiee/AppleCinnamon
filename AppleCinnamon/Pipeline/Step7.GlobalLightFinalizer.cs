@@ -99,7 +99,5 @@ namespace AppleCinnamon.Pipeline
 
             LightingService.LocalPropagate(targetChunk, queue);
         }
-
-        
     }
 }

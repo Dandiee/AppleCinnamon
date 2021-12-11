@@ -164,7 +164,7 @@ namespace AppleCinnamon.Pipeline
             return chunk;
         }
 
-        //[InlineMethod.Inline]
+        [InlineMethod.Inline]
         private void BuildHorizontalFace(bool isInChunk, int neighborFlatIndex, Chunk chunk, VoxelDefinition definition,
             int flatIndex, ref VisibilityFlag visibilityFlag, ref byte voxelLight, FaceBuildingContext context)
         {

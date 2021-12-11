@@ -18,14 +18,12 @@ namespace AppleCinnamon.Pipeline
             ProcessSide(chunk, frontChunk, chunk.BuildingContext.Front);
             ProcessSide(chunk, backChunk, chunk.BuildingContext.Back);
             
-
-
             CleanUpMemory(chunk);
             return chunk;
         }
 
 
-        //[InlineMethod.Inline]
+        [InlineMethod.Inline]
         private static void ProcessSide(Chunk chunk, Chunk neighborChunk, FaceBuildingContext context)
         {
             foreach (var flatIndex in context.PendingVoxels)
@@ -57,7 +55,5 @@ namespace AppleCinnamon.Pipeline
                 face.PendingVoxels.Clear();
             }
         }
-
-        
     }
 }
