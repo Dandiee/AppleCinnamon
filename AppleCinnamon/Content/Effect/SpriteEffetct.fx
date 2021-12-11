@@ -7,8 +7,15 @@ float3 EyePosition;
 
 Texture2D Textures;
 
-SamplerState SampleType;
-
+SamplerState SS
+{
+	Texture = <Textures>;
+	AddressU = Clamp;
+	AddressV = Clamp;
+	AddressW = Clamp;
+	Filter = MIN_MAG_MIP_POINT;
+	MaxAnisotropy = 16;
+};
 
 //float4(0.880,0.675,1,1),
 struct VertexShaderInput
@@ -49,7 +56,7 @@ VertexShaderOutput VertexShaderFunction(VertexShaderInput input)
 
 float4 PixelShaderFunction(VertexShaderOutput input) : SV_Target
 {
-	float4 textureColor = Textures.Sample(SampleType, input.TexCoords) * input.AmbientOcclusion;
+	float4 textureColor = Textures.Sample(SS, input.TexCoords) * input.AmbientOcclusion;
 	clip(textureColor.a == 0 ? -1 : 1);
 	return textureColor;
 }

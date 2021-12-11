@@ -19,9 +19,9 @@ namespace AppleCinnamon.Collision
             Direction = direction;
             Definition = definition;
             Voxel = voxel;
-            var position = absoluteVoxelIndex.ToVector3();
-            //var size = definition.Size / 2f * 1.01f;
-            var size = 1 / 2f * 1.01f;
+            var position = absoluteVoxelIndex.ToVector3() + definition.Offset;
+            
+            var size = definition.Size/2 + new Vector3(.005f);
             BoundingBox = new BoundingBox(position - size, position + size);
         }
     }

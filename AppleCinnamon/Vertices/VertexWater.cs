@@ -73,6 +73,20 @@ namespace AppleCinnamon.Vertices
             Color = color;
         }
 
+        public VertexBox(ref BoundingBox bb, Color3 color)
+        {
+            Minimum = bb.Minimum;
+            Maximum = bb.Maximum;
+            Color = color;
+        }
+
+        public VertexBox(BoundingBox bb, Color3 color)
+        {
+            Minimum = bb.Minimum;
+            Maximum = bb.Maximum;
+            Color = color;
+        }
+
         public Vector3 Minimum;
         public Vector3 Maximum;
         public Color3 Color;

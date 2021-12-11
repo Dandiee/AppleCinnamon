@@ -78,7 +78,7 @@ namespace AppleCinnamon
             IsInAir = true;
         }
 
-        public void UpdateCurrentCursor(BoxDrawer boxDrawer, ChunkManager chunkManager)
+        public void UpdateCurrentCursor(ChunkManager chunkManager)
         {
             CurrentCursor = CollisionHelper.GetCurrentSelection(new Ray(Position.ToVector3(), LookAt.ToVector3()), chunkManager);
 
@@ -92,7 +92,7 @@ namespace AppleCinnamon
             }
         }
 
-        public void Update(GameTime gameTime, ChunkManager chunkManager, BoxDrawer boxDrawer)
+        public void Update(GameTime gameTime, ChunkManager chunkManager)
         {
             if (!chunkManager.IsInitialized)
             {
@@ -106,7 +106,7 @@ namespace AppleCinnamon
             UpdateMove(gameTime, chunkManager);
             UpdateMatrices();
 
-            UpdateCurrentCursor(boxDrawer, chunkManager);
+            UpdateCurrentCursor(chunkManager);
             HandleDefaultInputs(chunkManager);
 
             _lastKeyboardState = _currentKeyboardState;

@@ -244,22 +244,7 @@ namespace AppleCinnamon
                     .Where(chunk => !Game.IsViewFrustumCullingEnabled || camera.BoundingFrustum.Contains(ref chunk.Value.BoundingBox) != ContainmentType.Disjoint)
                     .ToList();
 
-                if (Game.ShowChunkBoundingBoxes)
-                {
-                    var vertices = chunksToRender
-                        .Select(s => new VertexBox(s.Value.BoundingBox.Minimum, s.Value.BoundingBox.Maximum, Color.Red.ToColor3()))
-                        .ToArray();
-
-                    var vertexBuffer = SharpDX.Direct3D11.Buffer.Create(_graphics.Device, BindFlags.VertexBuffer, vertices);
-                    var binding = new VertexBufferBinding(vertexBuffer, VertexBox.Size, 0);
-                    
-                    _graphics.Device.ImmediateContext.InputAssembler.InputLayout = _boxInputLayout;
-                    _graphics.Device.ImmediateContext.InputAssembler.PrimitiveTopology = PrimitiveTopology.LineStrip;
-                    _boxEffectPass.Apply(_graphics.Device.ImmediateContext);
-                    _graphics.Device.ImmediateContext.InputAssembler.SetVertexBuffers(0, binding);
-                    _graphics.Device.ImmediateContext.Draw(vertices.Length, 0);
-                    _graphics.Device.ImmediateContext.GeometryShader.Set(null);
-                }
+                
 
                 if (Game.RenderSolid)
                 {
@@ -317,8 +302,35 @@ namespace AppleCinnamon
                     _graphics.Device.ImmediateContext.OutputMerger.SetBlendState(null);
 
                 }
+
+
+                var boxVertices = new VertexBox[(camera.CurrentCursor != null ? 1 : 0) + (Game.ShowChunkBoundingBoxes ? chunksToRender.Count : 0)];
+                if (camera.CurrentCursor != null)
+                {
+                    boxVertices[^1] = new VertexBox(camera.CurrentCursor.BoundingBox, new Color3(0.713f, 0.125f, 0.878f));
+                }
+
+                if (Game.ShowChunkBoundingBoxes)
+                {
+                    for (var i = 0; i < chunksToRender.Count; i++)
+                    {
+                        boxVertices[i] = new VertexBox(ref chunksToRender[i].Value.BoundingBox, new Color3(0.713f, 0.125f, 0.878f));
+                    }
+                }
+
+                if (boxVertices.Length > 0)
+                {
+                    var vertexBuffer = SharpDX.Direct3D11.Buffer.Create(_graphics.Device, BindFlags.VertexBuffer, boxVertices);
+                    var binding = new VertexBufferBinding(vertexBuffer, VertexBox.Size, 0);
+                    _graphics.Device.ImmediateContext.InputAssembler.InputLayout = _boxInputLayout;
+                    _graphics.Device.ImmediateContext.InputAssembler.PrimitiveTopology = PrimitiveTopology.PointList;
+                    _boxEffectPass.Apply(_graphics.Device.ImmediateContext);
+                    _graphics.Device.ImmediateContext.InputAssembler.SetVertexBuffers(0, binding);
+                    _graphics.Device.ImmediateContext.Draw(boxVertices.Length, 0);
+                    _graphics.Device.ImmediateContext.GeometryShader.Set(null);
+                }
             }
-        }
+        } // 182 32 224 0.713 0.125 0.878
 
         private static readonly IReadOnlyCollection<Int2> Directions = new[]
         {

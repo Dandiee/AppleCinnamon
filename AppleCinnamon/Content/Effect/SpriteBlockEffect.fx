@@ -7,7 +7,6 @@ float4x4 Projection;
 struct VertexShaderInput
 {
     float4 Position : POSITION0;
-
     // TODO: add input channels such as texture
     // coordinates and vertex colors here.
 };

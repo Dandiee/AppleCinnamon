@@ -21,7 +21,6 @@ namespace AppleCinnamon
 
         private readonly ChunkManager _chunkManager;
         private readonly Camera _camera;
-        private readonly BoxDrawer _boxDrawer;
         private readonly DebugLayout _debugLayout;
 
         private readonly Graphics _graphics;
@@ -40,7 +39,6 @@ namespace AppleCinnamon
             _graphics = new Graphics();
 
             _crosshair = new Crosshair(_graphics);
-            _boxDrawer = new BoxDrawer(_graphics);
             _camera = new Camera(_graphics);
             _chunkManager = new ChunkManager(_graphics);
             _debugLayout = new DebugLayout(_graphics);
@@ -78,7 +76,6 @@ namespace AppleCinnamon
                         _chunkManager.Draw(_camera);
                     }
 
-                    _boxDrawer.Draw(_chunkManager, _camera);
                     _crosshair.Draw();
                     _debugLayout.Draw(_chunkManager, _camera, this);
                 });
@@ -94,8 +91,7 @@ namespace AppleCinnamon
 
         private void Update(GameTime gameTime)
         {
-            _boxDrawer.Update(_camera);
-            _camera.Update(gameTime, _chunkManager, _boxDrawer);
+            _camera.Update(gameTime, _chunkManager);
             if (Game.Debug)
             {
 

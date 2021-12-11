@@ -137,7 +137,7 @@ namespace AppleCinnamon.Settings
         public static readonly VoxelDefinition Sand = new BlockDefinitionBuilder(26).WithAllSideTexture(2, 1).Build();
         public static readonly VoxelDefinition Wood = new BlockDefinitionBuilder(27).WithSideTexture(4, 1).WithTopTexture(5, 1).WithTopTexture(5, 1).Build();
         public static readonly VoxelDefinition Weed = new BlockDefinitionBuilder(28).WithAllSideTexture(14, 5)
-            .WithSize(.6f, .8f, .6f).AsSprite().Build();
+            .WithSize(1, .8f, 1).AsSprite().Build();
         public static readonly VoxelDefinition Flower = new BlockDefinitionBuilder(29)
             .WithAllSideTexture(12, 0).WithSize(.6f, .8f, .6f).AsSprite().Build();
         
