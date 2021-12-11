@@ -228,8 +228,9 @@ namespace AppleCinnamon
                 }
             }
             Interlocked.Increment(ref _finalizedChunks);
-            var root = Game.ViewDistance * 2 + 1;
-            if (!IsInitialized && _finalizedChunks == root * root)
+            var root = (Game.ViewDistance - 1) * 2;
+
+            if (!IsInitialized && _finalizedChunks == root)
             {
                 BootTime = DateTime.Now - StartUpTime;
 
@@ -238,7 +239,7 @@ namespace AppleCinnamon
                 TotalVisibleVoxels = Chunks.Values.Sum(s => s.BuildingContext.VisibilityFlags.Count);
 
                 _pipeline.Complete();
-                _pipeline = _pipelineProvider.CreatePipeline(Math.Max(1, Environment.ProcessorCount / 2), Finalize);
+                _pipeline = _pipelineProvider.CreatePipeline(1, Finalize);
             }
         }
 

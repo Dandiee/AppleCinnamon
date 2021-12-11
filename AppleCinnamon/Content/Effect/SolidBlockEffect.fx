@@ -15,7 +15,7 @@ SamplerState SS
 	AddressU = Clamp;
 	AddressV = Clamp;
 	AddressW = Clamp;
-	Filter = MIN_MAG_MIP_POINT;
+	Filter = MIN_MAG_MIP_POINT; 
 	MaxAnisotropy = 16;
 };
 

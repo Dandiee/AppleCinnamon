@@ -15,6 +15,8 @@ namespace AppleCinnamon.Pipeline
         private readonly FullScanner _fullScanner;
         private readonly GlobalVisibilityFinalizer _globalVisibilityFinalizer;
         private readonly LocalSunlightInitializer _localSunlightInitializer;
+        private readonly BuildPool _buildPool;
+
 
 
         public PipelineProvider()
@@ -27,6 +29,7 @@ namespace AppleCinnamon.Pipeline
             _fullScanner = new FullScanner();
             _globalVisibilityFinalizer = new GlobalVisibilityFinalizer();
             _localSunlightInitializer = new LocalSunlightInitializer();
+            _buildPool = new BuildPool();
         }
 
         public TransformBlock<DataflowContext<Int2>, DataflowContext<Chunk>> CreatePipeline(int maxDegreeOfParallelism, Action<DataflowContext<Chunk>> successCallback)
@@ -44,6 +47,7 @@ namespace AppleCinnamon.Pipeline
             var chunkPool = new TransformManyBlock<DataflowContext<Chunk>, DataflowContext<Chunk>>(_chunkPool.Process, dataflowOptions);
             var globalVisibility = new TransformBlock<DataflowContext<Chunk>, DataflowContext<Chunk>>(_globalVisibilityFinalizer.Process, dataflowOptions);
             var lightFinalizer = new TransformBlock<DataflowContext<Chunk>, DataflowContext<Chunk>>(_lightFinalizer.Finalize, dataflowOptions);
+            var buildPool = new TransformManyBlock<DataflowContext<Chunk>, DataflowContext<Chunk>>(_buildPool.Process, dataflowOptions);
             var dispatcher = new TransformBlock<DataflowContext<Chunk>, DataflowContext<Chunk>>(_chunkDispatcher.Dispatch, dataflowOptions);
             var finalizer = new ActionBlock<DataflowContext<Chunk>>(successCallback, dataflowOptions);
 
@@ -53,7 +57,8 @@ namespace AppleCinnamon.Pipeline
             localLightPropagation.LinkTo(chunkPool);
             chunkPool.LinkTo(globalVisibility);
             globalVisibility.LinkTo(lightFinalizer);
-            lightFinalizer.LinkTo(dispatcher);
+            lightFinalizer.LinkTo(buildPool);
+            buildPool.LinkTo(dispatcher);
             dispatcher.LinkTo(finalizer);
 
             return pipeline;

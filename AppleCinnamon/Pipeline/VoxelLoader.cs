@@ -13,8 +13,8 @@ namespace AppleCinnamon.Pipeline
 
         public Chunk GetVoxels(Int2 chunkIndex)
         {
-            return _voxelGenerator.GenerateVoxelsMock(chunkIndex);
-            //return _voxelGenerator.GenerateVoxels3D(chunkIndex);
+            //return _voxelGenerator.GenerateVoxelsMock(chunkIndex);
+            return _voxelGenerator.GenerateVoxels3D(chunkIndex);
             //return _voxelGenerator.GenerateVoxels(chunkIndex);
         }
     }

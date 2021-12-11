@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using AppleCinnamon.Helper;
 using AppleCinnamon.Settings;
@@ -13,12 +14,14 @@ namespace AppleCinnamon.Pipeline
             Int3.UnitY, -Int3.UnitY, -Int3.UnitX, Int3.UnitX, -Int3.UnitZ, Int3.UnitZ
         };
 
+        public static HashSet<Int2> processedChunkIndexes = new HashSet<Int2>();
 
         public DataflowContext<Chunk> InitializeLocalLight(DataflowContext<Chunk> context)
         {
             var sw = Stopwatch.StartNew();
             var chunk = context.Payload;
-
+            if (processedChunkIndexes.Contains(chunk.ChunkIndex)) throw new Exception();
+            else processedChunkIndexes.Add(chunk.ChunkIndex);
             InitializeLocalLight(chunk, chunk.BuildingContext.LightPropagationVoxels);
 
             //while (chunk.BuildingContext.LightPropagationVoxels.Count > 0)

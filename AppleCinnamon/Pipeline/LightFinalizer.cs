@@ -1,126 +1,108 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
+using System.Windows.Forms;
 using AppleCinnamon.Helper;
 using AppleCinnamon.Settings;
+using SharpDX;
+using Help = AppleCinnamon.Helper.Help;
 
 namespace AppleCinnamon.Pipeline
 {
     public sealed class LightFinalizer
     {
-        private static readonly Int2[] Corners = { new(-1, -1), new(-1, +1), new(+1, -1), new(+1, +1) };
-        private static readonly Int2[] Edges = {Int2.UniX,-Int2.UniX, Int2.UniY, -Int2.UniY };
-
-        private static readonly IDictionary<Int2, Int2[]> EdgeMapping = new Dictionary<Int2, Int2[]>
-        {
-            [Int2.UniX] = new[] { new Int2(Chunk.SizeXy - 1, 0), new Int2(0, 0) },
-            [-Int2.UniX] = new[] { new Int2(0, 0), new Int2(Chunk.SizeXy - 1, 0) },
-            [Int2.UniY] = new[] { new Int2(0, Chunk.SizeXy - 1), new Int2(0, 0) },
-            [-Int2.UniY] = new[] { new Int2(0, 0), new Int2(0, Chunk.SizeXy - 1) }
-        };
-
-        private static readonly IDictionary<Int2, Face> DirFaceMapping = new Dictionary<Int2, Face>
-        {
-            [Int2.UniX] = Face.Left,
-            [-Int2.UniX] = Face.Right,
-            [Int2.UniY] = Face.Front,
-            [-Int2.UniY] = Face.Back
-        };
+        private static readonly IReadOnlyDictionary<int, Face[]> CornerMapping =
+            new Dictionary<int, Face[]>
+            {
+                [Help.GetChunkFlatIndex(-1, -1)] = new []{ Face.Right, Face.Back },
+                [Help.GetChunkFlatIndex( 1, -1)] = new []{ Face.Left, Face.Back },
+                [Help.GetChunkFlatIndex( 1,  1)] = new []{ Face.Left, Face.Front },
+                [Help.GetChunkFlatIndex(-1,  1)] = new []{ Face.Right, Face.Front },
+            };
 
         public DataflowContext<Chunk> Finalize(DataflowContext<Chunk> context)
         {
             var sw = Stopwatch.StartNew();
             var chunk = context.Payload;
 
-            foreach (var corner in Corners)
+            foreach (var corner in CornerMapping)
             {
-                var cornerChunk = chunk.neighbors2[Help.GetChunkFlatIndex(corner)];
-                ProcessEdge(cornerChunk, chunk.neighbors2[Help.GetChunkFlatIndex(corner.X, 0)]);
-                ProcessEdge(cornerChunk, chunk.neighbors2[Help.GetChunkFlatIndex(0, corner.Y)]);
+                var cornerChunk = chunk.neighbors2[corner.Key];
+                EdgeSolver(cornerChunk, EdgePropogation.All[(byte)corner.Value[0]]);
+                EdgeSolver(cornerChunk, EdgePropogation.All[(byte)corner.Value[1]]);
             }
 
-            foreach (var edge in Edges)
+            foreach (var direction in EdgePropogation.All.Skip(2))
             {
-                var edgeChunk = chunk.neighbors2[Help.GetChunkFlatIndex(edge)];
-                var offset = new Int2(Math.Sign(edge.Y), Math.Sign(edge.X));
-                
-                ProcessEdge(chunk.neighbors2[Help.GetChunkFlatIndex(edge + offset)], edgeChunk);
-                ProcessEdge(chunk.neighbors2[Help.GetChunkFlatIndex(edge - offset)], edgeChunk);
-                ProcessEdge(edgeChunk, chunk);
+                EdgeSolver(chunk, direction);
             }
 
             sw.Stop();
             return new DataflowContext<Chunk>(context, context.Payload, sw.ElapsedMilliseconds, nameof(LightFinalizer));
         }
 
-        private void ProcessEdge(Chunk sourceChunk, Chunk targetChunk)
+        private struct EdgePropogation
         {
-            var dir = targetChunk.ChunkIndex - sourceChunk.ChunkIndex;
+            public static readonly EdgePropogation[] All =
+            {
+                new(), new(),
+                new(Face.Left, Help.GetChunkFlatIndex(-1, 0), new Int3(0, 1, 1), new Int3(31,0,0), new Int3(0, 0, 0)),
+                new(Face.Right, Help.GetChunkFlatIndex(1, 0), new Int3(0, 1, 1), new Int3(0, 0, 0), new Int3(31, 0, 0)),
+                new(Face.Front, Help.GetChunkFlatIndex(0, -1), new Int3(1, 1, 0), new Int3(0, 0, 31), new Int3(0, 0, 0)),
+                new(Face.Back, Help.GetChunkFlatIndex(0, 1), new Int3(1, 1, 0), new Int3(0, 0, 0), new Int3(0, 0, 31)),
+            };
 
-            var step = new Int2(Math.Abs(Math.Sign(dir.Y)), Math.Abs(Math.Sign(dir.X)));
-            var map = EdgeMapping[dir];
+            public readonly Face TargetToSourceDirection;
+            public readonly int RelativeSourceChunkIndex;
+            public readonly Int3 DirectionMask;
+            public readonly Int3 SourceOffset;
+            public readonly Int3 TargetOffset;
 
-            var source = map[0];
-            var target = map[1];
+            public EdgePropogation(Face targetToSourceDirection, int relativeSourceChunkIndex, Int3 directionMask, Int3 sourceOffset, Int3 targetOffset)
+            {
+                TargetToSourceDirection = targetToSourceDirection;
+                RelativeSourceChunkIndex = relativeSourceChunkIndex;
+                DirectionMask = directionMask;
+                SourceOffset = sourceOffset;
+                TargetOffset = targetOffset;
+            }
+        }
+
+        private void EdgeSolver(Chunk targetChunk, EdgePropogation context)
+        {
+            var sourceChunk = targetChunk.neighbors2[context.RelativeSourceChunkIndex];
 
             var height = Math.Min(sourceChunk.CurrentHeight, targetChunk.CurrentHeight);
 
-            for (var n = 0; n < Chunk.SizeXy; n++)
+            var queue = new Queue<int>();
+
+            for (var j = height - 1; j > 0; j--)
             {
-                for (var j = height - 1; j > 0; j--)
+                for (var h = 0; h < Chunk.SizeXy; h++)
                 {
+                    var indexMask = new Int3(h * context.DirectionMask.X, j, h * context.DirectionMask.Z);
 
-                    if (sourceChunk.ChunkIndex == new Int2(0, 0) && j == 2)
-                    {
-
-                    }
-
-                    // this whole thing is an educated first guess
-                    var sourceIndexX = source.X + step.X * n;
-                    var sourceIndexY = source.Y + step.Y * n;
-                    var sourceFlatIndex = Help.GetFlatIndex(sourceIndexX, j, sourceIndexY, sourceChunk.CurrentHeight);
-                    var sourceVoxel = sourceChunk.GetVoxelNoInline(sourceFlatIndex);
+                    var sourceIndex = indexMask + context.SourceOffset;
+                    var sourceFlatIndex = sourceIndex.ToFlatIndex(sourceChunk.CurrentHeight);
+                    var sourceVoxel = sourceChunk.Voxels[sourceFlatIndex];
                     var sourceDefinition = VoxelDefinition.DefinitionByType[sourceVoxel.Block];
-                    if (sourceDefinition.IsOpaque)
-                    {
-                        continue;
-                    }
 
-                    var targetIndexX = target.X + step.X * n;
-                    var targetIndexY = target.Y + step.Y * n;
-                    var targetFlatIndex = Help.GetFlatIndex(targetIndexX, j, targetIndexY, targetChunk.CurrentHeight);
-                    var targetVoxel = targetChunk.GetVoxelNoInline(targetFlatIndex);
+                    var targetIndex = indexMask + context.TargetOffset;
+                    var targetFlatIndex = targetIndex.ToFlatIndex(targetChunk.CurrentHeight);
+                    var targetVoxel = targetChunk.Voxels[targetFlatIndex];
                     var targetDefinition = VoxelDefinition.DefinitionByType[targetVoxel.Block];
-                    if (targetDefinition.IsOpaque)
+
+                    var brightnessLoss = VoxelDefinition.GetBrightnessLoss(sourceDefinition, targetDefinition, context.TargetToSourceDirection);
+                    if (brightnessLoss != 0 && targetVoxel.Lightness < sourceVoxel.Lightness - brightnessLoss)
                     {
-                        continue;
+                        targetChunk.SetVoxelNoInline(targetFlatIndex, targetVoxel.SetLight((byte)(sourceVoxel.Lightness - brightnessLoss)));
+                        queue.Enqueue(targetFlatIndex);
                     }
-
-
-                    var sourceToTargetDir = targetChunk.ChunkIndex - sourceChunk.ChunkIndex;
-                    var sourceDirection = DirFaceMapping[sourceToTargetDir];
-                    var sourceToTargetDrop = VoxelDefinition.GetBrightnessLoss(sourceDefinition, targetDefinition, sourceDirection);
-                    if (targetVoxel.Lightness < sourceVoxel.Lightness - sourceToTargetDrop)
-                    {
-                        var newTargetVoxel = targetVoxel.SetLight((byte)(sourceVoxel.Lightness - sourceToTargetDrop));
-                        targetChunk.SetVoxelNoInline(targetFlatIndex, newTargetVoxel);
-                        //PropagateLight(new PropagateLightRecord(targetChunk, targetIndexX, j, targetIndexY, targetDefinition, newTargetVoxel));
-                        LocalLightPropagationService.InitializeLocalLight(targetChunk, targetFlatIndex);
-                    }
-
-
-                    //var targetToSourceDir = sourceChunk.ChunkIndex - targetChunk.ChunkIndex;
-                    //var targetDirection = DirFaceMapping[targetToSourceDir];
-                    //var targetToSourceDrop = VoxelDefinition.GetBrightnessLoss(targetDefinition, sourceDefinition, targetDirection);
-                    //if (sourceVoxel.Lightness < targetVoxel.Lightness - targetToSourceDrop)
-                    //{
-                    //    var newSourceVoxel = new Voxel(sourceVoxel.Block, (byte)(targetVoxel.Lightness - targetToSourceDrop));
-                    //    sourceChunk.SetVoxelNoInline(sourceFlatIndex, newSourceVoxel);
-                    //    //PropagateLight(new PropagateLightRecord(sourceChunk, sourceIndexX, j, sourceIndexY, sourceDefinition, newSourceVoxel));
-                    //    LocalLightPropagationService.InitializeLocalLight(targetChunk, sourceFlatIndex);
-                    //}
                 }
             }
+
+            LocalLightPropagationService.InitializeLocalLight(targetChunk, queue);
         }
     }
 }

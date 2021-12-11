@@ -179,6 +179,8 @@ namespace AppleCinnamon
             var vertexIndex = offset * 4;
             var indexIndex = offset * 6;
 
+            
+
             // Visit all ambient neighbors
             foreach (var vertexInfo in face.BuildInfo.VerticesInfo)
             {
@@ -192,7 +194,7 @@ namespace AppleCinnamon
 
                 foreach (var ambientIndex in vertexInfo.AmbientOcclusionNeighbors)
                 {
-                    var ambientNeighborVoxel = chunk.GetLocalWithneighbors(relativeIndexX + ambientIndex.X, relativeIndexY + ambientIndex.Y, relativeIndexZ + ambientIndex.Z);
+                    var ambientNeighborVoxel = chunk.GetLocalWithneighbors(relativeIndexX + ambientIndex.X, relativeIndexY + ambientIndex.Y, relativeIndexZ + ambientIndex.Z, out var addr);
                     var ambientNeighborDefinition = VoxelDefinition.DefinitionByType[ambientNeighborVoxel.Block];
 
                     if (!ambientNeighborDefinition.IsBlock)
@@ -206,10 +208,15 @@ namespace AppleCinnamon
                 }
 
                 var hue = (definition.HueFaces & face.Direction) == face.Direction ? voxel.HueIndex : (byte)0;
+                if (chunk.ChunkIndex == new Int2(0, 0) && relativeIndexX == 3 && relativeIndexY == 100 &&
+                    relativeIndexZ == 0)
+                {
+                    Debug.WriteLine($"Lightness: {neighbor.Lightness}; TotalNehLig: {totalNeighborLight}; AmbientNum: {numberOfAmbientNeighbors}");
+                }
 
                 vertices[vertexIndex + vertexInfo.Index] = new VertexSolidBlock(position, textureUv.X + vertexInfo.TextureIndex.X,
-                    textureUv.Y + vertexInfo.TextureIndex.Y, neighbor.Lightness, totalNeighborLight,
-                    numberOfAmbientNeighbors, hue);
+                        textureUv.Y + vertexInfo.TextureIndex.Y, neighbor.Lightness, totalNeighborLight,
+                        numberOfAmbientNeighbors, hue);
             }
 
             indexes[indexIndex] = (ushort)vertexIndex;

@@ -152,13 +152,18 @@ namespace AppleCinnamon.Pipeline
                 for (var k = 0; k < Chunk.SizeXy; k++)
                 {
 
-                    if (chunk.ChunkIndex == new Int2(-1, 0))
+                    if (chunk.ChunkIndex == new Int2(1, 1))
                     {
-                        voxels[Help.GetFlatIndex(i, 3, k, maxHeight)] = new Voxel(VoxelDefinition.Sand.Type, 0);
+                        voxels[Help.GetFlatIndex(i, 4, k, maxHeight)] = new Voxel(VoxelDefinition.Stone.Type, 0);
+                    }
+
+                    if (chunk.ChunkIndex == new Int2(2, 1))
+                    {
+                        voxels[Help.GetFlatIndex(i, 6, k, maxHeight)] = new Voxel(VoxelDefinition.Stone.Type, 0);
                     }
 
 
-                    voxels[Help.GetFlatIndex(i, 1, k, maxHeight)] = new Voxel(VoxelDefinition.Sand.Type, 0);
+                    voxels[Help.GetFlatIndex(i, 1, k, maxHeight)] = new Voxel(VoxelDefinition.Stone.Type, 0);
 
                 }
             }
