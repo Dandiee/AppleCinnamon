@@ -43,7 +43,7 @@ namespace AppleCinnamon
                 ModeDescription = new ModeDescription(RenderForm.ClientSize.Width, RenderForm.ClientSize.Height, new Rational(60, 1), Format.R8G8B8A8_UNorm),
                 IsWindowed = true,
                 OutputHandle = RenderForm.Handle,
-                SampleDescription = new SampleDescription(1, 0),
+                SampleDescription = new SampleDescription(1, 0) ,
                 SwapEffect = SwapEffect.Discard,
                 Usage = Usage.RenderTargetOutput
             }, out var device, out var swapChain);

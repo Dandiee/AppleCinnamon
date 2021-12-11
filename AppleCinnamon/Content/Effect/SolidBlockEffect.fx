@@ -5,9 +5,19 @@ float FogStart = 64;
 float FogEnd = 256;
 float3 EyePosition;
 
+float2 Resolution = float2(1827, 997);
+
 Texture2D Textures;
 
-SamplerState SampleType;
+SamplerState SS
+{
+	Texture = <Textures>;
+	AddressU = Clamp;
+	AddressV = Clamp;
+	AddressW = Clamp;
+	Filter = MIN_MAG_MIP_POINT;
+	MaxAnisotropy = 16;
+};
 
 float4 HueColors[] = 
 {
@@ -50,15 +60,15 @@ VertexShaderOutput VertexShaderFunction(VertexShaderInput input)
     VertexShaderOutput output = (VertexShaderOutput)0;
 	float4 position = float4(input.Position.xyz, 1);
 
-	float u = (input.Asd & 15) * 1.0/16.0;
-	float v = ((input.Asd & 240) >> 4) * 1.0/16.0;
+	float u = (input.Asd & 15) / 16.0;
+	float v = ((input.Asd & 240) >> 4) / 16.0;
 	float l = ((input.Asd & 16128) >> 8) / 60.0f  + 0.2f;
 	float a = 1.0 - (((input.Asd & 49152) >> 14) / 3.0);
 	int hueIndex = ((input.Asd & 3932160) >> 18);
 	float4 hueColor = HueColors[hueIndex];
 
     output.Position = mul(position, WorldViewProjection);
-	output.TexCoords = float2(u, v);
+	output.TexCoords = float2(u, v);// +float2(0.5 / 2048, 0.5 / 2048);
 	output.AmbientOcclusion = l * a;
 	output.FogFactor = ComputeFogFactor(distance(EyePosition.xyz, input.Position.xyz));
 	output.HueColor = hueColor;
@@ -71,7 +81,7 @@ VertexShaderOutput VertexShaderFunction(VertexShaderInput input)
 
 float4 PixelShaderFunction(VertexShaderOutput input) : SV_Target
 {
-	float4 textureColor =  Textures.Sample(SampleType, input.TexCoords) * input.AmbientOcclusion * input.HueColor;
+	float4 textureColor = Textures.Sample(SS, input.TexCoords) * input.AmbientOcclusion * input.HueColor;
 	// transparent solids
 	clip(textureColor.a == 0 ? -1 : 1);
 	float4 finalColor = (1.0 - input.FogFactor) * textureColor + (input.FogFactor) * FogColor;

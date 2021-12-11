@@ -31,22 +31,22 @@ namespace AppleCinnamon.Collision
                 {
                     var voxelDefinition = voxel.Value.GetDefinition();
 
-                    return new VoxelRayCollisionResult(index, -direction, voxelDefinition, voxel.Value);
+                    //return new VoxelRayCollisionResult(index, -direction, voxelDefinition, voxel.Value);
                     
-                    /*if (voxelDefinition.IsUnitSized)
+                    if (voxelDefinition.IsUnitSized)
                     {
                         return new VoxelRayCollisionResult(index, -direction, voxelDefinition, voxel.Value);
                     }
                     else
                     {
                         var voxelPosition = index.ToVector3();
-                        var voxelBoundingBox = new BoundingBox(voxelPosition - voxelDefinition.Size / 2f + voxelDefinition.Translation, voxelPosition + voxelDefinition.Size / 2f + voxelDefinition.Translation);
+                        var voxelBoundingBox = new BoundingBox(voxelPosition - voxelDefinition.Size / 2f + voxelDefinition.Offset, voxelPosition + voxelDefinition.Size / 2f + voxelDefinition.Offset);
                         var currentRay = new Ray(position, ray.Direction);
                         if (voxelBoundingBox.Intersects(ref currentRay))
                         {
                             return new VoxelRayCollisionResult(index, -direction, voxelDefinition, voxel.Value);
                         }
-                    }*/
+                    }
                 }
 
                 var xTarget = index.X + Math.Sign(ray.Direction.X) / 2f;

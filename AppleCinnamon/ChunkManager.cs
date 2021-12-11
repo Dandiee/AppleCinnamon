@@ -14,6 +14,7 @@ using SharpDX.D3DCompiler;
 using SharpDX.Direct3D;
 using SharpDX.Direct3D11;
 using SharpDX.DXGI;
+using SharpDX.Mathematics.Interop;
 using SharpDX.WIC;
 using Vector2 = SharpDX.Vector2;
 using Vector4 = SharpDX.Vector4;
@@ -90,7 +91,7 @@ namespace AppleCinnamon
             QueueChunksByIndex(Int2.Zero);
         }
 
-
+        private SamplerState SS;
 
         private void LoadContent()
         {
@@ -101,6 +102,27 @@ namespace AppleCinnamon
                 new ShaderResourceView(_graphics.Device,
                     TextureLoader.CreateTexture2DFromBitmap(_graphics.Device,
                         TextureLoader.LoadBitmap(new ImagingFactory2(), "Content/Texture/terrain3.png"))));
+            //_graphics.Device.ImmediateContext.PixelShader.SetSampler();
+            SamplerStateDescription description = SamplerStateDescription.Default();
+
+            var asdasdas = new SamplerStateDescription
+            {
+                ComparisonFunction = Comparison.NotEqual,
+                AddressU = TextureAddressMode.Border,
+                AddressV = TextureAddressMode.Clamp,
+                AddressW = TextureAddressMode.Border,
+                BorderColor = new RawColor4(1, 1, 1, 1),
+                Filter = Filter.Anisotropic,
+                MaximumAnisotropy = 1,
+                MaximumLod = 1,
+                MinimumLod = 1,
+                MipLodBias = 1
+            };
+
+            SS = new SamplerState(_graphics.Device, description);
+            //_solidBlockEffect.GetVariableByName("SampleType").AsSampler().SetSampler(0, ss);
+
+            //_solidBlockEffectPass.PixelShaderDescription.Variable.Set
 
             _spriteBlockEffect = new Effect(_graphics.Device, ShaderBytecode.CompileFromFile("Content/Effect/SpriteEffetct.fx", "fx_5_0"));
             _spriteBlockEffectPass = _spriteBlockEffect.GetTechniqueByIndex(0).GetPassByIndex(0);
@@ -266,6 +288,7 @@ namespace AppleCinnamon
 
                 if (Game.RenderSolid)
                 {
+                    //_graphics.Device.ImmediateContext.PixelShader.SetSampler(0, SS);
                     _graphics.Device.ImmediateContext.InputAssembler.InputLayout = _solidBlockInputLayout;
                     _graphics.Device.ImmediateContext.InputAssembler.PrimitiveTopology = PrimitiveTopology.TriangleList;
                     _solidBlockEffectPass.Apply(_graphics.Device.ImmediateContext);

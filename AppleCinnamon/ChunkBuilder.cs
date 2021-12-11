@@ -199,7 +199,7 @@ namespace AppleCinnamon
                     {
                         totalNeighborLight += ambientNeighborVoxel.Lightness;
                     }
-                    else if (ambientNeighborDefinition.IsFullSized)
+                    else if (ambientNeighborDefinition.IsUnitSized)
                     {
                         numberOfAmbientNeighbors++;
                     }

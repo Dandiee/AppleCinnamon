@@ -79,7 +79,7 @@ namespace AppleCinnamon.Settings
         public readonly bool IsBlock;
         public readonly bool IsOpaque;
         public readonly bool IsNotBlock;
-        public readonly bool IsFullSized;
+        public readonly bool IsUnitSized;
         public readonly VisibilityFlag CoverFlags;
         public readonly VisibilityFlag HueFaces;
 
@@ -181,7 +181,7 @@ namespace AppleCinnamon.Settings
             HueFaces = hueFaces;
             Offset = offset;
             Size = size;
-            IsFullSized = Offset == Vector3.Zero || Size == Vector3.One;
+            IsUnitSized = Offset == Vector3.Zero || Size == Vector3.One;
         }
 
         static VoxelDefinition()

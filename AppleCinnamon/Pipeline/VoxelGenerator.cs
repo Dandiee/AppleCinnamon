@@ -154,11 +154,11 @@ namespace AppleCinnamon.Pipeline
 
                     if (chunk.ChunkIndex == new Int2(-1, 0))
                     {
-                        voxels[Help.GetFlatIndex(i, 3, k, maxHeight)] = new Voxel(VoxelDefinition.Stone.Type, 0);
+                        voxels[Help.GetFlatIndex(i, 3, k, maxHeight)] = new Voxel(VoxelDefinition.Sand.Type, 0);
                     }
 
 
-                    voxels[Help.GetFlatIndex(i, 1, k, maxHeight)] = new Voxel(VoxelDefinition.Stone.Type, 0);
+                    voxels[Help.GetFlatIndex(i, 1, k, maxHeight)] = new Voxel(VoxelDefinition.Sand.Type, 0);
 
                 }
             }
