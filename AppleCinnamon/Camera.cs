@@ -46,6 +46,7 @@ namespace AppleCinnamon
         private MouseState _currentMouseState;
         private MouseState _lastMouseState;
         public VoxelRayCollisionResult CurrentCursor { get; private set; }
+        private int _voxelDefinitionIndexInHand = 1;
 
         public static readonly IReadOnlyDictionary<Key, VoxelDefinition> KeyVoxelMapping = new Dictionary<Key, VoxelDefinition>
         {
@@ -158,12 +159,28 @@ namespace AppleCinnamon
                 Game.Debug = !Game.Debug;
             }
 
-            foreach (var keyVoxel in KeyVoxelMapping)
+            // foreach (var keyVoxel in KeyVoxelMapping)
+            // {
+            //     if (_currentKeyboardState.IsPressed(keyVoxel.Key))
+            //     {
+            //         VoxelInHand = keyVoxel.Value;
+            //     }
+            // }
+
+            var delta = _currentMouseState.Z / 120;
+            if (delta != 0)
             {
-                if (_currentKeyboardState.IsPressed(keyVoxel.Key))
+                _voxelDefinitionIndexInHand += delta;
+                if (_voxelDefinitionIndexInHand < 0)
                 {
-                    VoxelInHand = keyVoxel.Value;
+                    _voxelDefinitionIndexInHand = VoxelDefinition.RegisteredDefinitions.Count - 1;
                 }
+                else
+                {
+                    _voxelDefinitionIndexInHand %= VoxelDefinition.RegisteredDefinitions.Count;
+                }
+
+                VoxelInHand = VoxelDefinition.DefinitionByType[VoxelDefinition.RegisteredDefinitions[_voxelDefinitionIndexInHand]];
             }
 
             if (DateTime.Now - _lastModification > BuildCooldown)
@@ -275,7 +292,7 @@ namespace AppleCinnamon
             Velocity = new Double3(Velocity.X * MovmentFriction, IsInWater ? Velocity.Y * MovmentFriction : Velocity.Y, Velocity.Z * MovmentFriction);
             Position = Position + Velocity * t;
 
-            
+
 
             var currentBlock = new Int3((int)Math.Round(Position.X), (int)Math.Round(Position.Y),
                 (int)Math.Round(Position.Z));
@@ -296,9 +313,9 @@ namespace AppleCinnamon
             View = Matrix.LookAtRH(Position.ToVector3(), Position.ToVector3() + LookAt.ToVector3(),
                 Vector3.TransformCoordinate(Vector3.UnitY, rotationMatrix));
             Projection = Matrix.PerspectiveFovRH(MathUtil.PiOverTwo,
-                _graphics.RenderForm.Width / (float) _graphics.RenderForm.Height, 0.1f, 100000f);
+                _graphics.RenderForm.Width / (float)_graphics.RenderForm.Height, 0.1f, 100000f);
             WorldViewProjection = World * View * Projection;
-            
+
             BoundingFrustum = new BoundingFrustum(View * Projection);
             LookAt2d = new Vector2((float)LookAt.X, (float)LookAt.Z);
             Position2d = new Vector2((float)Position.X, (float)Position.Z);

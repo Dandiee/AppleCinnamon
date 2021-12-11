@@ -18,6 +18,7 @@ namespace AppleCinnamon
         private readonly Graphics _graphics;
         private readonly TextFormat _leftAlignedTextFormat;
         private readonly TextFormat _rightAlignedTextFormat;
+        private readonly TextFormat _bottomCenterAlignedTextFormat;
         private readonly Keyboard _keyboard;
 
         public DebugLayout(Graphics graphics)
@@ -30,6 +31,12 @@ namespace AppleCinnamon
                 FontFamilyName, FontWeight.Black, FontStyle.Normal, 20)
             {
                 TextAlignment = TextAlignment.Trailing
+            };
+
+            _bottomCenterAlignedTextFormat = new TextFormat(_graphics.DirectWrite,
+                FontFamilyName, FontWeight.Black, FontStyle.Normal, 20)
+            {
+                TextAlignment = TextAlignment.Center
             };
 
             _keyboard = new Keyboard(new DirectInput());
@@ -114,6 +121,14 @@ namespace AppleCinnamon
                 _graphics.RenderForm.Width - 30, _graphics.RenderForm.Height))
             {
                 _graphics.RenderTarget2D.DrawTextLayout(new RawVector2(0, 10), rightTextLayout,
+                    new SolidColorBrush(_graphics.RenderTarget2D, Color.White));
+            }
+
+
+            using (var bottomCenterTextLayout = new TextLayout(_graphics.DirectWrite, $"{camera.VoxelInHand.Name}: [{camera.VoxelInHand.Type}]", _bottomCenterAlignedTextFormat,
+                _graphics.RenderForm.Width - 30, _graphics.RenderForm.Height))
+            {
+                _graphics.RenderTarget2D.DrawTextLayout(new RawVector2(0, _graphics.RenderForm.Height - 100), bottomCenterTextLayout,
                     new SolidColorBrush(_graphics.RenderTarget2D, Color.White));
             }
         }

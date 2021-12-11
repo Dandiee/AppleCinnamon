@@ -116,12 +116,14 @@ namespace AppleCinnamon.Collision
                         var voxel = chunk.GetVoxel(address.Value.RelativeVoxelIndex.ToFlatIndex(chunk.CurrentHeight));
 
                         var voxelDefinition = VoxelDefinition.DefinitionByType[voxel.Block];
-                        // if (voxel.Value.Block > 0)
+                        
                         if (!voxelDefinition.IsPermeable)
                         {
+                            var voxelPosition = absoluteIndex.ToVector3() + voxelDefinition.Offset;
+                            var voxelHalfSize = voxelDefinition.Size / 2f;
+
                             var absoluteCoordinate = absoluteIndex.ToVector3();
-                            var voxelBoundingBox = new BoundingBox(absoluteCoordinate - new Vector3(.5f),
-                                absoluteCoordinate + new Vector3(.5f));
+                            var voxelBoundingBox = new BoundingBox(voxelPosition - voxelHalfSize, voxelPosition + voxelHalfSize);
 
                             var penetration = GetFirstPenetration(absoluteIndex, playerBoundingBox, voxelBoundingBox, velocity, chunkManager, realElapsedTime * 5);
                             if (penetration != null)
