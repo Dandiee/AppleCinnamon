@@ -4,30 +4,30 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using AppleCinnamon.Helper;
+using AppleCinnamon.Pipeline.Context;
+using SharpDX.Direct3D11;
 
 namespace AppleCinnamon.Pipeline
 {
-    public sealed class ChunkDispatcher
+    public sealed class ChunkDispatcher : PipelineBlock<Chunk, Chunk>
     {
         private readonly ChunkBuilder _chunkBuilder;
         private readonly ConcurrentDictionary<Int2, Chunk> _chunks;
         private readonly HashSet<Int2> _dispatchedChunks;
-        public ChunkDispatcher()
+        
+        public ChunkDispatcher(Device device)
         {
-            _chunkBuilder = new ChunkBuilder();
+            _chunkBuilder = new ChunkBuilder(device);
             _chunks = new ConcurrentDictionary<Int2, Chunk>();
             _dispatchedChunks = new HashSet<Int2>();
         }
 
 
-        public DataflowContext<Chunk> Dispatch(DataflowContext<Chunk> context)
+        public override Chunk Process(Chunk chunk)
         {
-            var chunk = context.Payload;
-            var sw = Stopwatch.StartNew();
-            _chunkBuilder.BuildChunk(context.Device, context.Payload);
-            context.Payload.State = ChunkState.Displayed;
-            sw.Stop();
-            return new DataflowContext<Chunk>(context, context.Payload, sw.ElapsedMilliseconds, nameof(ChunkDispatcher));
+            _chunkBuilder.BuildChunk(chunk);
+            chunk.State = ChunkState.Displayed;
+            return chunk;
         }
 
     }

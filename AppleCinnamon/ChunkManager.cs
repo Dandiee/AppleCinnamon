@@ -71,11 +71,11 @@ namespace AppleCinnamon
         private BlendState _waterBlendState;
 
 
-        private TransformBlock<DataflowContext<Int2>, DataflowContext<Chunk>> _pipeline;
+        private TransformBlock<Int2, Chunk> _pipeline;
 
         public ChunkManager(Graphics graphics)
         {
-            _pipelineProvider = new PipelineProvider();
+            _pipelineProvider = new PipelineProvider(graphics.Device);
 
             _graphics = graphics;
             Chunks = new ConcurrentDictionary<Int2, Chunk>();
@@ -200,33 +200,33 @@ namespace AppleCinnamon
             return false;
         }
 
-        private void Finalize(DataflowContext<Chunk> context)
+        private void Finalize(Chunk chunk)
         {
-            if (!Chunks.TryAdd(context.Payload.ChunkIndex, context.Payload))
+            if (!Chunks.TryAdd(chunk.ChunkIndex, chunk))
             {
                 throw new Exception();
             }
 
-            if (!_queuedChunks.TryRemove(context.Payload.ChunkIndex, out _))
+            if (!_queuedChunks.TryRemove(chunk.ChunkIndex, out _))
             {
                 throw new Exception();
             }
 
             Interlocked.Decrement(ref _queuedChunksCount);
 
-            QuickChunks.Add(context.Payload);
+            QuickChunks.Add(chunk);
 
-            foreach (var performance in context.Debug)
-            {
-                if (PipelinePerformance.TryGetValue(performance.Key, out var value))
-                {
-                    PipelinePerformance[performance.Key] = value + performance.Value;
-                }
-                else
-                {
-                    PipelinePerformance[performance.Key] = performance.Value;
-                }
-            }
+            //foreach (var performance in context.Debug)
+            //{
+            //    if (PipelinePerformance.TryGetValue(performance.Key, out var value))
+            //    {
+            //        PipelinePerformance[performance.Key] = value + performance.Value;
+            //    }
+            //    else
+            //    {
+            //        PipelinePerformance[performance.Key] = performance.Value;
+            //    }
+            //}
             Interlocked.Increment(ref _finalizedChunks);
             var root = (Game.ViewDistance - 1) * 2;
 
@@ -422,7 +422,7 @@ namespace AppleCinnamon
 
                         Interlocked.Increment(ref _queuedChunksCount);
 
-                        _pipeline.Post(new DataflowContext<Int2>(chunkIndex, _graphics.Device));
+                        _pipeline.Post(chunkIndex/*, _graphics.Device*/);
                     }
                 }
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using AppleCinnamon.Helper;
+using AppleCinnamon.Pipeline.Context;
 using AppleCinnamon.Settings;
 
 namespace AppleCinnamon.Pipeline
@@ -52,12 +53,10 @@ namespace AppleCinnamon.Pipeline
     }
 
 
-    public sealed class FullScanner
+    public sealed class FullScanner : PipelineBlock<Chunk, Chunk>
     {
-        public DataflowContext<Chunk> Process(DataflowContext<Chunk> context)
+        public override Chunk Process(Chunk chunk)
         {
-            var sw = Stopwatch.StartNew();
-            var chunk = context.Payload;
 
             var height = chunk.CurrentHeight;
             var voxels = chunk.Voxels;
@@ -162,10 +161,7 @@ namespace AppleCinnamon.Pipeline
                 }
             }
 
-
-            sw.Stop();
-
-            return new DataflowContext<Chunk>(context, chunk, sw.ElapsedMilliseconds, nameof(FullScanner));
+            return chunk;
         }
 
         //[InlineMethod.Inline]
@@ -199,6 +195,8 @@ namespace AppleCinnamon.Pipeline
                 context.PendingVoxels.Add(flatIndex);
             }
         }
+
+        
     }
 
 

@@ -168,16 +168,6 @@ namespace AppleCinnamon.Pipeline
                 }
             }
 
-            //if (chunk.ChunkIndex == Int2.Zero)
-            //{
-            //    voxels[Help.GetFlatIndex(0, 3, 8, maxHeight)] = new Voxel(VoxelDefinition.Stone.Type, 0);
-            //    voxels[Help.GetFlatIndex(1, 3, 8, maxHeight)] = new Voxel(VoxelDefinition.Stone.Type, 0);
-            //    voxels[Help.GetFlatIndex(2, 3, 8, maxHeight)] = new Voxel(VoxelDefinition.Stone.Type, 0);
-            //    voxels[Help.GetFlatIndex(3, 3, 8, maxHeight)] = new Voxel(VoxelDefinition.Stone.Type, 0);
-            //}
-
-           
-
             return chunk;
         }
     }

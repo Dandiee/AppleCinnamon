@@ -4,25 +4,24 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using AppleCinnamon.Helper;
+using AppleCinnamon.Pipeline.Context;
 
 namespace AppleCinnamon.Pipeline
 {
-    public sealed class BuildPool
+    public sealed class BuildPool : PipelineBlock<Chunk, IEnumerable<Chunk>>
     {
-        private readonly ChunkBuilder _chunkBuilder;
         private readonly ConcurrentDictionary<Int2, Chunk> _chunks;
         private readonly HashSet<Int2> _dispatchedChunks;
+
         public BuildPool()
         {
-            _chunkBuilder = new ChunkBuilder();
             _chunks = new ConcurrentDictionary<Int2, Chunk>();
             _dispatchedChunks = new HashSet<Int2>();
         }
 
 
-        public IEnumerable<DataflowContext<Chunk>> Process(DataflowContext<Chunk> context)
+        public override IEnumerable<Chunk> Process(Chunk chunk)
         {
-            var chunk = context.Payload;
             if (!_chunks.TryAdd(chunk.ChunkIndex, chunk))
             {
                 throw new Exception("The chunk is already in the pool");
@@ -37,7 +36,7 @@ namespace AppleCinnamon.Pipeline
                         throw new Exception("asdasd");
                     }
                     _dispatchedChunks.Add(n.ChunkIndex);
-                    yield return new DataflowContext<Chunk>(context, n, 0, nameof(BuildPool));
+                    yield return n;
                 }
             }
         }

@@ -1,20 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using AppleCinnamon.Helper;
-using AppleCinnamon.Settings;
+﻿using System.Linq;
+using AppleCinnamon.Pipeline.Context;
 using SharpDX;
 
 namespace AppleCinnamon.Pipeline
 {
-    public sealed class LocalSunlightInitializer
+    public sealed class LocalSunlightInitializer : PipelineBlock<Chunk, Chunk>
     {
-        public DataflowContext<Chunk> Process(DataflowContext<Chunk> context)
+        public override Chunk Process(Chunk chunk)
         {
-            var sw = Stopwatch.StartNew();
-            var chunk = context.Payload;
-
             for (var i = 0; i != Chunk.SizeXy; i++)
             {
                 for (var k = 0; k != Chunk.SizeXy; k++)
@@ -23,8 +16,7 @@ namespace AppleCinnamon.Pipeline
                 }
             }
 
-            sw.Stop();
-            return new DataflowContext<Chunk>(context, context.Payload, sw.ElapsedMilliseconds, nameof(LocalSunlightInitializer));
+            return chunk;
         }
     }
 }

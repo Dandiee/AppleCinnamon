@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks.Dataflow;
 using AppleCinnamon.Helper;
+using SharpDX.Direct3D11;
 
 namespace AppleCinnamon.Pipeline
 {
@@ -10,7 +11,7 @@ namespace AppleCinnamon.Pipeline
         private readonly ChunkDispatcher _chunkDispatcher;
         private readonly LocalLightPropagationService _localLightPropagationService;
         private readonly ChunkProvider _chunkProvider;
-        private readonly LightFinalizer _lightFinalizer;
+        private readonly GlobalLightFinalizer _globalLightFinalizer;
         private readonly ChunkPool _chunkPool;
         private readonly FullScanner _fullScanner;
         private readonly GlobalVisibilityFinalizer _globalVisibilityFinalizer;
@@ -19,12 +20,12 @@ namespace AppleCinnamon.Pipeline
 
 
 
-        public PipelineProvider()
+        public PipelineProvider(Device device)
         {
-            _chunkDispatcher = new ChunkDispatcher();
+            _chunkDispatcher = new ChunkDispatcher(device);
             _localLightPropagationService = new LocalLightPropagationService();
             _chunkProvider = new ChunkProvider(921207);
-            _lightFinalizer = new LightFinalizer();
+            _globalLightFinalizer = new GlobalLightFinalizer();
             _chunkPool = new ChunkPool();
             _fullScanner = new FullScanner();
             _globalVisibilityFinalizer = new GlobalVisibilityFinalizer();
@@ -32,24 +33,24 @@ namespace AppleCinnamon.Pipeline
             _buildPool = new BuildPool();
         }
 
-        public TransformBlock<DataflowContext<Int2>, DataflowContext<Chunk>> CreatePipeline(int maxDegreeOfParallelism, Action<DataflowContext<Chunk>> successCallback)
+        public TransformBlock<Int2, Chunk> CreatePipeline(int maxDegreeOfParallelism, Action<Chunk> successCallback)
         {
             var dataflowOptions = new ExecutionDataflowBlockOptions
             {
                 MaxDegreeOfParallelism = maxDegreeOfParallelism
             };
 
-            var pipeline = new TransformBlock<DataflowContext<Int2>, DataflowContext<Chunk>>(_chunkProvider.GetChunk, dataflowOptions);
+            var pipeline = new TransformBlock<Int2, Chunk>(_chunkProvider.Execute, dataflowOptions);
+            var sunlightInitializer = new TransformBlock<Chunk, Chunk>(_localSunlightInitializer.Execute, dataflowOptions);
 
-            var sunlightInitializer = new TransformBlock<DataflowContext<Chunk>, DataflowContext<Chunk>>(_localSunlightInitializer.Process, dataflowOptions);
-            var fullScan = new TransformBlock<DataflowContext<Chunk>, DataflowContext<Chunk>>(_fullScanner.Process, dataflowOptions);
-            var localLightPropagation = new TransformBlock<DataflowContext<Chunk>, DataflowContext<Chunk>>(_localLightPropagationService.InitializeLocalLight, dataflowOptions);
-            var chunkPool = new TransformManyBlock<DataflowContext<Chunk>, DataflowContext<Chunk>>(_chunkPool.Process, dataflowOptions);
-            var globalVisibility = new TransformBlock<DataflowContext<Chunk>, DataflowContext<Chunk>>(_globalVisibilityFinalizer.Process, dataflowOptions);
-            var lightFinalizer = new TransformBlock<DataflowContext<Chunk>, DataflowContext<Chunk>>(_lightFinalizer.Finalize, dataflowOptions);
-            var buildPool = new TransformManyBlock<DataflowContext<Chunk>, DataflowContext<Chunk>>(_buildPool.Process, dataflowOptions);
-            var dispatcher = new TransformBlock<DataflowContext<Chunk>, DataflowContext<Chunk>>(_chunkDispatcher.Dispatch, dataflowOptions);
-            var finalizer = new ActionBlock<DataflowContext<Chunk>>(successCallback, dataflowOptions);
+            var fullScan = new TransformBlock<Chunk, Chunk>(_fullScanner.Execute, dataflowOptions);
+            var localLightPropagation = new TransformBlock<Chunk, Chunk>(_localLightPropagationService.Execute, dataflowOptions);
+            var chunkPool = new TransformManyBlock<Chunk, Chunk>(_chunkPool.Execute, dataflowOptions);
+            var globalVisibility = new TransformBlock<Chunk, Chunk>(_globalVisibilityFinalizer.Execute, dataflowOptions);
+            var lightFinalizer = new TransformBlock<Chunk, Chunk>(_globalLightFinalizer.Execute, dataflowOptions);
+            var buildPool = new TransformManyBlock<Chunk, Chunk>(_buildPool.Execute, dataflowOptions);
+            var dispatcher = new TransformBlock<Chunk, Chunk>(_chunkDispatcher.Execute, dataflowOptions);
+            var finalizer = new ActionBlock<Chunk>(successCallback, dataflowOptions);
 
             pipeline.LinkTo(sunlightInitializer);
             sunlightInitializer.LinkTo(fullScan);

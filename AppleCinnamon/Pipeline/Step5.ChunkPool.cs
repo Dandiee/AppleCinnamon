@@ -3,10 +3,11 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using AppleCinnamon.Helper;
+using AppleCinnamon.Pipeline.Context;
 
 namespace AppleCinnamon.Pipeline
 {
-    public sealed class ChunkPool
+    public sealed class ChunkPool : PipelineBlock<Chunk, IEnumerable<Chunk>>
     {
         private readonly ConcurrentDictionary<Int2, Chunk> _chunks;
         private readonly HashSet<Int2> _dispatchedChunks;
@@ -17,17 +18,14 @@ namespace AppleCinnamon.Pipeline
             _dispatchedChunks = new HashSet<Int2>();
         }
 
-        public IEnumerable<DataflowContext<Chunk>> Process(DataflowContext<Chunk> context)
+        public override IEnumerable<Chunk> Process(Chunk chunk)
         {
-            var chunk = context.Payload;
-
             if (!_chunks.TryAdd(chunk.ChunkIndex, chunk))
             {
                 throw new Exception("The chunk is already in the pool");
             }
 
-            var finished = SetNeighbors(chunk).ToList();
-            return finished.Select(s => new DataflowContext<Chunk>(context, s));
+            return SetNeighbors(chunk).ToList();
         }
 
         private IEnumerable<Chunk> SetNeighbors(Chunk chunk)
@@ -133,5 +131,6 @@ namespace AppleCinnamon.Pipeline
                 }
             }
         }
+        
     }
 }

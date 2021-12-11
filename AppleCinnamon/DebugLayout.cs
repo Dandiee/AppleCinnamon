@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using System.Windows.Forms;
 using AppleCinnamon.Helper;
+using AppleCinnamon.Pipeline.Context;
 using SharpDX;
 using SharpDX.Direct2D1;
 using SharpDX.DirectInput;
@@ -74,10 +75,14 @@ namespace AppleCinnamon
                    $"Show chunk boxes [F3]: {(Game.ShowChunkBoundingBoxes ? "On" : "Off")}\r\n";
         }
 
+        private string GetPipelineMetrics()
+            => string.Join("\r\n", PipelineBlock.ElapsedTimes.Select(block => $"{block.Key.Name}: {block.Value:N0}ms"));
+
         private string BuildRightText(ChunkManager chunkManager, Game game)
         {
-            return $"Chunk size {Chunk.SizeXy}, View distance: {Game.ViewDistance}, Slice: {Chunk.SliceHeight}\r\n" + 
-                   string.Join("\r\n", chunkManager.PipelinePerformance.Select(s => $"{s.Key}: {s.Value:N0} ms")) + "\r\n" + 
+            return $"Chunk size {Chunk.SizeXy}, View distance: {Game.ViewDistance}, Slice: {Chunk.SliceHeight}\r\n" +
+                   //string.Join("\r\n", chunkManager.PipelinePerformance.Select(s => $"{s.Key}: {s.Value:N0} ms")) + "\r\n" + 
+                   GetPipelineMetrics() +"\r\n" +
                    $"Total pipeline time: {chunkManager.PipelinePerformance.Values.Sum():N0} ms\r\n" + 
                    $"Boot time: {chunkManager.BootTime.TotalMilliseconds:N0} ms\r\n" + 
                    $"Average render time: {game.AverageRenderTime:F2}\r\n" +

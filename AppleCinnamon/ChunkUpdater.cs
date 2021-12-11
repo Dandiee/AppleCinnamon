@@ -108,7 +108,7 @@ namespace AppleCinnamon
         {
             _graphics = graphics;
             _chunkManager = chunkManager;
-            _chunkBuilder = new ChunkBuilder();
+            _chunkBuilder = new ChunkBuilder(graphics.Device);
             _lightUpdater = new LightUpdater();
         }
 
@@ -144,14 +144,14 @@ namespace AppleCinnamon
                 UpdateVisibilityFlags(chunk, oldVoxel, newVoxel, address.Value.RelativeVoxelIndex);
                 UpdateSprites(chunk, oldVoxel, newVoxel, address.Value.RelativeVoxelIndex);
                 _lightUpdater.UpdateLighting(chunk, address.Value.RelativeVoxelIndex, oldVoxel, newVoxel);
-                _chunkBuilder.BuildChunk(_graphics.Device, chunk);
+                _chunkBuilder.BuildChunk(chunk);
 
                 Task.WaitAll(ChunkManager.GetSurroundingChunks(2).Select(chunkIndex =>
                 {
                     if (chunkIndex != Int2.Zero &&
                         _chunkManager.TryGetChunk(chunkIndex + chunk.ChunkIndex, out var chunkToReload))
                     {
-                        return Task.Run(() => _chunkBuilder.BuildChunk(_graphics.Device, chunkToReload));
+                        return Task.Run(() => _chunkBuilder.BuildChunk(chunkToReload));
                     }
 
                     return Task.CompletedTask;

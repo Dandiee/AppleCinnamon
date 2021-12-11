@@ -1,28 +1,17 @@
-﻿using System.Collections.Concurrent;
-using System.Diagnostics;
-using AppleCinnamon.Helper;
+﻿using AppleCinnamon.Helper;
+using AppleCinnamon.Pipeline.Context;
 
 namespace AppleCinnamon.Pipeline
 {
-    public sealed class ChunkProvider
+    public sealed class ChunkProvider : PipelineBlock<Int2, Chunk>
     {
-        private readonly ConcurrentDictionary<Int2, Chunk> _chunks;
         private readonly VoxelLoader _voxelLoader;
 
         public ChunkProvider(int seed)
         {
             _voxelLoader = new VoxelLoader(seed);
-            _chunks = new ConcurrentDictionary<Int2, Chunk>();
         }
 
-        public DataflowContext<Chunk> GetChunk(DataflowContext<Int2> context)
-        {
-            var sw = Stopwatch.StartNew();
-            var chunk = _voxelLoader.GetVoxels(context.Payload);
-            //var chunk = new Chunk(context.Payload, voxels);
-            sw.Stop();
-
-            return new DataflowContext<Chunk>(context, chunk, sw.ElapsedMilliseconds, nameof(ChunkProvider));
-        }
+        public override Chunk Process(Int2 input) => _voxelLoader.GetVoxels(input);
     }
 }

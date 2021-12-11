@@ -1,16 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Windows.Forms;
 using AppleCinnamon.Helper;
+using AppleCinnamon.Pipeline.Context;
 using AppleCinnamon.Settings;
 using SharpDX;
 using Help = AppleCinnamon.Helper.Help;
 
 namespace AppleCinnamon.Pipeline
 {
-    public sealed class LightFinalizer
+    public sealed class GlobalLightFinalizer : PipelineBlock<Chunk, Chunk>
     {
         private static readonly IReadOnlyDictionary<int, Face[]> CornerMapping =
             new Dictionary<int, Face[]>
@@ -21,11 +20,8 @@ namespace AppleCinnamon.Pipeline
                 [Help.GetChunkFlatIndex(-1,  1)] = new []{ Face.Right, Face.Front },
             };
 
-        public DataflowContext<Chunk> Finalize(DataflowContext<Chunk> context)
+        public override Chunk Process(Chunk chunk)
         {
-            var sw = Stopwatch.StartNew();
-            var chunk = context.Payload;
-
             foreach (var corner in CornerMapping)
             {
                 var cornerChunk = chunk.neighbors2[corner.Key];
@@ -38,8 +34,7 @@ namespace AppleCinnamon.Pipeline
                 EdgeSolver(chunk, direction);
             }
 
-            sw.Stop();
-            return new DataflowContext<Chunk>(context, context.Payload, sw.ElapsedMilliseconds, nameof(LightFinalizer));
+            return chunk;
         }
 
         private struct EdgePropogation
@@ -104,5 +99,7 @@ namespace AppleCinnamon.Pipeline
 
             LightingService.LocalPropagate(targetChunk, queue);
         }
+
+        
     }
 }

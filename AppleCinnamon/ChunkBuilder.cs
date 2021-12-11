@@ -16,9 +16,15 @@ namespace AppleCinnamon
 {
     public sealed class ChunkBuilder
     {
+        private readonly Device _device;
         private static readonly Vector2[] WaterUvOffsets = { Vector2.Zero, new(1, 0), new(1, 1 / 32f), new(0, 1 / 32f) };
 
-        public void BuildChunk(Device device, Chunk chunk)
+        public ChunkBuilder(Device device)
+        {
+            _device = device;
+        }
+
+        public void BuildChunk(Chunk chunk)
         {
             var faces = GetChunkFaces(chunk);
             var visibleFacesCount = chunk.BuildingContext.Faces.Sum(s => s.VoxelCount);
@@ -51,11 +57,11 @@ namespace AppleCinnamon
                 }
             }
 
-            chunk.ChunkBuffer = new ChunkBuffer(device, vertices, indexes, faces);
+            chunk.ChunkBuffer = new ChunkBuffer(_device, vertices, indexes, faces);
 
             chunk.VisibleFacesCount = visibleFacesCount;
-            var waterBuffer = AddWaterFace(chunk, device);
-            var spriteBuffer = AddSpriteFace(chunk, device);
+            var waterBuffer = AddWaterFace(chunk, _device);
+            var spriteBuffer = AddSpriteFace(chunk, _device);
 
             chunk.SetBuffers(waterBuffer, spriteBuffer);
         }

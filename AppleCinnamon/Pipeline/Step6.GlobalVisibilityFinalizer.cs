@@ -1,16 +1,13 @@
-﻿using System.Diagnostics;
-using AppleCinnamon.Helper;
+﻿using AppleCinnamon.Helper;
+using AppleCinnamon.Pipeline.Context;
 using AppleCinnamon.Settings;
 
 namespace AppleCinnamon.Pipeline
 {
-    public sealed class GlobalVisibilityFinalizer
+    public sealed class GlobalVisibilityFinalizer : PipelineBlock<Chunk, Chunk>
     {
-        public DataflowContext<Chunk> Process(DataflowContext<Chunk> context)
+        public override Chunk Process(Chunk chunk)
         {
-            var sw = Stopwatch.StartNew();
-            var chunk = context.Payload;
-
             var leftChunk = chunk.neighbors2[Help.GetChunkFlatIndex(-1, 0)];
             var rightChunk = chunk.neighbors2[Help.GetChunkFlatIndex(1, 0)];
             var frontChunk = chunk.neighbors2[Help.GetChunkFlatIndex(0, -1)];
@@ -22,12 +19,9 @@ namespace AppleCinnamon.Pipeline
             ProcessSide(chunk, backChunk, chunk.BuildingContext.Back);
             
 
-            sw.Stop();
 
             CleanUpMemory(chunk);
-
-
-            return new DataflowContext<Chunk>(context, chunk, sw.ElapsedMilliseconds, nameof(GlobalVisibilityFinalizer));
+            return chunk;
         }
 
 
@@ -63,5 +57,7 @@ namespace AppleCinnamon.Pipeline
                 face.PendingVoxels.Clear();
             }
         }
+
+        
     }
 }
