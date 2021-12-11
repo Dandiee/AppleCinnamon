@@ -114,7 +114,7 @@ namespace AppleCinnamon
 
             return new FaceBuffer(
                 indexes.Length,
-                VertexWater.Size,
+                default(VertexWater).Size,
                 Buffer.Create(device, BindFlags.VertexBuffer, vertices),
                 Buffer.Create(device, BindFlags.IndexBuffer, indexes));
         }
@@ -145,7 +145,7 @@ namespace AppleCinnamon
             }
 
             //return null;
-            return new FaceBuffer(indexes.Length, VertexSprite.Size, Buffer.Create(device, BindFlags.VertexBuffer, vertices), Buffer.Create(device, BindFlags.IndexBuffer, indexes));
+            return new FaceBuffer(indexes.Length, default(VertexSprite).Size, Buffer.Create(device, BindFlags.VertexBuffer, vertices), Buffer.Create(device, BindFlags.IndexBuffer, indexes));
         }
 
         private static void AddSpriteFace(Chunk chunk, Vector3[] faceOffsetVertices, Vector3 positionOffset, Voxel voxel, Int2 textureIndicies,
@@ -443,9 +443,9 @@ namespace AppleCinnamon
 
         public ChunkBuffer(Device device, VertexSolidBlock[] vertices, ushort[] indexes, Cube<ChunkFace> offsets)
         {
-            VertexBuffer = Buffer.Create(device, BindFlags.VertexBuffer, vertices, vertices.Length * VertexSolidBlock.Size, ResourceUsage.Immutable);
+            VertexBuffer = Buffer.Create(device, BindFlags.VertexBuffer, vertices, vertices.Length * default(VertexSolidBlock).Size, ResourceUsage.Immutable);
             IndexBuffer = Buffer.Create(device, BindFlags.IndexBuffer, indexes, indexes.Length * sizeof(ushort), ResourceUsage.Immutable);
-            Binding = new VertexBufferBinding(VertexBuffer, VertexSolidBlock.Size, 0);
+            Binding = new VertexBufferBinding(VertexBuffer, default(VertexSolidBlock).Size, 0);
             Offsets = new Dictionary<Int3, ChunkFace>
             {
                 [offsets.Top.BuildInfo.Direction] = offsets.Top,

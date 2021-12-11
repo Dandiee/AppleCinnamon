@@ -122,7 +122,6 @@ namespace AppleCinnamon.Collision
                             var voxelPosition = absoluteIndex.ToVector3() + voxelDefinition.Offset;
                             var voxelHalfSize = voxelDefinition.Size / 2f;
 
-                            var absoluteCoordinate = absoluteIndex.ToVector3();
                             var voxelBoundingBox = new BoundingBox(voxelPosition - voxelHalfSize, voxelPosition + voxelHalfSize);
 
                             var penetration = GetFirstPenetration(absoluteIndex, playerBoundingBox, voxelBoundingBox, velocity, chunkManager, realElapsedTime * 5);

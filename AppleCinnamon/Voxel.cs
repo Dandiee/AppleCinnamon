@@ -41,10 +41,4 @@ namespace AppleCinnamon
 
         public Voxel SetLight(byte light) => new(Block, light, HueIndex);
     }
-
-    //public static class VoxelExtensions
-    //{
-    //    public static bool IsFaceVisible(this Voxel current, Voxel neighbor, VisibilityFlag neighborFace)
-    //        => current.(newDefinition.CoverFlags & direction.OppositeDirection) == 0;
-    //}
 }

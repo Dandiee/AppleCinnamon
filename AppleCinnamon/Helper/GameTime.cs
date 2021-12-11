@@ -9,13 +9,6 @@ namespace AppleCinnamon.Helper
         /// <summary>
         /// Initializes a new instance of the <see cref="GameTime" /> class.
         /// </summary>
-        public GameTime()
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="GameTime" /> class.
-        /// </summary>
         /// <param name="totalGameTime">The total game time since the start of the game.</param>
         /// <param name="elapsedGameTime">The elapsed game time since the last update.</param>
         public GameTime(TimeSpan totalGameTime, TimeSpan elapsedGameTime)

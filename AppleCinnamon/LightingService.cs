@@ -46,7 +46,7 @@ namespace AppleCinnamon
                     if (brightnessLoss != 0 && targetVoxel.Lightness < sourceVoxel.Lightness - brightnessLoss)
                     {
                         var targetChunk =
-                            source.sourceChunk.neighbors2[Help.GetChunkFlatIndex(targetAddress.ChunkIndex)];
+                            source.sourceChunk.Neighbors[Help.GetChunkFlatIndex(targetAddress.ChunkIndex)];
                         targetChunk.SetVoxel(targetAddress.RelativeVoxelIndex.ToFlatIndex(targetChunk.CurrentHeight),
                             targetVoxel.SetLight((byte) (sourceVoxel.Lightness - brightnessLoss)));
                         queue.Enqueue(
@@ -125,12 +125,12 @@ namespace AppleCinnamon
                         if (targetVoxel.Lightness >= source.oldVoxel.Lightness)
                         {
                             source.lightSources.Add(new Tuple<Chunk, Int3>(
-                                source.sourceChunk.neighbors2[Help.GetChunkFlatIndex(targetAddress.ChunkIndex)],
+                                source.sourceChunk.Neighbors[Help.GetChunkFlatIndex(targetAddress.ChunkIndex)],
                                 targetAddress.RelativeVoxelIndex));
                         }
                         else if (targetVoxel.Lightness > 0)
                         {
-                            var newChunk = source.sourceChunk.neighbors2[Help.GetChunkFlatIndex(targetAddress.ChunkIndex)];
+                            var newChunk = source.sourceChunk.Neighbors[Help.GetChunkFlatIndex(targetAddress.ChunkIndex)];
                             newChunk.SetVoxel(targetAddress.RelativeVoxelIndex.ToFlatIndex(newChunk.CurrentHeight), targetVoxel.SetLight(0));
                             queue.Enqueue(new DarknessPropogationRecord(newChunk, targetAddress.RelativeVoxelIndex, source.lightSources, targetVoxel, targetDefinition));
                         }

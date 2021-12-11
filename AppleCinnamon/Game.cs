@@ -7,7 +7,7 @@ using Point = System.Drawing.Point;
 
 namespace AppleCinnamon
 {
-    public sealed class Game : IDisposable
+    public sealed class Game 
     {
         public static readonly Vector3 StartPosition = new(0, 127, 0);
 
@@ -17,6 +17,8 @@ namespace AppleCinnamon
         public static bool ShowChunkBoundingBoxes { get; set; } = false;
         public static bool RenderWater { get; set; } = true;
         public static bool RenderSolid { get; set; } = true;
+        public static bool RenderSprites { get; set; } = true;
+        public static bool RenderBoxes { get; set; } = true;
         public static bool Debug { get; set; } = true;
 
         private readonly ChunkManager _chunkManager;
@@ -102,9 +104,5 @@ namespace AppleCinnamon
             
         }
 
-        public void Dispose()
-        {
-            _chunkManager?.Dispose();
-        }
     }
 }

@@ -27,9 +27,9 @@ namespace AppleCinnamon.Pipeline
                 throw new Exception("The chunk is already in the pool");
             }
 
-            foreach (var n in chunk.neighbors2)
+            foreach (var n in chunk.Neighbors)
             {
-                if (n.neighbors2.All(a => a != null && _chunks.ContainsKey(a.ChunkIndex)))
+                if (n.Neighbors.All(a => a != null && _chunks.ContainsKey(a.ChunkIndex)))
                 {
                     if (_dispatchedChunks.Contains(n.ChunkIndex))
                     {

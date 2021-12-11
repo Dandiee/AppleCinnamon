@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Formats.Asn1;
 using System.Linq;
 using AppleCinnamon.Helper;
 using AppleCinnamon.Pipeline.Context;
@@ -14,8 +15,14 @@ namespace AppleCinnamon.Pipeline
         {
             _chunks.TryAdd(chunk.ChunkIndex, chunk);
 
-            chunk.neighbors2[Help.GetChunkFlatIndex(0, 0)] = chunk;
+            chunk.Neighbors[Help.GetChunkFlatIndex(0, 0)] = chunk;
 
+            var chunks = GetFinishedChunks(chunk).ToList();
+            return chunks;
+        }
+
+        private IEnumerable<Chunk> GetFinishedChunks(Chunk chunk)
+        {
             for (var i = -1; i <= 1; i++)
             {
                 for (var j = -1; j <= 1; j++)
@@ -28,11 +35,11 @@ namespace AppleCinnamon.Pipeline
                     {
                         var relativeNeighborFlatIndex = Help.GetChunkFlatIndex(i, j);
 
-                        chunk.neighbors2[relativeNeighborFlatIndex] = neighborChunk;
-                        neighborChunk.neighbors2[Help.GetChunkFlatIndex(i * -1, j * -1)] = chunk;
+                        chunk.Neighbors[relativeNeighborFlatIndex] = neighborChunk;
+                        neighborChunk.Neighbors[Help.GetChunkFlatIndex(i * -1, j * -1)] = chunk;
 
 
-                        if (neighborChunk.neighbors2.All(a => a != null))
+                        if (neighborChunk.Neighbors.All(a => a != null))
                         {
                             yield return neighborChunk;
                         }
@@ -41,7 +48,7 @@ namespace AppleCinnamon.Pipeline
                 }
             }
 
-            if (chunk.neighbors2.All(a => a != null))
+            if (chunk.Neighbors.All(a => a != null))
             {
                 yield return chunk;
             }

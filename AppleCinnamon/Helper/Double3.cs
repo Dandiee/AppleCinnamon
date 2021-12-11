@@ -6,9 +6,6 @@ namespace AppleCinnamon.Helper
     public struct Double3
     {
         public static readonly Double3 Zero = new();
-        public static readonly Double3 UnitX = new(1, 0, 0);
-        public static readonly Double3 UnitY = new(0, 1, 0);
-        public static readonly Double3 UnitZ = new(0, 0, 1);
 
         public double X { get; }
         public double Y { get; }

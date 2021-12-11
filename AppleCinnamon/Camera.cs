@@ -48,15 +48,6 @@ namespace AppleCinnamon
         public VoxelRayCollisionResult CurrentCursor { get; private set; }
         private int _voxelDefinitionIndexInHand = 1;
 
-        public static readonly IReadOnlyDictionary<Key, VoxelDefinition> KeyVoxelMapping = new Dictionary<Key, VoxelDefinition>
-        {
-            [Key.D1] = VoxelDefinition.Sand,
-            [Key.D2] = VoxelDefinition.EmitterStone,
-            [Key.D3] = VoxelDefinition.Snow,
-            [Key.D4] = VoxelDefinition.Leaves,
-            [Key.D5] = VoxelDefinition.Wood,
-        };
-
         public Camera(Graphics graphics)
         {
             _graphics = graphics;
@@ -131,41 +122,33 @@ namespace AppleCinnamon
 
             if (!_currentKeyboardState.IsPressed(Key.F1) && _lastKeyboardState.IsPressed(Key.F1))
             {
-                Game.IsBackFaceCullingEnabled = !Game.IsBackFaceCullingEnabled;
+                Game.RenderSolid = !Game.RenderSolid;
             }
 
             if (!_currentKeyboardState.IsPressed(Key.F2) && _lastKeyboardState.IsPressed(Key.F2))
             {
-                Game.IsViewFrustumCullingEnabled = !Game.IsViewFrustumCullingEnabled;
+                Game.RenderWater= !Game.RenderWater;
             }
 
             if (!_currentKeyboardState.IsPressed(Key.F3) && _lastKeyboardState.IsPressed(Key.F3))
             {
-                Game.ShowChunkBoundingBoxes = !Game.ShowChunkBoundingBoxes;
+                Game.RenderSprites = !Game.RenderSprites;
             }
 
             if (!_currentKeyboardState.IsPressed(Key.F4) && _lastKeyboardState.IsPressed(Key.F4))
             {
-                Game.RenderWater = !Game.RenderWater;
+                Game.RenderBoxes = !Game.RenderBoxes;
             }
 
             if (!_currentKeyboardState.IsPressed(Key.F5) && _lastKeyboardState.IsPressed(Key.F5))
             {
-                Game.RenderSolid = !Game.RenderSolid;
+                Game.ShowChunkBoundingBoxes = !Game.ShowChunkBoundingBoxes;
             }
 
             if (!_currentKeyboardState.IsPressed(Key.F12) && _lastKeyboardState.IsPressed(Key.F12))
             {
                 Game.Debug = !Game.Debug;
             }
-
-            // foreach (var keyVoxel in KeyVoxelMapping)
-            // {
-            //     if (_currentKeyboardState.IsPressed(keyVoxel.Key))
-            //     {
-            //         VoxelInHand = keyVoxel.Value;
-            //     }
-            // }
 
             var delta = _currentMouseState.Z / 120;
             if (delta != 0)

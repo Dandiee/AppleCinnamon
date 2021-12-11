@@ -67,16 +67,15 @@ namespace AppleCinnamon
                 }
             }
 
-            return $"Finalized chunks {chunkManager.FinalizedChunks:N0}\r\n" +
-                   $"Rendered chunks {chunkManager.RenderedChunks:N0}\r\n" +
-                   $"Queued chunks {chunkManager.QueuedChunks:N0}\r\n" +
-                   $"Total visible faces {chunkManager.TotalVisibleFaces:N0}\r\n" +
-                   $"Total visible voxels {chunkManager.TotalVisibleVoxels:N0}\r\n" +
+            return //$"Finalized chunks {chunkManager.FinalizedChunks:N0}\r\n" +
+                   //$"Rendered chunks {chunkManager.RenderedChunks:N0}\r\n" +
+                   //$"Queued chunks {chunkManager.QueuedChunks:N0}\r\n" +
+                   //$"Total visible faces {chunkManager.TotalVisibleFaces:N0}\r\n" +
+                   //$"Total visible voxels {chunkManager.TotalVisibleVoxels:N0}\r\n" +
                    $"Current position {camera.Position.ToVector3().ToNonRetardedString()}\r\n" +
                    $"Orientation {camera.LookAt.ToVector3().ToNonRetardedString()}\r\n" +
                    $"Current target {targetInfo}\r\n" +
                    $"Target target: {targetTargetInfo}\r\n" +
-                   $"Test: {chunkManager.QuickTest ?? "No test"}\r\n" +
                    $"Back-face culling [F1]: {(Game.IsBackFaceCullingEnabled ? "On" : "Off")}\r\n" +
                    $"View frustum culling [F2]: {(Game.IsViewFrustumCullingEnabled ? "On" : "Off")}\r\n" +
                    $"Show chunk boxes [F3]: {(Game.ShowChunkBoundingBoxes ? "On" : "Off")}\r\n";
@@ -90,8 +89,8 @@ namespace AppleCinnamon
             return $"Chunk size {Chunk.SizeXy}, View distance: {Game.ViewDistance}, Slice: {Chunk.SliceHeight}\r\n" +
                    //string.Join("\r\n", chunkManager.PipelinePerformance.Select(s => $"{s.Key}: {s.Value:N0} ms")) + "\r\n" + 
                    GetPipelineMetrics() +"\r\n" +
-                   $"Total pipeline time: {chunkManager.PipelinePerformance.Values.Sum():N0} ms\r\n" + 
-                   $"Boot time: {chunkManager.BootTime.TotalMilliseconds:N0} ms\r\n" + 
+                   //$"Total pipeline time: {chunkManager.PipelinePerformance.Values.Sum():N0} ms\r\n" + 
+                   //$"Boot time: {chunkManager.BootTime.TotalMilliseconds:N0} ms\r\n" + 
                    $"Average render time: {game.AverageRenderTime:F2}\r\n" +
                    $"Peek render time: {game.PeekRenderTime:F2}\r\n" +
                    $"Average FPS: {game.AverageFps:F2}\r\n";

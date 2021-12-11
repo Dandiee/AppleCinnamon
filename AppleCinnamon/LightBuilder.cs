@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using AppleCinnamon.Helper;
-using AppleCinnamon.Pipeline;
 using AppleCinnamon.Settings;
 using SharpDX;
 
@@ -11,23 +10,21 @@ namespace AppleCinnamon
     {
         public readonly Face Direction;
         public readonly Int3 Step;
-        public readonly Bool3 Bools;
 
-        public LightDirections(Face direction, Int3 step, Bool3 bools)
+        public LightDirections(Face direction, Int3 step)
         {
             Direction = direction;
             Step = step;
-            Bools = bools;
         }
 
         public static readonly LightDirections[] All =
         {
-            new(Face.Top, Int3.UnitY, Bool3.UnitY),
-            new(Face.Bottom, -Int3.UnitY, Bool3.UnitY),
-            new(Face.Left, -Int3.UnitX, Bool3.UnitX),
-            new(Face.Right, Int3.UnitX, Bool3.UnitX),
-            new(Face.Front, -Int3.UnitZ, Bool3.UnitZ),
-            new(Face.Back, Int3.UnitZ, Bool3.UnitZ)
+            new(Face.Top, Int3.UnitY),
+            new(Face.Bottom, -Int3.UnitY),
+            new(Face.Left, -Int3.UnitX),
+            new(Face.Right, Int3.UnitX),
+            new(Face.Front, -Int3.UnitZ),
+            new(Face.Back, Int3.UnitZ)
         };
     }
 
@@ -74,7 +71,7 @@ namespace AppleCinnamon
                 if (brightest == null || brightest.Item3 < voxel.Lightness)
                 {
                     //brightest = new Tuple<Chunk, Int3, byte>(chunk.neighbors[address.ChunkIndex],
-                    brightest = new Tuple<Chunk, Int3, byte>(chunk.neighbors2[Help.GetChunkFlatIndex(address.ChunkIndex)],
+                    brightest = new Tuple<Chunk, Int3, byte>(chunk.Neighbors[Help.GetChunkFlatIndex(address.ChunkIndex)],
                         address.RelativeVoxelIndex, voxel.Lightness);
                 }
             }

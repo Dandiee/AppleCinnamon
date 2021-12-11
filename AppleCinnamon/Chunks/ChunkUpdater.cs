@@ -49,55 +49,8 @@ namespace AppleCinnamon
 
     public sealed class ChunkUpdater
     {
-        public static readonly Tuple<Int3, VisibilityFlag>[] RemoveMapping =
-        {
-            new(Int3.UnitY, VisibilityFlag.Bottom),
-            new(-Int3.UnitY, VisibilityFlag.Top),
-            new(-Int3.UnitX, VisibilityFlag.Right),
-            new(Int3.UnitX, VisibilityFlag.Left),
-            new(-Int3.UnitZ, VisibilityFlag.Back),
-            new(Int3.UnitZ, VisibilityFlag.Front)
-        };
-
-        public static readonly Dictionary<Int3, VisibilityFlag> AddMapping = new()
-        {
-            { Int3.UnitY, VisibilityFlag.Top },
-            { -Int3.UnitY, VisibilityFlag.Bottom },
-            { -Int3.UnitX, VisibilityFlag.Left },
-            { Int3.UnitX, VisibilityFlag.Right },
-            { -Int3.UnitZ, VisibilityFlag.Front },
-            { Int3.UnitZ, VisibilityFlag.Back },
-        };
-
-
-        public static readonly Dictionary<Int3, Face> FaceMapping = new()
-        {
-            { Int3.UnitY, Face.Top },
-            { -Int3.UnitY, Face.Bottom },
-            { -Int3.UnitX, Face.Left },
-            { Int3.UnitX, Face.Right },
-            { -Int3.UnitZ, Face.Front },
-            { Int3.UnitZ, Face.Back },
-        };
-
-
-
-
-        public static readonly Dictionary<Face, Face> OppositeMapping = new()
-        {
-            { Face.Top, Face.Bottom },
-            { Face.Bottom, Face.Top },
-            { Face.Left, Face.Right },
-            { Face.Right, Face.Left },
-            { Face.Front, Face.Back },
-            { Face.Back, Face.Front },
-        };
-
-
-
         private bool _isUpdateInProgress;
 
-        private readonly Graphics _graphics;
         private readonly ChunkManager _chunkManager;
         private readonly ChunkBuilder _chunkBuilder;
         private readonly LightUpdater _lightUpdater;
@@ -106,7 +59,6 @@ namespace AppleCinnamon
             Graphics graphics,
             ChunkManager chunkManager)
         {
-            _graphics = graphics;
             _chunkManager = chunkManager;
             _chunkBuilder = new ChunkBuilder(graphics.Device);
             _lightUpdater = new LightUpdater();
@@ -194,7 +146,7 @@ namespace AppleCinnamon
                     chunk.GetLocalWithneighbors(neighbor.X, neighbor.Y, neighbor.Z, out var neighborAddress);
                 var neighborDefinition = VoxelDefinition.DefinitionByType[neighborVoxel.Block];
 
-                var neighborChunk = chunk.neighbors2[Help.GetChunkFlatIndex(neighborAddress.ChunkIndex)];
+                var neighborChunk = chunk.Neighbors[Help.GetChunkFlatIndex(neighborAddress.ChunkIndex)];
                 var neighborIndex = neighborAddress.RelativeVoxelIndex.ToFlatIndex(neighborChunk.CurrentHeight);
 
 

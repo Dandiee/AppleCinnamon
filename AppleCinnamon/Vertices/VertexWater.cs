@@ -4,16 +4,20 @@ using SharpDX.DXGI;
 
 namespace AppleCinnamon.Vertices
 {
-    public struct VertexWater
+    public struct VertexWater : IVertex
     {
-        public const int Size = 24;
+        private const int _size = 24;
 
-        public static readonly InputElement[] InputElements =
+        private static readonly InputElement[] _inputElements =
         {
             new("POSITION", 0, Format.R32G32B32_Float, 0, 0), //0
             new("TEXCOORD", 0, Format.R32G32_Float, 12, 0), // 3
             new("COLOR", 0, Format.R32_Float, 20, 0), //3+2
         };
+
+
+        public int Size => _size;
+        public InputElement[] InputElements => _inputElements;
 
         public VertexWater(Vector3 position, Vector2 textureCoordinate, int ambientOcclusion, float lightness)
         {
@@ -28,15 +32,18 @@ namespace AppleCinnamon.Vertices
 
     }
 
-    public struct VertexSprite
+    public struct VertexSprite : IVertex
     {
-        public const int Size = 16;
+        private const int _size = 16;
 
-        public static readonly InputElement[] InputElements =
+        private static readonly InputElement[] _inputElements =
         {
             new("POSITION", 0, Format.R32G32B32_Float, 0, 0), //0
             new("VISIBILITY", 0, Format.R32_UInt, 12, 0) //3+2
         };
+
+        public int Size => _size;
+        public InputElement[] InputElements => _inputElements;
 
         public VertexSprite(Vector3 position, int u, int v, byte baseLight)
         {
@@ -52,11 +59,11 @@ namespace AppleCinnamon.Vertices
 
     }
 
-    public struct VertexBox
+    public struct VertexBox : IVertex
     {
-        public const int Size = 36;
+        private const int _size = 36;
 
-        public static readonly InputElement[] InputElements =
+        private static readonly InputElement[] _inputElements =
         {
             new("POSITION", 
                 0, Format.R32G32B32_Float, 0, 0), //0
@@ -65,6 +72,10 @@ namespace AppleCinnamon.Vertices
             new("COLOR", 
                 0, Format.R32G32B32_Float, 24, 0), //3+2
         };
+
+
+        public int Size => _size;
+        public InputElement[] InputElements => _inputElements;
 
         public VertexBox(Vector3 minimum, Vector3 maximum, Color3 color)
         {

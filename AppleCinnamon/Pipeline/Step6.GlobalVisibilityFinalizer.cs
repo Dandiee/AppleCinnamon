@@ -1,4 +1,6 @@
-﻿using AppleCinnamon.Helper;
+﻿using System;
+using System.Linq;
+using AppleCinnamon.Helper;
 using AppleCinnamon.Pipeline.Context;
 using AppleCinnamon.Settings;
 
@@ -8,10 +10,15 @@ namespace AppleCinnamon.Pipeline
     {
         public override Chunk Process(Chunk chunk)
         {
-            var leftChunk = chunk.neighbors2[Help.GetChunkFlatIndex(-1, 0)];
-            var rightChunk = chunk.neighbors2[Help.GetChunkFlatIndex(1, 0)];
-            var frontChunk = chunk.neighbors2[Help.GetChunkFlatIndex(0, -1)];
-            var backChunk = chunk.neighbors2[Help.GetChunkFlatIndex(0, 1)];
+            if (chunk.Neighbors.Any(a => a == null))
+            {
+                throw new Exception("nooooo waaaay");
+            }
+
+            var leftChunk = chunk.Neighbors[Help.GetChunkFlatIndex(-1, 0)];
+            var rightChunk = chunk.Neighbors[Help.GetChunkFlatIndex(1, 0)];
+            var frontChunk = chunk.Neighbors[Help.GetChunkFlatIndex(0, -1)];
+            var backChunk = chunk.Neighbors[Help.GetChunkFlatIndex(0, 1)];
 
             ProcessSide(chunk, leftChunk, chunk.BuildingContext.Left);
             ProcessSide(chunk, rightChunk, chunk.BuildingContext.Right);

@@ -21,7 +21,6 @@ namespace AppleCinnamon.Pipeline
         public override Chunk Process(Chunk chunk)
         {
             _chunkBuilder.BuildChunk(chunk);
-            chunk.State = ChunkState.Displayed;
             return chunk;
         }
 

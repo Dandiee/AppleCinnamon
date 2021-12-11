@@ -24,7 +24,7 @@ namespace AppleCinnamon.Pipeline
         {
             foreach (var corner in CornerMapping)
             {
-                var cornerChunk = chunk.neighbors2[corner.Key];
+                var cornerChunk = chunk.Neighbors[corner.Key];
                 EdgeSolver(cornerChunk, EdgePropogation.All[(byte)corner.Value[0]]);
                 EdgeSolver(cornerChunk, EdgePropogation.All[(byte)corner.Value[1]]);
             }
@@ -66,7 +66,7 @@ namespace AppleCinnamon.Pipeline
 
         private void EdgeSolver(Chunk targetChunk, EdgePropogation context)
         {
-            var sourceChunk = targetChunk.neighbors2[context.RelativeSourceChunkIndex];
+            var sourceChunk = targetChunk.Neighbors[context.RelativeSourceChunkIndex];
 
             var height = Math.Min(sourceChunk.CurrentHeight, targetChunk.CurrentHeight);
 
