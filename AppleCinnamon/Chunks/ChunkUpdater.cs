@@ -107,17 +107,17 @@ namespace AppleCinnamon
                 a += sw.ElapsedMilliseconds;
 
                 sw.Restart();
-                //Task.WaitAll(ChunkManager.GetSurroundingChunks(2).Select(chunkIndex =>
-                //{
-                //    if (chunkIndex != Int2.Zero && _chunkManager.TryGetChunk(chunkIndex + chunk.ChunkIndex, out var chunkToReload))
-                //    {
-                //        return Task.Run(() => _chunkBuilder.BuildChunk(chunkToReload));
-                //    }
+                Task.WaitAll(ChunkManager.GetSurroundingChunks(2).Select(chunkIndex =>
+                {
+                    if (chunkIndex != Int2.Zero && _chunkManager.TryGetChunk(chunkIndex + chunk.ChunkIndex, out var chunkToReload))
+                    {
+                        return Task.Run(() => _chunkBuilder.BuildChunk(chunkToReload));
+                    }
 
-                //    sw.Stop();
-                //    return Task.CompletedTask;
+                    sw.Stop();
+                    return Task.CompletedTask;
 
-                //}).ToArray());
+                }).ToArray());
                 b += sw.ElapsedMilliseconds;
                 
 

@@ -132,10 +132,13 @@ namespace AppleCinnamon.Chunks
         public void Update(Camera camera)
         {
             _solidEffect.Effect.GetVariableByName("WorldViewProjection").AsMatrix().SetMatrix(camera.WorldViewProjection);
-            _solidEffect.Effect.GetVariableByName("EyePosition").AsVector().Set(camera.Position.ToVector3());
             _waterEffect.Effect.GetVariableByName("WorldViewProjection").AsMatrix().SetMatrix(camera.WorldViewProjection);
             _spriteEffect.Effect.GetVariableByName("WorldViewProjection").AsMatrix().SetMatrix(camera.WorldViewProjection);
             _boxEffect.Effect.GetVariableByName("WorldViewProjection").AsMatrix().SetMatrix(camera.WorldViewProjection);
+
+            _solidEffect.Effect.GetVariableByName("EyePosition").AsVector().Set(camera.Position.ToVector3());
+            _waterEffect.Effect.GetVariableByName("EyePosition").AsVector().Set(camera.Position.ToVector3());
+            _spriteEffect.Effect.GetVariableByName("EyePosition").AsVector().Set(camera.Position.ToVector3());
 
             if (camera.IsInWater)
             {
@@ -146,6 +149,10 @@ namespace AppleCinnamon.Chunks
                 _waterEffect.Effect.GetVariableByName("FogStart").AsScalar().Set(8);
                 _waterEffect.Effect.GetVariableByName("FogEnd").AsScalar().Set(64);
                 _waterEffect.Effect.GetVariableByName("FogColor").AsVector().Set(new Vector4(0, 0.2f, 1, 0));
+
+                _spriteEffect.Effect.GetVariableByName("FogStart").AsScalar().Set(8);
+                _spriteEffect.Effect.GetVariableByName("FogEnd").AsScalar().Set(64);
+                _spriteEffect.Effect.GetVariableByName("FogColor").AsVector().Set(new Vector4(0, 0.2f, 1, 0));
             }
             else
             {
@@ -156,6 +163,10 @@ namespace AppleCinnamon.Chunks
                 _waterEffect.Effect.GetVariableByName("FogStart").AsScalar().Set(64);
                 _waterEffect.Effect.GetVariableByName("FogEnd").AsScalar().Set(Game.ViewDistance * Chunk.SizeXy);
                 _waterEffect.Effect.GetVariableByName("FogColor").AsVector().Set(new Vector4(0.5f, 0.5f, 0.5f, 1));
+
+                _spriteEffect.Effect.GetVariableByName("FogStart").AsScalar().Set(64);
+                _spriteEffect.Effect.GetVariableByName("FogEnd").AsScalar().Set(Game.ViewDistance * Chunk.SizeXy);
+                _spriteEffect.Effect.GetVariableByName("FogColor").AsVector().Set(new Vector4(0.5f, 0.5f, 0.5f, 1));
             }
         }
     }
