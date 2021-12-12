@@ -2,9 +2,11 @@ float4x4 WorldViewProjection;
 float3 Normal;
 Texture2D Textures;
 
-float FogStart = 150;
-float FogEnd = 400;
 float FogEnabled = 1;
+float3 EyePosition;
+float4 FogColor = float4(.5, .5, .5, 1);
+float FogStart = 64;
+float FogEnd = 256;
 
 float4 ambientColor = float4(0.5, 0.5, 0.5, 1.0);
 float4 diffuseColor = float4(1.0, 1.0, 1.0, 1.0);
@@ -29,7 +31,12 @@ struct VertexShaderOutput
     float4 Position : SV_POSITION; // GECIFONTOS
 	float2 TexCoords : TEXCOORD0;
 	float AmbientOcclusion : COLOR0;
+	float FogFactor : COLOR1;
 };
+float ComputeFogFactor(float d)
+{
+	return clamp((d - FogStart) / (FogEnd - FogStart), 0, 1) * FogEnabled;
+}
 
 VertexShaderOutput VertexShaderFunction(VertexShaderInput input)
 {
@@ -40,23 +47,19 @@ VertexShaderOutput VertexShaderFunction(VertexShaderInput input)
     output.Position = mul(position, WorldViewProjection);
 	output.TexCoords = input.TexCoords + float2(TextureOffset.x, TextureOffset.y);
 	output.AmbientOcclusion = input.AmbientOcclusion;
-	
+	output.FogFactor = ComputeFogFactor(distance(EyePosition.xyz, input.Position.xyz));
+
     return output;
 }
 
-float ComputeFogFactor(float d)
-{
-    return clamp((d - FogStart) / (FogEnd - FogStart), 0, 1) * FogEnabled;
-}
 
 
 float4 PixelShaderFunction(VertexShaderOutput input) : SV_Target
 {
     float4 color = Textures.Sample(SampleType, input.TexCoords) * input.AmbientOcclusion;
+	float4 finalColor = (1.0 - input.FogFactor) * color + (input.FogFactor) * FogColor;
 
-	
-
-	return float4(color.xyz, 0.7);
+	return float4(finalColor.xyz, 0.7);
 }
 
 technique10 Render

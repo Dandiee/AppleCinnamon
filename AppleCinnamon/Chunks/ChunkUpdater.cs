@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using AppleCinnamon.Helper;
@@ -66,6 +67,8 @@ namespace AppleCinnamon
 
         private static readonly Random _random = new(456);
 
+        public static long a;
+        public static long b;
         public void SetVoxel(Int3 absoluteIndex, byte voxel)
         {
             if (_isUpdateInProgress)
@@ -78,10 +81,13 @@ namespace AppleCinnamon
             {
                 _isUpdateInProgress = true;
 
+                var sw = Stopwatch.StartNew();
                 if (address.Value.RelativeVoxelIndex.Y >= chunk.CurrentHeight)
                 {
                     chunk.ExtendUpward(address.Value.RelativeVoxelIndex.Y);
                 }
+
+
 
                 var flatIndex = address.Value.RelativeVoxelIndex.ToFlatIndex(chunk.CurrentHeight);
                 var oldVoxel = chunk.GetVoxel(flatIndex);
@@ -97,18 +103,23 @@ namespace AppleCinnamon
                 UpdateSprites(chunk, oldVoxel, newVoxel, address.Value.RelativeVoxelIndex);
                 _lightUpdater.UpdateLighting(chunk, address.Value.RelativeVoxelIndex, oldVoxel, newVoxel);
                 _chunkBuilder.BuildChunk(chunk);
+                sw.Stop();
+                a += sw.ElapsedMilliseconds;
 
-                Task.WaitAll(ChunkManager.GetSurroundingChunks(2).Select(chunkIndex =>
-                {
-                    if (chunkIndex != Int2.Zero &&
-                        _chunkManager.TryGetChunk(chunkIndex + chunk.ChunkIndex, out var chunkToReload))
-                    {
-                        return Task.Run(() => _chunkBuilder.BuildChunk(chunkToReload));
-                    }
+                sw.Restart();
+                //Task.WaitAll(ChunkManager.GetSurroundingChunks(2).Select(chunkIndex =>
+                //{
+                //    if (chunkIndex != Int2.Zero && _chunkManager.TryGetChunk(chunkIndex + chunk.ChunkIndex, out var chunkToReload))
+                //    {
+                //        return Task.Run(() => _chunkBuilder.BuildChunk(chunkToReload));
+                //    }
 
-                    return Task.CompletedTask;
-                }).ToArray());
+                //    sw.Stop();
+                //    return Task.CompletedTask;
 
+                //}).ToArray());
+                b += sw.ElapsedMilliseconds;
+                
 
                 _isUpdateInProgress = false;
             }

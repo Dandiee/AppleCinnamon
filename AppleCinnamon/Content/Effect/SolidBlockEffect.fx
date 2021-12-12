@@ -15,10 +15,10 @@ SamplerState SS
 	AddressU = Clamp;
 	AddressV = Clamp;
 	AddressW = Clamp;
-	Filter = MIN_MAG_MIP_POINT; 
+	Filter = MIN_MAG_MIP_POINT;	
 	MaxAnisotropy = 16;
 };
-
+//Filter = MIN_MAG_MIP_POINT;
 float4 HueColors[] = 
 {
 	float4(1,1,1,1),

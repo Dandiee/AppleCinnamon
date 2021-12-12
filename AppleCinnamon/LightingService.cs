@@ -56,9 +56,6 @@ namespace AppleCinnamon
             }
         }
 
-        public static void LocalPropagate(Chunk chunk, int localLightSources)
-            => LocalPropagate(chunk, new Queue<int>(new[] {localLightSources}));
-
         public static void LocalPropagate(Chunk chunk, Queue<int> localLightSources)
         {
             while (localLightSources.Count > 0)
@@ -147,9 +144,10 @@ namespace AppleCinnamon
                 var flatIndex = Help.GetFlatIndex(relativeIndex.X, j, relativeIndex.Z, chunk.CurrentHeight);
                 var voxel = chunk.Voxels[flatIndex];
                 var definition = VoxelDefinition.DefinitionByType[voxel.Block];
-                
+
                 // TODO: ez nem jó, nem elég csak azt mondani hogy > 0
-                if (definition.TransmittanceQuarters[(byte)Face.Bottom] > 0)
+                //if (definition.TransmittanceQuarters[(byte)Face.Bottom] > 0)
+                if (definition.Type == 0)
                 {
                     chunk.SetVoxel(flatIndex, voxel.SetLight(toLightness));
 

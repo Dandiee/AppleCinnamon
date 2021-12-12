@@ -133,11 +133,6 @@ namespace AppleCinnamon.Pipeline
                             }
                         }
 
-                        if (chunk.ChunkIndex == new Int2(0, -1) && i == 9 && j == 122 && k == 25)
-                        {
-
-                        }
-
                         BuildHorizontalFace(i > 0,
                             Help.GetFlatIndex(i - 1, j, k, chunk.CurrentHeight), chunk, definition, flatIndex, ref visibilityFlag, ref voxelLight, chunk.BuildingContext.Left);
                         BuildHorizontalFace(i < Chunk.SizeXy - 1,

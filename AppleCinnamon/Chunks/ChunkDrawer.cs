@@ -142,12 +142,20 @@ namespace AppleCinnamon.Chunks
                 _solidEffect.Effect.GetVariableByName("FogStart").AsScalar().Set(8);
                 _solidEffect.Effect.GetVariableByName("FogEnd").AsScalar().Set(64);
                 _solidEffect.Effect.GetVariableByName("FogColor").AsVector().Set(new Vector4(0, 0.2f, 1, 0));
+
+                _waterEffect.Effect.GetVariableByName("FogStart").AsScalar().Set(8);
+                _waterEffect.Effect.GetVariableByName("FogEnd").AsScalar().Set(64);
+                _waterEffect.Effect.GetVariableByName("FogColor").AsVector().Set(new Vector4(0, 0.2f, 1, 0));
             }
             else
             {
                 _solidEffect.Effect.GetVariableByName("FogStart").AsScalar().Set(64);
                 _solidEffect.Effect.GetVariableByName("FogEnd").AsScalar().Set(Game.ViewDistance * Chunk.SizeXy);
                 _solidEffect.Effect.GetVariableByName("FogColor").AsVector().Set(new Vector4(0.5f, 0.5f, 0.5f, 1));
+
+                _waterEffect.Effect.GetVariableByName("FogStart").AsScalar().Set(64);
+                _waterEffect.Effect.GetVariableByName("FogEnd").AsScalar().Set(Game.ViewDistance * Chunk.SizeXy);
+                _waterEffect.Effect.GetVariableByName("FogColor").AsVector().Set(new Vector4(0.5f, 0.5f, 0.5f, 1));
             }
         }
     }

@@ -42,10 +42,10 @@ namespace AppleCinnamon.Pipeline
             public static readonly EdgePropogation[] All =
             {
                 new(), new(),
-                new(Face.Left, Help.GetChunkFlatIndex(-1, 0), new Int3(0, 1, 1), new Int3(31,0,0), new Int3(0, 0, 0)),
-                new(Face.Right, Help.GetChunkFlatIndex(1, 0), new Int3(0, 1, 1), new Int3(0, 0, 0), new Int3(31, 0, 0)),
-                new(Face.Front, Help.GetChunkFlatIndex(0, -1), new Int3(1, 1, 0), new Int3(0, 0, 31), new Int3(0, 0, 0)),
-                new(Face.Back, Help.GetChunkFlatIndex(0, 1), new Int3(1, 1, 0), new Int3(0, 0, 0), new Int3(0, 0, 31)),
+                new(Face.Left, Help.GetChunkFlatIndex(-1, 0), new Int3(0, 1, 1), new Int3(Chunk.SizeXy - 1,0,0), new Int3(0, 0, 0)),
+                new(Face.Right, Help.GetChunkFlatIndex(1, 0), new Int3(0, 1, 1), new Int3(0, 0, 0), new Int3(Chunk.SizeXy - 1, 0, 0)),
+                new(Face.Front, Help.GetChunkFlatIndex(0, -1), new Int3(1, 1, 0), new Int3(0, 0, Chunk.SizeXy - 1), new Int3(0, 0, 0)),
+                new(Face.Back, Help.GetChunkFlatIndex(0, 1), new Int3(1, 1, 0), new Int3(0, 0, 0), new Int3(0, 0, Chunk.SizeXy - 1)),
             };
 
             public readonly Face TargetToSourceDirection;

@@ -1,9 +1,10 @@
 float4x4 WorldViewProjection;
 
+float FogEnabled = 1;
+float3 EyePosition;
 float4 FogColor = float4(.5, .5, .5, 1);
 float FogStart = 64;
 float FogEnd = 256;
-float3 EyePosition;
 
 Texture2D Textures;
 
@@ -34,6 +35,12 @@ struct VertexShaderOutput
 	float4 HueColor : COLOR2;
 };
 
+
+float ComputeFogFactor(float d)
+{
+	return clamp((d - FogStart) / (FogEnd - FogStart), 0, 1) * FogEnabled;
+}
+
 VertexShaderOutput VertexShaderFunction(VertexShaderInput input)
 {
 
@@ -47,10 +54,10 @@ VertexShaderOutput VertexShaderFunction(VertexShaderInput input)
 	output.Position = mul(position, WorldViewProjection);
 	output.TexCoords = float2(u, v);
 	output.AmbientOcclusion = l;
+	output.FogFactor = ComputeFogFactor(distance(EyePosition.xyz, input.Position.xyz));
 
 	return output;
 }
-
 
 
 
@@ -58,7 +65,9 @@ float4 PixelShaderFunction(VertexShaderOutput input) : SV_Target
 {
 	float4 textureColor = Textures.Sample(SS, input.TexCoords) * input.AmbientOcclusion;
 	clip(textureColor.a == 0 ? -1 : 1);
-	return textureColor;
+	float4 finalColor = (1.0 - input.FogFactor) * textureColor + (input.FogFactor) * FogColor;
+	return finalColor;
+
 }
 
 technique10 Render
