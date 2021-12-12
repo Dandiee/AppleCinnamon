@@ -24,7 +24,7 @@ namespace AppleCinnamon.Pipeline
         {
             _chunkDispatcher = new ChunkDispatcher(device);
             _localLightPropagationService = new LocalLightPropagationService();
-            _chunkProvider = new ChunkProvider(921207);
+            _chunkProvider = new ChunkProvider(1513);
             _globalLightFinalizer = new GlobalLightFinalizer();
             _chunkPool = new ChunkPool();
             _fullScanner = new FullScanner();

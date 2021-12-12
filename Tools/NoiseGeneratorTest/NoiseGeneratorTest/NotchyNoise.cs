@@ -94,8 +94,8 @@ namespace NoiseGeneratorTest
 
         public double Compute(double x, double y)
         {
-            var amplitude = 1.0; //_baseAmplitude;
-            var frequency = 1.0; //baseFrequency;
+            var amplitude = _baseAmplitude; // 1.0; //_baseAmplitude;
+            var frequency = _baseFrequency;// 1.0; //baseFrequency;
 
             double sum = 0;
             for (var i = 0; i < _baseNoise.Length; i++)

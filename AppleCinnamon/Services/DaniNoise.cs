@@ -1,4 +1,5 @@
 ﻿using System;
+using AppleCinnamon.Settings;
 
 namespace AppleCinnamon.Pipeline
 {
@@ -76,12 +77,14 @@ namespace AppleCinnamon.Pipeline
 
     public sealed class DaniNoise
     {
+        private readonly SimplexOptions _options;
         private readonly ImprovedNoise[] _baseNoise;
 
-        public DaniNoise(int octaves, Random random)
+        public DaniNoise(SimplexOptions options, Random random)
         {
-            _baseNoise = new ImprovedNoise[octaves];
-            for (int i = 0; i < octaves; i++)
+            _options = options;
+            _baseNoise = new ImprovedNoise[_options.Octaves];
+            for (int i = 0; i < _options.Octaves; i++)
             {
                 _baseNoise[i] = new ImprovedNoise(random);
             }
@@ -89,8 +92,8 @@ namespace AppleCinnamon.Pipeline
 
         public double Compute(double x, double y)
         {
-            var amplitude = 1.0; //_baseAmplitude;
-            var frequency = 0.4; //baseFrequency;
+            var amplitude = _options.Amplitude;// 1.0; //_baseAmplitude;
+            var frequency = _options.Frequency; // 0.4; //baseFrequency;
 
             double sum = 0;
             for (var i = 0; i < _baseNoise.Length; i++)
@@ -99,7 +102,7 @@ namespace AppleCinnamon.Pipeline
                 amplitude *= 2;
                 frequency *= .5;
             }
-            return sum;
+            return sum * _options.Factor + _options.Offset;
         }
     }
 

@@ -55,6 +55,22 @@
                                 <ColumnDefinition/>
                                 <ColumnDefinition/>
                             </Grid.ColumnDefinitions>
+                            <Label Grid.Column="0" Content="Offset"/>
+                            <TextBlock Grid.Column="1" Text="{Binding Offset}" HorizontalAlignment="Right"/>
+                        </Grid>
+                        <Slider Value="{Binding Offset}" Minimum="-300" Maximum="300" Margin="0 0 0 10" Ticks="16">
+                            <i:Interaction.Triggers>
+                                <i:EventTrigger EventName="ValueChanged">
+                                    <i:InvokeCommandAction Command="{Binding RenderCommand}"/>
+                                </i:EventTrigger>
+                            </i:Interaction.Triggers>
+                        </Slider>
+
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                            </Grid.ColumnDefinitions>
                             <Label Grid.Column="0" Content="Octaves"/>
                             <TextBlock Grid.Column="1" Text="{Binding Octaves}" HorizontalAlignment="Right"/>
                         </Grid>
@@ -73,9 +89,9 @@
                                 <ColumnDefinition/>
                             </Grid.ColumnDefinitions>
                             <Label Grid.Column="0" Content="Amplitude"/>
-                            <TextBlock Grid.Column="1" Text="{Binding Amplitude}" HorizontalAlignment="Right"/>
+                            <TextBlock Grid.Column="1" Text="{Binding Amplitude, StringFormat={}{0:N2}}" HorizontalAlignment="Right"/>
                         </Grid>
-                        <Slider Value="{Binding Amplitude}" Minimum="1" Maximum="127" Margin="0 0 0 10">
+                        <Slider Value="{Binding Amplitude}" Minimum="0" Maximum="5" Margin="0 0 0 10">
                             <i:Interaction.Triggers>
                                 <i:EventTrigger EventName="ValueChanged">
                                     <i:InvokeCommandAction Command="{Binding RenderCommand}"/>
@@ -89,9 +105,9 @@
                                 <ColumnDefinition/>
                             </Grid.ColumnDefinitions>
                             <Label Grid.Column="0" Content="Frequency"/>
-                            <TextBlock Grid.Column="1" Text="{Binding Frequency}" HorizontalAlignment="Right"/>
+                            <TextBlock Grid.Column="1" Text="{Binding Frequency, StringFormat={}{0:N2}}" HorizontalAlignment="Right"/>
                         </Grid>
-                        <Slider Value="{Binding Frequency}" Minimum="1" Maximum="128" Margin="0 0 0 10">
+                        <Slider Value="{Binding Frequency}" Minimum="0" Maximum="5" Margin="0 0 0 10">
                             <i:Interaction.Triggers>
                                 <i:EventTrigger EventName="ValueChanged">
                                     <i:InvokeCommandAction Command="{Binding RenderCommand}"/>
@@ -119,7 +135,48 @@
 
                 <TabItem Header="Palette">
                     <StackPanel>
-                        
+
+                        <CheckBox IsChecked="{Binding UseGrayScale}" Content="Use gray scale"/>
+                        <CheckBox IsChecked="{Binding IsHighlightValueEnabled}" Content="Highlight value"/>
+
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                            </Grid.ColumnDefinitions>
+                            <Label Grid.Column="0" Content="Highlighted value"/>
+                            <TextBlock Grid.Column="1" Text="{Binding HighlightedValue, StringFormat={}{0:N2}}" HorizontalAlignment="Right"/>
+                        </Grid>
+                        <Slider Value="{Binding HighlightedValue}" 
+                                Minimum="0" 
+                                Maximum="255">
+                            <!--Minimum="{Binding RecordedMin, Mode=OneWay}" 
+                            Maximum="{Binding RecordedMax, Mode=OneWay}" Margin="0 0 0 10">-->
+                            <i:Interaction.Triggers>
+                                <i:EventTrigger EventName="ValueChanged">
+                                    <i:InvokeCommandAction Command="{Binding RenderCommand}"/>
+                                </i:EventTrigger>
+                            </i:Interaction.Triggers>
+                        </Slider>
+
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                            </Grid.ColumnDefinitions>
+                            <Label Grid.Column="0" Content="Highlighted range"/>
+                            <TextBlock Grid.Column="1" Text="{Binding HighlightedRange, StringFormat={}{0:N2}}" HorizontalAlignment="Right"/>
+                        </Grid>
+                        <Slider Value="{Binding HighlightedRange}" Minimum="0" Maximum="100" Margin="0 0 0 10">
+                            <i:Interaction.Triggers>
+                                <i:EventTrigger EventName="ValueChanged">
+                                    <i:InvokeCommandAction Command="{Binding RenderCommand}"/>
+                                </i:EventTrigger>
+                            </i:Interaction.Triggers>
+                        </Slider>
+
+                        <CheckBox IsChecked="{Binding ShowWater}" Content="Show water"/>
+
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition/>
@@ -172,7 +229,14 @@
                 </TabItem>
             </TabControl>
 
+            <TextBlock Text="{Binding RecordedMin, StringFormat={}Min: {0:N2}}"/>
+            <TextBlock Text="{Binding RecordedMax, StringFormat={}Max: {0:N2}}"/>
+            <TextBlock Text="{Binding RecordedRange, StringFormat={}Range: {0:N2}}"/>
+            <TextBlock Text="{Binding FactoredRange, StringFormat={}Factored Range: {0:N2}}"/>
+            <TextBlock Text="{Binding Seed, StringFormat={}Seed: {0}}"/>
+
             <Button Content="Render" Command="{Binding RenderCommand}"/>
+            <Button Content="Reseed" Command="{Binding ReseedCommand}"/>
 
         </StackPanel>
 

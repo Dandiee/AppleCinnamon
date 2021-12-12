@@ -38,7 +38,6 @@ namespace AppleCinnamon
 
         public float Yaw { get; private set; }
         public float Pitch { get; private set; }
-        public Vector3 Orientation { get; private set; }
         public bool IsPaused { get; private set; }
 
         private KeyboardState _currentKeyboardState;
@@ -48,12 +47,14 @@ namespace AppleCinnamon
         public VoxelRayCollisionResult CurrentCursor { get; private set; }
         private int _voxelDefinitionIndexInHand = 1;
 
+        private readonly Vector3 InitialLookAt;
+
         public Camera(Graphics graphics)
         {
             _graphics = graphics;
-            Orientation = Vector3.UnitX;
             Position = new Double3(Game.StartPosition.X, Game.StartPosition.Y, Game.StartPosition.Z);
-            // LookAt = Double3.Normalize(new Double3(0.5, -0.5, 0.5));
+            LookAt = Double3.Normalize(new Double3(1,0,0));
+            InitialLookAt = LookAt.ToVector3();
 
             var directInput = new DirectInput();
             Keyboard = new Keyboard(directInput);
@@ -94,11 +95,16 @@ namespace AppleCinnamon
             _currentKeyboardState = Keyboard.GetCurrentState();
             _currentMouseState = Mouse.GetCurrentState();
 
-            CollisionHelper.ApplyPlayerPhysics(this, chunkManager, (float)gameTime.ElapsedGameTime.TotalSeconds);
-            UpdateMove(gameTime, chunkManager);
-            UpdateMatrices();
+            if (!IsPaused)
+            {
 
-            UpdateCurrentCursor(chunkManager);
+                CollisionHelper.ApplyPlayerPhysics(this, chunkManager, (float) gameTime.ElapsedGameTime.TotalSeconds);
+                UpdateMove(gameTime, chunkManager);
+                UpdateMatrices();
+
+                UpdateCurrentCursor(chunkManager);
+            }
+
             HandleDefaultInputs(chunkManager);
 
             _lastKeyboardState = _currentKeyboardState;
@@ -292,7 +298,7 @@ namespace AppleCinnamon
         public void UpdateMatrices()
         {
             var rotationMatrix = Matrix.RotationYawPitchRoll(Yaw, 0, Pitch);
-            LookAt = Vector3.Normalize(Vector3.Transform(Vector3.UnitX, rotationMatrix).ToVector3()).ToDouble3();
+            LookAt = Vector3.Normalize(Vector3.Transform(InitialLookAt, rotationMatrix).ToVector3()).ToDouble3();
             View = Matrix.LookAtRH(Position.ToVector3(), Position.ToVector3() + LookAt.ToVector3(),
                 Vector3.TransformCoordinate(Vector3.UnitY, rotationMatrix));
             Projection = Matrix.PerspectiveFovRH(MathUtil.PiOverTwo,

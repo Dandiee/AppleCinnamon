@@ -25,7 +25,7 @@ namespace NoiseGeneratorTest
             set => SetProperty(ref _image, value);
         }
 
-        private int _width;
+        private int _width ;
         public int Width
         {
             get => _width;
@@ -54,15 +54,15 @@ namespace NoiseGeneratorTest
             set => SetProperty(ref _factor, value);
         }
 
-        private int _amplitude;
-        public int Amplitude
+        private double _amplitude = 1;
+        public double Amplitude
         {
             get => _amplitude;
             set => SetProperty(ref _amplitude, value);
         }
 
-        private int _frequency;
-        public int Frequency
+        private double _frequency = 1;
+        public double Frequency
         {
             get => _frequency;
             set => SetProperty(ref _frequency, value);
@@ -98,36 +98,131 @@ namespace NoiseGeneratorTest
             set => SetProperty(ref _grassLevel, value);
         }
 
+        private bool _useGrayScale;
+        public bool UseGrayScale
+        {
+            get => _useGrayScale;
+            set => SetProperty(ref _useGrayScale, value);
+        }
+
+        private bool _isHighlightValueEnabled;
+        public bool IsHighlightValueEnabled
+        {
+            get => _isHighlightValueEnabled;
+            set => SetProperty(ref _isHighlightValueEnabled, value);
+        }
+
+        private bool _showWater = false;
+        public bool ShowWater
+        {
+            get => _showWater;
+            set => SetProperty(ref _showWater, value);
+        }
+
+
+        private byte _highlightedValue;
+        public byte HighlightedValue
+        {
+            get => _highlightedValue;
+            set => SetProperty(ref _highlightedValue, value);
+        }
+
+        private byte _highlightedRange;
+        public byte HighlightedRange
+        {
+            get => _highlightedRange;
+            set => SetProperty(ref _highlightedRange, value);
+        }
+
+
+        private double _recordedMin;
+        public double RecordedMin
+        {
+            get => _recordedMin;
+            set => SetProperty(ref _recordedMin, value);
+        }
+
+        private double _recordedMax;
+        public double RecordedMax
+        {
+            get => _recordedMax;
+            set => SetProperty(ref _recordedMax, value);
+        }
+
+        private double _recordedRange;
+        public double RecordedRange
+        {
+            get => _recordedRange;
+            set => SetProperty(ref _recordedRange, value);
+        }
+
+        private double _factoredRange;
+        public double FactoredRange
+        {
+            get => _factoredRange;
+            set => SetProperty(ref _factoredRange, value);
+        }
+
+        private int _offset;
+        public int Offset
+        {
+            get => _offset;
+            set => SetProperty(ref _offset, value);
+        }
+
+        private int _seed;
+        public int Seed
+        {
+            get => _seed;
+            set => SetProperty(ref _seed, value);
+        }
+
         public ICommand RenderCommand { get; }
+        public ICommand ReseedCommand { get; }
+
+        private readonly Random _random = new Random();
+
 
         public MainWindowViewModel()
         {
-            Width = 32;
-            Height = 32;
+            Width = 128;
+            Height = 128;
             Octaves = 8;
-            Factor = 1f;
-            Amplitude = 1;
-            Frequency = 1;
+            Factor = 0.47f;
+            Amplitude = 1.1;
+            Frequency = 0.4;
+            Offset = 134;
 
-            WaterLevel = 64;
+            WaterLevel = 119;
             SnowLevel = 128;
             GrassLevel = 65;
-
+            Seed = 1513;// _random.Next(0, 9999);
             RenderCommand = new DelegateCommand(Render);
+            ReseedCommand = new DelegateCommand(Reseed);
         }
 
-        private byte[,] GenerateNoise()
+        private void Reseed()
+        {
+            Seed = _random.Next(0, 9999);
+            Render();
+        }
+
+        private byte[,] GenerateNoise(int seed)
         {
             var result = new byte[Width, Height];
             var values = new double[Width, Height];
             var listValues = new List<double>(Width * Height);
 
-            var noise = new OctaveNoise(Octaves, new Random(9212107), Amplitude, Frequency);
+            var noise = new OctaveNoise(Octaves, new Random(seed), Amplitude, Frequency);
+
+            var fromI = Width / -2;
+            var fromJ = Height / -2;
+
             for (var i = 0; i < Width; i++)
             {
                 for (var j = 0; j < Height; j++)
                 {
-                    var value = noise.Compute(i, j);
+                    var value = noise.Compute(i + fromI, j + fromJ);
 
                     values[i, j] = (byte) (value * Factor);
 
@@ -138,13 +233,17 @@ namespace NoiseGeneratorTest
             var min = listValues.Min();
             var max = listValues.Max();
 
-            var range = (max - min) / 255f;
+            RecordedMin = min;
+            RecordedMax = max;
+
+            RecordedRange = max - min;
+            FactoredRange = RecordedRange * Factor;
 
             for (var i = 0; i < Width; i++)
             {
                 for (var j = 0; j < Height; j++)
                 {
-                    result[i, j] = (byte) ((values[i, j] - min) / range);
+                    result[i, j] = (byte) ((values[i, j] + Offset));
                 }
             }
 
@@ -154,7 +253,7 @@ namespace NoiseGeneratorTest
         private void Render()
         {
             var sw = Stopwatch.StartNew();
-            var noise = GenerateNoise();
+            var noise = GenerateNoise(Seed);
             sw.Stop();
             RenderTime = (int)sw.ElapsedMilliseconds;
 
@@ -179,20 +278,44 @@ namespace NoiseGeneratorTest
                     var color = Color.Empty;
                     var refHeight = 0;
 
-                    if (height < WaterLevel)
+                    if (UseGrayScale)
                     {
-                        color = WaterColor;
-                        refHeight = WaterLevel - height;
-                    }
-                    else if (height < SnowLevel)
-                    {
-                        color = GrassColor;
-                        refHeight = height - WaterLevel;
+                        refHeight = height;
+                        color = Color.FromArgb(height, height, height);
                     }
                     else
                     {
-                        color = SnowColor;
-                        refHeight = 255 - height;
+                        if (height < WaterLevel)
+                        {
+                            color = WaterColor;
+                            refHeight = WaterLevel - height;
+                        }
+                        else if (height < SnowLevel)
+                        {
+                            color = GrassColor;
+                            refHeight = height - WaterLevel;
+                        }
+                        else
+                        {
+                            color = SnowColor;
+                            refHeight = 255 - height;
+                        }
+                    }
+
+                    if (ShowWater)
+                    {
+                        if (height <= WaterLevel)
+                        {
+                            color = WaterColor;
+                        }
+                    }
+
+                    if (IsHighlightValueEnabled)
+                    {
+                        if (Math.Abs(height - HighlightedValue) <= HighlightedRange)
+                        {
+                            color = Color.Red;
+                        }
                     }
 
                     bitmap.SetPixel(i, j, Color.FromArgb(refHeight, color));

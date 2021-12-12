@@ -16,7 +16,7 @@ namespace AppleCinnamon.Pipeline
         {
             _random = new Random(seed);
             Noise.Seed = seed;
-            _daniNoise = new DaniNoise(8, _random);
+            _daniNoise = new DaniNoise(WorldSettings.HighMapNoiseOptions, _random);
             // Noise.Seed = seed;
         }
 
@@ -25,13 +25,13 @@ namespace AppleCinnamon.Pipeline
             var chunkSizeXz = new Int2(Chunk.SizeXy, Chunk.SizeXy);
 
             var heatMap = new int[Chunk.SizeXy, Chunk.SizeXy];
-            var maxHeight = 101;
+            var maxHeight = WorldSettings.WaterLevel + 1;
             for (var i = 0; i < Chunk.SizeXy; i++)
             {
                 for (var k = 0; k < Chunk.SizeXy; k++)
                 {
                     var coord = chunkIndex * chunkSizeXz + new Int2(i, k);
-                    var height = (byte)((_daniNoise.Compute(coord.X, coord.Y) + 128) * 0.7) + 32;
+                    var height = (byte)((_daniNoise.Compute(coord.X, coord.Y)));
 
                     heatMap[i, k] = height;
                     if (maxHeight < height)
@@ -59,15 +59,15 @@ namespace AppleCinnamon.Pipeline
                         voxels[Help.GetFlatIndex(i, j, k, currentHeight)] = new Voxel(VoxelDefinition.Stone.Type, 0);
                     }
 
-                    if (height < 100) // water level
+                    if (height < WorldSettings.WaterLevel)
                     {
-                        for (var j = height; j < 100; j++)
+                        for (var j = height; j < WorldSettings.WaterLevel; j++)
                         {
                             var flatIndex = Help.GetFlatIndex(i, j, k, currentHeight);
                             voxels[flatIndex] = new Voxel(VoxelDefinition.Water.Type, 0);
                         }
 
-                        chunk.TopMostWaterVoxels.Add(Help.GetFlatIndex(i, 99, k, currentHeight));
+                        chunk.TopMostWaterVoxels.Add(Help.GetFlatIndex(i, WorldSettings.WaterLevel - 1, k, currentHeight));
                     }
 
 
