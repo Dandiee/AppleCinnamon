@@ -137,13 +137,15 @@ namespace AppleCinnamon.Settings
         public static readonly VoxelDefinition Snow = new BlockDefinitionBuilder(24).WithBottomTexture(2, 0).WithTopTexture(0, 4).WithSideTexture(4, 4).WithHeight(1f).Build();
         public static readonly VoxelDefinition EmitterStone = new BlockDefinitionBuilder(25).WithAllSideTexture(1, 0).AsPermeable().WithLightEmitting(14).Build();
         public static readonly VoxelDefinition Sand = new BlockDefinitionBuilder(26).WithAllSideTexture(2, 1).Build();
-        public static readonly VoxelDefinition Wood = new BlockDefinitionBuilder(27).WithSideTexture(4, 1).WithTopTexture(5, 1).WithTopTexture(5, 1).Build();
-        public static readonly VoxelDefinition Weed = new BlockDefinitionBuilder(28).WithAllSideTexture(14, 5)
-            .WithSize(1, .8f, 1).AsSprite().Build();
-        public static readonly VoxelDefinition Flower = new BlockDefinitionBuilder(29)
-            .WithAllSideTexture(12, 0).WithSize(.6f, .8f, .6f).AsSprite().Build();
+        public static readonly VoxelDefinition Wood1 = new BlockDefinitionBuilder(27).WithSideTexture(4, 1).WithTopTexture(5, 1).WithTopTexture(5, 1).Build();
+        public static readonly VoxelDefinition Wood2 = new BlockDefinitionBuilder(28).WithSideTexture(4, 7).WithTopTexture(5, 1).WithTopTexture(5, 1).Build();
+        public static readonly VoxelDefinition Wood3 = new BlockDefinitionBuilder(29).WithSideTexture(6, 5).WithTopTexture(5, 1).WithTopTexture(5, 1).Build();
+        public static readonly VoxelDefinition Wood4 = new BlockDefinitionBuilder(30).WithSideTexture(7, 5).WithTopTexture(5, 1).WithTopTexture(5, 1).Build();
+        public static readonly VoxelDefinition Wood5 = new BlockDefinitionBuilder(31).WithSideTexture(5, 7).WithTopTexture(5, 1).WithTopTexture(5, 1).Build();
+        public static readonly VoxelDefinition Weed = new BlockDefinitionBuilder(32).WithAllSideTexture(7, 2).WithSize(1, .8f, 1).AsSprite().WithHue(VisibilityFlag.All).Build();
+        public static readonly VoxelDefinition Flower = new BlockDefinitionBuilder(33).WithAllSideTexture(12, 0).WithSize(.6f, .8f, .6f).AsSprite().Build();
         
-        public static readonly VoxelDefinition SlabBottom = new BlockDefinitionBuilder(30)
+        public static readonly VoxelDefinition SlabBottom = new BlockDefinitionBuilder(34)
             .WithAllSideTexture(1, 0)
             .WithDimFactors(1)
             .WithTransmittanceQuarters(TransmittanceFlags.Top)

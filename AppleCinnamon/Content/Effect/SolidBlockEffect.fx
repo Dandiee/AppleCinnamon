@@ -23,7 +23,8 @@ float4 HueColors[] =
 {
 	float4(1,1,1,1),
 	float4(0,0.78,0.277,1), 
-	float4(0.328,0.720,0.0072,1), 
+	float4(152 / 255.0, 245 / 255.0, 95 / 255.0,1),
+	float4(0.650,0.780,0,1),
 	float4(0.650,0.780,0,1), 
 	float4(0,0.880,0.0440,1), 
 	float4(0.483,0.810,0.0243,1), 
@@ -81,7 +82,7 @@ VertexShaderOutput VertexShaderFunction(VertexShaderInput input)
 
 float4 PixelShaderFunction(VertexShaderOutput input) : SV_Target
 {
-	float4 textureColor = Textures.Sample(SS, input.TexCoords) * input.AmbientOcclusion * input.HueColor;
+	float4 textureColor = Textures.Sample(SS, input.TexCoords) * input.AmbientOcclusion /** float4(1.8, 1.8, 1.8, 1)*/ * input.HueColor;
 	// transparent solids
 	clip(textureColor.a == 0 ? -1 : 1);
 	float4 finalColor = (1.0 - input.FogFactor) * textureColor + (input.FogFactor) * FogColor;

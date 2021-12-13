@@ -30,6 +30,8 @@ namespace AppleCinnamon.Pipeline
                     {
                         maxHeight = height;
                     }
+
+                    
                 }
             }
 
@@ -44,6 +46,15 @@ namespace AppleCinnamon.Pipeline
                 for (var k = 0; k < Chunk.SizeXy; k++)
                 {
                     var height = heatMap[i, k];
+
+                    //var flatIndex = ;
+                    //voxels[Help.GetFlatIndex(i, currentHeight - 2, k, currentHeight)] = new Voxel(VoxelDefinition.Leaves.Type, 0);
+                    //voxels[Help.GetFlatIndex(i, currentHeight - 3, k, currentHeight)] = new Voxel(VoxelDefinition.Leaves.Type, 0);
+                    //voxels[Help.GetFlatIndex(i, currentHeight - 4, k, currentHeight)] = new Voxel(VoxelDefinition.Leaves.Type, 0);
+                    //voxels[Help.GetFlatIndex(i, currentHeight - 5, k, currentHeight)] = new Voxel(VoxelDefinition.Leaves.Type, 0);
+                    //voxels[Help.GetFlatIndex(i, currentHeight - 6, k, currentHeight)] = new Voxel(VoxelDefinition.Leaves.Type, 0);
+                    //voxels[Help.GetFlatIndex(i, currentHeight - 7, k, currentHeight)] = new Voxel(VoxelDefinition.Leaves.Type, 0);
+                    //voxels[Help.GetFlatIndex(i, currentHeight - 8, k, currentHeight)] = new Voxel(VoxelDefinition.Leaves.Type, 0);
 
 
                     for (var j = 0; j <= height - 1; j++)

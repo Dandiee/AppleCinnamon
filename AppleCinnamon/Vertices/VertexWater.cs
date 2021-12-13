@@ -45,13 +45,14 @@ namespace AppleCinnamon.Vertices
         public int Size => _size;
         public InputElement[] InputElements => _inputElements;
 
-        public VertexSprite(Vector3 position, int u, int v, byte baseLight)
+        public VertexSprite(Vector3 position, int u, int v, byte baseLight, byte hueIndex)
         {
             Position = position; // 32
             Color = 0;
             Color |= (uint)(u << 0); // 4 bits
             Color |= (uint)(v << 4); // 4 bits
             Color |= (uint)(baseLight << 8);
+            Color |= (uint)(hueIndex << 12);
         }
 
         public Vector3 Position;

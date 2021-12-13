@@ -34,6 +34,7 @@ namespace AppleCinnamon
             }
 
             var vertices = new VertexSolidBlock[visibleFacesCount * 4];
+
             var indexes = new ushort[visibleFacesCount * 6];
 
             foreach (var visibilityFlag in chunk.BuildingContext.VisibilityFlags)
@@ -155,7 +156,7 @@ namespace AppleCinnamon
             {
                 var position = faceOffsetVertices[m] + chunk.OffsetVector + positionOffset;
                 var textureOffset = FaceBuildInfo.UvOffsetIndexes[m];
-                vertices[vertexOffset + m + faceOffset * 4] = new VertexSprite(position, textureIndicies.X + textureOffset.X, textureIndicies.Y + textureOffset.Y, voxel.Lightness);
+                vertices[vertexOffset + m + faceOffset * 4] = new VertexSprite(position, textureIndicies.X + textureOffset.X, textureIndicies.Y + textureOffset.Y, voxel.Lightness, voxel.HueIndex);
             }
 
             var indexOffset = (vertexIndex * 6 * 2) + (faceOffset * 6 * 2);
@@ -214,11 +215,6 @@ namespace AppleCinnamon
                 }
 
                 var hue = (definition.HueFaces & face.Direction) == face.Direction ? voxel.HueIndex : (byte)0;
-                if (chunk.ChunkIndex == new Int2(0, 0) && relativeIndexX == 3 && relativeIndexY == 100 &&
-                    relativeIndexZ == 0)
-                {
-                    Debug.WriteLine($"Lightness: {neighbor.Lightness}; TotalNehLig: {totalNeighborLight}; AmbientNum: {numberOfAmbientNeighbors}");
-                }
 
                 vertices[vertexIndex + vertexInfo.Index] = new VertexSolidBlock(position, textureUv.X + vertexInfo.TextureIndex.X,
                         textureUv.Y + vertexInfo.TextureIndex.Y, neighbor.Lightness, totalNeighborLight,

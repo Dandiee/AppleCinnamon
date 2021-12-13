@@ -36,7 +36,7 @@ namespace AppleCinnamon
         {
             Block = block;
             Lightness = lightness;
-            HueIndex = (byte)((hueIndex == 0) ? 0 : 1);
+            HueIndex = (byte)((hueIndex == 0) ? 0 : 2);
         }
 
         public Voxel SetLight(byte light) => new(Block, light, HueIndex);
