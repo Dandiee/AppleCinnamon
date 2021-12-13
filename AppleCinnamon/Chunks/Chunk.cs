@@ -252,7 +252,7 @@ namespace AppleCinnamon
             if (!Game.IsBackFaceCullingEnabled)
             {
                 device.ImmediateContext.InputAssembler.SetVertexBuffers(0, ChunkBuffer.Binding);
-                device.ImmediateContext.InputAssembler.SetIndexBuffer(ChunkBuffer.IndexBuffer, Format.R16_UInt, 0);
+                device.ImmediateContext.InputAssembler.SetIndexBuffer(ChunkBuffer.IndexBuffer, Format.R32_UInt, 0);
                 //var count = ChunkBuffer.Offsets[Int3.UnitY].Count;
                 //var offset = ChunkBuffer.Offsets[Int3.UnitY].Offset;
                 //device.ImmediateContext.DrawIndexed(count * 6, offset, 0);
@@ -289,7 +289,7 @@ namespace AppleCinnamon
                     if (!vbSet)
                     {
                         device.ImmediateContext.InputAssembler.SetVertexBuffers(0, ChunkBuffer.Binding);
-                        device.ImmediateContext.InputAssembler.SetIndexBuffer(ChunkBuffer.IndexBuffer, Format.R16_UInt, 0);
+                        device.ImmediateContext.InputAssembler.SetIndexBuffer(ChunkBuffer.IndexBuffer, Format.R32_UInt, 0);
                         vbSet = true;
                     }
 
@@ -305,7 +305,7 @@ namespace AppleCinnamon
             if (_waterBuffer != null && _waterBuffer.IndexCount > 0)
             {
                 device.ImmediateContext.InputAssembler.SetVertexBuffers(0, _waterBuffer.Binding);
-                device.ImmediateContext.InputAssembler.SetIndexBuffer(_waterBuffer.IndexBuffer, Format.R16_UInt, 0);
+                device.ImmediateContext.InputAssembler.SetIndexBuffer(_waterBuffer.IndexBuffer, Format.R32_UInt, 0);
                 device.ImmediateContext.DrawIndexed(_waterBuffer.IndexCount, 0, 0);
             }
         }
@@ -315,7 +315,7 @@ namespace AppleCinnamon
             if (_spriteBuffer != null && _spriteBuffer.IndexCount > 0)
             {
                 device.ImmediateContext.InputAssembler.SetVertexBuffers(0, _spriteBuffer.Binding);
-                device.ImmediateContext.InputAssembler.SetIndexBuffer(_spriteBuffer.IndexBuffer, Format.R16_UInt, 0);
+                device.ImmediateContext.InputAssembler.SetIndexBuffer(_spriteBuffer.IndexBuffer, Format.R32_UInt, 0);
                 device.ImmediateContext.DrawIndexed(_spriteBuffer.IndexCount, 0, 0);
             }
         }

@@ -35,7 +35,7 @@ namespace AppleCinnamon
 
             var vertices = new VertexSolidBlock[visibleFacesCount * 4];
 
-            var indexes = new ushort[visibleFacesCount * 6];
+            var indexes = new uint[visibleFacesCount * 6];
 
             foreach (var visibilityFlag in chunk.BuildingContext.VisibilityFlags)
             {
@@ -76,7 +76,7 @@ namespace AppleCinnamon
 
             var topOffsetVertices = FaceBuildInfo.FaceVertices.Top;
             var vertices = new VertexWater[chunk.TopMostWaterVoxels.Count * 4];
-            var indexes = new ushort[chunk.TopMostWaterVoxels.Count * 6 * 2];
+            var indexes = new uint[chunk.TopMostWaterVoxels.Count * 6 * 2];
 
             for (var n = 0; n < chunk.TopMostWaterVoxels.Count; n++)
             {
@@ -98,19 +98,19 @@ namespace AppleCinnamon
 
                 var indexOffset = n * 6 * 2;
 
-                indexes[indexOffset + 0] = (ushort)(vertexOffset + 0);
-                indexes[indexOffset + 1] = (ushort)(vertexOffset + 2);
-                indexes[indexOffset + 2] = (ushort)(vertexOffset + 3);
-                indexes[indexOffset + 3] = (ushort)(vertexOffset + 0);
-                indexes[indexOffset + 4] = (ushort)(vertexOffset + 1);
-                indexes[indexOffset + 5] = (ushort)(vertexOffset + 2);
+                indexes[indexOffset + 0] = (uint)(vertexOffset + 0);
+                indexes[indexOffset + 1] = (uint)(vertexOffset + 2);
+                indexes[indexOffset + 2] = (uint)(vertexOffset + 3);
+                indexes[indexOffset + 3] = (uint)(vertexOffset + 0);
+                indexes[indexOffset + 4] = (uint)(vertexOffset + 1);
+                indexes[indexOffset + 5] = (uint)(vertexOffset + 2);
 
-                indexes[indexOffset + 6] = (ushort)(vertexOffset + 2);
-                indexes[indexOffset + 7] = (ushort)(vertexOffset + 1);
-                indexes[indexOffset + 8] = (ushort)(vertexOffset + 0);
-                indexes[indexOffset + 9] = (ushort)(vertexOffset + 3);
-                indexes[indexOffset + 10] = (ushort)(vertexOffset + 2);
-                indexes[indexOffset + 11] = (ushort)(vertexOffset + 0);
+                indexes[indexOffset + 6] = (uint)(vertexOffset + 2);
+                indexes[indexOffset + 7] = (uint)(vertexOffset + 1);
+                indexes[indexOffset + 8] = (uint)(vertexOffset + 0);
+                indexes[indexOffset + 9] = (uint)(vertexOffset + 3);
+                indexes[indexOffset + 10] = (uint)(vertexOffset + 2);
+                indexes[indexOffset + 11] = (uint)(vertexOffset + 0);
             }
 
             return new FaceBuffer(
@@ -124,7 +124,7 @@ namespace AppleCinnamon
         {
             if (chunk.BuildingContext.SpriteBlocks.Count == 0) return null;
             var vertices = new VertexSprite[chunk.BuildingContext.SpriteBlocks.Count * 4 * 2];
-            var indexes = new ushort[chunk.BuildingContext.SpriteBlocks.Count * 6 * 2 * 2];
+            var indexes = new uint[chunk.BuildingContext.SpriteBlocks.Count * 6 * 2 * 2];
 
             var secondFaceOffset = chunk.BuildingContext.SpriteBlocks.Count;
 
@@ -150,7 +150,7 @@ namespace AppleCinnamon
         }
 
         private static void AddSpriteFace(Chunk chunk, Vector3[] faceOffsetVertices, Vector3 positionOffset, Voxel voxel, Int2 textureIndicies,
-            VertexSprite[] vertices, ushort[] indexes, int vertexOffset, int vertexIndex, int faceOffset)
+            VertexSprite[] vertices, uint[] indexes, int vertexOffset, int vertexIndex, int faceOffset)
         {
             for (var m = 0; m < faceOffsetVertices.Length; m++)
             {
@@ -161,24 +161,24 @@ namespace AppleCinnamon
 
             var indexOffset = (vertexIndex * 6 * 2) + (faceOffset * 6 * 2);
 
-            indexes[indexOffset + 0] = (ushort)(vertexOffset + 0 + faceOffset * 4);
-            indexes[indexOffset + 1] = (ushort)(vertexOffset + 2 + faceOffset * 4);
-            indexes[indexOffset + 2] = (ushort)(vertexOffset + 3 + faceOffset * 4);
-            indexes[indexOffset + 3] = (ushort)(vertexOffset + 0 + faceOffset * 4);
-            indexes[indexOffset + 4] = (ushort)(vertexOffset + 1 + faceOffset * 4);
-            indexes[indexOffset + 5] = (ushort)(vertexOffset + 2 + faceOffset * 4);
+            indexes[indexOffset + 0] = (uint)(vertexOffset + 0 + faceOffset * 4);
+            indexes[indexOffset + 1] = (uint)(vertexOffset + 2 + faceOffset * 4);
+            indexes[indexOffset + 2] = (uint)(vertexOffset + 3 + faceOffset * 4);
+            indexes[indexOffset + 3] = (uint)(vertexOffset + 0 + faceOffset * 4);
+            indexes[indexOffset + 4] = (uint)(vertexOffset + 1 + faceOffset * 4);
+            indexes[indexOffset + 5] = (uint)(vertexOffset + 2 + faceOffset * 4);
 
-            indexes[indexOffset + 6] = (ushort)(vertexOffset + 2 + faceOffset * 4);
-            indexes[indexOffset + 7] = (ushort)(vertexOffset + 1 + faceOffset * 4);
-            indexes[indexOffset + 8] = (ushort)(vertexOffset + 0 + faceOffset * 4);
-            indexes[indexOffset + 9] = (ushort)(vertexOffset + 3 + faceOffset * 4);
-            indexes[indexOffset + 10] = (ushort)(vertexOffset + 2 + faceOffset * 4);
-            indexes[indexOffset + 11] = (ushort)(vertexOffset + 0 + faceOffset * 4);
+            indexes[indexOffset + 6] = (uint)(vertexOffset + 2 + faceOffset * 4);
+            indexes[indexOffset + 7] = (uint)(vertexOffset + 1 + faceOffset * 4);
+            indexes[indexOffset + 8] = (uint)(vertexOffset + 0 + faceOffset * 4);
+            indexes[indexOffset + 9] = (uint)(vertexOffset + 3 + faceOffset * 4);
+            indexes[indexOffset + 10] = (uint)(vertexOffset + 2 + faceOffset * 4);
+            indexes[indexOffset + 11] = (uint)(vertexOffset + 0 + faceOffset * 4);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void AddFace(ChunkFace face, Voxel voxel, int relativeIndexX, int relativeIndexY, int relativeIndexZ, VertexSolidBlock[] vertices,
-            ushort[] indexes, VoxelDefinition definition, Chunk chunk, Voxel neighbor, Vector3 voxelPositionOffset)
+            uint[] indexes, VoxelDefinition definition, Chunk chunk, Voxel neighbor, Vector3 voxelPositionOffset)
         {
             // Face specific base variables
             var textureUv = definition.TextureIndexes.Faces[(byte)face.BuildInfo.Face];
@@ -221,12 +221,12 @@ namespace AppleCinnamon
                         numberOfAmbientNeighbors, hue);
             }
 
-            indexes[indexIndex] = (ushort)vertexIndex;
-            indexes[indexIndex + 1] = (ushort)(vertexIndex + 2);
-            indexes[indexIndex + 2] = (ushort)(vertexIndex + 3);
-            indexes[indexIndex + 3] = (ushort)(vertexIndex + 0);
-            indexes[indexIndex + 4] = (ushort)(vertexIndex + 1);
-            indexes[indexIndex + 5] = (ushort)(vertexIndex + 2);
+            indexes[indexIndex] = (uint)vertexIndex;
+            indexes[indexIndex + 1] = (uint)(vertexIndex + 2);
+            indexes[indexIndex + 2] = (uint)(vertexIndex + 3);
+            indexes[indexIndex + 3] = (uint)(vertexIndex + 0);
+            indexes[indexIndex + 4] = (uint)(vertexIndex + 1);
+            indexes[indexIndex + 5] = (uint)(vertexIndex + 2);
 
             face.ProcessedVoxels++;
         }
@@ -437,10 +437,10 @@ namespace AppleCinnamon
         public readonly VertexBufferBinding Binding;
         public readonly IDictionary<Int3, ChunkFace> Offsets;
 
-        public ChunkBuffer(Device device, VertexSolidBlock[] vertices, ushort[] indexes, Cube<ChunkFace> offsets)
+        public ChunkBuffer(Device device, VertexSolidBlock[] vertices, uint[] indexes, Cube<ChunkFace> offsets)
         {
             VertexBuffer = Buffer.Create(device, BindFlags.VertexBuffer, vertices, vertices.Length * default(VertexSolidBlock).Size, ResourceUsage.Immutable);
-            IndexBuffer = Buffer.Create(device, BindFlags.IndexBuffer, indexes, indexes.Length * sizeof(ushort), ResourceUsage.Immutable);
+            IndexBuffer = Buffer.Create(device, BindFlags.IndexBuffer, indexes, indexes.Length * sizeof(uint), ResourceUsage.Immutable);
             Binding = new VertexBufferBinding(VertexBuffer, default(VertexSolidBlock).Size, 0);
             Offsets = new Dictionary<Int3, ChunkFace>
             {
