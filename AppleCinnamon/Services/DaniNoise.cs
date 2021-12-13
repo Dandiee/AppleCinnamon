@@ -80,13 +80,13 @@ namespace AppleCinnamon.Pipeline
         private readonly SimplexOptions _options;
         private readonly ImprovedNoise[] _baseNoise;
 
-        public DaniNoise(SimplexOptions options, Random random)
+        public DaniNoise(SimplexOptions options)
         {
             _options = options;
             _baseNoise = new ImprovedNoise[_options.Octaves];
             for (int i = 0; i < _options.Octaves; i++)
             {
-                _baseNoise[i] = new ImprovedNoise(random);
+                _baseNoise[i] = new ImprovedNoise(options.Random);
             }
         }
 

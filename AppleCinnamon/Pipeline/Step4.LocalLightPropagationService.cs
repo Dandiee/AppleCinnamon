@@ -7,6 +7,7 @@ namespace AppleCinnamon.Pipeline
         public override Chunk Process(Chunk chunk)
         {
             LightingService.LocalPropagate(chunk, chunk.BuildingContext.LightPropagationVoxels);
+            chunk.IsLocallyFinished = true;
             return chunk;
         }
     }

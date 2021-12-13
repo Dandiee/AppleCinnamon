@@ -38,6 +38,9 @@ namespace AppleCinnamon.Helper
         public static int GetFlatIndex(int i, int j, int k, int height) => i + Chunk.SizeXy * (j + height * k);
 
         [InlineMethod.Inline]
+        public static int GetFlatIndex(Int3 ijk, int height) => ijk.X + Chunk.SizeXy * (ijk.Y + height * ijk.Z);
+
+        [InlineMethod.Inline]
         public static int GetChunkFlatIndex(int i, int j) => 3 * i + j + 4;
 
         [InlineMethod.Inline]

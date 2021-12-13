@@ -1,5 +1,6 @@
 ﻿using System;
 using AppleCinnamon.Helper;
+using AppleCinnamon.Services;
 using AppleCinnamon.Settings;
 using SimplexNoise;
 
@@ -7,23 +8,16 @@ namespace AppleCinnamon.Pipeline
 {
     public sealed class VoxelGenerator
     {
-        private const int Offset = int.MaxValue / 2;
-        private readonly Random _random;
-
         private readonly DaniNoise _daniNoise;
 
-        public VoxelGenerator(int seed)
+        public VoxelGenerator()
         {
-            _random = new Random(seed);
-            Noise.Seed = seed;
-            _daniNoise = new DaniNoise(WorldSettings.HighMapNoiseOptions, _random);
-            // Noise.Seed = seed;
+            _daniNoise = new DaniNoise(WorldSettings.HighMapNoiseOptions);
         }
-
+        
         public Chunk GenerateVoxels(Int2 chunkIndex)
         {
             var chunkSizeXz = new Int2(Chunk.SizeXy, Chunk.SizeXy);
-
             var heatMap = new int[Chunk.SizeXy, Chunk.SizeXy];
             var maxHeight = WorldSettings.WaterLevel + 1;
             for (var i = 0; i < Chunk.SizeXy; i++)
@@ -41,6 +35,8 @@ namespace AppleCinnamon.Pipeline
                 }
             }
 
+            maxHeight += 32;
+
 
             var initialSlicesCount = maxHeight / Chunk.SliceHeight + 1;
             var voxels = new Voxel[Chunk.SizeXy * initialSlicesCount * Chunk.SliceHeight * Chunk.SizeXy];
@@ -56,7 +52,12 @@ namespace AppleCinnamon.Pipeline
 
                     for (var j = 0; j <= height - 1; j++)
                     {
-                        voxels[Help.GetFlatIndex(i, j, k, currentHeight)] = new Voxel(VoxelDefinition.Stone.Type, 0);
+                        voxels[Help.GetFlatIndex(i, j, k, currentHeight)] = new Voxel(VoxelDefinition.Grass.Type, 0, 2);
+                    }
+
+                    if (false)
+                    {
+                        //voxels.Tree(i, height, k, currentHeight);
                     }
 
                     if (height < WorldSettings.WaterLevel)
@@ -70,7 +71,7 @@ namespace AppleCinnamon.Pipeline
                         chunk.TopMostWaterVoxels.Add(Help.GetFlatIndex(i, WorldSettings.WaterLevel - 1, k, currentHeight));
                     }
 
-
+                    /*
                     var isSnow = height > (128 + _random.Next(5));
 
                     voxels[Help.GetFlatIndex(i, height - 1, k, currentHeight)] =
@@ -90,7 +91,7 @@ namespace AppleCinnamon.Pipeline
                         {
                             chunk.BuildingContext.SpriteBlocks.Add(flatIndex);
                         }
-                    }
+                    }*/
 
                         // new Voxel(
                         //     height > (128 + _random.Next(5))
@@ -103,8 +104,6 @@ namespace AppleCinnamon.Pipeline
 
             return chunk;
         }
-
-
 
 
 

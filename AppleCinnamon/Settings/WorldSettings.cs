@@ -1,4 +1,5 @@
-﻿using SharpDX;
+﻿using System;
+using SharpDX;
 
 namespace AppleCinnamon.Settings
 {
@@ -11,7 +12,7 @@ namespace AppleCinnamon.Settings
         public static readonly Vector3 PlayerMax;
         public const int WaterLevel = 119;
 
-        public static readonly SimplexOptions HighMapNoiseOptions = new(8, 0.4, 1.1, 134, 0.47);
+        public static readonly SimplexOptions HighMapNoiseOptions = new(8, 0.2, 0.8, 134, 0.1, 1248);
         static WorldSettings()
         {
             PlayerMin = new Vector3(PlayerSize.X / -2, -EyeHeight, PlayerSize.Z / -2);
@@ -22,19 +23,24 @@ namespace AppleCinnamon.Settings
 
     public readonly struct SimplexOptions
     {
+        public readonly int Seed;
         public readonly int Octaves;
         public readonly double Frequency;
         public readonly double Amplitude;
         public readonly int Offset;
         public readonly double Factor;
+        public readonly Random Random;
 
-        public SimplexOptions(int octaves, double frequency, double amplitude, int offset, double factor)
+        public SimplexOptions(int octaves, double frequency, double amplitude, int offset, double factor, int seed)
         {
+            Seed = seed;
             Octaves = octaves;
             Frequency = frequency;
             Amplitude = amplitude;
             Offset = offset;
             Factor = factor;
+            Seed = seed;
+            Random = new Random(seed);
         }
     }
 }

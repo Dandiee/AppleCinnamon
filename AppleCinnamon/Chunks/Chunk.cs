@@ -17,6 +17,8 @@ namespace AppleCinnamon
 
     public sealed class Chunk
     {
+        public bool IsLocallyFinished { get; set; }
+
         public const int SliceHeight = 16;
         public const int SizeXy = 16;
         public const int SliceArea = SizeXy * SizeXy * SliceHeight;
@@ -30,7 +32,8 @@ namespace AppleCinnamon
         public int VisibleFacesCount { get; set; }
 
 
-        public List<int> TopMostWaterVoxels;
+        public List<int> TopMostWaterVoxels = new();
+        public List<int> TopMostLandVoxels = new();
 
         public readonly ChunkBuildingContext BuildingContext;
 
@@ -173,8 +176,6 @@ namespace AppleCinnamon
 
 
             BuildingContext = new ChunkBuildingContext();
-
-            TopMostWaterVoxels = new List<int>(128);
             CurrentHeight = (voxels.Length / SliceArea) * SliceHeight;
             ChunkIndex = chunkIndex;
             Offset = chunkIndex * new Int2(SizeXy, SizeXy);
