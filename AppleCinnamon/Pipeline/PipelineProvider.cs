@@ -12,8 +12,9 @@ namespace AppleCinnamon.Pipeline
         private readonly TerrainGenerator _terrainGenerator;
         private readonly NeighborAssigner _neighborAssigner;
         private readonly ArtifactGenerator _artifactGenerator;
+        private readonly MapReadyPool _mapReadyPool;
 
-        
+
         private readonly LocalSunlightInitializer _localSunlightInitializer;
         private readonly FullScanner _fullScanner;
         private readonly LocalLightPropagationService _localLightPropagationService;
@@ -30,6 +31,7 @@ namespace AppleCinnamon.Pipeline
             _terrainGenerator = new TerrainGenerator(new DaniNoise(WorldSettings.HighMapNoiseOptions));
             _neighborAssigner = new NeighborAssigner();
             _artifactGenerator = new ArtifactGenerator();
+            _mapReadyPool = new MapReadyPool();
 
             _localSunlightInitializer = new LocalSunlightInitializer();
             _fullScanner = new FullScanner();
@@ -53,6 +55,7 @@ namespace AppleCinnamon.Pipeline
             var pipeline = new TransformBlock<Int2, Chunk>(_terrainGenerator.Execute, dataflowOptions);
             var neighborAssigner = new TransformManyBlock<Chunk, Chunk>(_neighborAssigner.Execute, dataflowOptions);
             var artifactGenerator = new TransformBlock<Chunk, Chunk>(_artifactGenerator.Execute, dataflowOptions);
+            var mapReadyPool = new TransformManyBlock<Chunk, Chunk>(_mapReadyPool.Execute, dataflowOptions);
 
             var sunlightInitializer = new TransformBlock<Chunk, Chunk>(_localSunlightInitializer.Execute, dataflowOptions);
             var fullScan = new TransformBlock<Chunk, Chunk>(_fullScanner.Execute, dataflowOptions);
@@ -69,7 +72,8 @@ namespace AppleCinnamon.Pipeline
 
             pipeline.LinkTo(neighborAssigner);
             neighborAssigner.LinkTo(artifactGenerator);
-            artifactGenerator.LinkTo(sunlightInitializer);
+            artifactGenerator.LinkTo(mapReadyPool);
+            mapReadyPool.LinkTo(sunlightInitializer);
             sunlightInitializer.LinkTo(fullScan);
             fullScan.LinkTo(localLightPropagation);
             localLightPropagation.LinkTo(chunkPool);
