@@ -138,6 +138,15 @@ namespace AppleCinnamon
                 : chunk.GetVoxel(Help.GetFlatIndex(address.RelativeVoxelIndex.X, j, address.RelativeVoxelIndex.Z, chunk.CurrentHeight));
         }
 
+        public VoxelAddress GetAddress(int i, int j, int k)
+        {
+            var cx = (int)(-((i & 0b10000000_00000000_00000000_00000000) >> 31) + ((i / SizeXy)));
+            var cy = (int)(-((k & 0b10000000_00000000_00000000_00000000) >> 31) + ((k / SizeXy)));
+            return new VoxelAddress(new Int2(cx, cy), new Int3(i & (SizeXy - 1), j, k & (SizeXy - 1)));
+        }
+
+        public VoxelAddress GetAddress(Int3 ijk) => GetAddress(ijk.X, ijk.Y, ijk.Z);
+
         public Voxel GetLocalWithneighbors(Int3 ijk) => GetLocalWithneighbors(ijk.X, ijk.Y, ijk.Z);
 
         //[MethodImpl(MethodImplOptions.NoInlining)]
