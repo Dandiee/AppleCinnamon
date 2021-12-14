@@ -1,4 +1,5 @@
 ﻿using System.Runtime.InteropServices;
+using AppleCinnamon.Helper;
 using AppleCinnamon.Pipeline;
 using AppleCinnamon.Settings;
 
@@ -21,6 +22,8 @@ namespace AppleCinnamon
         [FieldOffset(2)]
         public readonly byte HueIndex;
 
+        public Face Orientation => (Face) (HueIndex >> 4);
+
 
         public VoxelDefinition GetDefinition() => VoxelDefinition.DefinitionByType[Block];
 
@@ -28,7 +31,6 @@ namespace AppleCinnamon
         {
             Block = block;
             Lightness = lightness;
-
             HueIndex = 0;
         }
 
@@ -36,9 +38,20 @@ namespace AppleCinnamon
         {
             Block = block;
             Lightness = lightness;
-            HueIndex = (byte)((hueIndex == 0) ? 0 : 2);
+            HueIndex = hueIndex;
         }
 
-        public Voxel SetLight(byte light) => new(Block, light, HueIndex);
+        public Voxel(byte block, byte lightness, byte hueIndex, Face orientation)
+        {
+            Block = block;
+            Lightness = lightness;
+            HueIndex = hueIndex;
+            HueIndex |= (byte) ((byte)orientation << 4);
+        }
+
+        public Voxel SetLight(byte light)
+        {
+            return new(Block, light, HueIndex);
+        }
     }
 }

@@ -131,13 +131,29 @@ namespace AppleCinnamon
             var newDefinition = VoxelDefinition.DefinitionByType[newVoxel.Block];
             var flatIndex = relativeIndex.ToFlatIndex(chunk.CurrentHeight);
 
+
+
             if (oldDefinition.IsSprite && !newDefinition.IsSprite)
             {
-                chunk.BuildingContext.SpriteBlocks.Remove(flatIndex);
+                if (oldDefinition.IsOriented)
+                {
+                    chunk.BuildingContext.SingleSidedSpriteBlocks.Remove(flatIndex);
+                }
+                else
+                {
+                    chunk.BuildingContext.SpriteBlocks.Remove(flatIndex);
+                }
             }
             else if (!oldDefinition.IsSprite && newDefinition.IsSprite)
             {
-                chunk.BuildingContext.SpriteBlocks.Add(flatIndex);
+                if (newDefinition.IsOriented)
+                {
+                    chunk.BuildingContext.SingleSidedSpriteBlocks.Add(flatIndex);
+                }
+                else
+                {
+                    chunk.BuildingContext.SpriteBlocks.Add(flatIndex);
+                }
             }
         }
 

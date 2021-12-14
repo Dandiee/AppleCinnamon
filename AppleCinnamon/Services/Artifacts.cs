@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Windows.Forms;
 using AppleCinnamon.Extensions;
 using AppleCinnamon.Helper;
 using AppleCinnamon.Settings;
 using SharpDX;
+using Help = AppleCinnamon.Helper.Help;
 
 namespace AppleCinnamon.Services
 {
@@ -14,9 +16,9 @@ namespace AppleCinnamon.Services
 
         public static Action<Chunk, int, Int3>[] CanopyFunctions =
         {
-            CanopyBeveledRectangle,
-            CanopyPyramid,
-            CanopySphere,
+            //CanopyBeveledRectangle,
+            //CanopyPyramid,
+            //CanopySphere,
             CanopyVanilla
         };
 
@@ -40,11 +42,67 @@ namespace AppleCinnamon.Services
             {
                 var flatIndex = Help.GetFlatIndex(relativeIndex.X, relativeIndex.Y + j, relativeIndex.Z, chunk.CurrentHeight);
                 chunk.Voxels[flatIndex] = new Voxel(treeType.Type, 0);
+
+                if (true) //_rnd.Next() % 2 == 0)
+                {
+                    if (relativeIndex.X < Chunk.SizeXy - 1)
+                    {
+                        var fifi = Help.GetFlatIndex(relativeIndex.X + 1, relativeIndex.Y + j, relativeIndex.Z,
+                            chunk.CurrentHeight);
+                        chunk.Voxels[fifi] = new Voxel(VoxelDefinition.Tendril.Type, 0, 2, Face.Left);
+                        chunk.BuildingContext.SingleSidedSpriteBlocks.Add(fifi);
+                    }
+
+                    if (relativeIndex.X > 0)
+                    {
+                        var fifi = Help.GetFlatIndex(relativeIndex.X - 1, relativeIndex.Y + j, relativeIndex.Z,
+                            chunk.CurrentHeight);
+                        chunk.Voxels[fifi] = new Voxel(VoxelDefinition.Tendril.Type, 0, 2, Face.Right);
+                        chunk.BuildingContext.SingleSidedSpriteBlocks.Add(fifi);
+                    }
+
+                    if (relativeIndex.Z < Chunk.SizeXy - 1)
+                    {
+                        var fifi = Help.GetFlatIndex(relativeIndex.X, relativeIndex.Y + j, relativeIndex.Z + 1,
+                            chunk.CurrentHeight);
+                        chunk.Voxels[fifi] = new Voxel(VoxelDefinition.Tendril.Type, 0, 2, Face.Front);
+                        chunk.BuildingContext.SingleSidedSpriteBlocks.Add(fifi);
+                    }
+
+                    if (relativeIndex.Z > 0)
+                    {
+                        var fifi = Help.GetFlatIndex(relativeIndex.X, relativeIndex.Y + j, relativeIndex.Z - 1,
+                            chunk.CurrentHeight);
+                        chunk.Voxels[fifi] = new Voxel(VoxelDefinition.Tendril.Type, 0, 2, Face.Back);
+                        chunk.BuildingContext.SingleSidedSpriteBlocks.Add(fifi);
+                    }
+                }
+
             }
 
             canopy(chunk, trunkHeight, relativeIndex + new Int3(0, trunkHeight, 0));
         }
-        
+
+        public static void GoDown(Chunk chunk, Int3 relativeIndex, Func<Chunk, int, bool> callback)
+        {
+            var address = chunk.GetAddress(relativeIndex);
+            var targetChunk = chunk.Neighbors[Help.GetChunkFlatIndex(address.ChunkIndex)];
+
+            var height = relativeIndex.Y;
+            var flatIndex = Help.GetFlatIndex(address.RelativeVoxelIndex.X, height, address.RelativeVoxelIndex.Z, targetChunk.CurrentHeight);
+            var voxel = targetChunk.Voxels[flatIndex];
+            while (voxel.Block == 0)
+            {
+                if (callback(targetChunk, flatIndex))
+                {
+                    height--;
+                    flatIndex = Help.GetFlatIndex(address.RelativeVoxelIndex.X, height, address.RelativeVoxelIndex.Z,
+                        targetChunk.CurrentHeight);
+                    voxel = targetChunk.Voxels[flatIndex];
+                }
+                else break;
+            }
+        }
 
         public static void CanopyVanilla(Chunk chunk, int trunkHeight, Int3 trunkTop)
         {
@@ -54,6 +112,50 @@ namespace AppleCinnamon.Services
 
                 var address = chunk.GetAddress(relativeVoxelIndex);
                 address.SetVoxel(chunk, new Voxel(VoxelDefinition.Leaves.Type, 0, 2));
+
+                if (relativeVoxelIndex.X == trunkTop.X - 3)
+                {
+                    GoDown(chunk, relativeVoxelIndex - Int3.UnitX, (c, fi) =>
+                    {
+                        c.SetVoxel(fi, new Voxel(VoxelDefinition.Tendril.Type, 0, 2, Face.Right));
+                        c.BuildingContext.SingleSidedSpriteBlocks.Add(fi);
+
+                        return _rnd.Next() % 2 == 0;
+                    });
+                }
+
+                if (relativeVoxelIndex.X == trunkTop.X + 3)
+                {
+                    GoDown(chunk, relativeVoxelIndex + Int3.UnitX, (c, fi) =>
+                    {
+                        c.SetVoxel(fi, new Voxel(VoxelDefinition.Tendril.Type, 0, 2, Face.Left));
+                        c.BuildingContext.SingleSidedSpriteBlocks.Add(fi);
+
+                        return _rnd.Next() % 2 == 0;
+                    });
+                }
+
+                if (relativeVoxelIndex.Z == trunkTop.Z - 3)
+                {
+                    GoDown(chunk, relativeVoxelIndex - Int3.UnitZ, (c, fi) =>
+                    {
+                        c.SetVoxel(fi, new Voxel(VoxelDefinition.Tendril.Type, 0, 2, Face.Back));
+                        c.BuildingContext.SingleSidedSpriteBlocks.Add(fi);
+
+                        return _rnd.Next() % 2 == 0;
+                    });
+                }
+
+                if (relativeVoxelIndex.Z == trunkTop.Z + 3)
+                {
+                    GoDown(chunk, relativeVoxelIndex + Int3.UnitZ, (c, fi) =>
+                    {
+                        c.SetVoxel(fi, new Voxel(VoxelDefinition.Tendril.Type, 0, 2, Face.Front));
+                        c.BuildingContext.SingleSidedSpriteBlocks.Add(fi);
+
+                        return _rnd.Next() % 2 == 0;
+                    });
+                }
             }
 
             foreach (var relativeVoxelIndex in ShapeGenerator.Rectangle(trunkTop + new Int3(0, 2, 0), 1, 2, true))
@@ -78,7 +180,7 @@ namespace AppleCinnamon.Services
 
         public static void CanopySphere(Chunk chunk, int trunkHeight, Int3 trunkTop)
         {
-            foreach (var relativeVoxelIndex in ShapeGenerator.Sphere(trunkTop, 3))
+            foreach (var relativeVoxelIndex in ShapeGenerator.Sphere(trunkTop, 4))
             {
                 if (_rnd.Next() % LeavesDespawnRate == 0) continue;
 

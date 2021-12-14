@@ -16,5 +16,12 @@ namespace AppleCinnamon.Extensions
             var targetFlatIndex = Help.GetFlatIndex(address.RelativeVoxelIndex, targetChunk.CurrentHeight);
             targetChunk.Voxels[targetFlatIndex] = voxel;
         }
+
+        public static Voxel GetVoxel(this VoxelAddress address, Chunk chunk)
+        {
+            var targetChunk = chunk.Neighbors[Help.GetChunkFlatIndex(address.ChunkIndex)];
+            var targetFlatIndex = Help.GetFlatIndex(address.RelativeVoxelIndex, targetChunk.CurrentHeight);
+            return targetChunk.Voxels[targetFlatIndex];
+        }
     }
 }

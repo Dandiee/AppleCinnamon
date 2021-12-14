@@ -50,6 +50,9 @@ struct VertexShaderOutput
 	float4 HueColor : COLOR2;
 };
 
+float textureFactor = 1.0 / 16.0;
+float totalLightness = 60.0f;
+
 float ComputeFogFactor(float dist)
 {
     return clamp((dist - FogStart) / (FogEnd - FogStart), 0, 1);
@@ -61,15 +64,16 @@ VertexShaderOutput VertexShaderFunction(VertexShaderInput input)
     VertexShaderOutput output = (VertexShaderOutput)0;
 	float4 position = float4(input.Position.xyz, 1);
 
-	float u = (input.Asd & 15) / 16.0;
-	float v = ((input.Asd & 240) >> 4) / 16.0;
-	float l = ((input.Asd & 16128) >> 8) / 60.0f  + 0.2f;
-	float a = 1.0 - (((input.Asd & 49152) >> 14) / 3.0);
-	int hueIndex = ((input.Asd & 3932160) >> 18);
-	float4 hueColor = HueColors[hueIndex];
+	float u =        ((input.Asd >>  0) & 31) * textureFactor;
+	float v =        ((input.Asd >>  5) & 31) * textureFactor;
+	float l =        ((input.Asd >> 10) & 63) / totalLightness + 0.2f;
+	float a = 1.0 - (((input.Asd >> 16) & 15) / 3.0);
+	int   h =        ((input.Asd >> 20) & 15);
+
+	float4 hueColor = HueColors[h];
 
     output.Position = mul(position, WorldViewProjection);
-	output.TexCoords = float2(u, v);// +float2(0.5 / 2048, 0.5 / 2048);
+	output.TexCoords = float2(u, v);
 	output.AmbientOcclusion = l * a;
 	output.FogFactor = ComputeFogFactor(distance(EyePosition.xyz, input.Position.xyz));
 	output.HueColor = hueColor;

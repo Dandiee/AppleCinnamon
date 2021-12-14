@@ -301,7 +301,7 @@ namespace AppleCinnamon
             LookAt = Vector3.Normalize(Vector3.Transform(InitialLookAt, rotationMatrix).ToVector3()).ToDouble3();
             View = Matrix.LookAtRH(Position.ToVector3(), Position.ToVector3() + LookAt.ToVector3(),
                 Vector3.TransformCoordinate(Vector3.UnitY, rotationMatrix));
-            Projection = Matrix.PerspectiveFovRH(MathUtil.PiOverTwo,
+            Projection = Matrix.PerspectiveFovRH(MathUtil.Pi / 2f,
                 _graphics.RenderForm.Width / (float)_graphics.RenderForm.Height, 0.1f, 100000f);
             WorldViewProjection = World * View * Projection;
 

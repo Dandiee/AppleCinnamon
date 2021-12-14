@@ -120,11 +120,27 @@ namespace AppleCinnamon
                 Buffer.Create(device, BindFlags.IndexBuffer, indexes));
         }
 
+        public const float SingleSidedOffset = 0.1f;
+
+        private static readonly Vector3[] SingleSidedOffsets = new[]
+        {
+            Vector3.UnitY * SingleSidedOffset,
+            Vector3.UnitY * -SingleSidedOffset,
+            Vector3.UnitX * SingleSidedOffset,
+            Vector3.UnitX * -SingleSidedOffset,
+            Vector3.UnitZ * SingleSidedOffset,
+            Vector3.UnitZ * -SingleSidedOffset,
+        };
+
         private FaceBuffer AddSpriteFace(Chunk chunk, Device device)
         {
-            if (chunk.BuildingContext.SpriteBlocks.Count == 0) return null;
-            var vertices = new VertexSprite[chunk.BuildingContext.SpriteBlocks.Count * 4 * 2];
-            var indexes = new uint[chunk.BuildingContext.SpriteBlocks.Count * 6 * 2 * 2];
+
+            var numberOfFaces = chunk.BuildingContext.SpriteBlocks.Count * 2 +
+                             chunk.BuildingContext.SingleSidedSpriteBlocks.Count;
+            if (numberOfFaces == 0) return null;
+
+            var vertices = new VertexSprite[numberOfFaces * 4];
+            var indexes = new uint[numberOfFaces * 12];
 
             var secondFaceOffset = chunk.BuildingContext.SpriteBlocks.Count;
 
@@ -138,11 +154,26 @@ namespace AppleCinnamon
                 var voxel = chunk.GetVoxel(flatIndex);
                 var definition = VoxelDefinition.DefinitionByType[voxel.Block];
 
-                AddSpriteFace(chunk, FaceBuildInfo.SpriteVertices.Left, positionOffset, voxel,
-                    definition.TextureIndexes.Faces[(byte)Face.Left], vertices, indexes, vertexOffset, n, 0);
+                AddSpriteFace(chunk, FaceBuildInfo.SpriteVertices.Left, positionOffset, voxel, definition.TextureIndexes.Faces[(byte)Face.Left], vertices, indexes, vertexOffset, n, 0);
+                AddSpriteFace(chunk, FaceBuildInfo.SpriteVertices.Right, positionOffset, voxel, definition.TextureIndexes.Faces[(byte)Face.Right], vertices, indexes, vertexOffset, n, secondFaceOffset);
+            }
 
-                AddSpriteFace(chunk, FaceBuildInfo.SpriteVertices.Right, positionOffset, voxel,
-                    definition.TextureIndexes.Faces[(byte)Face.Right], vertices, indexes, vertexOffset, n, secondFaceOffset);
+            var thirdFaceOffset = secondFaceOffset * 2;
+
+            for (var n = 0; n < chunk.BuildingContext.SingleSidedSpriteBlocks.Count; n++)
+            {
+                var flatIndex = chunk.BuildingContext.SingleSidedSpriteBlocks[n];
+                var index = flatIndex.ToIndex(chunk.CurrentHeight);
+
+                var vertexOffset = n * 4;
+                
+                var voxel = chunk.GetVoxel(flatIndex);
+                var positionOffset = new Vector3(index.X, index.Y, index.Z) + SingleSidedOffsets[(byte)voxel.Orientation];
+                var definition = VoxelDefinition.DefinitionByType[voxel.Block];
+                var face = FaceBuildInfo.FaceVertices.Faces[(byte) voxel.Orientation];
+
+                AddSpriteFace(chunk, face, positionOffset, voxel, definition.TextureIndexes.Faces[(byte)Face.Left], vertices, indexes, vertexOffset, n, thirdFaceOffset);
+                //AddSpriteFace(chunk, FaceBuildInfo.SpriteVertices.Right, positionOffset, voxel, definition.TextureIndexes.Faces[(byte)Face.Right], vertices, indexes, vertexOffset, n, secondFaceOffset);
             }
 
             //return null;

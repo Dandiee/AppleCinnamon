@@ -25,18 +25,21 @@ namespace AppleCinnamon.Pipeline
                 }
                 else
                 {
-                    //if (_rnd.Next() % 100 == 0)
-                    //{
-                    //    var fi = Help.GetFlatIndex(relativeIndex.X, relativeIndex.Y, relativeIndex.Z, chunk.CurrentHeight);
-                    //    chunk.Voxels[fi] = new Voxel(VoxelDefinition.Weed.Type, 0, 2);
-                    //    chunk.BuildingContext.SpriteBlocks.Add(fi);
-                    //}
-                    //else if (_rnd.Next() % 100 == 0)
-                    //{
-                    //    var fi = Help.GetFlatIndex(relativeIndex.X, relativeIndex.Y, relativeIndex.Z, chunk.CurrentHeight);
-                    //    chunk.Voxels[fi] = new Voxel(VoxelDefinition.Flower.Type, 0, 0);
-                    //    chunk.BuildingContext.SpriteBlocks.Add(fi);
-                    //}
+                    if (_rnd.Next() % 3 == 0)
+                    {
+                        var fi = flatIndex;
+                        //chunk.Voxels[fi] = new Voxel(VoxelDefinition.Tendril.Type, 0, 2, Face.Front);
+                        //chunk.BuildingContext.SingleSidedSpriteBlocks.Add(fi);
+
+                        chunk.Voxels[fi] = new Voxel(VoxelDefinition.Weed.Type, 0, 2); 
+                        chunk.BuildingContext.SpriteBlocks.Add(fi);
+                    }
+                    else if (_rnd.Next() % 100 == 0)
+                    {
+                        var fi = flatIndex;
+                        chunk.Voxels[fi] = new Voxel(VoxelDefinition.Flower.Type, 0, 0);
+                        chunk.BuildingContext.SpriteBlocks.Add(fi);
+                    }
                 }
             }
 

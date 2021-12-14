@@ -49,6 +49,8 @@ struct VertexShaderOutput
 	float4 HueColor : COLOR2;
 };
 
+float textureFactor = 1.0 / 16.0;
+float totalLightness = 60.0f;
 
 float ComputeFogFactor(float d)
 {
@@ -61,11 +63,11 @@ VertexShaderOutput VertexShaderFunction(VertexShaderInput input)
 	VertexShaderOutput output = (VertexShaderOutput)0;
 	float4 position = float4(input.Position.xyz, 1);
 
-	float u = (input.Asd & 15) * 1.0 / 16.0;                 // 4 bits
-	float v = ((input.Asd & 240) >> 4) * 1.0 / 16.0;         // 4 bits
-	float l = ((input.Asd & 16128) >> 8) / 60.0f + 0.2f;     // 4 bits
-	int h = ((input.Asd >> 12) & 15);
-	
+	float u = ((input.Asd >>  0) & 31) * textureFactor;         // 5 bits
+	float v = ((input.Asd >>  5) & 31) * textureFactor;         // 5 bits
+	float l = ((input.Asd >> 10) & 15) / totalLightness + 0.2f; // 4 bits
+	int   h = ((input.Asd >> 14) & 15);							// 4 bits
+
 	output.Position = mul(position, WorldViewProjection);
 	output.TexCoords = float2(u, v);
 	output.AmbientOcclusion = l;
@@ -79,7 +81,7 @@ VertexShaderOutput VertexShaderFunction(VertexShaderInput input)
 
 float4 PixelShaderFunction(VertexShaderOutput input) : SV_Target
 {
-	float4 textureColor = Textures.Sample(SS, input.TexCoords) * input.AmbientOcclusion * /*float4(1.8, 1.8, 1.8, 1) * */input.HueColor;
+	float4 textureColor = Textures.Sample(SS, input.TexCoords) * input.AmbientOcclusion * float4(1.5, 1.5, 1.5, 1) * input.HueColor;
 	clip(textureColor.a == 0 ? -1 : 1);
 	float4 finalColor = (1.0 - input.FogFactor) * textureColor + (input.FogFactor) * FogColor;
 	return finalColor;

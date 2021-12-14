@@ -80,6 +80,7 @@ namespace AppleCinnamon.Settings
         public readonly bool IsBlock;
         public readonly bool IsOpaque;
         public readonly bool IsNotBlock;
+        public readonly bool IsOriented;
         public readonly bool IsUnitSized;
         public readonly VisibilityFlag CoverFlags;
         public readonly VisibilityFlag HueFaces;
@@ -102,7 +103,7 @@ namespace AppleCinnamon.Settings
                 {
                     TransmittanceFlags.All, TransmittanceFlags.All, TransmittanceFlags.All, TransmittanceFlags.All,
                     TransmittanceFlags.All, TransmittanceFlags.All
-                }, VisibilityFlag.None, Vector3.Zero, Vector3.One, "Air");
+                }, VisibilityFlag.None, Vector3.Zero, Vector3.One, false, "Air");
 
         public static readonly VoxelDefinition Water = new BlockDefinitionBuilder(1).WithAllSideTexture(13, 12)
             .AsFluid()
@@ -144,6 +145,11 @@ namespace AppleCinnamon.Settings
         public static readonly VoxelDefinition Wood5 = new BlockDefinitionBuilder(31).WithSideTexture(5, 7).WithTopTexture(5, 1).WithTopTexture(5, 1).Build();
         public static readonly VoxelDefinition Weed = new BlockDefinitionBuilder(32).WithAllSideTexture(7, 2).WithSize(1, .8f, 1).AsSprite().WithHue(VisibilityFlag.All).Build();
         public static readonly VoxelDefinition Flower = new BlockDefinitionBuilder(33).WithAllSideTexture(12, 0).WithSize(.6f, .8f, .6f).AsSprite().Build();
+        public static readonly VoxelDefinition Tendril = new BlockDefinitionBuilder(35)
+            .WithAllSideTexture(15, 8)
+            .AsOriented()
+            .AsSprite()
+            .Build();
         
         public static readonly VoxelDefinition SlabBottom = new BlockDefinitionBuilder(34)
             .WithAllSideTexture(1, 0)
@@ -161,7 +167,7 @@ namespace AppleCinnamon.Settings
 
         public VoxelDefinition(byte type, Cube<Vector2> textures, Cube<Int2> textureIndexes, byte lightEmitting, bool isPermeable, 
             bool isSprite, bool isBlock, VisibilityFlag coverFlags, byte[] dimFactors, TransmittanceFlags[] transmittanceQuarters, 
-            VisibilityFlag hueFaces, Vector3 offset, Vector3 size, string name)
+            VisibilityFlag hueFaces, Vector3 offset, Vector3 size, bool isOriented, string name)
         {
             CoverFlags = coverFlags;
             DimFactors = dimFactors;
@@ -187,6 +193,7 @@ namespace AppleCinnamon.Settings
             Size = size;
             IsUnitSized = Offset == Vector3.Zero || Size == Vector3.One;
             Name = name;
+            IsOriented = isOriented;
         }
 
         static VoxelDefinition()
@@ -209,10 +216,12 @@ namespace AppleCinnamon.Settings
         private bool _isBlock = true;
         private bool _isFluid = false;
         private bool _isOpaque = true;
+        private bool _isOriented = false;
         private bool _isPermeable;
         private byte _transmittance;
         private bool _isSprite;
         private Vector3 _size = Vector3.One;
+        
         private Vector3 _offset = Vector3.Zero;
         private VisibilityFlag _hueFaces;
         private string _name;
@@ -244,6 +253,12 @@ namespace AppleCinnamon.Settings
         public BlockDefinitionBuilder WithHue(VisibilityFlag value)
         {
             _hueFaces = value;
+            return this;
+        }
+
+        public BlockDefinitionBuilder AsOriented()
+        {
+            _isOriented = true;
             return this;
         }
 
@@ -352,7 +367,7 @@ namespace AppleCinnamon.Settings
         public VoxelDefinition Build()
         {
             return new(_type, _textures, _textureIndexes, _lightEmitting,
-                _isPermeable, _isSprite, _isBlock, _coverFlags, _dimFactors, _transmittanceQuarters, _hueFaces, _offset, _size, _name);
+                _isPermeable, _isSprite, _isBlock, _coverFlags, _dimFactors, _transmittanceQuarters, _hueFaces, _offset, _size, _isOriented, _name);
         }
 
         public BlockDefinitionBuilder WithHeight(float f)
