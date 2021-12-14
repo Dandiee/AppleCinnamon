@@ -216,7 +216,7 @@ namespace AppleCinnamon
 
                 var hue = (definition.HueFaces & face.Direction) == face.Direction ? voxel.HueIndex : (byte)0;
 
-                vertices[vertexIndex + vertexInfo.Index] = new VertexSolidBlock(position, textureUv.X + vertexInfo.TextureIndex.X,
+                    vertices[vertexIndex + vertexInfo.Index] = new VertexSolidBlock(position, textureUv.X + vertexInfo.TextureIndex.X,
                         textureUv.Y + vertexInfo.TextureIndex.Y, neighbor.Lightness, totalNeighborLight,
                         numberOfAmbientNeighbors, hue);
             }

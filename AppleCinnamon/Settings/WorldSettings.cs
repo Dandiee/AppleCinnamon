@@ -10,9 +10,11 @@ namespace AppleCinnamon.Settings
         public static readonly float EyeHeight = 1.7f;
         public static readonly Vector3 PlayerMin;
         public static readonly Vector3 PlayerMax;
-        public const int WaterLevel = 119;
+        public const int WaterLevel = 130;
 
         public static readonly SimplexOptions HighMapNoiseOptions = new(8, 0.2, 0.8, 134, 0.1, 1248);
+        public static readonly SimplexOptions RiverNoiseOptions = new(8, 0.4, 1.1, 134, 0.47, 1248);
+
         static WorldSettings()
         {
             PlayerMin = new Vector3(PlayerSize.X / -2, -EyeHeight, PlayerSize.Z / -2);
