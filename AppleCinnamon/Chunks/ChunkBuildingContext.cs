@@ -8,6 +8,8 @@ namespace AppleCinnamon
 {
     public sealed class ChunkBuildingContext
     {
+        
+
         public readonly FaceBuildingContext Top;
         public readonly FaceBuildingContext Bottom;
         public readonly FaceBuildingContext Left;
@@ -22,6 +24,8 @@ namespace AppleCinnamon
 
         public Dictionary<int, VisibilityFlag> VisibilityFlags = new();
         public Queue<int> LightPropagationVoxels = new(1024);
+        public List<int> TopMostWaterVoxels = new();
+        public List<int> TopMostLandVoxels = new();
 
         public ChunkBuildingContext()
         {

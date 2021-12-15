@@ -68,7 +68,7 @@ namespace AppleCinnamon.Pipeline
                             voxels[flatIndex] = VoxelDefinition.Water.Create();
                         }
 
-                        chunk.TopMostWaterVoxels.Add(Help.GetFlatIndex(i, WorldSettings.WaterLevel - 1, k, currentHeight));
+                        chunk.BuildingContext.TopMostWaterVoxels.Add(Help.GetFlatIndex(i, WorldSettings.WaterLevel - 1, k, currentHeight));
                     }
 
                     /*

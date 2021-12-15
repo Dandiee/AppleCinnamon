@@ -86,7 +86,7 @@ namespace AppleCinnamon.Chunks
                     _solidEffect.Use(_device);
                     foreach (var chunk in chunks)
                     {
-                        chunk.Value.DrawSmarter(_device, camera.CurrentChunkIndexVector);
+                        chunk.Value.Buffers.BufferSolid?.Draw(_device);
                     }
                 }
 
@@ -97,7 +97,7 @@ namespace AppleCinnamon.Chunks
                     {
                         if (chunk.Value.BuildingContext.SpriteBlocks.Count > 0)
                         {
-                            chunk.Value.DrawSprite(_device);
+                            chunk.Value.Buffers.BufferSprite?.Draw(_device);
                         }
                     }
                 }
@@ -109,7 +109,7 @@ namespace AppleCinnamon.Chunks
                     _waterEffect.Use(_device);
                     foreach (var chunk in chunks)
                     {
-                        chunk.Value.DrawWater(_device);
+                        chunk.Value.Buffers.BufferWater?.Draw(_device);
                     }
                     _device.ImmediateContext.OutputMerger.SetBlendState(null);
                 }

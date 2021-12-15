@@ -66,7 +66,7 @@ namespace AppleCinnamon
             foreach (var direction in LightDirections.All)
             {
                 var neighborIndex = direction.Step + relativeIndex;
-                var voxel = chunk.GetLocalWithneighbors(neighborIndex.X, neighborIndex.Y, neighborIndex.Z, out var address);
+                var voxel = chunk.GetLocalWithNeighbor(neighborIndex.X, neighborIndex.Y, neighborIndex.Z, out var address);
 
                 if (brightest == null || brightest.Item3 < voxel.CompositeLight)
                 {

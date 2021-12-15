@@ -75,7 +75,7 @@ namespace AppleCinnamon.Pipeline
 
                         voxels[Help.GetFlatIndex(i, min - 1, k, currentHeight)] = VoxelDefinition.Sand.Create();
 
-                        chunk.TopMostWaterVoxels.Add(Help.GetFlatIndex(i, WorldSettings.WaterLevel, k, currentHeight));
+                        chunk.BuildingContext.TopMostWaterVoxels.Add(Help.GetFlatIndex(i, WorldSettings.WaterLevel, k, currentHeight));
                     }
 
                     if (height < WorldSettings.WaterLevel)
@@ -87,11 +87,11 @@ namespace AppleCinnamon.Pipeline
                             voxels[flatIndex] = VoxelDefinition.Water.Create();
                         }
 
-                        chunk.TopMostWaterVoxels.Add(Help.GetFlatIndex(i, WorldSettings.WaterLevel - 1, k, currentHeight));
+                        chunk.BuildingContext.TopMostWaterVoxels.Add(Help.GetFlatIndex(i, WorldSettings.WaterLevel - 1, k, currentHeight));
                     }
                     if (!isWater)
                     {
-                        chunk.TopMostLandVoxels.Add(Help.GetFlatIndex(i, height, k, currentHeight));
+                        chunk.BuildingContext.TopMostLandVoxels.Add(Help.GetFlatIndex(i, height, k, currentHeight));
                     }
                 }
             }

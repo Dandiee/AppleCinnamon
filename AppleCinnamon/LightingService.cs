@@ -37,7 +37,7 @@ namespace AppleCinnamon
                 foreach (var direction in LightDirections.All)
                 {
                     var targetIndex = source.sourceIndex + direction.Step;
-                    var targetVoxel = source.sourceChunk.GetLocalWithneighbors(targetIndex.X, targetIndex.Y, targetIndex.Z, out var targetAddress);
+                    var targetVoxel = source.sourceChunk.GetLocalWithNeighbor(targetIndex.X, targetIndex.Y, targetIndex.Z, out var targetAddress);
                     var targetDefinition = targetVoxel.GetDefinition();
 
                     var brightnessLoss = VoxelDefinition.GetBrightnessLoss(sourceDefinition, targetDefinition, direction.Direction);
@@ -86,7 +86,7 @@ namespace AppleCinnamon
                             if ((neighborZ & Chunk.SizeXy) == 0)
                             {
                                 var neighborFlatIndex = Help.GetFlatIndex(neighborX, neighborY, neighborZ, chunk.CurrentHeight);
-                                var neighborVoxel = chunk.GetVoxelNoInline(neighborFlatIndex);
+                                var neighborVoxel = chunk.GetVoxel(neighborFlatIndex);
                                 var neighborDefinition = neighborVoxel.GetDefinition();
                                 var brightnessLoss = VoxelDefinition.GetBrightnessLoss(sourceDefinition, neighborDefinition, direction.Direction);
 
@@ -96,13 +96,13 @@ namespace AppleCinnamon
                                     if (neighborVoxel.Sunlight < sourceVoxel.Sunlight - brightnessLoss)
                                     {
                                         hasChanged = true;
-                                        chunk.SetVoxelNoInline(neighborFlatIndex, neighborVoxel.SetSunlight((byte)(sourceVoxel.Sunlight - brightnessLoss)));
+                                        chunk.SetVoxel(neighborFlatIndex, neighborVoxel.SetSunlight((byte)(sourceVoxel.Sunlight - brightnessLoss)));
                                     }
 
                                     if (neighborVoxel.EmittedLight < sourceVoxel.EmittedLight - brightnessLoss)
                                     {
                                         hasChanged = true;
-                                        chunk.SetVoxelNoInline(neighborFlatIndex, neighborVoxel.SetCustomLight((byte) (sourceVoxel.EmittedLight - brightnessLoss)));
+                                        chunk.SetVoxel(neighborFlatIndex, neighborVoxel.SetCustomLight((byte) (sourceVoxel.EmittedLight - brightnessLoss)));
                                     }
 
                                     if (hasChanged)
@@ -128,7 +128,7 @@ namespace AppleCinnamon
 
                 foreach (var direction in LightDirections.All)
                 {
-                    var targetVoxel = source.sourceChunk.GetLocalWithneighbors(source.sourceIndex.X + direction.Step.X, source.sourceIndex.Y + direction.Step.Y, source.sourceIndex.Z + direction.Step.Z, out var targetAddress);
+                    var targetVoxel = source.sourceChunk.GetLocalWithNeighbor(source.sourceIndex.X + direction.Step.X, source.sourceIndex.Y + direction.Step.Y, source.sourceIndex.Z + direction.Step.Z, out var targetAddress);
                     var targetDefinition = targetVoxel.GetDefinition();
                     var brightnessLoss = VoxelDefinition.GetBrightnessLoss(record.sourceDefinition, targetDefinition, direction.Direction);
 

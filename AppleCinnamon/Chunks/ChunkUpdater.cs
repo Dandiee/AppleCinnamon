@@ -169,7 +169,7 @@ namespace AppleCinnamon
             {
                 var neighbor = relativeIndex + direction.Step;
                 var neighborVoxel =
-                    chunk.GetLocalWithneighbors(neighbor.X, neighbor.Y, neighbor.Z, out var neighborAddress);
+                    chunk.GetLocalWithNeighbor(neighbor.X, neighbor.Y, neighbor.Z, out var neighborAddress);
                 var neighborDefinition = neighborVoxel.GetDefinition();
 
                 var neighborChunk = chunk.Neighbors[Help.GetChunkFlatIndex(neighborAddress.ChunkIndex)];

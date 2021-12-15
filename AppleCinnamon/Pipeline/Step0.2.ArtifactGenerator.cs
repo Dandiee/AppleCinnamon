@@ -14,7 +14,7 @@ namespace AppleCinnamon.Pipeline
 
         public override Chunk Process(Chunk chunk)
         {
-            foreach (var flatIndex in chunk.TopMostLandVoxels)
+            foreach (var flatIndex in chunk.BuildingContext.TopMostLandVoxels)
             {
                 var index = flatIndex.ToIndex(chunk.CurrentHeight);
 
@@ -48,7 +48,7 @@ namespace AppleCinnamon.Pipeline
 
         private void CleanUp(Chunk chunk)
         {
-            chunk.TopMostLandVoxels = null;
+            chunk.BuildingContext.TopMostLandVoxels = null;
         }
     }
 }

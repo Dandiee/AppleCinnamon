@@ -9,6 +9,7 @@ using AppleCinnamon.Settings;
 using AppleCinnamon.Vertices;
 using SharpDX;
 using SharpDX.Direct3D11;
+using SharpDX.DXGI;
 using Buffer = SharpDX.Direct3D11.Buffer;
 using Device = SharpDX.Direct3D11.Device;
 
@@ -26,11 +27,20 @@ namespace AppleCinnamon
 
         public void BuildChunk(Chunk chunk)
         {
+            var bufferSolid = BuildSolid(chunk, _device);
+            var bufferWater = BuildWater(chunk, _device);
+            var bufferSprite = BuildSprite(chunk, _device);
+
+            chunk.Buffers = new ChunkBuffers(bufferSolid, bufferWater, bufferSprite);
+        }
+
+        private BufferDefinition<VertexSolidBlock> BuildSolid(Chunk chunk, Device device)
+        {
             var faces = GetChunkFaces(chunk);
             var visibleFacesCount = chunk.BuildingContext.Faces.Sum(s => s.VoxelCount);
             if (visibleFacesCount == 0)
             {
-                return;
+                return null;
             }
 
             var vertices = new VertexSolidBlock[visibleFacesCount * 4];
@@ -50,37 +60,31 @@ namespace AppleCinnamon
 
                 foreach (var faceInfo in faces.Faces)
                 {
-                    if (((byte)visibilityFlag.Value & faceInfo.BuildInfo.DirectionFlag) == faceInfo.BuildInfo.DirectionFlag)
+                    if (((byte) visibilityFlag.Value & faceInfo.BuildInfo.DirectionFlag) == faceInfo.BuildInfo.DirectionFlag)
                     {
-                        var neighbor = chunk.GetLocalWithneighbors(index.X + faceInfo.BuildInfo.Direction.X, index.Y + faceInfo.BuildInfo.Direction.Y, index.Z + faceInfo.BuildInfo.Direction.Z);
+                        var neighbor = chunk.GetLocalWithNeighbor(index.X + faceInfo.BuildInfo.Direction.X, index.Y + faceInfo.BuildInfo.Direction.Y, index.Z + faceInfo.BuildInfo.Direction.Z);
                         AddFace(faceInfo, voxel, index.X, index.Y, index.Z, vertices, indexes, definition, chunk, neighbor, voxelPositionOffset);
                     }
                 }
             }
 
-            chunk.ChunkBuffer = new ChunkBuffer(_device, vertices, indexes, faces);
-
-            chunk.VisibleFacesCount = visibleFacesCount;
-            var waterBuffer = AddWaterFace(chunk, _device);
-            var spriteBuffer = AddSpriteFace(chunk, _device);
-
-            chunk.SetBuffers(waterBuffer, spriteBuffer);
+            return new BufferDefinition<VertexSolidBlock>(device, vertices, indexes);
         }
 
-        private FaceBuffer AddWaterFace(Chunk chunk, Device device)
+        private BufferDefinition<VertexWater> BuildWater(Chunk chunk, Device device)
         {
-            if (chunk.TopMostWaterVoxels.Count == 0)
+            if (chunk.BuildingContext.TopMostWaterVoxels.Count == 0)
             {
                 return null;
             }
 
             var topOffsetVertices = FaceBuildInfo.FaceVertices.Top;
-            var vertices = new VertexWater[chunk.TopMostWaterVoxels.Count * 4];
-            var indexes = new uint[chunk.TopMostWaterVoxels.Count * 6 * 2];
+            var vertices = new VertexWater[chunk.BuildingContext.TopMostWaterVoxels.Count * 4];
+            var indexes = new uint[chunk.BuildingContext.TopMostWaterVoxels.Count * 6 * 2];
 
-            for (var n = 0; n < chunk.TopMostWaterVoxels.Count; n++)
+            for (var n = 0; n < chunk.BuildingContext.TopMostWaterVoxels.Count; n++)
             {
-                var flatIndex = chunk.TopMostWaterVoxels[n];
+                var flatIndex = chunk.BuildingContext.TopMostWaterVoxels[n];
                 var index = flatIndex.ToIndex(chunk.CurrentHeight);
 
                 var vertexOffset = n * 4;
@@ -112,11 +116,7 @@ namespace AppleCinnamon
                 indexes[indexOffset + 11] = (uint)(vertexOffset + 0);
             }
 
-            return new FaceBuffer(
-                indexes.Length,
-                default(VertexWater).Size,
-                Buffer.Create(device, BindFlags.VertexBuffer, vertices),
-                Buffer.Create(device, BindFlags.IndexBuffer, indexes));
+            return new BufferDefinition<VertexWater>(device, vertices, indexes);
         }
 
         public const float SingleSidedOffset = 0.1f;
@@ -131,7 +131,7 @@ namespace AppleCinnamon
             Vector3.UnitZ * -SingleSidedOffset,
         };
 
-        private FaceBuffer AddSpriteFace(Chunk chunk, Device device)
+        private BufferDefinition<VertexSprite> BuildSprite(Chunk chunk, Device device)
         {
 
             var numberOfFaces = chunk.BuildingContext.SpriteBlocks.Count * 2 +
@@ -175,7 +175,7 @@ namespace AppleCinnamon
             }
 
             //return null;
-            return new FaceBuffer(indexes.Length, default(VertexSprite).Size, Buffer.Create(device, BindFlags.VertexBuffer, vertices), Buffer.Create(device, BindFlags.IndexBuffer, indexes));
+            return new BufferDefinition<VertexSprite>(device, vertices, indexes);
         }
 
         private static void AddSpriteFace(Chunk chunk, Vector3[] faceOffsetVertices, Vector3 positionOffset, Voxel voxel, Int2 textureIndicies,
@@ -231,7 +231,7 @@ namespace AppleCinnamon
 
                 foreach (var ambientIndex in vertexInfo.AmbientOcclusionNeighbors)
                 {
-                    var ambientNeighborVoxel = chunk.GetLocalWithneighbors(relativeIndexX + ambientIndex.X, relativeIndexY + ambientIndex.Y, relativeIndexZ + ambientIndex.Z, out var addr);
+                    var ambientNeighborVoxel = chunk.GetLocalWithNeighbor(relativeIndexX + ambientIndex.X, relativeIndexY + ambientIndex.Y, relativeIndexZ + ambientIndex.Z, out var addr);
                     var ambientNeighborDefinition = ambientNeighborVoxel.GetDefinition();
 
                     if (!ambientNeighborDefinition.IsBlock)
@@ -461,28 +461,32 @@ namespace AppleCinnamon
 
     }
 
-    public sealed class ChunkBuffer
+    public sealed class BufferDefinition<TVertex>
+        where TVertex : struct, IVertex
     {
+        public readonly bool IsValid;
+        public readonly int IndexCount;
         public readonly Buffer VertexBuffer;
         public readonly Buffer IndexBuffer;
         public readonly VertexBufferBinding Binding;
-        public readonly IDictionary<Int3, ChunkFace> Offsets;
 
-        public ChunkBuffer(Device device, VertexSolidBlock[] vertices, uint[] indexes, Cube<ChunkFace> offsets)
+        public BufferDefinition(Device device, TVertex[] vertices, uint[] indexes)
         {
-            VertexBuffer = Buffer.Create(device, BindFlags.VertexBuffer, vertices, vertices.Length * default(VertexSolidBlock).Size, ResourceUsage.Immutable);
+            IsValid = indexes.Length > 0;
+            IndexCount = indexes.Length;
+            VertexBuffer = Buffer.Create(device, BindFlags.VertexBuffer, vertices, vertices.Length * default(TVertex).Size, ResourceUsage.Immutable);
             IndexBuffer = Buffer.Create(device, BindFlags.IndexBuffer, indexes, indexes.Length * sizeof(uint), ResourceUsage.Immutable);
-            Binding = new VertexBufferBinding(VertexBuffer, default(VertexSolidBlock).Size, 0);
-            Offsets = new Dictionary<Int3, ChunkFace>
-            {
-                [offsets.Top.BuildInfo.Direction] = offsets.Top,
-                [offsets.Bottom.BuildInfo.Direction] = offsets.Bottom,
-                [offsets.Left.BuildInfo.Direction] = offsets.Left,
-                [offsets.Right.BuildInfo.Direction] = offsets.Right,
-                [offsets.Front.BuildInfo.Direction] = offsets.Front,
-                [offsets.Back.BuildInfo.Direction] = offsets.Back,
-            };
+            Binding = new VertexBufferBinding(VertexBuffer, default(TVertex).Size, 0);
+        }
 
+        public void Draw(Device device)
+        {
+            if (IsValid)
+            {
+                device.ImmediateContext.InputAssembler.SetVertexBuffers(0, Binding);
+                device.ImmediateContext.InputAssembler.SetIndexBuffer(IndexBuffer, Format.R32_UInt, 0);
+                device.ImmediateContext.DrawIndexed(IndexCount, 0, 0);
+            }
         }
     }
 
