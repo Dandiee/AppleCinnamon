@@ -99,7 +99,7 @@ namespace AppleCinnamon
                 {
                     for (var j = expectedHeight - 1; j >= CurrentHeight; j--)
                     {
-                        SetVoxel(Help.GetFlatIndex(i, j, k, expectedHeight), Voxel.Air);
+                        SetVoxel(Help.GetFlatIndex(i, j, k, expectedHeight), Voxel.SunBlock);
                     }
                 }
             }
@@ -122,10 +122,16 @@ namespace AppleCinnamon
 
         public Voxel GetLocalWithneighbors(int i, int j, int k, out VoxelAddress address)
         {
-            if (j < 0 || j >= CurrentHeight)
+            if (j < 0)
             {
                 address = VoxelAddress.Zero;
-                return Voxel.One;
+                return Voxel.Bedrock;
+            }
+
+            if (j >= CurrentHeight)
+            {
+                address = VoxelAddress.Zero;
+                return Voxel.SunBlock;
             }
 
             var cx = (int)(-((i & 0b10000000_00000000_00000000_00000000) >> 31) + ((i / SizeXy)));
@@ -135,7 +141,7 @@ namespace AppleCinnamon
             address = new VoxelAddress(new Int2(cx, cy), new Int3(i & (SizeXy - 1), j, k & (SizeXy - 1)));
 
             return chunk.CurrentHeight <= j
-                ? Voxel.Air
+                ? Voxel.SunBlock
                 : chunk.GetVoxel(Help.GetFlatIndex(address.RelativeVoxelIndex.X, j, address.RelativeVoxelIndex.Z, chunk.CurrentHeight));
         }
 
@@ -156,7 +162,7 @@ namespace AppleCinnamon
         {
             if (j < 0)
             {
-                return Voxel.One;
+                return Voxel.Bedrock;
             }
 
             var chunk = Neighbors[Help.GetChunkFlatIndex(
@@ -164,7 +170,7 @@ namespace AppleCinnamon
                 (int)(-((k & 0b10000000_00000000_00000000_00000000) >> 31) + ((k / SizeXy))))];
 
             return chunk.CurrentHeight <= j
-                ? Voxel.Air
+                ? Voxel.SunBlock
                 : chunk.GetVoxel(Help.GetFlatIndex(i & (SizeXy - 1), j, k & (SizeXy - 1), chunk.CurrentHeight));
         }
 

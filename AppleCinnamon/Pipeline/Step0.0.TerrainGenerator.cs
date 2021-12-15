@@ -49,10 +49,10 @@ namespace AppleCinnamon.Pipeline
 
                     for (var j = 0; j <= height - 1; j++)
                     {
-                        voxels[Help.GetFlatIndex(i, j, k, currentHeight)] = 
+                        voxels[Help.GetFlatIndex(i, j, k, currentHeight)] =
                             j == height - 1
-                                ?  new Voxel(VoxelDefinition.Grass.Type, 0, 2)
-                                : new Voxel(VoxelDefinition.Dirt.Type, 0, 2);
+                                ? VoxelDefinition.Grass.Create(2)
+                                : VoxelDefinition.Dirt.Create();
                     }
 
                     var waterRandom = _waterNoise.Compute(i + chunkIndex.X * Chunk.SizeXy, k + chunkIndex.Y * Chunk.SizeXy);
@@ -68,12 +68,12 @@ namespace AppleCinnamon.Pipeline
                             var fi = Help.GetFlatIndex(i, j, k, currentHeight);
                             if (j <= WorldSettings.WaterLevel)
                             {
-                                voxels[fi] = new Voxel(VoxelDefinition.Water.Type, 0);
+                                voxels[fi] = VoxelDefinition.Water.Create();
                             }
-                            else voxels[fi] = new Voxel(VoxelDefinition.Air.Type, 0);
+                            else voxels[fi] = VoxelDefinition.Air.Create();
                         }
 
-                        voxels[Help.GetFlatIndex(i, min - 1, k, currentHeight)] = new Voxel(VoxelDefinition.Sand.Type, 0);
+                        voxels[Help.GetFlatIndex(i, min - 1, k, currentHeight)] = VoxelDefinition.Sand.Create();
 
                         chunk.TopMostWaterVoxels.Add(Help.GetFlatIndex(i, WorldSettings.WaterLevel, k, currentHeight));
                     }
@@ -84,7 +84,7 @@ namespace AppleCinnamon.Pipeline
                         for (var j = height; j < WorldSettings.WaterLevel; j++)
                         {
                             var flatIndex = Help.GetFlatIndex(i, j, k, currentHeight);
-                            voxels[flatIndex] = new Voxel(VoxelDefinition.Water.Type, 0);
+                            voxels[flatIndex] = VoxelDefinition.Water.Create();
                         }
 
                         chunk.TopMostWaterVoxels.Add(Help.GetFlatIndex(i, WorldSettings.WaterLevel - 1, k, currentHeight));

@@ -41,40 +41,48 @@ namespace AppleCinnamon.Services
             for (var j = 0; j < trunkHeight; j++)
             {
                 var flatIndex = Help.GetFlatIndex(relativeIndex.X, relativeIndex.Y + j, relativeIndex.Z, chunk.CurrentHeight);
-                chunk.Voxels[flatIndex] = new Voxel(treeType.Type, 0);
+                chunk.Voxels[flatIndex] = treeType.Create();
 
                 if (true) //_rnd.Next() % 2 == 0)
                 {
                     if (relativeIndex.X < Chunk.SizeXy - 1)
                     {
-                        var fifi = Help.GetFlatIndex(relativeIndex.X + 1, relativeIndex.Y + j, relativeIndex.Z,
-                            chunk.CurrentHeight);
-                        chunk.Voxels[fifi] = new Voxel(VoxelDefinition.Tendril.Type, 0, 2, Face.Left);
-                        chunk.BuildingContext.SingleSidedSpriteBlocks.Add(fifi);
+                        var fifi = Help.GetFlatIndex(relativeIndex.X + 1, relativeIndex.Y + j, relativeIndex.Z, chunk.CurrentHeight);
+                        if (chunk.Voxels[fifi].Block == 0)
+                        {
+                            chunk.Voxels[fifi] = VoxelDefinition.Tendril.Create(2, Face.Left);
+                            chunk.BuildingContext.SingleSidedSpriteBlocks.Add(fifi);
+                        }
                     }
 
                     if (relativeIndex.X > 0)
                     {
-                        var fifi = Help.GetFlatIndex(relativeIndex.X - 1, relativeIndex.Y + j, relativeIndex.Z,
-                            chunk.CurrentHeight);
-                        chunk.Voxels[fifi] = new Voxel(VoxelDefinition.Tendril.Type, 0, 2, Face.Right);
-                        chunk.BuildingContext.SingleSidedSpriteBlocks.Add(fifi);
+                        var fifi = Help.GetFlatIndex(relativeIndex.X - 1, relativeIndex.Y + j, relativeIndex.Z, chunk.CurrentHeight);
+                        if (chunk.Voxels[fifi].Block == 0)
+                        {
+                            chunk.Voxels[fifi] = VoxelDefinition.Tendril.Create(2, Face.Right);
+                            chunk.BuildingContext.SingleSidedSpriteBlocks.Add(fifi);
+                        }
                     }
 
                     if (relativeIndex.Z < Chunk.SizeXy - 1)
                     {
-                        var fifi = Help.GetFlatIndex(relativeIndex.X, relativeIndex.Y + j, relativeIndex.Z + 1,
-                            chunk.CurrentHeight);
-                        chunk.Voxels[fifi] = new Voxel(VoxelDefinition.Tendril.Type, 0, 2, Face.Front);
-                        chunk.BuildingContext.SingleSidedSpriteBlocks.Add(fifi);
+                        var fifi = Help.GetFlatIndex(relativeIndex.X, relativeIndex.Y + j, relativeIndex.Z + 1, chunk.CurrentHeight);
+                        if (chunk.Voxels[fifi].Block == 0)
+                        {
+                            chunk.Voxels[fifi] = VoxelDefinition.Tendril.Create(2, Face.Front);
+                            chunk.BuildingContext.SingleSidedSpriteBlocks.Add(fifi);
+                        }
                     }
 
                     if (relativeIndex.Z > 0)
                     {
-                        var fifi = Help.GetFlatIndex(relativeIndex.X, relativeIndex.Y + j, relativeIndex.Z - 1,
-                            chunk.CurrentHeight);
-                        chunk.Voxels[fifi] = new Voxel(VoxelDefinition.Tendril.Type, 0, 2, Face.Back);
-                        chunk.BuildingContext.SingleSidedSpriteBlocks.Add(fifi);
+                        var fifi = Help.GetFlatIndex(relativeIndex.X, relativeIndex.Y + j, relativeIndex.Z - 1, chunk.CurrentHeight);
+                        if (chunk.Voxels[fifi].Block == 0)
+                        {
+                            chunk.Voxels[fifi] = VoxelDefinition.Tendril.Create(2, Face.Back);
+                            chunk.BuildingContext.SingleSidedSpriteBlocks.Add(fifi);
+                        }
                     }
                 }
 
@@ -96,8 +104,7 @@ namespace AppleCinnamon.Services
                 if (callback(targetChunk, flatIndex))
                 {
                     height--;
-                    flatIndex = Help.GetFlatIndex(address.RelativeVoxelIndex.X, height, address.RelativeVoxelIndex.Z,
-                        targetChunk.CurrentHeight);
+                    flatIndex = Help.GetFlatIndex(address.RelativeVoxelIndex.X, height, address.RelativeVoxelIndex.Z, targetChunk.CurrentHeight);
                     voxel = targetChunk.Voxels[flatIndex];
                 }
                 else break;
@@ -111,13 +118,13 @@ namespace AppleCinnamon.Services
                 if (_rnd.Next() % LeavesDespawnRate == 0) continue;
 
                 var address = chunk.GetAddress(relativeVoxelIndex);
-                address.SetVoxel(chunk, new Voxel(VoxelDefinition.Leaves.Type, 0, 2));
+                address.SetVoxel(chunk, VoxelDefinition.Leaves.Create(2));
 
                 if (relativeVoxelIndex.X == trunkTop.X - 3)
                 {
                     GoDown(chunk, relativeVoxelIndex - Int3.UnitX, (c, fi) =>
                     {
-                        c.SetVoxel(fi, new Voxel(VoxelDefinition.Tendril.Type, 0, 2, Face.Right));
+                        c.SetVoxel(fi, VoxelDefinition.Tendril.Create(2, Face.Right));
                         c.BuildingContext.SingleSidedSpriteBlocks.Add(fi);
 
                         return _rnd.Next() % 2 == 0;
@@ -128,7 +135,7 @@ namespace AppleCinnamon.Services
                 {
                     GoDown(chunk, relativeVoxelIndex + Int3.UnitX, (c, fi) =>
                     {
-                        c.SetVoxel(fi, new Voxel(VoxelDefinition.Tendril.Type, 0, 2, Face.Left));
+                        c.SetVoxel(fi, VoxelDefinition.Tendril.Create(2, Face.Left));
                         c.BuildingContext.SingleSidedSpriteBlocks.Add(fi);
 
                         return _rnd.Next() % 2 == 0;
@@ -139,7 +146,7 @@ namespace AppleCinnamon.Services
                 {
                     GoDown(chunk, relativeVoxelIndex - Int3.UnitZ, (c, fi) =>
                     {
-                        c.SetVoxel(fi, new Voxel(VoxelDefinition.Tendril.Type, 0, 2, Face.Back));
+                        c.SetVoxel(fi, VoxelDefinition.Tendril.Create(2, Face.Back));
                         c.BuildingContext.SingleSidedSpriteBlocks.Add(fi);
 
                         return _rnd.Next() % 2 == 0;
@@ -150,7 +157,7 @@ namespace AppleCinnamon.Services
                 {
                     GoDown(chunk, relativeVoxelIndex + Int3.UnitZ, (c, fi) =>
                     {
-                        c.SetVoxel(fi, new Voxel(VoxelDefinition.Tendril.Type, 0, 2, Face.Front));
+                        c.SetVoxel(fi, VoxelDefinition.Tendril.Create(2, Face.Front));
                         c.BuildingContext.SingleSidedSpriteBlocks.Add(fi);
 
                         return _rnd.Next() % 2 == 0;
@@ -163,7 +170,7 @@ namespace AppleCinnamon.Services
                 if (_rnd.Next() % LeavesDespawnRate == 0) continue;
 
                 var address = chunk.GetAddress(relativeVoxelIndex);
-                address.SetVoxel(chunk, new Voxel(VoxelDefinition.Leaves.Type, 0, 2));
+                address.SetVoxel(chunk, VoxelDefinition.Leaves.Create(2));
             }
         }
 
@@ -174,7 +181,7 @@ namespace AppleCinnamon.Services
                 if (_rnd.Next() % LeavesDespawnRate == 0) continue;
 
                 var address = chunk.GetAddress(relativeVoxelIndex);
-                address.SetVoxel(chunk, new Voxel(VoxelDefinition.Leaves.Type, 0, 2));
+                address.SetVoxel(chunk, VoxelDefinition.Leaves.Create(2));
             }
         }
 
@@ -185,7 +192,7 @@ namespace AppleCinnamon.Services
                 if (_rnd.Next() % LeavesDespawnRate == 0) continue;
 
                 var address = chunk.GetAddress(relativeVoxelIndex);
-                address.SetVoxel(chunk, new Voxel(VoxelDefinition.Leaves.Type, 0, 2));
+                address.SetVoxel(chunk, VoxelDefinition.Leaves.Create(2));
             }
         }
 
@@ -200,7 +207,7 @@ namespace AppleCinnamon.Services
                 if (_rnd.Next() % LeavesDespawnRate == 0) continue;
 
                 var address = chunk.GetAddress(relativeVoxelIndex);
-                address.SetVoxel(chunk, new Voxel(VoxelDefinition.Leaves.Type, 0, 2));
+                address.SetVoxel(chunk, VoxelDefinition.Leaves.Create(2));
             }
         }
     }

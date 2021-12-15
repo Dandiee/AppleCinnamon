@@ -93,9 +93,10 @@ namespace AppleCinnamon
                 var oldVoxel = chunk.GetVoxel(flatIndex);
                 var newDefinition = VoxelDefinition.DefinitionByType[voxel];
                 var newVoxel = newDefinition.HueFaces != VisibilityFlag.None
-                    ? new Voxel(voxel, 0, newDefinition.LightEmitting, (byte) _random.Next(1, 8))
-                    : new Voxel(voxel, 0, newDefinition.LightEmitting, (byte)0);
+                    ? newDefinition.Create(2)
+                    : newDefinition.Create();
 
+                
 
                 chunk.SetVoxel(flatIndex, newVoxel);
 
@@ -130,8 +131,6 @@ namespace AppleCinnamon
             var oldDefinition = VoxelDefinition.DefinitionByType[oldVoxel.Block];
             var newDefinition = VoxelDefinition.DefinitionByType[newVoxel.Block];
             var flatIndex = relativeIndex.ToFlatIndex(chunk.CurrentHeight);
-
-
 
             if (oldDefinition.IsSprite && !newDefinition.IsSprite)
             {

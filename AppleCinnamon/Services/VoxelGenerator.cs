@@ -52,7 +52,7 @@ namespace AppleCinnamon.Pipeline
 
                     for (var j = 0; j <= height - 1; j++)
                     {
-                        voxels[Help.GetFlatIndex(i, j, k, currentHeight)] = new Voxel(VoxelDefinition.Grass.Type, 0, 2);
+                        voxels[Help.GetFlatIndex(i, j, k, currentHeight)] = VoxelDefinition.Grass.Create(2);
                     }
 
                     if (false)
@@ -65,7 +65,7 @@ namespace AppleCinnamon.Pipeline
                         for (var j = height; j < WorldSettings.WaterLevel; j++)
                         {
                             var flatIndex = Help.GetFlatIndex(i, j, k, currentHeight);
-                            voxels[flatIndex] = new Voxel(VoxelDefinition.Water.Type, 0);
+                            voxels[flatIndex] = VoxelDefinition.Water.Create();
                         }
 
                         chunk.TopMostWaterVoxels.Add(Help.GetFlatIndex(i, WorldSettings.WaterLevel - 1, k, currentHeight));
@@ -126,11 +126,11 @@ namespace AppleCinnamon.Pipeline
                         var pixel = Noise.CalcPixel3D(i + (chunk.ChunkIndex.X * Chunk.SizeXy), j, k + chunk.ChunkIndex.Y * Chunk.SizeXy, .015f);
                         if (pixel < 128)// && pixel > 16)
                         {
-                            voxels[Help.GetFlatIndex(i, j, k, maxHeight)] = new Voxel(VoxelDefinition.Sand.Type, 0);
+                            voxels[Help.GetFlatIndex(i, j, k, maxHeight)] = VoxelDefinition.Sand.Create();
                         }
                     }
 
-                    voxels[Help.GetFlatIndex(i, 1, k, maxHeight)] = new Voxel(VoxelDefinition.Sand.Type, 0);
+                    voxels[Help.GetFlatIndex(i, 1, k, maxHeight)] = VoxelDefinition.Sand.Create();
 
                 }
             }
@@ -153,16 +153,16 @@ namespace AppleCinnamon.Pipeline
 
                     if (chunk.ChunkIndex == new Int2(1, 1))
                     {
-                        voxels[Help.GetFlatIndex(i, 4, k, maxHeight)] = new Voxel(VoxelDefinition.Stone.Type, 0);
+                        voxels[Help.GetFlatIndex(i, 4, k, maxHeight)] = VoxelDefinition.Stone.Create();
                     }
 
                     if (chunk.ChunkIndex == new Int2(2, 1))
                     {
-                        voxels[Help.GetFlatIndex(i, 6, k, maxHeight)] = new Voxel(VoxelDefinition.Stone.Type, 0);
+                        voxels[Help.GetFlatIndex(i, 6, k, maxHeight)] = VoxelDefinition.Stone.Create();
                     }
 
 
-                    voxels[Help.GetFlatIndex(i, 1, k, maxHeight)] = new Voxel(VoxelDefinition.Stone.Type, 0);
+                    voxels[Help.GetFlatIndex(i, 1, k, maxHeight)] = VoxelDefinition.Stone.Create();
 
                 }
             }

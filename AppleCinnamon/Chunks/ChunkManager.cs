@@ -63,7 +63,7 @@ namespace AppleCinnamon
             }
 
             return chunk.CurrentHeight <= address.Value.RelativeVoxelIndex.Y
-                ? Voxel.Air
+                ? Voxel.SunBlock
                 : chunk.GetVoxel(address.Value.RelativeVoxelIndex.ToFlatIndex(chunk.CurrentHeight));
         }
 

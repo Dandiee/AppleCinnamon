@@ -110,7 +110,7 @@ namespace AppleCinnamon
         {
             var upperIndex = new Int3(relativeIndex.X, relativeIndex.Y + 1, relativeIndex.Z);
             var upperVoxel = chunk.CurrentHeight <= relativeIndex.Y + 1
-                             ? Voxel.Air
+                             ? Voxel.SunBlock
                              : chunk.GetVoxel(upperIndex.ToFlatIndex(chunk.CurrentHeight));
 
             // identify light sources

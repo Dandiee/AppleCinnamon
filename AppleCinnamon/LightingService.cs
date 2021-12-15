@@ -30,7 +30,7 @@ namespace AppleCinnamon
             {
                 var source = queue.Dequeue();
                 var sourceVoxel = source.sourceChunk.CurrentHeight <= source.sourceIndex.Y
-                    ? Voxel.Air
+                    ? Voxel.SunBlock
                     : source.sourceChunk.GetVoxel(source.sourceIndex.ToFlatIndex(source.sourceChunk.CurrentHeight));
                 var sourceDefinition = VoxelDefinition.DefinitionByType[sourceVoxel.Block];
 

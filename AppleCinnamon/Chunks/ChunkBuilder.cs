@@ -172,7 +172,6 @@ namespace AppleCinnamon
                 var face = FaceBuildInfo.FaceVertices.Faces[(byte) voxel.Orientation];
 
                 AddSpriteFace(chunk, face, positionOffset, voxel, definition.TextureIndexes.Faces[(byte)Face.Left], vertices, indexes, vertexOffset, n, thirdFaceOffset);
-                //AddSpriteFace(chunk, FaceBuildInfo.SpriteVertices.Right, positionOffset, voxel, definition.TextureIndexes.Faces[(byte)Face.Right], vertices, indexes, vertexOffset, n, secondFaceOffset);
             }
 
             //return null;

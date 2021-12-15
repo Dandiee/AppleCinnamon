@@ -27,6 +27,9 @@ namespace AppleCinnamon.Settings
 
         public static byte[] BrightnessLosses;
 
+        public Voxel Create(byte hueIndex = 0, Face face = Face.Top) => new(Type, 0, LightEmitting, hueIndex, face);
+
+
         private static byte[] BuildTransmitterPairs()
         {
             var length = DefinitionByType.Length;

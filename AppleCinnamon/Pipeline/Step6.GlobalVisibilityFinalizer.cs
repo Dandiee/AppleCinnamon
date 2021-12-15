@@ -38,7 +38,7 @@ namespace AppleCinnamon.Pipeline
                 var index = flatIndex.ToIndex(chunk.CurrentHeight);
                 var voxel = chunk.Voxels[flatIndex];
                 var neighbor = neighborChunk.CurrentHeight <= index.Y
-                    ? Voxel.Air
+                    ? Voxel.SunBlock
                     : neighborChunk.GetVoxel(context.GetNeighborIndex(index, neighborChunk.CurrentHeight));
 
                 var voxelDefinition = VoxelDefinition.DefinitionByType[voxel.Block];
