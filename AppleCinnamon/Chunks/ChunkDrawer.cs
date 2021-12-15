@@ -168,7 +168,10 @@ namespace AppleCinnamon.Chunks
             _spriteEffect.Effect.GetVariableByName("EyePosition").AsVector().Set(camera.Position.ToVector3());
 
             Hofman.UpdateEffect(_skyEffect, camera);
-            
+
+            _solidEffect.Effect.GetVariableByName("lightFactor").AsScalar().Set(Hofman.SunlightFactor);
+            _waterEffect.Effect.GetVariableByName("lightFactor").AsScalar().Set(Hofman.SunlightFactor);
+            _spriteEffect.Effect.GetVariableByName("lightFactor").AsScalar().Set(Hofman.SunlightFactor);
 
 
 

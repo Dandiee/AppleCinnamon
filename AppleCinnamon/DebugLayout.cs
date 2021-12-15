@@ -95,7 +95,8 @@ namespace AppleCinnamon
                    $"Average render time: {game.AverageRenderTime:F2}\r\n" +
                    $"Peek render time: {game.PeekRenderTime:F2}\r\n" +
                    $"Average FPS: {game.AverageFps:F2}\r\n" + 
-                   $"SUN: {Hofman.SunDirection:F2}\r\n";
+                   $"SUN: {Hofman.SunDirection:F2}\r\n" +
+                   $"INTENSITY: {Hofman.SunlightFactor:F2}\r\n";
         }
 
         public void Draw(

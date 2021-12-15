@@ -52,6 +52,7 @@ struct VertexShaderOutput
 
 float textureFactor = 1.0 / 16.0;
 float totalLightness = 60.0f;
+float lightFactor = 1.0f;
 
 float ComputeFogFactor(float dist)
 {
@@ -66,7 +67,7 @@ VertexShaderOutput VertexShaderFunction(VertexShaderInput input)
 
 	float u =        ((input.Asd >>  0) & 31) * textureFactor;
 	float v =        ((input.Asd >>  5) & 31) * textureFactor;
-	float l =        ((input.Asd >> 10) & 63) / totalLightness + 0.2f;
+	float l =        ((input.Asd >> 10) & 63) / (totalLightness * (1/lightFactor)) + 0.2f;
 	float a = 1.0 - (((input.Asd >> 16) & 15) / 3.0);
 	int   h =        ((input.Asd >> 20) & 15);
 

@@ -14,6 +14,7 @@ float3 lightDirection = float3(-.3, -1, -0.2);
 float4 SunDirection;
 float4 SunColor;
 
+float lightFactor = 1.0f;
 float2 TextureOffset;
 
 SamplerState SampleType;
@@ -59,7 +60,7 @@ float4 PixelShaderFunction(VertexShaderOutput input) : SV_Target
     float4 color = Textures.Sample(SampleType, input.TexCoords) * input.AmbientOcclusion;
 	float4 finalColor = (1.0 - input.FogFactor) * color + (input.FogFactor) * FogColor;
 
-	return float4(finalColor.xyz, 0.7);
+	return float4(finalColor.xyz, 0.7) * float4(lightFactor, lightFactor, lightFactor, 1);
 }
 
 technique10 Render

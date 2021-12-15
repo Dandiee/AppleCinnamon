@@ -6,6 +6,7 @@ float4 FogColor = float4(.5, .5, .5, 1);
 float FogStart = 64;
 float FogEnd = 256;
 
+float lightFactor = 1.0f;
 Texture2D Textures;
 
 float4 HueColors[] =
@@ -65,7 +66,7 @@ VertexShaderOutput VertexShaderFunction(VertexShaderInput input)
 
 	float u = ((input.Asd >>  0) & 31) * textureFactor;         // 5 bits
 	float v = ((input.Asd >>  5) & 31) * textureFactor;         // 5 bits
-	float l = ((input.Asd >> 10) & 15) / totalLightness + 0.2f; // 4 bits
+	float l = ((input.Asd >> 10) & 15) / (totalLightness * (1/ lightFactor)) + 0.2f; // 4 bits
 	int   h = ((input.Asd >> 14) & 15);							// 4 bits
 
 	output.Position = mul(position, WorldViewProjection);
