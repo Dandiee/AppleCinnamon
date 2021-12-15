@@ -34,7 +34,7 @@ PS_INPUT HoffmanShader(VS_INPUT Input)
 	float3 viewDir = normalize(worldPos.xyz);
 	float distance = length(worldPos.xyz);
 
-	float3 sunDir = normalize(mul(float4(sunDirection, 0.0), worldView).xyz);
+	float3 sunDir = normalize(mul(float4(sunDirection, 1), worldView).xyz);
 
 	float theta = dot(sunDir, viewDir);
 

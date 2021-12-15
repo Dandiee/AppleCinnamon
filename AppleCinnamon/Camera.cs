@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using AppleCinnamon.Chunks;
 using AppleCinnamon.Collision;
 using AppleCinnamon.Helper;
 using AppleCinnamon.Settings;
@@ -269,6 +270,31 @@ namespace AppleCinnamon
                 Velocity += Double3.Normalize(translationVector) * MovementSensitivity *
                             (_currentKeyboardState.IsPressed(Key.LeftShift) ? SprintSpeedFactor : 1);
             }
+
+            const float lilStep = 0.001f;
+
+            if (_currentKeyboardState.IsPressed(Key.NumberPad0)) Hofman.SunIntensity += lilStep;
+            if (_currentKeyboardState.IsPressed(Key.NumberPad1)) Hofman.SunIntensity -= lilStep;
+
+            if (_currentKeyboardState.IsPressed(Key.NumberPad2)) Hofman.Turbitity += lilStep;
+            if (_currentKeyboardState.IsPressed(Key.NumberPad3)) Hofman.Turbitity -= lilStep;
+
+            if (_currentKeyboardState.IsPressed(Key.NumberPad4)) Hofman.HGg += new Vector3(lilStep);
+            if (_currentKeyboardState.IsPressed(Key.NumberPad5)) Hofman.HGg -= new Vector3(lilStep);
+
+            if (_currentKeyboardState.IsPressed(Key.NumberPad6)) Hofman.InscatteringMultiplier += lilStep;
+            if (_currentKeyboardState.IsPressed(Key.NumberPad7)) Hofman.InscatteringMultiplier -= lilStep;
+
+            if (_currentKeyboardState.IsPressed(Key.NumberPad8)) Hofman.BetaRayMultiplier += lilStep;
+            if (_currentKeyboardState.IsPressed(Key.NumberPad9)) Hofman.BetaRayMultiplier -= lilStep;
+
+            if (_currentKeyboardState.IsPressed(Key.I)) Hofman.BetaMieMultiplier += lilStep;
+            if (_currentKeyboardState.IsPressed(Key.O)) Hofman.BetaMieMultiplier -= lilStep;
+
+            if (_currentKeyboardState.IsPressed(Key.Up)) Hofman.Position += lilStep;
+            if (_currentKeyboardState.IsPressed(Key.Down)) Hofman.Position-= lilStep;
+
+
 
 
             if ((!IsInAir || IsInWater) && _currentKeyboardState.IsPressed(Key.Space))
