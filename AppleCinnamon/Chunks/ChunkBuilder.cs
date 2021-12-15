@@ -43,7 +43,7 @@ namespace AppleCinnamon
                 var index = flatIndex.ToIndex(chunk.CurrentHeight);
 
                 var voxel = chunk.GetVoxel(flatIndex);
-                var definition = VoxelDefinition.DefinitionByType[voxel.BlockType];
+                var definition = voxel.GetDefinition();
 
                 var voxelPositionOffset = definition.Offset + chunk.OffsetVector + new Vector3(index.X, index.Y, index.Z);
 
@@ -151,7 +151,7 @@ namespace AppleCinnamon
                 var vertexOffset = n * 4;
                 var positionOffset = new Vector3(index.X, index.Y, index.Z);
                 var voxel = chunk.GetVoxel(flatIndex);
-                var definition = VoxelDefinition.DefinitionByType[voxel.BlockType];
+                var definition = voxel.GetDefinition();
 
                 AddSpriteFace(chunk, FaceBuildInfo.SpriteVertices.Left, positionOffset, voxel, definition.TextureIndexes.Faces[(byte)Face.Left], vertices, indexes, vertexOffset, n, 0);
                 AddSpriteFace(chunk, FaceBuildInfo.SpriteVertices.Right, positionOffset, voxel, definition.TextureIndexes.Faces[(byte)Face.Right], vertices, indexes, vertexOffset, n, secondFaceOffset);
@@ -168,7 +168,7 @@ namespace AppleCinnamon
                 
                 var voxel = chunk.GetVoxel(flatIndex);
                 var positionOffset = new Vector3(index.X, index.Y, index.Z) + SingleSidedOffsets[(byte)voxel.Orientation];
-                var definition = VoxelDefinition.DefinitionByType[voxel.BlockType];
+                var definition = voxel.GetDefinition();
                 var face = FaceBuildInfo.FaceVertices.Faces[(byte) voxel.Orientation];
 
                 AddSpriteFace(chunk, face, positionOffset, voxel, definition.TextureIndexes.Faces[(byte)Face.Left], vertices, indexes, vertexOffset, n, thirdFaceOffset);
@@ -232,7 +232,7 @@ namespace AppleCinnamon
                 foreach (var ambientIndex in vertexInfo.AmbientOcclusionNeighbors)
                 {
                     var ambientNeighborVoxel = chunk.GetLocalWithneighbors(relativeIndexX + ambientIndex.X, relativeIndexY + ambientIndex.Y, relativeIndexZ + ambientIndex.Z, out var addr);
-                    var ambientNeighborDefinition = VoxelDefinition.DefinitionByType[ambientNeighborVoxel.BlockType];
+                    var ambientNeighborDefinition = ambientNeighborVoxel.GetDefinition();
 
                     if (!ambientNeighborDefinition.IsBlock)
                     {

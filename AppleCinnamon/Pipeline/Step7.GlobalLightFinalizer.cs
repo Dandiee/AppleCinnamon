@@ -81,12 +81,12 @@ namespace AppleCinnamon.Pipeline
                     var sourceIndex = indexMask + context.SourceOffset;
                     var sourceFlatIndex = sourceIndex.ToFlatIndex(sourceChunk.CurrentHeight);
                     var sourceVoxel = sourceChunk.Voxels[sourceFlatIndex];
-                    var sourceDefinition = VoxelDefinition.DefinitionByType[sourceVoxel.BlockType];
+                    var sourceDefinition = sourceVoxel.GetDefinition();
 
                     var targetIndex = indexMask + context.TargetOffset;
                     var targetFlatIndex = targetIndex.ToFlatIndex(targetChunk.CurrentHeight);
                     var targetVoxel = targetChunk.Voxels[targetFlatIndex];
-                    var targetDefinition = VoxelDefinition.DefinitionByType[targetVoxel.BlockType];
+                    var targetDefinition = targetVoxel.GetDefinition();
 
                     var brightnessLoss = VoxelDefinition.GetBrightnessLoss(sourceDefinition, targetDefinition, context.TargetToSourceDirection);
                     if (brightnessLoss != 0 && targetVoxel.CompositeLight < sourceVoxel.CompositeLight - brightnessLoss)

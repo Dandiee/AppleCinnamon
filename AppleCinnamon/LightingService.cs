@@ -32,7 +32,7 @@ namespace AppleCinnamon
                 var sourceVoxel = source.sourceChunk.CurrentHeight <= source.sourceIndex.Y
                     ? Voxel.SunBlock
                     : source.sourceChunk.GetVoxel(source.sourceIndex.ToFlatIndex(source.sourceChunk.CurrentHeight));
-                var sourceDefinition = VoxelDefinition.DefinitionByType[sourceVoxel.BlockType];
+                var sourceDefinition = sourceVoxel.GetDefinition();
 
                 foreach (var direction in LightDirections.All)
                 {
@@ -71,7 +71,7 @@ namespace AppleCinnamon
             {
                 var lightSourceFlatIndex = localLightSources.Dequeue();
                 var sourceVoxel = chunk.GetVoxel(lightSourceFlatIndex);
-                var sourceDefinition = VoxelDefinition.DefinitionByType[sourceVoxel.BlockType];
+                var sourceDefinition = sourceVoxel.GetDefinition();
                 var index = lightSourceFlatIndex.ToIndex(chunk.CurrentHeight);
 
                 foreach (var direction in LightDirections.All)
@@ -87,7 +87,7 @@ namespace AppleCinnamon
                             {
                                 var neighborFlatIndex = Help.GetFlatIndex(neighborX, neighborY, neighborZ, chunk.CurrentHeight);
                                 var neighborVoxel = chunk.GetVoxelNoInline(neighborFlatIndex);
-                                var neighborDefinition = VoxelDefinition.DefinitionByType[neighborVoxel.BlockType];
+                                var neighborDefinition = neighborVoxel.GetDefinition();
                                 var brightnessLoss = VoxelDefinition.GetBrightnessLoss(sourceDefinition, neighborDefinition, direction.Direction);
 
                                 if (brightnessLoss != 0)
@@ -170,7 +170,7 @@ namespace AppleCinnamon
             {
                 var flatIndex = Help.GetFlatIndex(relativeIndex.X, j, relativeIndex.Z, chunk.CurrentHeight);
                 var voxel = chunk.Voxels[flatIndex];
-                var definition = VoxelDefinition.DefinitionByType[voxel.BlockType];
+                var definition = voxel.GetDefinition();
 
                 // TODO: ez nem jó, nem elég csak azt mondani hogy > 0
                 //if (definition.TransmittanceQuarters[(byte)Face.Bottom] > 0)

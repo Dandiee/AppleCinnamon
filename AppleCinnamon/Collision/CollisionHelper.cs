@@ -115,7 +115,7 @@ namespace AppleCinnamon.Collision
 
                         var voxel = chunk.GetVoxel(address.Value.RelativeVoxelIndex.ToFlatIndex(chunk.CurrentHeight));
 
-                        var voxelDefinition = VoxelDefinition.DefinitionByType[voxel.BlockType];
+                        var voxelDefinition = voxel.GetDefinition();
                         
                         if (!voxelDefinition.IsPermeable)
                         {

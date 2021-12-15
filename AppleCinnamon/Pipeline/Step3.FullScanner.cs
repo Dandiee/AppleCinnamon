@@ -71,7 +71,7 @@ namespace AppleCinnamon.Pipeline
                         var flatIndex = Help.GetFlatIndex(i, j, k, chunk.CurrentHeight);
                         var voxel = voxels[flatIndex];
 
-                        var definition = VoxelDefinition.DefinitionByType[voxel.BlockType];
+                        var definition = voxel.GetDefinition();
 
                         if (!definition.IsBlock && voxel.CompositeLight == 15)
                         {
@@ -85,7 +85,7 @@ namespace AppleCinnamon.Pipeline
                         if (j < chunk.CurrentHeight - 1) // top
                         {
                             var neighbor = chunk.Voxels[Help.GetFlatIndex(i, j + 1, k, chunk.CurrentHeight)];
-                            var neighborDefinition = VoxelDefinition.DefinitionByType[neighbor.BlockType];
+                            var neighborDefinition = neighbor.GetDefinition();
 
                             if (definition.IsBlock)
                             {
@@ -116,7 +116,7 @@ namespace AppleCinnamon.Pipeline
                         if (j > 0) // bottom
                         {
                             var neighbor = chunk.Voxels[Help.GetFlatIndex(i, j - 1, k, chunk.CurrentHeight)];
-                            var neighborDefinition = VoxelDefinition.DefinitionByType[neighbor.BlockType];
+                            var neighborDefinition = neighbor.GetDefinition();
 
                             if (definition.IsFaceVisible(neighborDefinition, VisibilityFlag.Top, VisibilityFlag.Bottom))
                             {
@@ -166,7 +166,7 @@ namespace AppleCinnamon.Pipeline
             if (isInChunk)
             {
                 var neighbor = chunk.Voxels[neighborFlatIndex];
-                var neighborDefinition = VoxelDefinition.DefinitionByType[neighbor.BlockType];
+                var neighborDefinition = neighbor.GetDefinition();
 
                 if (definition.IsBlock)
                 {

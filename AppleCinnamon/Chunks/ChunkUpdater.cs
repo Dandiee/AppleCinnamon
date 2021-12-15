@@ -128,8 +128,8 @@ namespace AppleCinnamon
 
         private void UpdateSprites(Chunk chunk, Voxel oldVoxel, Voxel newVoxel, Int3 relativeIndex)
         {
-            var oldDefinition = VoxelDefinition.DefinitionByType[oldVoxel.BlockType];
-            var newDefinition = VoxelDefinition.DefinitionByType[newVoxel.BlockType];
+            var oldDefinition = oldVoxel.GetDefinition();
+            var newDefinition = newVoxel.GetDefinition();
             var flatIndex = relativeIndex.ToFlatIndex(chunk.CurrentHeight);
 
             if (oldDefinition.IsSprite && !newDefinition.IsSprite)
@@ -159,8 +159,8 @@ namespace AppleCinnamon
         private void UpdateVisibilityFlags(Chunk chunk, Voxel oldVoxel, Voxel newVoxel, Int3 relativeIndex)
         {
             var flatIndex = relativeIndex.ToFlatIndex(chunk.CurrentHeight);
-            var newDefinition = VoxelDefinition.DefinitionByType[newVoxel.BlockType];
-            var oldDefinition = VoxelDefinition.DefinitionByType[oldVoxel.BlockType];
+            var newDefinition = newVoxel.GetDefinition();
+            var oldDefinition = oldVoxel.GetDefinition();
 
             var newVisibilityFlag = VisibilityFlag.None;
             var hadVisibility = chunk.BuildingContext.VisibilityFlags.TryGetValue(flatIndex, out var oldVisibilityFlag);
@@ -170,7 +170,7 @@ namespace AppleCinnamon
                 var neighbor = relativeIndex + direction.Step;
                 var neighborVoxel =
                     chunk.GetLocalWithneighbors(neighbor.X, neighbor.Y, neighbor.Z, out var neighborAddress);
-                var neighborDefinition = VoxelDefinition.DefinitionByType[neighborVoxel.BlockType];
+                var neighborDefinition = neighborVoxel.GetDefinition();
 
                 var neighborChunk = chunk.Neighbors[Help.GetChunkFlatIndex(neighborAddress.ChunkIndex)];
                 var neighborIndex = neighborAddress.RelativeVoxelIndex.ToFlatIndex(neighborChunk.CurrentHeight);

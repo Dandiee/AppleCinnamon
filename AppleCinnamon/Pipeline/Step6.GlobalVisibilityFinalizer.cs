@@ -41,10 +41,10 @@ namespace AppleCinnamon.Pipeline
                     ? Voxel.SunBlock
                     : neighborChunk.GetVoxel(context.GetNeighborIndex(index, neighborChunk.CurrentHeight));
 
-                var voxelDefinition = VoxelDefinition.DefinitionByType[voxel.BlockType];
+                var voxelDefinition = voxel.GetDefinition();
                 if (voxelDefinition.IsBlock)
                 {
-                    var neighborDefinition = VoxelDefinition.DefinitionByType[neighbor.BlockType];
+                    var neighborDefinition = neighbor.GetDefinition();
                     if ((neighborDefinition.CoverFlags & context.OppositeDirection) == 0) 
                     {
                         chunk.BuildingContext.VisibilityFlags.TryGetValue(flatIndex, out var visibility);
