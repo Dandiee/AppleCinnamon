@@ -14,7 +14,7 @@ namespace AppleCinnamon.Chunks
 {
     public static class SkyDome
     {
-        public const int Resolution = 6;
+        public const int Resolution = 64;
         public const float Radius = 100;
 
         public static readonly IReadOnlyDictionary<Face, Vector3> NormalMapping = new Dictionary<Face, Vector3>()
@@ -32,7 +32,7 @@ namespace AppleCinnamon.Chunks
 
         public static readonly Int2[] UvOffsetIndexes = { new(0, 0), new(1, 0), new(1, 1), new(0, 1) };
 
-        public static IEnumerable<VertexSkyBox> GenerateSkyDom1e()
+        public static IEnumerable<VertexSkyBox> GenerateSkyDome1()
         {
             var indicies = new int[] {3, 2, 0, 2, 1, 0};
             //var indicies = new int[] {0, 2, 3, 0, 1, 2};

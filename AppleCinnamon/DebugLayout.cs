@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using System.Windows.Forms;
+using AppleCinnamon.Chunks;
 using AppleCinnamon.Helper;
 using AppleCinnamon.Pipeline.Context;
 using SharpDX;
@@ -93,7 +94,8 @@ namespace AppleCinnamon
                    //$"Boot time: {chunkManager.BootTime.TotalMilliseconds:N0} ms\r\n" + 
                    $"Average render time: {game.AverageRenderTime:F2}\r\n" +
                    $"Peek render time: {game.PeekRenderTime:F2}\r\n" +
-                   $"Average FPS: {game.AverageFps:F2}\r\n";
+                   $"Average FPS: {game.AverageFps:F2}\r\n" + 
+                   $"SUN: {Hofman.SunDirection:F2}\r\n";
         }
 
         public void Draw(
