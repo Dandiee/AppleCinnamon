@@ -31,13 +31,15 @@ namespace AppleCinnamon.Chunks
         };
 
         public static readonly Int2[] UvOffsetIndexes = { new(0, 0), new(1, 0), new(1, 1), new(0, 1) };
+        //public static readonly Int2[] UvOffsetIndexes = { new(0, 1), new(0, 0), new(1, 1), new(0, 1) };
 
-        public static IEnumerable<VertexSkyBox> GenerateSkyDom1e()
+        public static IEnumerable<VertexSkyBox> GenerateSkyDome()
         {
             var indicies = new int[] {3, 2, 0, 2, 1, 0};
             //var indicies = new int[] {0, 2, 3, 0, 1, 2};
-            var scaler = new Vector3(20000);
-            var offset = new Vector3(0, 0, 0);
+            var scaler = new Vector3(100000);
+            var offset = new Vector3(0, 134, 0);
+
             for (var i = 0; i < 6; i++)
             {
                 var vertices = FaceBuildInfo.FaceVertices.Faces[i];
@@ -47,19 +49,31 @@ namespace AppleCinnamon.Chunks
                     var index = indicies[j];
                     var vertex = vertices[index] * scaler + offset;
                     var uv = UvOffsetIndexes[index];
-                    yield return new VertexSkyBox(vertex, normal, new Vector2(uv.X, uv.Y));
+                    yield return new VertexSkyBox(vertex, new Vector2(uv.X, uv.Y));
                 }
             }
         }
 
-        public static IEnumerable<VertexSkyBox> GenerateSkyDome()
+        public static IEnumerable<VertexSkyBox> GenerateSkyDome1()
         {
+
+            yield break;
+
+            //yield return new VertexSkyBox(new Vector3(-1, -1, -1));
+            //yield return new VertexSkyBox(new Vector3(1, -1, -1));
+            //yield return new VertexSkyBox(new Vector3(1, 1, -1));
+            //yield return new VertexSkyBox(new Vector3(-1, -1, -1));
+            //yield return new VertexSkyBox(new Vector3(1, 1, -1));
+            //yield return new VertexSkyBox(new Vector3(-1, 1, -1));
+            //
+            //
+            //yield break;
+
             var startVector = Vector3.UnitZ * Radius;
 
             var step = -MathUtil.Pi / (Resolution * 2);
             var horizontalSteps = Resolution * 4;
-            var offset = new Vector3(1000);
-            float scaler = 100;
+            float scaler = 80;
 
             for (var i = 0; i < horizontalSteps; i++)
             {
@@ -75,12 +89,21 @@ namespace AppleCinnamon.Chunks
                     direction.Normalize();
 
 
-                    yield return new VertexSkyBox(v1 * scaler, direction, new Vector2(0, 0));
-                    yield return new VertexSkyBox(v2 * scaler, direction, new Vector2(0, 1));
-                    yield return new VertexSkyBox(v3 * scaler, direction, new Vector2(1, 1));
-                    yield return new VertexSkyBox(v1 * scaler, direction, new Vector2(0, 1));
-                    yield return new VertexSkyBox(v3 * scaler, direction, new Vector2(1, 1));
-                    yield return new VertexSkyBox(v4 * scaler, direction, new Vector2(1, 0));
+
+                    //yield return new VertexSkyBox(v1 * scaler);
+                    //yield return new VertexSkyBox(v2 * scaler);
+                    //yield return new VertexSkyBox(v3 * scaler);
+                    //yield return new VertexSkyBox(v1 * scaler);
+                    //yield return new VertexSkyBox(v3 * scaler);
+                    //yield return new VertexSkyBox(v4 * scaler);
+
+
+                    //yield return new VertexSkyBox(v1 * scaler, direction, new Vector2(0, 0));
+                    //yield return new VertexSkyBox(v2 * scaler, direction, new Vector2(0, 1));
+                    //yield return new VertexSkyBox(v3 * scaler, direction, new Vector2(1, 1));
+                    //yield return new VertexSkyBox(v1 * scaler, direction, new Vector2(0, 1));
+                    //yield return new VertexSkyBox(v3 * scaler, direction, new Vector2(1, 1));
+                    //yield return new VertexSkyBox(v4 * scaler, direction, new Vector2(1, 0));
 
 
                     //yield return new VertexSkyBox(v3, direction, new Vector2(1, 1));

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Numerics;
 using AppleCinnamon.Extensions;
 using AppleCinnamon.Vertices;
 using SharpDX;
@@ -10,25 +9,16 @@ namespace AppleCinnamon.Chunks
 {
     class Hofman
     {
-        public Vector3 Position { get; set; }
+        public static Vector3 Position { get; set; }
 
-        private float _sunDirection = 0;
-        public float SunDirection
+        private static float _sunDirection = 0;
+        public static float SunDirection
         {
             get => _sunDirection;
             set
             {
-                //_sunDirection = value;
-                //if (_sunDirection > 180.0f)
-                //    _sunDirection = 0;
-                //else if (_sunDirection < 0.0f)
-                //    _sunDirection = 0;
-
                 _sunDirection = value;
-
-                Position = Vector3.UnitZ.Rotate(Vector3.UnitX, _sunDirection);
-
-                //Position = new Vector3(0.0f, (float)Math.Sin(MathUtil.DegreesToRadians(value)), (float)Math.Cos(MathUtil.DegreesToRadians(value)));
+                Position = Vector3.UnitX.Rotate(Vector3.UnitZ, _sunDirection);
             }
         }
 
@@ -36,12 +26,7 @@ namespace AppleCinnamon.Chunks
 
         public float Turbitity { get; set; } = 1.0f;
 
-        private Vector3 _hGg = new(0.9f, 0.9f, 0.9f);
-        public Vector3 HGg
-        {
-            get => _hGg;
-            set => _hGg = value;
-        }
+        public Vector3 HGg { get; set; } = new(0.9f, 0.9f, 0.9f);
 
         public float InscatteringMultiplier { get; set; } = 1.0f;
 
@@ -69,22 +54,22 @@ namespace AppleCinnamon.Chunks
             const float N = 2.545e25f;
             const float pn = 0.035f;
 
-            float[] lambda = new float[3];
-            float[] lambda2 = new float[3];
-            float[] lambda4 = new float[3];
+            var lambda = new float[3];
+            var lambda2 = new float[3];
+            var lambda4 = new float[3];
 
             lambda[0] = 1.0f / 650e-9f;   // red
             lambda[1] = 1.0f / 570e-9f;   // green
             lambda[2] = 1.0f / 475e-9f;   // blue
 
-            for (int i = 0; i < 3; ++i)
+            for (var i = 0; i < 3; ++i)
             {
                 lambda2[i] = lambda[i] * lambda[i];
                 lambda4[i] = lambda2[i] * lambda2[i];
             }
 
-            Vector3 vLambda2 = new Vector3(lambda2[0], lambda2[1], lambda2[2]);
-            Vector3 vLambda4 = new Vector3(lambda4[0], lambda4[1], lambda4[2]);
+            var vLambda2 = new Vector3(lambda2[0], lambda2[1], lambda2[2]);
+            var vLambda4 = new Vector3(lambda4[0], lambda4[1], lambda4[2]);
 
             // Rayleigh scattering constants
 
@@ -105,19 +90,19 @@ namespace AppleCinnamon.Chunks
 
             _betaDashMie = temp2 * vLambda2;
 
-            float[] K = new float[3] { 0.685f, 0.679f, 0.670f };
+            var K = new float[3] { 0.685f, 0.679f, 0.670f };
             const float temp3 = (float)(0.434f * c * Math.PI * (2.0f * Math.PI) * (2.0f * Math.PI));
 
-            Vector3 vBetaMieTemp = new Vector3(K[0] * lambda2[0], K[1] * lambda2[1], K[2] * lambda2[2]);
+            var vBetaMieTemp = new Vector3(K[0] * lambda2[0], K[1] * lambda2[1], K[2] * lambda2[2]);
 
             _betaMie = temp3 * vBetaMieTemp;
         }
 
         public void Draw()
         {
-            Vector3 vZenith = new Vector3(0.0f, 1.0f, 0.0f);
+            var vZenith = new Vector3(0.0f, 1.0f, 0.0f);
 
-            float thetaS = Vector3.Dot(Position, vZenith);
+            var thetaS = Vector3.Dot(Position, vZenith);
             thetaS = (float)(Math.Acos(thetaS));
 
             ComputeAttenuation(thetaS);
@@ -126,13 +111,13 @@ namespace AppleCinnamon.Chunks
 
         private void ComputeAttenuation(float thetaS)
         {
-            float beta = 0.04608365822050f * Turbitity - 0.04586025928522f;
+            var beta = 0.04608365822050f * Turbitity - 0.04586025928522f;
             float tauR, tauA;
-            float[] fTau = new float[3];
-            float m = (float)(1.0f / (Math.Cos(thetaS) + 0.15f * Math.Pow(93.885f - thetaS / Math.PI * 180.0f, -1.253f)));  // Relative Optical Mass
-            float[] lambda = new float[3] { 0.65f, 0.57f, 0.475f };
+            var fTau = new float[3];
+            var m = (float)(1.0f / (Math.Cos(thetaS) + 0.15f * Math.Pow(93.885f - thetaS / Math.PI * 180.0f, -1.253f)));  // Relative Optical Mass
+            var lambda = new float[3] { 0.65f, 0.57f, 0.475f };
 
-            for (int i = 0; i < 3; ++i)
+            for (var i = 0; i < 3; ++i)
             {
                 // Rayleigh Scattering
                 // lambda in um.
@@ -153,30 +138,39 @@ namespace AppleCinnamon.Chunks
 
         private void SetMaterialProperties()
         {
-            float reflectance = 0.1f;
+            var reflectance = 0.1f;
 
-            Vector3 vecBetaR = _betaRay * BetaRayMultiplier;
+            var vecBetaR = _betaRay * BetaRayMultiplier;
             _betaDashR = _betaDashRay * BetaRayMultiplier;
-            Vector3 vecBetaM = _betaMie * BetaMieMultiplier;
+            var vecBetaM = _betaMie * BetaMieMultiplier;
             _betaDashM = _betaDashMie * BetaMieMultiplier;
             _betaRPlusBetaM = vecBetaR + vecBetaM;
             _oneOverBetaRPlusBetaM = new Vector3(1.0f / _betaRPlusBetaM.X, 1.0f / _betaRPlusBetaM.Y, 1.0f / _betaRPlusBetaM.Z);
-            Vector3 vecG = new Vector3(1.0f - _hGg.X * _hGg.X, 1.0f + _hGg.X * _hGg.X, 2.0f * _hGg.X);
+            var vecG = new Vector3(1.0f - HGg.X * HGg.X, 1.0f + HGg.X * HGg.X, 2.0f * HGg.X);
             _multipliers = new Vector4(InscatteringMultiplier, 0.138f * reflectance, 0.113f * reflectance, 0.08f * reflectance);
         }
 
-        public void UpdateEffect(ChunkEffect<VertexSkyBox> skyEffect)
+        public void UpdateEffect(ChunkEffect<VertexSkyBox> skyEffect, Camera camera)
         {
-            SunDirection += 0.001f;
+            SunDirection += 0.01f;
 
-            skyEffect.Effect.GetVariableByName("sunDirection").AsVector().Set(Position);
-            skyEffect.Effect.GetVariableByName("betaRPlusBetaM").AsVector().Set(_betaRPlusBetaM);
-            skyEffect.Effect.GetVariableByName("hGg").AsVector().Set(HGg);
-            skyEffect.Effect.GetVariableByName("betaDashR").AsVector().Set(_betaDashR);
-            skyEffect.Effect.GetVariableByName("betaDashM").AsVector().Set(_betaDashM);
-            skyEffect.Effect.GetVariableByName("oneOverBetaRPlusBetaM").AsVector().Set(_oneOverBetaRPlusBetaM);
-            skyEffect.Effect.GetVariableByName("multipliers").AsVector().Set(_multipliers);
-            skyEffect.Effect.GetVariableByName("sunColorAndIntensity").AsVector().Set(_sunColorAndIntensity);
+            //skyEffect.Effect.GetVariableByName("uSunPos").AsVector().Set(camera.LookAt.ToVector3());
+            //skyEffect.Effect.GetVariableByName("WorldViewProjection").AsMatrix().SetMatrix(camera.WorldViewProjection);
+            skyEffect.Effect.GetVariableByName("WorldViewProjection").AsMatrix().SetMatrix(camera.WorldViewProjection);
+            skyEffect.Effect.GetVariableByName("proj").AsMatrix().SetMatrix(camera.Projection);
+            skyEffect.Effect.GetVariableByName("v3SunDir").AsVector().Set(new Vector3(0.71f, 0.711f, 0));
+            skyEffect.Effect.GetVariableByName("v3SunDir").AsVector().Set(Position);
+            skyEffect.Effect.GetVariableByName("fExposure").AsScalar().Set(-2);
+            //skyEffect.Effect.GetVariableByName("_CameraPos").AsVector().Set(camera.Position.ToVector3());
+
+            //skyEffect.Effect.GetVariableByName("eyePos").AsVector().Set(camera.Position);
+            //skyEffect.Effect.GetVariableByName("betaRPlusBetaM").AsVector().Set(_betaRPlusBetaM);
+            //skyEffect.Effect.GetVariableByName("hGg").AsVector().Set(HGg);
+            //skyEffect.Effect.GetVariableByName("betaDashR").AsVector().Set(_betaDashR);
+            //skyEffect.Effect.GetVariableByName("betaDashM").AsVector().Set(_betaDashM);
+            //skyEffect.Effect.GetVariableByName("oneOverBetaRPlusBetaM").AsVector().Set(_oneOverBetaRPlusBetaM);
+            //skyEffect.Effect.GetVariableByName("multipliers").AsVector().Set(_multipliers);
+            //skyEffect.Effect.GetVariableByName("sunColorAndIntensity").AsVector().Set(_sunColorAndIntensity);
         }
     }
 }

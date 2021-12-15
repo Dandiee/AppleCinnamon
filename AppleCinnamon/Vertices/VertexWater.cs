@@ -36,36 +36,41 @@ namespace AppleCinnamon.Vertices
 
     public struct VertexSkyBox : IVertex
     {
-        private const int _size = 36;
+        private const int _size = 20;
 
         private static readonly InputElement[] _inputElements =
         {
-            new("POSITION", 0, Format.R32G32B32A32_Float, 0, 0),
-            new("NORMAL", 0, Format.R32G32B32_Float, 16, 0),
-            new("TEXCOORD", 0, Format.R32G32_Float, 28, 0)
+            new("POSITION", 0, Format.R32G32B32_Float, 0, 0),
+            new("TEXCOORD", 0, Format.R32G32_Float, 12, 0)
         };
 
 
         public int Size => _size;
         public InputElement[] InputElements => _inputElements;
 
-        public VertexSkyBox(Vector4 position, Vector3 normal, Vector2 texCoord)
+        //public VertexSkyBox(Vector4 position, Vector3 normal, Vector2 texCoord)
+        //{
+        //    Position = position;
+        //    Normal = normal;
+        //    TexCoord = texCoord;
+        //}
+
+        //public VertexSkyBox(Vector3 position, Vector3 normal, Vector2 texCoord)
+        //{
+        //    Position = position.ToVector4(1);
+        //    Normal = normal;
+        //    TexCoord = texCoord;
+        //}
+
+        public VertexSkyBox(Vector3 position, Vector2 text)
         {
-            Position = position;
-            Normal = normal;
-            TexCoord = texCoord;
+            Pos = position;
+            Tex0 = text;
         }
 
-        public VertexSkyBox(Vector3 position, Vector3 normal, Vector2 texCoord)
-        {
-            Position = position.ToVector4(1);
-            Normal = normal;
-            TexCoord = texCoord;
-        }
-
-        public Vector4 Position;
-        public Vector3 Normal;
-        public Vector2 TexCoord;
+        public Vector3 Pos;
+        //public Vector3 Normal;
+        public Vector2 Tex0;
 
     }
 }

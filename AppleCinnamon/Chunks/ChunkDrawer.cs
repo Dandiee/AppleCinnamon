@@ -53,7 +53,7 @@ namespace AppleCinnamon.Chunks
             _waterEffect = new(_device, "Content/Effect/WaterEffect.fx", PrimitiveTopology.TriangleList, "Content/Texture/custom_water_still.png");
             _spriteEffect = new(_device, "Content/Effect/SpriteEffetct.fx", PrimitiveTopology.TriangleList, "Content/Texture/terrain3.png");
             _boxEffect = new(_device, "Content/Effect/BoxDrawerEffect.fx", PrimitiveTopology.PointList);
-            _skyEffect = new(_device, "Content/Effect/RayleightScatter.fx", PrimitiveTopology.TriangleList);
+            _skyEffect = new(_device, "Content/Effect/scatter2.fx", PrimitiveTopology.TriangleList, "Content/Texture/terrain3.png");
 
 
             var blendStateDescription = new BlendStateDescription { AlphaToCoverageEnable = false };
@@ -175,9 +175,9 @@ namespace AppleCinnamon.Chunks
             _waterEffect.Effect.GetVariableByName("EyePosition").AsVector().Set(camera.Position.ToVector3());
             _spriteEffect.Effect.GetVariableByName("EyePosition").AsVector().Set(camera.Position.ToVector3());
 
-            _hofman.UpdateEffect(_skyEffect);
-            _skyEffect.Effect.GetVariableByName("worldViewProject").AsMatrix().SetMatrix(camera.WorldViewProjection);
-            _skyEffect.Effect.GetVariableByName("worldView").AsMatrix().SetMatrix(camera.View);
+            _hofman.UpdateEffect(_skyEffect, camera);
+            
+            //_skyEffect.Effect.GetVariableByName("worldView").AsMatrix().SetMatrix(camera.View);
             
 
 

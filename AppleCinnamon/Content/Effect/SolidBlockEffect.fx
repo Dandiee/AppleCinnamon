@@ -60,9 +60,7 @@ float ComputeFogFactor(float dist)
 
 VertexShaderOutput VertexShaderFunction(VertexShaderInput input)
 {
-	
     VertexShaderOutput output = (VertexShaderOutput)0;
-	float4 position = float4(input.Position.xyz, 1);
 
 	float u =        ((input.Asd >>  0) & 31) * textureFactor;
 	float v =        ((input.Asd >>  5) & 31) * textureFactor;
@@ -72,7 +70,7 @@ VertexShaderOutput VertexShaderFunction(VertexShaderInput input)
 
 	float4 hueColor = HueColors[h];
 
-    output.Position = mul(position, WorldViewProjection);
+    output.Position = mul(float4(input.Position.xyz, 1), WorldViewProjection);
 	output.TexCoords = float2(u, v);
 	output.AmbientOcclusion = l * a;
 	output.FogFactor = ComputeFogFactor(distance(EyePosition.xyz, input.Position.xyz));

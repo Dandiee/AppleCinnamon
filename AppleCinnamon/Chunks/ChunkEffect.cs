@@ -23,7 +23,19 @@ namespace AppleCinnamon.Chunks
 
             if (!string.IsNullOrEmpty(textureFilePath))
             {
-                Effect.GetVariableByName("Textures").AsShaderResource().SetResource(new ShaderResourceView(device, device.CreateTexture2DFromBitmap(textureFilePath)));
+                if (typeof(TVertex) == typeof(VertexSkyBox))
+                {
+                    Effect.GetVariableByName("txMie").AsShaderResource().SetResource(
+                        new ShaderResourceView(device, device.CreateTexture2DFromBitmap(textureFilePath)));
+
+                    Effect.GetVariableByName("txRayleigh").AsShaderResource().SetResource(
+                        new ShaderResourceView(device, device.CreateTexture2DFromBitmap(textureFilePath)));
+                }
+                else
+                {
+                    Effect.GetVariableByName("Textures").AsShaderResource().SetResource(
+                        new ShaderResourceView(device, device.CreateTexture2DFromBitmap(textureFilePath)));
+                }
             }
         }
 

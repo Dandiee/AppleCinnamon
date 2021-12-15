@@ -11,7 +11,7 @@ float fScale = 1.0 / (6356.7523142 * 1.0157313 - 6356.7523142);
 float2 v2dRayleighMieScaleHeight = {0.25, 0.1};
 
 float2 InvRayleighMieNLessOne = {1.0f/255.0f, 1.0f/127.0f};
-float3 v3SunDir = { 0, 1, 0 };
+float3 v3SunDir = { 0.71, 0.71, 0 };
 //float ESun = 20.0f;
 //float Kr = 0.0025f;
 //float Km = 0.0010f;
@@ -30,40 +30,31 @@ float3 WavelengthMie;
 
 float starIntensity = 0.5f;
 
-Texture txRayleigh;
-
-sampler2D rayleighSampler = sampler_state
+Texture2D txRayleigh;
+SamplerState rayleighSampler
 {
 	Texture = <txRayleigh>;
     ADDRESSU = CLAMP;
 	ADDRESSV = CLAMP;
-	MAGFILTER = LINEAR;
-	MINFILTER = LINEAR;
-	MIPFILTER = LINEAR;
+	FILTER = MIN_MAG_MIP_LINEAR;
 };
 
-Texture txMie;
-
-sampler2D mieSampler = sampler_state
+Texture2D txMie;
+SamplerState mieSampler
 {
 	Texture = <txMie>;
     ADDRESSU = CLAMP;
 	ADDRESSV = CLAMP;
-	MAGFILTER = LINEAR;
-	MINFILTER = LINEAR;
-	MIPFILTER = LINEAR;
+	FILTER = MIN_MAG_MIP_LINEAR;
 };
 
-Texture StarsTex;
-
-sampler2D starSampler = sampler_state
+Texture2D StarsTex;
+SamplerState starSampler
 {
 	Texture = <StarsTex>;
     ADDRESSU = CLAMP;
 	ADDRESSV = CLAMP;
-	MAGFILTER = LINEAR;
-	MINFILTER = LINEAR;
-	MIPFILTER = LINEAR;
+	FILTER = MIN_MAG_MIP_LINEAR;
 };
 
 
@@ -81,13 +72,13 @@ struct VS_INPUT
 
 struct PS_INPUT_UPDATE
 {
-    float4 Position : POSITION0;
+    float4 Position : SV_POSITION;
     float2 Pos		: TEXCOORD0;
 };
 
 struct PS_INPUT
 {
-    float4 Pos  : POSITION0;
+    float4 Pos  : SV_POSITION;
     float2 Tex0 : TEXCOORD0;
 	float3 Tex1 : TEXCOORD1;
 };
@@ -130,13 +121,14 @@ float3 HDR( float3 LDR)
 }
 
 
-float4 PS( PS_INPUT input) : COLOR0
+float4 PS(PS_INPUT input) : SV_Target
 {
+	//return float4(1,0,0,1);
 	float fCos = dot( v3SunDir, input.Tex1 ) / length( input.Tex1 );
 	float fCos2 = fCos * fCos;
 	
-	float3 v3RayleighSamples = tex2D( rayleighSampler, input.Tex0 );
-	float3 v3MieSamples = tex2D( mieSampler, input.Tex0.xy );
+	float3 v3RayleighSamples = txRayleigh.Sample(rayleighSampler, input.Tex0 );
+	float3 v3MieSamples = txMie.Sample(mieSampler, input.Tex0.xy );
 
 	float3 Color;
 	Color.rgb = getRayleighPhase(fCos2) * v3RayleighSamples.rgb + getMiePhase(fCos, fCos2) * v3MieSamples.rgb;
@@ -145,7 +137,7 @@ float4 PS( PS_INPUT input) : COLOR0
 	// Hack Sky Night Color
 	Color.rgb += max(0,(1 - Color.rgb)) * float3( 0.05, 0.05, 0.1 ); 
 
-	return float4( Color.rgb, 1 ) + tex2D(starSampler, input.Tex0) * starIntensity;
+	return float4( Color.rgb, 1 ) + StarsTex.Sample(starSampler, input.Tex0) * starIntensity;
 }
 
 float HitOuterSphere( float3 O, float3 Dir ) 
@@ -260,20 +252,21 @@ PS_OUTPUT_UPDATE PS_UPDATE( PS_INPUT_UPDATE input)
 }
 
 
-technique Update
+technique10 Render
 {
-    pass Pass1
-    {
-		VertexShader = compile vs_3_0 VS_UPDATE();
-		PixelShader = compile ps_3_0 PS_UPDATE();
-    }
+	pass P0
+	{
+		SetVertexShader(CompileShader(vs_5_0, VS()));
+		SetPixelShader(CompileShader(ps_5_0, PS()));
+	}
 }
 
-technique Render
-{
-    pass Pass1
-    {
-		VertexShader = compile vs_2_0 VS();
-		PixelShader = compile ps_2_0 PS();
-    }
-}
+
+//technique10 Render
+//{
+//	pass P0
+//	{
+//		SetVertexShader(CompileShader(vs_5_0, VS_UPDATE()));
+//		SetPixelShader(CompileShader(ps_5_0, PS_UPDATE()));
+//	}
+//}
