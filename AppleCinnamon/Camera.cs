@@ -77,7 +77,7 @@ namespace AppleCinnamon
         {
             CurrentCursor = CollisionHelper.GetCurrentSelection(new Ray(Position.ToVector3(), LookAt.ToVector3()), chunkManager);
 
-            if (VoxelDefinition.Water.Type == chunkManager.GetVoxel(Position.ToVector3().Round())?.Block)
+            if (VoxelDefinition.Water.Type == chunkManager.GetVoxel(Position.ToVector3().Round())?.BlockType)
             {
                 IsInWater = true;
             }

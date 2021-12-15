@@ -76,8 +76,8 @@ namespace AppleCinnamon.Pipeline
 
                     voxels[Help.GetFlatIndex(i, height - 1, k, currentHeight)] =
                         isSnow
-                            ? new Voxel(VoxelDefinition.Snow.Type, 0)
-                            : new Voxel(VoxelDefinition.Grass.Type, 0, (byte) _random.Next(1, 9));
+                            ? new Voxel(VoxelDefinition.Snow.BlockType, 0)
+                            : new Voxel(VoxelDefinition.Grass.BlockType, 0, (byte) _random.Next(1, 9));
 
                     if (!isSnow && _random.Next(5) == 0)
                     {
@@ -86,7 +86,7 @@ namespace AppleCinnamon.Pipeline
                         var isFlower = _random.Next() % 2 == 0;
                         var targetType = isFlower ? VoxelDefinition.SlabBottom : VoxelDefinition.Weed;
 
-                        voxels[flatIndex] = new Voxel(targetType.Type, 0);
+                        voxels[flatIndex] = new Voxel(targetType.BlockType, 0);
                         if (targetType.IsSprite)
                         {
                             chunk.BuildingContext.SpriteBlocks.Add(flatIndex);
@@ -95,8 +95,8 @@ namespace AppleCinnamon.Pipeline
 
                         // new Voxel(
                         //     height > (128 + _random.Next(5))
-                        //         ? VoxelDefinition.Snow.Type
-                        //         : VoxelDefinition.Grass.Type, 0);
+                        //         ? VoxelDefinition.Snow.BlockType
+                        //         : VoxelDefinition.Grass.BlockType, 0);
 
                     // voxels[i + Chunk.SizeXy * (height + Chunk.Height * k)] = new Voxel(4, 0);
                 }

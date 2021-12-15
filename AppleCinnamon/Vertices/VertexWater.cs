@@ -1,10 +1,12 @@
-﻿using AppleCinnamon.Helper;
+﻿using System.Runtime.InteropServices;
+using AppleCinnamon.Helper;
 using SharpDX;
 using SharpDX.Direct3D11;
 using SharpDX.DXGI;
 
 namespace AppleCinnamon.Vertices
 {
+    [StructLayout(LayoutKind.Sequential)]
     public struct VertexWater : IVertex
     {
         private const int _size = 24;
@@ -16,26 +18,19 @@ namespace AppleCinnamon.Vertices
             new("VISIBILITY", 0, Format.R32_UInt, 20, 0), //3+2
         };
 
-
         public int Size => _size;
         public InputElement[] InputElements => _inputElements;
 
-        public VertexWater(Vector3 position, Vector2 textureCoordinate, byte sunlight, byte customLight)
+        public VertexWater(Vector3 position, Vector2 textureCoordinate, byte compositeLight)
         {
             Position = position;
             TextureCoordinate = textureCoordinate;
-            Asd = 0; //0.3f + (((1 / 16f) * lightness) - ambientOcclusion * .1f) * 0.8f;
-
-            var l = sunlight;
-            var c = customLight;
-
-            Asd |= (uint)(l << 0); // 4 bits
-            Asd |= (uint)(c << 4); // 4 bits
+            CompositeLight = 0; //0.3f + (((1 / 16f) * lightness) - ambientOcclusion * .1f) * 0.8f;
         }
 
         public Vector3 Position;
         public Vector2 TextureCoordinate;
-        public uint Asd;
+        public uint CompositeLight;
 
     }
 

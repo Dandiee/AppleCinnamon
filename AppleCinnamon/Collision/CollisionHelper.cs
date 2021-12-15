@@ -27,7 +27,7 @@ namespace AppleCinnamon.Collision
 
 
 
-                if (voxel.Value.Block > 0 && voxel.Value.Block != VoxelDefinition.Water.Type)
+                if (voxel.Value.BlockType > 0 && voxel.Value.BlockType != VoxelDefinition.Water.Type)
                 {
                     var voxelDefinition = voxel.Value.GetDefinition();
 
@@ -115,7 +115,7 @@ namespace AppleCinnamon.Collision
 
                         var voxel = chunk.GetVoxel(address.Value.RelativeVoxelIndex.ToFlatIndex(chunk.CurrentHeight));
 
-                        var voxelDefinition = VoxelDefinition.DefinitionByType[voxel.Block];
+                        var voxelDefinition = VoxelDefinition.DefinitionByType[voxel.BlockType];
                         
                         if (!voxelDefinition.IsPermeable)
                         {

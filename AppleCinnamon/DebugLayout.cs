@@ -50,7 +50,7 @@ namespace AppleCinnamon
         {
             var targetInfo = camera.CurrentCursor == null
                 ? "No target"
-                : $"{camera.CurrentCursor.AbsoluteVoxelIndex} (Block: {camera.CurrentCursor.Voxel.Block}, Light: {camera.CurrentCursor.Voxel.Lightness})";
+                : $"{camera.CurrentCursor.AbsoluteVoxelIndex} (BlockType: {camera.CurrentCursor.Voxel.BlockType}, Light: {camera.CurrentCursor.Voxel.CompositeLight})";
 
             var targetTargetInfo = "No target target";
 
@@ -62,7 +62,7 @@ namespace AppleCinnamon
                 if (targetTarget != null)
                 {
                     var address = Chunk.GetVoxelAddress(camera.CurrentCursor.AbsoluteVoxelIndex + camera.CurrentCursor.Direction);
-                    targetTargetInfo = $"Block: {targetTarget.Value.Block}, Sun: {targetTarget.Value.Sunlight}, Light: {targetTarget.Value.CustomLight}" +
+                    targetTargetInfo = $"BlockType: {targetTarget.Value.BlockType}, Sun: {targetTarget.Value.Sunlight}, Light: {targetTarget.Value.EmittedLight}" +
                                        $"Chunk: {address.Value.ChunkIndex.X}, {address.Value.ChunkIndex.Y}, " +
                                        $"Voxel: {address.Value.RelativeVoxelIndex.X}, {address.Value.RelativeVoxelIndex.Y}, {address.Value.RelativeVoxelIndex.Z}";
                 }

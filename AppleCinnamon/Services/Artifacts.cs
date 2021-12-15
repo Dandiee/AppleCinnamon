@@ -48,7 +48,7 @@ namespace AppleCinnamon.Services
                     if (relativeIndex.X < Chunk.SizeXy - 1)
                     {
                         var fifi = Help.GetFlatIndex(relativeIndex.X + 1, relativeIndex.Y + j, relativeIndex.Z, chunk.CurrentHeight);
-                        if (chunk.Voxels[fifi].Block == 0)
+                        if (chunk.Voxels[fifi].BlockType == 0)
                         {
                             chunk.Voxels[fifi] = VoxelDefinition.Tendril.Create(2, Face.Left);
                             chunk.BuildingContext.SingleSidedSpriteBlocks.Add(fifi);
@@ -58,7 +58,7 @@ namespace AppleCinnamon.Services
                     if (relativeIndex.X > 0)
                     {
                         var fifi = Help.GetFlatIndex(relativeIndex.X - 1, relativeIndex.Y + j, relativeIndex.Z, chunk.CurrentHeight);
-                        if (chunk.Voxels[fifi].Block == 0)
+                        if (chunk.Voxels[fifi].BlockType == 0)
                         {
                             chunk.Voxels[fifi] = VoxelDefinition.Tendril.Create(2, Face.Right);
                             chunk.BuildingContext.SingleSidedSpriteBlocks.Add(fifi);
@@ -68,7 +68,7 @@ namespace AppleCinnamon.Services
                     if (relativeIndex.Z < Chunk.SizeXy - 1)
                     {
                         var fifi = Help.GetFlatIndex(relativeIndex.X, relativeIndex.Y + j, relativeIndex.Z + 1, chunk.CurrentHeight);
-                        if (chunk.Voxels[fifi].Block == 0)
+                        if (chunk.Voxels[fifi].BlockType == 0)
                         {
                             chunk.Voxels[fifi] = VoxelDefinition.Tendril.Create(2, Face.Front);
                             chunk.BuildingContext.SingleSidedSpriteBlocks.Add(fifi);
@@ -78,7 +78,7 @@ namespace AppleCinnamon.Services
                     if (relativeIndex.Z > 0)
                     {
                         var fifi = Help.GetFlatIndex(relativeIndex.X, relativeIndex.Y + j, relativeIndex.Z - 1, chunk.CurrentHeight);
-                        if (chunk.Voxels[fifi].Block == 0)
+                        if (chunk.Voxels[fifi].BlockType == 0)
                         {
                             chunk.Voxels[fifi] = VoxelDefinition.Tendril.Create(2, Face.Back);
                             chunk.BuildingContext.SingleSidedSpriteBlocks.Add(fifi);
@@ -99,7 +99,7 @@ namespace AppleCinnamon.Services
             var height = relativeIndex.Y;
             var flatIndex = Help.GetFlatIndex(address.RelativeVoxelIndex.X, height, address.RelativeVoxelIndex.Z, targetChunk.CurrentHeight);
             var voxel = targetChunk.Voxels[flatIndex];
-            while (voxel.Block == 0)
+            while (voxel.BlockType == 0)
             {
                 if (callback(targetChunk, flatIndex))
                 {

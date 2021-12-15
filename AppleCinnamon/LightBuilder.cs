@@ -35,7 +35,7 @@ namespace AppleCinnamon
             var oldDefinition = oldVoxel.GetDefinition();
             var newDefinition = newVoxel.GetDefinition();
 
-            if (newVoxel.Block == 0) // remove
+            if (newVoxel.BlockType == 0) // remove
             {
                 if (oldDefinition.IsLightEmitter) // emitter
                 {
@@ -68,11 +68,11 @@ namespace AppleCinnamon
                 var neighborIndex = direction.Step + relativeIndex;
                 var voxel = chunk.GetLocalWithneighbors(neighborIndex.X, neighborIndex.Y, neighborIndex.Z, out var address);
 
-                if (brightest == null || brightest.Item3 < voxel.Lightness)
+                if (brightest == null || brightest.Item3 < voxel.CompositeLight)
                 {
                     //brightest = new Tuple<Chunk, Int3, byte>(chunk.neighbors[address.ChunkIndex],
                     brightest = new Tuple<Chunk, Int3, byte>(chunk.Neighbors[Help.GetChunkFlatIndex(address.ChunkIndex)],
-                        address.RelativeVoxelIndex, voxel.Lightness);
+                        address.RelativeVoxelIndex, voxel.CompositeLight);
                 }
             }
 
@@ -89,9 +89,9 @@ namespace AppleCinnamon
             var upperVoxelIndex = new Int3(relativeIndex.X, relativeIndex.Y + 1, relativeIndex.Z);
             var upperVoxel = chunk.GetVoxel(upperVoxelIndex.ToFlatIndex(chunk.CurrentHeight));
             var lightSources = new List<Tuple<Chunk, Int3>>();
-            LightingService.GlobalPropagateDarkness(new LightingService.DarknessPropogationRecord(chunk, relativeIndex, lightSources, oldVoxel, VoxelDefinition.DefinitionByType[oldVoxel.Block]));
+            LightingService.GlobalPropagateDarkness(new LightingService.DarknessPropogationRecord(chunk, relativeIndex, lightSources, oldVoxel, VoxelDefinition.DefinitionByType[oldVoxel.BlockType]));
 
-            if (upperVoxel.Lightness == 15)
+            if (upperVoxel.CompositeLight == 15)
             {
                 foreach (var sunlightSources in LightingService.Sunlight(chunk, upperVoxelIndex, 15))
                 {
@@ -116,7 +116,7 @@ namespace AppleCinnamon
             // identify light sources
             var lightSources = new List<Tuple<Chunk, Int3>>();
 
-            if (upperVoxel.Lightness == 15)
+            if (upperVoxel.CompositeLight == 15)
             {
                 foreach (var sunlightSources in LightingService.Sunlight(chunk, upperIndex, 15))
                 {
@@ -146,7 +146,7 @@ namespace AppleCinnamon
         private void AddSolid(Chunk chunk, Int3 relativeIndex, Voxel oldVoxel, Voxel newVoxel)
         {
             var resetVoxels = new List<Int3> { relativeIndex };
-            if (oldVoxel.Lightness == 15)
+            if (oldVoxel.CompositeLight == 15)
             {
                 resetVoxels.AddRange(LightingService.Sunlight(chunk, relativeIndex, 0));
             }
@@ -155,7 +155,7 @@ namespace AppleCinnamon
             var lightSources = new List<Tuple<Chunk, Int3>>();
             foreach (var resetVoxel in resetVoxels)
             {
-                LightingService.GlobalPropagateDarkness(new LightingService.DarknessPropogationRecord(chunk, resetVoxel, lightSources, oldVoxel, VoxelDefinition.DefinitionByType[oldVoxel.Block]));
+                LightingService.GlobalPropagateDarkness(new LightingService.DarknessPropogationRecord(chunk, resetVoxel, lightSources, oldVoxel, VoxelDefinition.DefinitionByType[oldVoxel.BlockType]));
             }
 
             foreach (var lightSource in lightSources)

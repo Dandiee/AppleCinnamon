@@ -43,7 +43,7 @@ namespace AppleCinnamon
                 var index = flatIndex.ToIndex(chunk.CurrentHeight);
 
                 var voxel = chunk.GetVoxel(flatIndex);
-                var definition = VoxelDefinition.DefinitionByType[voxel.Block];
+                var definition = VoxelDefinition.DefinitionByType[voxel.BlockType];
 
                 var voxelPositionOffset = definition.Offset + chunk.OffsetVector + new Vector3(index.X, index.Y, index.Z);
 
@@ -92,7 +92,7 @@ namespace AppleCinnamon
                     var position = topOffsetVertices[m] + chunk.OffsetVector + positionOffset;
                     var textureUv = WaterUvOffsets[m];
 
-                    vertices[vertexOffset + m] = new VertexWater(position, textureUv, voxel.Sunlight, voxel.CustomLight);
+                    vertices[vertexOffset + m] = new VertexWater(position, textureUv, voxel.CompositeLight);
                 }
 
                 var indexOffset = n * 6 * 2;
@@ -151,7 +151,7 @@ namespace AppleCinnamon
                 var vertexOffset = n * 4;
                 var positionOffset = new Vector3(index.X, index.Y, index.Z);
                 var voxel = chunk.GetVoxel(flatIndex);
-                var definition = VoxelDefinition.DefinitionByType[voxel.Block];
+                var definition = VoxelDefinition.DefinitionByType[voxel.BlockType];
 
                 AddSpriteFace(chunk, FaceBuildInfo.SpriteVertices.Left, positionOffset, voxel, definition.TextureIndexes.Faces[(byte)Face.Left], vertices, indexes, vertexOffset, n, 0);
                 AddSpriteFace(chunk, FaceBuildInfo.SpriteVertices.Right, positionOffset, voxel, definition.TextureIndexes.Faces[(byte)Face.Right], vertices, indexes, vertexOffset, n, secondFaceOffset);
@@ -168,7 +168,7 @@ namespace AppleCinnamon
                 
                 var voxel = chunk.GetVoxel(flatIndex);
                 var positionOffset = new Vector3(index.X, index.Y, index.Z) + SingleSidedOffsets[(byte)voxel.Orientation];
-                var definition = VoxelDefinition.DefinitionByType[voxel.Block];
+                var definition = VoxelDefinition.DefinitionByType[voxel.BlockType];
                 var face = FaceBuildInfo.FaceVertices.Faces[(byte) voxel.Orientation];
 
                 AddSpriteFace(chunk, face, positionOffset, voxel, definition.TextureIndexes.Faces[(byte)Face.Left], vertices, indexes, vertexOffset, n, thirdFaceOffset);
@@ -185,7 +185,7 @@ namespace AppleCinnamon
             {
                 var position = faceOffsetVertices[m] + chunk.OffsetVector + positionOffset;
                 var textureOffset = FaceBuildInfo.UvOffsetIndexes[m];
-                vertices[vertexOffset + m + faceOffset * 4] = new VertexSprite(position, textureIndicies.X + textureOffset.X, textureIndicies.Y + textureOffset.Y, voxel.Sunlight, voxel.HueIndex, voxel.CustomLight);
+                vertices[vertexOffset + m + faceOffset * 4] = new VertexSprite(position, textureIndicies.X + textureOffset.X, textureIndicies.Y + textureOffset.Y, voxel.MetaData, voxel.CompositeLight);
             }
 
             var indexOffset = (vertexIndex * 6 * 2) + (faceOffset * 6 * 2);
@@ -232,12 +232,12 @@ namespace AppleCinnamon
                 foreach (var ambientIndex in vertexInfo.AmbientOcclusionNeighbors)
                 {
                     var ambientNeighborVoxel = chunk.GetLocalWithneighbors(relativeIndexX + ambientIndex.X, relativeIndexY + ambientIndex.Y, relativeIndexZ + ambientIndex.Z, out var addr);
-                    var ambientNeighborDefinition = VoxelDefinition.DefinitionByType[ambientNeighborVoxel.Block];
+                    var ambientNeighborDefinition = VoxelDefinition.DefinitionByType[ambientNeighborVoxel.BlockType];
 
                     if (!ambientNeighborDefinition.IsBlock)
                     {
                         totalSunlight += ambientNeighborVoxel.Sunlight;
-                        totalCustomLight += ambientNeighborVoxel.CustomLight;
+                        totalCustomLight += ambientNeighborVoxel.EmittedLight;
                     }
                     else if (ambientNeighborDefinition.IsUnitSized)
                     {
@@ -245,10 +245,10 @@ namespace AppleCinnamon
                     }
                 }
 
-                var hue = (definition.HueFaces & face.Direction) == face.Direction ? voxel.HueIndex : (byte)0;
+                var hue = (definition.HueFaces & face.Direction) == face.Direction ? voxel.MetaData : (byte)0;
 
                     vertices[vertexIndex + vertexInfo.Index] = new VertexSolidBlock(position, textureUv.X + vertexInfo.TextureIndex.X,
-                        textureUv.Y + vertexInfo.TextureIndex.Y, neighbor.Sunlight, neighbor.CustomLight, totalSunlight,
+                        textureUv.Y + vertexInfo.TextureIndex.Y, neighbor.Sunlight, neighbor.EmittedLight, totalSunlight,
                         numberOfAmbientNeighbors, hue, totalCustomLight);
             }
 

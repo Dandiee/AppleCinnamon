@@ -25,7 +25,7 @@ namespace AppleCinnamon.Pipeline
                 else
                 {
                     var voxel = chunk.Voxels[flatIndex];
-                    if (voxel.Block == 0)
+                    if (voxel.BlockType == 0)
                     {
                         if (_rnd.Next() % 3 == 0)
                         {
