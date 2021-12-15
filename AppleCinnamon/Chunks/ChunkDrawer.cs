@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Threading.Tasks;
 using AppleCinnamon.Helper;
 using AppleCinnamon.Vertices;
@@ -12,7 +10,7 @@ using Buffer = SharpDX.Direct3D11.Buffer;
 
 namespace AppleCinnamon.Chunks
 {
-    public sealed class ChunkDrawer
+    public sealed partial class ChunkDrawer
     {
         private readonly Device _device;
 

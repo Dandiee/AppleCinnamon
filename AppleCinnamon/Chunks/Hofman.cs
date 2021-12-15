@@ -10,7 +10,6 @@ namespace AppleCinnamon.Chunks
 {
     static class Hofman
     {
-
         public static float SunlightFactor { get; set; } = 1f;
         public static float SunDirection { get; set; } = 3.17f;
 

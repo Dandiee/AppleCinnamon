@@ -8,8 +8,6 @@ namespace AppleCinnamon
 {
     public sealed class ChunkBuildingContext
     {
-        
-
         public readonly FaceBuildingContext Top;
         public readonly FaceBuildingContext Bottom;
         public readonly FaceBuildingContext Left;
@@ -18,7 +16,7 @@ namespace AppleCinnamon
         public readonly FaceBuildingContext Back;
 
         public readonly FaceBuildingContext[] Faces;
-        public readonly List<int> TransparentBlocks = new();
+
         public List<int> SpriteBlocks = new();
         public List<int> SingleSidedSpriteBlocks = new();
 
