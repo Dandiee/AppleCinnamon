@@ -22,20 +22,22 @@ namespace AppleCinnamon.Vertices
         public int Size => _size;
         public InputElement[] InputElements => _inputElements;
 
-        public VertexSolidBlock(Vector3 position, int u, int v, byte baseLight, byte totalneighborLights, int numberOfAmbientneighbors, byte hueIndex)
+        public VertexSolidBlock(Vector3 position, int u, int v, byte baseSunlight, byte baseCustomLight, byte totalneighborLights, int numberOfAmbientneighbors, byte hueIndex, byte totalNeighborCustomLight)
         {
             Position = position; // 32
             Color = 0;
 
-            var l = baseLight + totalneighborLights;
+            var l = baseSunlight + totalneighborLights;
             var a = numberOfAmbientneighbors;
             var h = 0b1111 & hueIndex;
+            var c = baseCustomLight + totalNeighborCustomLight;
 
             Color |= (uint)(u <<  0); // 5 bits
             Color |= (uint)(v <<  5); // 5 bits
             Color |= (uint)(l << 10); // 6 bits
             Color |= (uint)(a << 16); // 4 bits
             Color |= (uint)(h << 20); // 4 bits
+            Color |= (uint)(c << 26); // 6 bits
         }
 
         public Vector3 Position;

@@ -149,7 +149,7 @@ namespace AppleCinnamon.Pipeline
 
                         if (voxel.Lightness != voxelLight)
                         {
-                            chunk.Voxels[flatIndex] = voxel.SetLight(voxelLight);
+                            chunk.Voxels[flatIndex] = voxel.SetSunlight(voxelLight);
                             chunk.BuildingContext.LightPropagationVoxels.Enqueue(flatIndex);
                         }
                     }

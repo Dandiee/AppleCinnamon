@@ -62,7 +62,7 @@ namespace AppleCinnamon
                 if (targetTarget != null)
                 {
                     var address = Chunk.GetVoxelAddress(camera.CurrentCursor.AbsoluteVoxelIndex + camera.CurrentCursor.Direction);
-                    targetTargetInfo = $"Block: {targetTarget.Value.Block}, Light: {targetTarget.Value.Lightness}, " +
+                    targetTargetInfo = $"Block: {targetTarget.Value.Block}, Sun: {targetTarget.Value.Sunlight}, Light: {targetTarget.Value.CustomLight}" +
                                        $"Chunk: {address.Value.ChunkIndex.X}, {address.Value.ChunkIndex.Y}, " +
                                        $"Voxel: {address.Value.RelativeVoxelIndex.X}, {address.Value.RelativeVoxelIndex.Y}, {address.Value.RelativeVoxelIndex.Z}";
                 }

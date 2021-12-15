@@ -17,19 +17,21 @@ namespace AppleCinnamon.Vertices
         public int Size => _size;
         public InputElement[] InputElements => _inputElements;
 
-        public VertexSprite(Vector3 position, int u, int v, byte baseLight, byte hueIndex)
+        public VertexSprite(Vector3 position, int u, int v, byte sunlight, byte hueIndex, byte customLight)
         {
             
             Position = position;
 
-            var l = baseLight;
+            var l = sunlight;
             var h = hueIndex & 15;
+            var c = customLight;
 
             Color = 0;
             Color |= (uint)(u <<  0); // 5 bits
             Color |= (uint)(v <<  5); // 5 bits
             Color |= (uint)(l << 10); // 4 bits
             Color |= (uint)(h << 14); // 4 bits
+            Color |= (uint)(c << 18); // 4 bits
         }
 
         public Vector3 Position;

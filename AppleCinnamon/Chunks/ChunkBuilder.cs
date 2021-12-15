@@ -85,15 +85,14 @@ namespace AppleCinnamon
 
                 var vertexOffset = n * 4;
                 var positionOffset = new Vector3(index.X, index.Y - 0.1f, index.Z);
-                var light = chunk.GetVoxel(flatIndex).Lightness;
+                var voxel = chunk.GetVoxel(flatIndex);
 
                 for (var m = 0; m < topOffsetVertices.Length; m++)
                 {
                     var position = topOffsetVertices[m] + chunk.OffsetVector + positionOffset;
                     var textureUv = WaterUvOffsets[m];
 
-                    vertices[vertexOffset + m] =
-                        new VertexWater(position, textureUv, 0, light);
+                    vertices[vertexOffset + m] = new VertexWater(position, textureUv, voxel.Sunlight, voxel.CustomLight);
                 }
 
                 var indexOffset = n * 6 * 2;
@@ -187,7 +186,7 @@ namespace AppleCinnamon
             {
                 var position = faceOffsetVertices[m] + chunk.OffsetVector + positionOffset;
                 var textureOffset = FaceBuildInfo.UvOffsetIndexes[m];
-                vertices[vertexOffset + m + faceOffset * 4] = new VertexSprite(position, textureIndicies.X + textureOffset.X, textureIndicies.Y + textureOffset.Y, voxel.Lightness, voxel.HueIndex);
+                vertices[vertexOffset + m + faceOffset * 4] = new VertexSprite(position, textureIndicies.X + textureOffset.X, textureIndicies.Y + textureOffset.Y, voxel.Sunlight, voxel.HueIndex, voxel.CustomLight);
             }
 
             var indexOffset = (vertexIndex * 6 * 2) + (faceOffset * 6 * 2);
@@ -227,7 +226,8 @@ namespace AppleCinnamon
                     vertexInfo.Position.Y * definition.Size.Y + voxelPositionOffset.Y,
                     vertexInfo.Position.Z * definition.Size.Z + voxelPositionOffset.Z);
 
-                byte totalNeighborLight = 0;
+                byte totalSunlight = 0;
+                byte totalCustomLight = 0;
                 var numberOfAmbientNeighbors = 0;
 
                 foreach (var ambientIndex in vertexInfo.AmbientOcclusionNeighbors)
@@ -237,7 +237,8 @@ namespace AppleCinnamon
 
                     if (!ambientNeighborDefinition.IsBlock)
                     {
-                        totalNeighborLight += ambientNeighborVoxel.Lightness;
+                        totalSunlight += ambientNeighborVoxel.Sunlight;
+                        totalCustomLight += ambientNeighborVoxel.CustomLight;
                     }
                     else if (ambientNeighborDefinition.IsUnitSized)
                     {
@@ -248,8 +249,8 @@ namespace AppleCinnamon
                 var hue = (definition.HueFaces & face.Direction) == face.Direction ? voxel.HueIndex : (byte)0;
 
                     vertices[vertexIndex + vertexInfo.Index] = new VertexSolidBlock(position, textureUv.X + vertexInfo.TextureIndex.X,
-                        textureUv.Y + vertexInfo.TextureIndex.Y, neighbor.Lightness, totalNeighborLight,
-                        numberOfAmbientNeighbors, hue);
+                        textureUv.Y + vertexInfo.TextureIndex.Y, neighbor.Sunlight, neighbor.CustomLight, totalSunlight,
+                        numberOfAmbientNeighbors, hue, totalCustomLight);
             }
 
             indexes[indexIndex] = (uint)vertexIndex;

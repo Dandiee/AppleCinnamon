@@ -91,7 +91,7 @@ namespace AppleCinnamon.Pipeline
                     var brightnessLoss = VoxelDefinition.GetBrightnessLoss(sourceDefinition, targetDefinition, context.TargetToSourceDirection);
                     if (brightnessLoss != 0 && targetVoxel.Lightness < sourceVoxel.Lightness - brightnessLoss)
                     {
-                        targetChunk.SetVoxelNoInline(targetFlatIndex, targetVoxel.SetLight((byte)(sourceVoxel.Lightness - brightnessLoss)));
+                        targetChunk.SetVoxelNoInline(targetFlatIndex, targetVoxel.SetSunlight((byte)(sourceVoxel.Lightness - brightnessLoss)));
                         queue.Enqueue(targetFlatIndex);
                     }
                 }

@@ -13,23 +13,29 @@ namespace AppleCinnamon.Vertices
         {
             new("POSITION", 0, Format.R32G32B32_Float, 0, 0), //0
             new("TEXCOORD", 0, Format.R32G32_Float, 12, 0), // 3
-            new("COLOR", 0, Format.R32_Float, 20, 0), //3+2
+            new("VISIBILITY", 0, Format.R32_UInt, 20, 0), //3+2
         };
 
 
         public int Size => _size;
         public InputElement[] InputElements => _inputElements;
 
-        public VertexWater(Vector3 position, Vector2 textureCoordinate, int ambientOcclusion, float lightness)
+        public VertexWater(Vector3 position, Vector2 textureCoordinate, byte sunlight, byte customLight)
         {
             Position = position;
             TextureCoordinate = textureCoordinate;
-            AmbientOcclusion = 0.3f + (((1 / 16f) * lightness) - ambientOcclusion * .1f) * 0.8f;
+            Asd = 0; //0.3f + (((1 / 16f) * lightness) - ambientOcclusion * .1f) * 0.8f;
+
+            var l = sunlight;
+            var c = customLight;
+
+            Asd |= (uint)(l << 0); // 4 bits
+            Asd |= (uint)(c << 4); // 4 bits
         }
 
         public Vector3 Position;
         public Vector2 TextureCoordinate;
-        public float AmbientOcclusion;
+        public uint Asd;
 
     }
 

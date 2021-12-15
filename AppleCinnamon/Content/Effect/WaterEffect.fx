@@ -23,7 +23,7 @@ struct VertexShaderInput
 {
     float3 Position : POSITION0;
 	float2 TexCoords : TEXCOORD0;
-	float AmbientOcclusion: COLOR0;
+	uint Asd: VISIBILITY;
 };
 
 
@@ -38,7 +38,7 @@ float ComputeFogFactor(float d)
 {
 	return clamp((d - FogStart) / (FogEnd - FogStart), 0, 1) * FogEnabled;
 }
-
+float totalLightness = 1.0 / 15.0f;
 VertexShaderOutput VertexShaderFunction(VertexShaderInput input)
 {
 	
@@ -47,7 +47,11 @@ VertexShaderOutput VertexShaderFunction(VertexShaderInput input)
 	
     output.Position = mul(position, WorldViewProjection);
 	output.TexCoords = input.TexCoords + float2(TextureOffset.x, TextureOffset.y);
-	output.AmbientOcclusion = input.AmbientOcclusion;
+
+	float l = ((input.Asd >> 0) & 15) * totalLightness * lightFactor + 2.0f;
+	float c = ((input.Asd >> 4) & 15) * totalLightness + 2.0f;
+
+	output.AmbientOcclusion = max(l, c);
 	output.FogFactor = ComputeFogFactor(distance(EyePosition.xyz, input.Position.xyz));
 
     return output;
