@@ -175,9 +175,10 @@ namespace AppleCinnamon.Chunks
             _waterEffect.Effect.GetVariableByName("EyePosition").AsVector().Set(camera.Position.ToVector3());
             _spriteEffect.Effect.GetVariableByName("EyePosition").AsVector().Set(camera.Position.ToVector3());
 
+            _hofman.UpdateEffect(_skyEffect);
             _skyEffect.Effect.GetVariableByName("worldViewProject").AsMatrix().SetMatrix(camera.WorldViewProjection);
             _skyEffect.Effect.GetVariableByName("worldView").AsMatrix().SetMatrix(camera.View);
-            _hofman.UpdateEffect(_skyEffect);
+            
 
 
             if (camera.IsInWater)

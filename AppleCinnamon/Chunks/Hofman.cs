@@ -1,6 +1,10 @@
 ﻿using System;
+using System.Numerics;
+using AppleCinnamon.Extensions;
 using AppleCinnamon.Vertices;
 using SharpDX;
+using Vector3 = SharpDX.Vector3;
+using Vector4 = SharpDX.Vector4;
 
 namespace AppleCinnamon.Chunks
 {
@@ -14,13 +18,17 @@ namespace AppleCinnamon.Chunks
             get => _sunDirection;
             set
             {
-                _sunDirection = value;
-                if (_sunDirection > 180.0f)
-                    _sunDirection = 0;
-                else if (_sunDirection < 0.0f)
-                    _sunDirection = 0;
+                //_sunDirection = value;
+                //if (_sunDirection > 180.0f)
+                //    _sunDirection = 0;
+                //else if (_sunDirection < 0.0f)
+                //    _sunDirection = 0;
 
-                Position = new Vector3(0.0f, (float)Math.Sin(MathUtil.DegreesToRadians(value)), (float)Math.Cos(MathUtil.DegreesToRadians(value)));
+                _sunDirection = value;
+
+                Position = Vector3.UnitZ.Rotate(Vector3.UnitX, _sunDirection);
+
+                //Position = new Vector3(0.0f, (float)Math.Sin(MathUtil.DegreesToRadians(value)), (float)Math.Cos(MathUtil.DegreesToRadians(value)));
             }
         }
 
@@ -159,7 +167,7 @@ namespace AppleCinnamon.Chunks
 
         public void UpdateEffect(ChunkEffect<VertexSkyBox> skyEffect)
         {
-            SunDirection += 0.1f;
+            SunDirection += 0.001f;
 
             skyEffect.Effect.GetVariableByName("sunDirection").AsVector().Set(Position);
             skyEffect.Effect.GetVariableByName("betaRPlusBetaM").AsVector().Set(_betaRPlusBetaM);
