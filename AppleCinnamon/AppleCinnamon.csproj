@@ -59,7 +59,7 @@
     <None Update="Content\Effect\SolidBlockEffect.fx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Content\Effect\SpriteBlockEffect.fx">
+    <None Update="Content\Effect\RayleightScatter.fx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Content\Effect\terrain.fx">

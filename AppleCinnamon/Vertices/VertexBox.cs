@@ -10,12 +10,9 @@ namespace AppleCinnamon.Vertices
 
         private static readonly InputElement[] _inputElements =
         {
-            new("POSITION", 
-                0, Format.R32G32B32_Float, 0, 0), //0
-            new("POSITION", 
-                1, Format.R32G32B32_Float, 12, 0), //0
-            new("COLOR", 
-                0, Format.R32G32B32_Float, 24, 0), //3+2
+            new("POSITION", 0, Format.R32G32B32_Float, 0, 0), //0
+            new("POSITION", 1, Format.R32G32B32_Float, 12, 0), //0
+            new("COLOR", 0, Format.R32G32B32_Float, 24, 0), //3+2
         };
 
 

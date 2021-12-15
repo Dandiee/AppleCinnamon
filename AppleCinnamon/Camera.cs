@@ -24,6 +24,7 @@ namespace AppleCinnamon
         public Vector3 CurrentChunkIndexVector { get; private set; }
         public Matrix View { get; private set; }
         public Matrix WorldViewProjection { get; private set; }
+        public Matrix WorldView { get; private set; }
         public Matrix Projection { get; private set; }
 
         public Matrix World => Matrix.Identity * 2;
@@ -303,6 +304,7 @@ namespace AppleCinnamon
                 Vector3.TransformCoordinate(Vector3.UnitY, rotationMatrix));
             Projection = Matrix.PerspectiveFovRH(MathUtil.Pi / 2f,
                 _graphics.RenderForm.Width / (float)_graphics.RenderForm.Height, 0.1f, 100000f);
+            WorldView = World * View;
             WorldViewProjection = World * View * Projection;
 
             BoundingFrustum = new BoundingFrustum(View * Projection);

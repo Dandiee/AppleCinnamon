@@ -1,10 +1,14 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using AppleCinnamon.Helper;
 using AppleCinnamon.Vertices;
 using SharpDX;
 using SharpDX.Direct3D;
 using SharpDX.Direct3D11;
+using Buffer = SharpDX.Direct3D11.Buffer;
 
 namespace AppleCinnamon.Chunks
 {
@@ -16,14 +20,30 @@ namespace AppleCinnamon.Chunks
         private ChunkEffect<VertexWater> _waterEffect;
         private ChunkEffect<VertexSprite> _spriteEffect;
         private ChunkEffect<VertexBox> _boxEffect;
+        private ChunkEffect<VertexSkyBox> _skyEffect;
 
         private int _currentWaterTextureOffsetIndex;
 
         private BlendState _waterBlendState;
+        private Hofman _hofman;
+        private int numberOfSkyDomeVertices = 0;
+        private Buffer skyDomeBuffer;
+        private VertexBufferBinding skyDomeBidning;
 
         public ChunkDrawer(Device device)
         {
             _device = device;
+            _hofman = new Hofman();
+
+
+
+
+            var skyDomeVertices = SkyDome.GenerateSkyDome().ToArray();
+            skyDomeBuffer = Buffer.Create(_device, BindFlags.VertexBuffer, skyDomeVertices);
+            skyDomeBidning = new VertexBufferBinding(skyDomeBuffer, default(VertexSkyBox).Size, 0);
+            numberOfSkyDomeVertices = skyDomeVertices.Length;
+
+
             LoadContent();
         }
 
@@ -33,6 +53,7 @@ namespace AppleCinnamon.Chunks
             _waterEffect = new(_device, "Content/Effect/WaterEffect.fx", PrimitiveTopology.TriangleList, "Content/Texture/custom_water_still.png");
             _spriteEffect = new(_device, "Content/Effect/SpriteEffetct.fx", PrimitiveTopology.TriangleList, "Content/Texture/terrain3.png");
             _boxEffect = new(_device, "Content/Effect/BoxDrawerEffect.fx", PrimitiveTopology.PointList);
+            _skyEffect = new(_device, "Content/Effect/RayleightScatter.fx", PrimitiveTopology.TriangleList);
 
 
             var blendStateDescription = new BlendStateDescription { AlphaToCoverageEnable = false };
@@ -55,6 +76,19 @@ namespace AppleCinnamon.Chunks
         {
             if (chunks.Count > 0)
             {
+                if (true)
+                {
+                    _skyEffect.Use(_device);
+                    _hofman.Draw();
+
+                        _skyEffect.Use(_device);
+                        _device.ImmediateContext.InputAssembler.SetVertexBuffers(0, skyDomeBidning);
+                        _device.ImmediateContext.Draw(numberOfSkyDomeVertices, 0);
+                        _device.ImmediateContext.GeometryShader.Set(null);
+                }
+
+
+
                 if (Game.RenderSolid)
                 {
                     _solidEffect.Use(_device);
@@ -129,6 +163,7 @@ namespace AppleCinnamon.Chunks
             }
         }
 
+      
         public void Update(Camera camera)
         {
             _solidEffect.Effect.GetVariableByName("WorldViewProjection").AsMatrix().SetMatrix(camera.WorldViewProjection);
@@ -139,6 +174,11 @@ namespace AppleCinnamon.Chunks
             _solidEffect.Effect.GetVariableByName("EyePosition").AsVector().Set(camera.Position.ToVector3());
             _waterEffect.Effect.GetVariableByName("EyePosition").AsVector().Set(camera.Position.ToVector3());
             _spriteEffect.Effect.GetVariableByName("EyePosition").AsVector().Set(camera.Position.ToVector3());
+
+            _skyEffect.Effect.GetVariableByName("worldViewProject").AsMatrix().SetMatrix(camera.WorldViewProjection);
+            _skyEffect.Effect.GetVariableByName("worldView").AsMatrix().SetMatrix(camera.View);
+            _hofman.UpdateEffect(_skyEffect);
+
 
             if (camera.IsInWater)
             {
