@@ -179,17 +179,6 @@ namespace AppleCinnamon
             Center2d = new Vector2(position.X, position.Z);
         }
         
-        public static bool TryGetVoxelAddress(Int3 absoluteVoxelIndex, out VoxelAddress address)
-        {
-            if (!Help.TryGetChunkIndexByAbsoluteVoxelIndex(absoluteVoxelIndex, out var chunkIndex))
-            {
-                address = VoxelAddress.Zero;
-                return false;
-            }
-
-            var voxelIndex = new Int3(absoluteVoxelIndex.X & SizeXy - 1, absoluteVoxelIndex.Y, absoluteVoxelIndex.Z & SizeXy - 1);
-            address = new VoxelAddress(chunkIndex, voxelIndex);
-            return true;
-        }
+        
     }
 }

@@ -59,12 +59,12 @@ namespace AppleCinnamon
             {
                 if (chunkManager.TryGetVoxel(camera.CurrentCursor.AbsoluteVoxelIndex + camera.CurrentCursor.Direction, out var targetTarget))
                 {
-                    if (Chunk.TryGetVoxelAddress(
+                    if (chunkManager.TryGetVoxelAddress(
                         camera.CurrentCursor.AbsoluteVoxelIndex + camera.CurrentCursor.Direction, out var address))
                     {
                         targetTargetInfo =
                             $"BlockType: {targetTarget.BlockType}, Sun: {targetTarget.Sunlight}, Light: {targetTarget.EmittedLight}" +
-                            $"Chunk: {address.ChunkIndex.X}, {address.ChunkIndex.Y}, " +
+                            $"Chunk: {address.Chunk.ChunkIndex.X}, {address.Chunk.ChunkIndex.Y}, " +
                             $"Voxel: {address.RelativeVoxelIndex.X}, {address.RelativeVoxelIndex.Y}, {address.RelativeVoxelIndex.Z}";
                     }
                     else throw new Exception("that should not happen i guess");

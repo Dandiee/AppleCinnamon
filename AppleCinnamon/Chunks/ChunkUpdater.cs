@@ -32,32 +32,32 @@ namespace AppleCinnamon
                 return;
             }
 
-            
-            if (Chunk.TryGetVoxelAddress(absoluteIndex, out var address) && _chunkManager.TryGetChunk(address.ChunkIndex, out var chunk))
+            if (_chunkManager.TryGetVoxelAddress(absoluteIndex, out var address))
             {
                 _isUpdateInProgress = true;
 
-                if (address.RelativeVoxelIndex.Y >= chunk.CurrentHeight)
+                if (address.RelativeVoxelIndex.Y >= address.Chunk.CurrentHeight)
                 {
-                    chunk.ExtendUpward(address.RelativeVoxelIndex.Y);
+                    address.Chunk.ExtendUpward(address.RelativeVoxelIndex.Y);
                 }
 
-                var flatIndex = address.RelativeVoxelIndex.ToFlatIndex(chunk.CurrentHeight);
-                var oldVoxel = chunk.GetVoxel(flatIndex);
+                var flatIndex = address.RelativeVoxelIndex.ToFlatIndex(address.Chunk.CurrentHeight);
+                var oldVoxel = address.Chunk.GetVoxel(flatIndex);
                 var newDefinition = VoxelDefinition.DefinitionByType[voxel];
                 var newVoxel = newDefinition.HueFaces != VisibilityFlag.None
                     ? newDefinition.Create(2)
                     : newDefinition.Create();
 
-                chunk.SetSafe(flatIndex, newVoxel);
+            
+                address.Chunk.SetSafe(flatIndex, newVoxel);
 
-                UpdateVisibilityFlags(chunk, oldVoxel, newVoxel, address.RelativeVoxelIndex);
-                UpdateLighting(chunk, address.RelativeVoxelIndex, oldVoxel, newVoxel);
-                ChunkBuilder.BuildChunk(chunk, _graphics.Device);
+                UpdateVisibilityFlags(address.Chunk, oldVoxel, newVoxel, address.RelativeVoxelIndex);
+                UpdateLighting(address.Chunk, address.RelativeVoxelIndex, oldVoxel, newVoxel);
+                ChunkBuilder.BuildChunk(address.Chunk, _graphics.Device);
                 
                 Task.WaitAll(ChunkManager.GetSurroundingChunks(2).Select(chunkIndex =>
                 {
-                    if (chunkIndex != Int2.Zero && _chunkManager.TryGetChunk(chunkIndex + chunk.ChunkIndex, out var chunkToReload))
+                    if (chunkIndex != Int2.Zero && _chunkManager.TryGetChunk(chunkIndex + address.Chunk.ChunkIndex, out var chunkToReload))
                     {
                         return Task.Run(() => ChunkBuilder.BuildChunk(chunkToReload, _graphics.Device));
                     }

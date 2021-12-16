@@ -35,6 +35,25 @@ namespace AppleCinnamon
             QueueChunksByIndex(Int2.Zero);
         }
 
+        public bool TryGetVoxelAddress(Int3 absoluteVoxelIndex, out VoxelChunkAddress address)
+        {
+            if (!Help.TryGetChunkIndexByAbsoluteVoxelIndex(absoluteVoxelIndex, out var chunkIndex))
+            {
+                address = VoxelChunkAddress.Zero;
+                return false;
+            }
+
+            if (!TryGetChunk(chunkIndex, out var chunk))
+            {
+                address = VoxelChunkAddress.Zero;
+                return false;
+            }
+
+            var voxelIndex = new Int3(absoluteVoxelIndex.X & Chunk.SizeXy - 1, absoluteVoxelIndex.Y, absoluteVoxelIndex.Z & Chunk.SizeXy - 1);
+            address = new VoxelChunkAddress(chunk, voxelIndex);
+            return true;
+        }
+
 
         public void Draw(Camera camera)
         {
@@ -47,21 +66,15 @@ namespace AppleCinnamon
 
         public bool TryGetVoxel(Int3 absoluteIndex, out Voxel voxel)
         {
-            if (!Chunk.TryGetVoxelAddress(absoluteIndex, out var address))
+            if (!TryGetVoxelAddress(absoluteIndex, out var address))
             {
                 voxel = Voxel.Bedrock;
                 return false;
             }
 
-            if (!Chunks.TryGetValue(address.ChunkIndex, out var chunk))
-            {
-                voxel = Voxel.Bedrock;
-                return false;
-            }
-
-            voxel = chunk.CurrentHeight <= address.RelativeVoxelIndex.Y
+            voxel = address.Chunk.CurrentHeight <= address.RelativeVoxelIndex.Y
                 ? Voxel.SunBlock
-                : chunk.GetVoxel(address.RelativeVoxelIndex.ToFlatIndex(chunk.CurrentHeight));
+                : address.Chunk.GetVoxel(address.RelativeVoxelIndex.ToFlatIndex(address.Chunk.CurrentHeight));
             return true;
         }
 
