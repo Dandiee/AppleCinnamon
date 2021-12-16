@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Windows.Forms;
 using AppleCinnamon.Helper;
+using AppleCinnamon.Vertices;
 using SharpDX;
 using Point = System.Drawing.Point;
 
@@ -28,14 +29,13 @@ namespace AppleCinnamon
 
         private readonly Graphics _graphics;
         private readonly Crosshair _crosshair;
+        private readonly SkyDome _skyDome;
         private readonly double[] _lastRenderTimes;
         private DateTime _lastTick;
         private int _lastRenderTimeIndex;
         public double AverageRenderTime { get; private set; }
         public double PeekRenderTime { get; private set; }
         public double AverageFps { get; private set; }
-        
-
 
         public Game()
         {
@@ -45,6 +45,7 @@ namespace AppleCinnamon
             _camera = new Camera(_graphics);
             _chunkManager = new ChunkManager(_graphics);
             _debugLayout = new DebugLayout(_graphics);
+            _skyDome = new SkyDome(_graphics.Device);
 
             _lastRenderTimes = new double[20];
 
@@ -79,6 +80,8 @@ namespace AppleCinnamon
                         _chunkManager.Draw(_camera);
                     }
 
+                    _skyDome.Draw();
+
                     _crosshair.Draw();
                     _debugLayout.Draw(_chunkManager, _camera, this);
                 });
@@ -97,7 +100,7 @@ namespace AppleCinnamon
             _camera.Update(gameTime, _chunkManager);
             if (Game.Debug)
             {
-
+                _skyDome.Update(_camera);
                 _chunkManager.Update(_camera);
             }
             
