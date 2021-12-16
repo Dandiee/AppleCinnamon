@@ -44,7 +44,7 @@ namespace AppleCinnamon.Chunks
                 : MathUtil.PiOverTwo - (Math.Abs(world.Time - 0.5f) * MathUtil.PiOverTwo);
 
             Effect.GetVariableByName("WorldViewProjection").AsMatrix().SetMatrix(camera.WorldViewProjection);
-            Effect.GetVariableByName("EyePosition").AsVector().Set(camera.Position.ToVector3());
+            Effect.GetVariableByName("EyePosition").AsVector().Set(camera.Position);
             Effect.GetVariableByName("lightFactor").AsScalar().Set((float)Math.Sin(lightFactor));
 
             if (camera.IsInWater)

@@ -78,8 +78,8 @@ namespace AppleCinnamon
                    //$"Total visible faces {chunkManager.TotalVisibleFaces:N0}\r\n" +
                    //$"Total visible voxels {chunkManager.TotalVisibleVoxels:N0}\r\n" +
                    $"Time: {game.World.Time:N2}\r\n" +
-                   $"Current position {camera.Position.ToVector3().ToNonRetardedString()}\r\n" +
-                   $"Orientation {camera.LookAt.ToVector3().ToNonRetardedString()}\r\n" +
+                   $"Current position {camera.Position.ToNonRetardedString()}\r\n" +
+                   $"Orientation {camera.LookAt.ToNonRetardedString()}\r\n" +
                    $"Current target {targetInfo}\r\n" +
                    $"Target target: {targetTargetInfo}\r\n" +
                    $"Back-face culling [F1]: {(Game.IsBackFaceCullingEnabled ? "On" : "Off")}\r\n" +

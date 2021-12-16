@@ -73,8 +73,8 @@ namespace AppleCinnamon.Collision
 
         public static void ApplyPlayerPhysics(Camera camera, ChunkManager chunkManager, float realElapsedTime)
         {
-            var position = camera.Position.ToVector3();
-            var velocity = camera.Velocity.ToVector3();
+            var position = camera.Position;
+            var velocity = camera.Velocity;
 
 
             var min = WorldSettings.PlayerMin + position; // + Vector3.UnitY * 0.05f;
@@ -148,8 +148,8 @@ namespace AppleCinnamon.Collision
                 }
             }
 
-            camera.Position -= totalPenetration.ToDouble3() * 1.05f;
-            camera.Velocity = resultVelocity.ToDouble3();
+            camera.Position -= totalPenetration * 1.05f;
+            camera.Velocity = resultVelocity;
         }
 
         public static Vector3? GetFirstPenetration(Int3 absoluteIndex, BoundingBox playerBoundingBox, BoundingBox voxelBoundingBox,

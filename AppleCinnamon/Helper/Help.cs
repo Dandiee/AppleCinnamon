@@ -11,7 +11,6 @@ namespace AppleCinnamon.Helper
         public static Vector3 ToVector3(this Int3 lhs) => new(lhs.X, lhs.Y, lhs.Z);
         public static bool IsEpsilon(this float number) => Math.Abs(number) < 0.001f;
         public static bool IsEpsilon(this double number) => Math.Abs(number) < 0.00001f;
-        public static Double3 ToDouble3(this Vector3 vector) => new(vector);
         public static Vector3 ToVector3(this Vector4 v) => new(v.X, v.Y, v.Z);
 
 
