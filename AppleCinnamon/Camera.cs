@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using AppleCinnamon.Chunks;
 using AppleCinnamon.Collision;
+using AppleCinnamon.Extensions;
 using AppleCinnamon.Helper;
 using AppleCinnamon.Settings;
 using SharpDX;
@@ -73,11 +74,12 @@ namespace AppleCinnamon
             IsInAir = true;
         }
 
-        public void UpdateCurrentCursor(ChunkManager chunkManager)
+        public void UpdateCurrentCursor(ChunkManager chunkManager, World world)
         {
             CurrentCursor = CollisionHelper.GetCurrentSelection(new Ray(Position.ToVector3(), LookAt.ToVector3()), chunkManager);
 
-            if (VoxelDefinition.Water.Type == chunkManager.GetVoxel(Position.ToVector3().Round())?.Block)
+            if (chunkManager.TryGetVoxel(Position.ToVector3().Round(), out var voxel) &&
+                voxel.BlockType == VoxelDefinition.Water.Type)
             {
                 IsInWater = true;
             }
@@ -87,7 +89,7 @@ namespace AppleCinnamon
             }
         }
 
-        public void Update(GameTime gameTime, ChunkManager chunkManager)
+        public void Update(GameTime gameTime, ChunkManager chunkManager, World world)
         {
             if (!chunkManager.IsInitialized)
             {
@@ -101,10 +103,10 @@ namespace AppleCinnamon
             {
 
                 CollisionHelper.ApplyPlayerPhysics(this, chunkManager, (float)gameTime.ElapsedGameTime.TotalSeconds);
-                UpdateMove(gameTime, chunkManager);
+                UpdateMove(gameTime, chunkManager, world);
                 UpdateMatrices();
 
-                UpdateCurrentCursor(chunkManager);
+                UpdateCurrentCursor(chunkManager, world);
             }
 
             HandleDefaultInputs(chunkManager);
@@ -153,18 +155,14 @@ namespace AppleCinnamon
                 Game.ShowChunkBoundingBoxes = !Game.ShowChunkBoundingBoxes;
             }
 
+            if (!_currentKeyboardState.IsPressed(Key.F6) && _lastKeyboardState.IsPressed(Key.F6))
+            {
+                Game.RenderSky = !Game.RenderSky;
+            }
+
             if (!_currentKeyboardState.IsPressed(Key.F12) && _lastKeyboardState.IsPressed(Key.F12))
             {
                 Game.Debug = !Game.Debug;
-            }
-
-            if (_currentKeyboardState.IsPressed(Key.I))
-            {
-                Hofman.SunDirection += 0.0001f;
-            }
-            if (_currentKeyboardState.IsPressed(Key.J))
-            {
-                Hofman.SunDirection -= 0.0001f;
             }
 
             var delta = _currentMouseState.Z / 120;
@@ -198,9 +196,10 @@ namespace AppleCinnamon
                 {
                     if (CurrentCursor != null)
                     {
-                        var direction = CurrentCursor.Direction;
-                        var targetBlock = CurrentCursor.AbsoluteVoxelIndex + direction;
-
+                        chunkManager.TryGetVoxel(CurrentCursor.AbsoluteVoxelIndex, out var directTargetVoxel);
+                        var targetBlock = directTargetVoxel.GetDefinition().IsSprite
+                            ? CurrentCursor.AbsoluteVoxelIndex
+                            : CurrentCursor.AbsoluteVoxelIndex + CurrentCursor.Direction;
 
                         var hasPositionConflict = false;
                         var min = (WorldSettings.PlayerMin + Position.ToVector3()).Round();
@@ -228,7 +227,7 @@ namespace AppleCinnamon
 
 
 
-        private void UpdateMove(GameTime gameTime, ChunkManager chunkManager)
+        private void UpdateMove(GameTime gameTime, ChunkManager chunkManager, World world)
         {
             const float MouseSensitivity = .01f;
             const float MovementSensitivity = 2f;
@@ -250,7 +249,7 @@ namespace AppleCinnamon
                 MathUtil.PiOverTwo);
 
 
-            var direction = Vector3.TransformCoordinate(Vector3.UnitX, Matrix.RotationY(Yaw)).ToDouble3();
+            var direction = Vector3.UnitX.Rotate(Vector3.UnitY, Yaw).ToDouble3();
             var directionNormal = new Double3(-direction.Z, 0, direction.X);
             var translationVector = Double3.Zero;
 
@@ -280,6 +279,31 @@ namespace AppleCinnamon
                             (_currentKeyboardState.IsPressed(Key.LeftShift) ? SprintSpeedFactor : 1);
             }
 
+            const float lilStep = 0.001f;
+
+            if (_currentKeyboardState.IsPressed(Key.NumberPad0)) Hofman.SunIntensity += lilStep;
+            if (_currentKeyboardState.IsPressed(Key.NumberPad1)) Hofman.SunIntensity -= lilStep;
+
+            if (_currentKeyboardState.IsPressed(Key.NumberPad2)) Hofman.Turbitity += lilStep;
+            if (_currentKeyboardState.IsPressed(Key.NumberPad3)) Hofman.Turbitity -= lilStep;
+
+            if (_currentKeyboardState.IsPressed(Key.NumberPad4)) Hofman.InscatteringMultiplier += lilStep;
+            if (_currentKeyboardState.IsPressed(Key.NumberPad5)) Hofman.InscatteringMultiplier -= lilStep;
+
+            if (_currentKeyboardState.IsPressed(Key.NumberPad6)) Hofman.BetaRayMultiplier += lilStep;
+            if (_currentKeyboardState.IsPressed(Key.NumberPad7)) Hofman.BetaRayMultiplier -= lilStep;
+
+            if (_currentKeyboardState.IsPressed(Key.NumberPad8)) Hofman.BetaMieMultiplier += lilStep / 100f;
+            if (_currentKeyboardState.IsPressed(Key.NumberPad9)) Hofman.BetaMieMultiplier -= lilStep / 100f;
+
+            if (_currentKeyboardState.IsPressed(Key.Up)) Hofman.SunDirection += lilStep / 1;
+            if (_currentKeyboardState.IsPressed(Key.Down)) Hofman.SunDirection -= lilStep / 1;
+
+
+            if (_currentKeyboardState.IsPressed(Key.Up)) world.IncreaseTime();
+            if (_currentKeyboardState.IsPressed(Key.Down)) world.DecreaseTime();
+
+
 
             if ((!IsInAir || IsInWater) && _currentKeyboardState.IsPressed(Key.Space))
             {
@@ -294,14 +318,11 @@ namespace AppleCinnamon
 
 
 
-            var currentBlock = new Int3((int)Math.Round(Position.X), (int)Math.Round(Position.Y),
-                (int)Math.Round(Position.Z));
-            var chunkIndex = Chunk.GetChunkIndex(currentBlock);
-
-            if (chunkIndex.HasValue)
+            var currentBlock = new Int3((int)Math.Round(Position.X), (int)Math.Round(Position.Y), (int)Math.Round(Position.Z));
+            if (ChunkManager.TryGetChunkIndexByAbsoluteVoxelIndex(currentBlock, out var chunkIndex))
             {
-                CurrentChunkIndex = chunkIndex.Value;
-                var currentChunk = chunkManager.Chunks[chunkIndex.Value];
+                CurrentChunkIndex = chunkIndex;
+                var currentChunk = chunkManager.Chunks[chunkIndex];
                 CurrentChunkIndexVector = currentChunk.BoundingBox.Center;
             }
         }
@@ -310,10 +331,8 @@ namespace AppleCinnamon
         {
             var rotationMatrix = Matrix.RotationYawPitchRoll(Yaw, 0, Pitch);
             LookAt = Vector3.Normalize(Vector3.Transform(InitialLookAt, rotationMatrix).ToVector3()).ToDouble3();
-            View = Matrix.LookAtRH(Position.ToVector3(), Position.ToVector3() + LookAt.ToVector3(),
-                Vector3.TransformCoordinate(Vector3.UnitY, rotationMatrix));
-            Projection = Matrix.PerspectiveFovRH(MathUtil.Pi / 2f,
-                _graphics.RenderForm.Width / (float)_graphics.RenderForm.Height, 0.1f, 10000000000000f);
+            View = Matrix.LookAtRH(Position.ToVector3(), Position.ToVector3() + LookAt.ToVector3(), Vector3.TransformCoordinate(Vector3.UnitY, rotationMatrix));
+            Projection = Matrix.PerspectiveFovRH(MathUtil.Pi / 2f, _graphics.RenderForm.Width / (float)_graphics.RenderForm.Height, 0.1f, 10000000000f);
             WorldView = World * View;
             WorldViewProjection = World * View * Projection;
 

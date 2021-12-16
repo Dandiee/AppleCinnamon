@@ -1,6 +1,4 @@
-﻿using System;
-using AppleCinnamon.Helper;
-using AppleCinnamon.Services;
+﻿using AppleCinnamon.Helper;
 using AppleCinnamon.Settings;
 using SimplexNoise;
 
@@ -52,23 +50,17 @@ namespace AppleCinnamon.Pipeline
 
                     for (var j = 0; j <= height - 1; j++)
                     {
-                        voxels[Help.GetFlatIndex(i, j, k, currentHeight)] = new Voxel(VoxelDefinition.Grass.Type, 0, 2);
-                    }
-
-                    if (false)
-                    {
-                        //voxels.Tree(i, height, k, currentHeight);
+                        chunk.SetVoxel(i, j, k, VoxelDefinition.Grass.Create(2));
                     }
 
                     if (height < WorldSettings.WaterLevel)
                     {
                         for (var j = height; j < WorldSettings.WaterLevel; j++)
                         {
-                            var flatIndex = Help.GetFlatIndex(i, j, k, currentHeight);
-                            voxels[flatIndex] = new Voxel(VoxelDefinition.Water.Type, 0);
+                            chunk.SetVoxel(i, j, k, VoxelDefinition.Water.Create());
                         }
 
-                        chunk.TopMostWaterVoxels.Add(Help.GetFlatIndex(i, WorldSettings.WaterLevel - 1, k, currentHeight));
+                        chunk.BuildingContext.TopMostWaterVoxels.Add(chunk.GetFlatIndex(i, WorldSettings.WaterLevel - 1, k));
                     }
 
                     /*
@@ -76,8 +68,8 @@ namespace AppleCinnamon.Pipeline
 
                     voxels[Help.GetFlatIndex(i, height - 1, k, currentHeight)] =
                         isSnow
-                            ? new Voxel(VoxelDefinition.Snow.Type, 0)
-                            : new Voxel(VoxelDefinition.Grass.Type, 0, (byte) _random.Next(1, 9));
+                            ? new Voxel(VoxelDefinition.Snow.BlockType, 0)
+                            : new Voxel(VoxelDefinition.Grass.BlockType, 0, (byte) _random.Next(1, 9));
 
                     if (!isSnow && _random.Next(5) == 0)
                     {
@@ -86,7 +78,7 @@ namespace AppleCinnamon.Pipeline
                         var isFlower = _random.Next() % 2 == 0;
                         var targetType = isFlower ? VoxelDefinition.SlabBottom : VoxelDefinition.Weed;
 
-                        voxels[flatIndex] = new Voxel(targetType.Type, 0);
+                        voxels[flatIndex] = new Voxel(targetType.BlockType, 0);
                         if (targetType.IsSprite)
                         {
                             chunk.BuildingContext.SpriteBlocks.Add(flatIndex);
@@ -95,8 +87,8 @@ namespace AppleCinnamon.Pipeline
 
                         // new Voxel(
                         //     height > (128 + _random.Next(5))
-                        //         ? VoxelDefinition.Snow.Type
-                        //         : VoxelDefinition.Grass.Type, 0);
+                        //         ? VoxelDefinition.Snow.BlockType
+                        //         : VoxelDefinition.Grass.BlockType, 0);
 
                     // voxels[i + Chunk.SizeXy * (height + Chunk.Height * k)] = new Voxel(4, 0);
                 }
@@ -111,9 +103,7 @@ namespace AppleCinnamon.Pipeline
         public Chunk GenerateVoxels3D(Int2 chunkIndex)
         {
             var maxHeight = 128;
-            var voxels = new Voxel[Chunk.SizeXy * Chunk.SizeXy * maxHeight];
-
-            var chunk = new Chunk(chunkIndex, voxels);
+            var chunk = new Chunk(chunkIndex, new Voxel[Chunk.SizeXy * Chunk.SizeXy * maxHeight]);
 
 
             for (var i = 0; i < Chunk.SizeXy; i++)
@@ -126,11 +116,11 @@ namespace AppleCinnamon.Pipeline
                         var pixel = Noise.CalcPixel3D(i + (chunk.ChunkIndex.X * Chunk.SizeXy), j, k + chunk.ChunkIndex.Y * Chunk.SizeXy, .015f);
                         if (pixel < 128)// && pixel > 16)
                         {
-                            voxels[Help.GetFlatIndex(i, j, k, maxHeight)] = new Voxel(VoxelDefinition.Sand.Type, 0);
+                            chunk.SetVoxel(i, j, k, VoxelDefinition.Sand.Create());
                         }
                     }
 
-                    voxels[Help.GetFlatIndex(i, 1, k, maxHeight)] = new Voxel(VoxelDefinition.Sand.Type, 0);
+                    chunk.SetVoxel(i, 1, k, VoxelDefinition.Sand.Create());
 
                 }
             }
@@ -153,16 +143,15 @@ namespace AppleCinnamon.Pipeline
 
                     if (chunk.ChunkIndex == new Int2(1, 1))
                     {
-                        voxels[Help.GetFlatIndex(i, 4, k, maxHeight)] = new Voxel(VoxelDefinition.Stone.Type, 0);
+                        chunk.SetVoxel(i, 4, k, VoxelDefinition.Stone.Create());
                     }
 
                     if (chunk.ChunkIndex == new Int2(2, 1))
                     {
-                        voxels[Help.GetFlatIndex(i, 6, k, maxHeight)] = new Voxel(VoxelDefinition.Stone.Type, 0);
+                        chunk.SetVoxel(i, 6, k, VoxelDefinition.Stone.Create());
                     }
 
-
-                    voxels[Help.GetFlatIndex(i, 1, k, maxHeight)] = new Voxel(VoxelDefinition.Stone.Type, 0);
+                    chunk.SetVoxel(i, 1, k, VoxelDefinition.Stone.Create());
 
                 }
             }

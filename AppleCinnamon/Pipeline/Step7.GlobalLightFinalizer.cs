@@ -5,24 +5,14 @@ using AppleCinnamon.Helper;
 using AppleCinnamon.Pipeline.Context;
 using AppleCinnamon.Settings;
 using SharpDX;
-using Help = AppleCinnamon.Helper.Help;
 
 namespace AppleCinnamon.Pipeline
 {
     public sealed class GlobalLightFinalizer : PipelineBlock<Chunk, Chunk>
     {
-        private static readonly IReadOnlyDictionary<int, Face[]> CornerMapping =
-            new Dictionary<int, Face[]>
-            {
-                [Help.GetChunkFlatIndex(-1, -1)] = new []{ Face.Right, Face.Back },
-                [Help.GetChunkFlatIndex( 1, -1)] = new []{ Face.Left, Face.Back },
-                [Help.GetChunkFlatIndex( 1,  1)] = new []{ Face.Left, Face.Front },
-                [Help.GetChunkFlatIndex(-1,  1)] = new []{ Face.Right, Face.Front },
-            };
-
         public override Chunk Process(Chunk chunk)
         {
-            foreach (var corner in CornerMapping)
+            foreach (var corner in AnnoyingMappings.GlobalLightFinalizerCornerMapping)
             {
                 var cornerChunk = chunk.Neighbors[corner.Key];
                 EdgeSolver(cornerChunk, EdgePropogation.All[(byte)corner.Value[0]]);
@@ -42,10 +32,10 @@ namespace AppleCinnamon.Pipeline
             public static readonly EdgePropogation[] All =
             {
                 new(), new(),
-                new(Face.Left, Help.GetChunkFlatIndex(-1, 0), new Int3(0, 1, 1), new Int3(Chunk.SizeXy - 1,0,0), new Int3(0, 0, 0)),
-                new(Face.Right, Help.GetChunkFlatIndex(1, 0), new Int3(0, 1, 1), new Int3(0, 0, 0), new Int3(Chunk.SizeXy - 1, 0, 0)),
-                new(Face.Front, Help.GetChunkFlatIndex(0, -1), new Int3(1, 1, 0), new Int3(0, 0, Chunk.SizeXy - 1), new Int3(0, 0, 0)),
-                new(Face.Back, Help.GetChunkFlatIndex(0, 1), new Int3(1, 1, 0), new Int3(0, 0, 0), new Int3(0, 0, Chunk.SizeXy - 1)),
+                new(Face.Left, Chunk.GetChunkFlatIndex(-1, 0), new Int3(0, 1, 1), new Int3(Chunk.SizeXy - 1,0,0), new Int3(0, 0, 0)),
+                new(Face.Right, Chunk.GetChunkFlatIndex(1, 0), new Int3(0, 1, 1), new Int3(0, 0, 0), new Int3(Chunk.SizeXy - 1, 0, 0)),
+                new(Face.Front, Chunk.GetChunkFlatIndex(0, -1), new Int3(1, 1, 0), new Int3(0, 0, Chunk.SizeXy - 1), new Int3(0, 0, 0)),
+                new(Face.Back, Chunk.GetChunkFlatIndex(0, 1), new Int3(1, 1, 0), new Int3(0, 0, 0), new Int3(0, 0, Chunk.SizeXy - 1)),
             };
 
             public readonly Face TargetToSourceDirection;
@@ -79,19 +69,19 @@ namespace AppleCinnamon.Pipeline
                     var indexMask = new Int3(h * context.DirectionMask.X, j, h * context.DirectionMask.Z);
 
                     var sourceIndex = indexMask + context.SourceOffset;
-                    var sourceFlatIndex = sourceIndex.ToFlatIndex(sourceChunk.CurrentHeight);
+                    var sourceFlatIndex = sourceChunk.GetFlatIndex(sourceIndex);
                     var sourceVoxel = sourceChunk.Voxels[sourceFlatIndex];
-                    var sourceDefinition = VoxelDefinition.DefinitionByType[sourceVoxel.Block];
+                    var sourceDefinition = sourceVoxel.GetDefinition();
 
                     var targetIndex = indexMask + context.TargetOffset;
-                    var targetFlatIndex = targetIndex.ToFlatIndex(targetChunk.CurrentHeight);
+                    var targetFlatIndex = targetChunk.GetFlatIndex(targetIndex);
                     var targetVoxel = targetChunk.Voxels[targetFlatIndex];
-                    var targetDefinition = VoxelDefinition.DefinitionByType[targetVoxel.Block];
+                    var targetDefinition = targetVoxel.GetDefinition();
 
                     var brightnessLoss = VoxelDefinition.GetBrightnessLoss(sourceDefinition, targetDefinition, context.TargetToSourceDirection);
-                    if (brightnessLoss != 0 && targetVoxel.Lightness < sourceVoxel.Lightness - brightnessLoss)
+                    if (brightnessLoss != 0 && targetVoxel.CompositeLight < sourceVoxel.CompositeLight - brightnessLoss)
                     {
-                        targetChunk.SetVoxelNoInline(targetFlatIndex, targetVoxel.SetLight((byte)(sourceVoxel.Lightness - brightnessLoss)));
+                        targetChunk.SetVoxel(targetFlatIndex, targetVoxel.SetSunlight((byte)(sourceVoxel.CompositeLight - brightnessLoss)));
                         queue.Enqueue(targetFlatIndex);
                     }
                 }

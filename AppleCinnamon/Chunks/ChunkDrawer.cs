@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using AppleCinnamon.Helper;
 using AppleCinnamon.Vertices;
@@ -16,45 +13,26 @@ namespace AppleCinnamon.Chunks
     {
         private readonly Device _device;
 
-        private ChunkEffect<VertexSolidBlock> _solidEffect;
-        private ChunkEffect<VertexWater> _waterEffect;
-        private ChunkEffect<VertexSprite> _spriteEffect;
-        private ChunkEffect<VertexBox> _boxEffect;
-        private ChunkEffect<VertexSkyBox> _skyEffect;
-
+        private EffectDefinition<VertexSolidBlock> _solidEffectDefinition;
+        private EffectDefinition<VertexWater> _waterEffectDefinition;
+        private EffectDefinition<VertexSprite> _spriteEffectDefinition;
+        private EffectDefinition<VertexBox> _boxEffectDefinition;
         private int _currentWaterTextureOffsetIndex;
-
         private BlendState _waterBlendState;
-        private Hofman _hofman;
-        private int numberOfSkyDomeVertices = 0;
-        private Buffer skyDomeBuffer;
-        private VertexBufferBinding skyDomeBidning;
 
         public ChunkDrawer(Device device)
         {
             _device = device;
-            _hofman = new Hofman();
-
-
-
-
-            var skyDomeVertices = SkyDome.GenerateSkyDome().ToArray();
-            skyDomeBuffer = Buffer.Create(_device, BindFlags.VertexBuffer, skyDomeVertices);
-            skyDomeBidning = new VertexBufferBinding(skyDomeBuffer, default(VertexSkyBox).Size, 0);
-            numberOfSkyDomeVertices = skyDomeVertices.Length;
-
 
             LoadContent();
         }
 
         private void LoadContent()
         {
-            _solidEffect = new(_device, "Content/Effect/SolidBlockEffect.fx", PrimitiveTopology.TriangleList, "Content/Texture/terrain3.png");
-            _waterEffect = new(_device, "Content/Effect/WaterEffect.fx", PrimitiveTopology.TriangleList, "Content/Texture/custom_water_still.png");
-            _spriteEffect = new(_device, "Content/Effect/SpriteEffetct.fx", PrimitiveTopology.TriangleList, "Content/Texture/terrain3.png");
-            _boxEffect = new(_device, "Content/Effect/BoxDrawerEffect.fx", PrimitiveTopology.PointList);
-            _skyEffect = new(_device, "Content/Effect/scatter2.fx", PrimitiveTopology.TriangleList, "Content/Texture/terrain3.png");
-
+            _solidEffectDefinition = new(_device, "Content/Effect/SolidBlockEffect.fx", PrimitiveTopology.TriangleList, "Content/Texture/terrain3.png");
+            _waterEffectDefinition = new(_device, "Content/Effect/WaterEffect.fx", PrimitiveTopology.TriangleList, "Content/Texture/custom_water_still.png");
+            _spriteEffectDefinition = new(_device, "Content/Effect/SpriteEffetct.fx", PrimitiveTopology.TriangleList, "Content/Texture/terrain3.png");
+            _boxEffectDefinition = new(_device, "Content/Effect/BoxDrawerEffect.fx", PrimitiveTopology.PointList);
 
             var blendStateDescription = new BlendStateDescription { AlphaToCoverageEnable = false };
 
@@ -76,36 +54,23 @@ namespace AppleCinnamon.Chunks
         {
             if (chunks.Count > 0)
             {
-                if (true)
-                {
-                    _skyEffect.Use(_device);
-                    _hofman.Draw();
-
-                        _skyEffect.Use(_device);
-                        _device.ImmediateContext.InputAssembler.SetVertexBuffers(0, skyDomeBidning);
-                        _device.ImmediateContext.Draw(numberOfSkyDomeVertices, 0);
-                        _device.ImmediateContext.GeometryShader.Set(null);
-                }
-
-
-
                 if (Game.RenderSolid)
                 {
-                    _solidEffect.Use(_device);
+                    _solidEffectDefinition.Use(_device);
                     foreach (var chunk in chunks)
                     {
-                        chunk.Value.DrawSmarter(_device, camera.CurrentChunkIndexVector);
+                        chunk.Value.Buffers.BufferSolid?.Draw(_device);
                     }
                 }
 
                 if (Game.RenderSprites)
                 {
-                    _spriteEffect.Use(_device);
+                    _spriteEffectDefinition.Use(_device);
                     foreach (var chunk in chunks)
                     {
                         if (chunk.Value.BuildingContext.SpriteBlocks.Count > 0)
                         {
-                            chunk.Value.DrawSprite(_device);
+                            chunk.Value.Buffers.BufferSprite?.Draw(_device);
                         }
                     }
                 }
@@ -114,10 +79,10 @@ namespace AppleCinnamon.Chunks
                 {
 
                     _device.ImmediateContext.OutputMerger.SetBlendState(_waterBlendState);
-                    _waterEffect.Use(_device);
+                    _waterEffectDefinition.Use(_device);
                     foreach (var chunk in chunks)
                     {
-                        chunk.Value.DrawWater(_device);
+                        chunk.Value.Buffers.BufferWater?.Draw(_device);
                     }
                     _device.ImmediateContext.OutputMerger.SetBlendState(null);
                 }
@@ -140,10 +105,10 @@ namespace AppleCinnamon.Chunks
 
                     if (boxVertices.Length > 0)
                     {
-                        var vertexBuffer = SharpDX.Direct3D11.Buffer.Create(_device, BindFlags.VertexBuffer, boxVertices);
+                        var vertexBuffer = Buffer.Create(_device, BindFlags.VertexBuffer, boxVertices);
                         var binding = new VertexBufferBinding(vertexBuffer, default(VertexBox).Size, 0);
 
-                        _boxEffect.Use(_device);
+                        _boxEffectDefinition.Use(_device);
                         _device.ImmediateContext.InputAssembler.SetVertexBuffers(0, binding);
                         _device.ImmediateContext.Draw(boxVertices.Length, 0);
                         _device.ImmediateContext.GeometryShader.Set(null);
@@ -158,57 +123,18 @@ namespace AppleCinnamon.Chunks
             while (true)
             {
                 _currentWaterTextureOffsetIndex = (_currentWaterTextureOffsetIndex + 1) % 32;
-                _waterEffect.Effect.GetVariableByName("TextureOffset").AsVector().Set(new Vector2(0, _currentWaterTextureOffsetIndex * 1 / 32f));
+                _waterEffectDefinition.Effect.GetVariableByName("TextureOffset").AsVector().Set(new Vector2(0, _currentWaterTextureOffsetIndex * 1 / 32f));
                 await Task.Delay(80);
             }
         }
 
-      
-        public void Update(Camera camera)
+
+        public void Update(Camera camera, World world)
         {
-            _solidEffect.Effect.GetVariableByName("WorldViewProjection").AsMatrix().SetMatrix(camera.WorldViewProjection);
-            _waterEffect.Effect.GetVariableByName("WorldViewProjection").AsMatrix().SetMatrix(camera.WorldViewProjection);
-            _spriteEffect.Effect.GetVariableByName("WorldViewProjection").AsMatrix().SetMatrix(camera.WorldViewProjection);
-            _boxEffect.Effect.GetVariableByName("WorldViewProjection").AsMatrix().SetMatrix(camera.WorldViewProjection);
-
-            _solidEffect.Effect.GetVariableByName("EyePosition").AsVector().Set(camera.Position.ToVector3());
-            _waterEffect.Effect.GetVariableByName("EyePosition").AsVector().Set(camera.Position.ToVector3());
-            _spriteEffect.Effect.GetVariableByName("EyePosition").AsVector().Set(camera.Position.ToVector3());
-
-            _hofman.UpdateEffect(_skyEffect, camera);
-            
-            //_skyEffect.Effect.GetVariableByName("worldView").AsMatrix().SetMatrix(camera.View);
-            
-
-
-            if (camera.IsInWater)
-            {
-                _solidEffect.Effect.GetVariableByName("FogStart").AsScalar().Set(8);
-                _solidEffect.Effect.GetVariableByName("FogEnd").AsScalar().Set(64);
-                _solidEffect.Effect.GetVariableByName("FogColor").AsVector().Set(new Vector4(0, 0.2f, 1, 0));
-
-                _waterEffect.Effect.GetVariableByName("FogStart").AsScalar().Set(8);
-                _waterEffect.Effect.GetVariableByName("FogEnd").AsScalar().Set(64);
-                _waterEffect.Effect.GetVariableByName("FogColor").AsVector().Set(new Vector4(0, 0.2f, 1, 0));
-
-                _spriteEffect.Effect.GetVariableByName("FogStart").AsScalar().Set(8);
-                _spriteEffect.Effect.GetVariableByName("FogEnd").AsScalar().Set(64);
-                _spriteEffect.Effect.GetVariableByName("FogColor").AsVector().Set(new Vector4(0, 0.2f, 1, 0));
-            }
-            else
-            {
-                _solidEffect.Effect.GetVariableByName("FogStart").AsScalar().Set(64);
-                _solidEffect.Effect.GetVariableByName("FogEnd").AsScalar().Set(Game.ViewDistance * Chunk.SizeXy);
-                _solidEffect.Effect.GetVariableByName("FogColor").AsVector().Set(new Vector4(0.5f, 0.5f, 0.5f, 1));
-
-                _waterEffect.Effect.GetVariableByName("FogStart").AsScalar().Set(64);
-                _waterEffect.Effect.GetVariableByName("FogEnd").AsScalar().Set(Game.ViewDistance * Chunk.SizeXy);
-                _waterEffect.Effect.GetVariableByName("FogColor").AsVector().Set(new Vector4(0.5f, 0.5f, 0.5f, 1));
-
-                _spriteEffect.Effect.GetVariableByName("FogStart").AsScalar().Set(64);
-                _spriteEffect.Effect.GetVariableByName("FogEnd").AsScalar().Set(Game.ViewDistance * Chunk.SizeXy);
-                _spriteEffect.Effect.GetVariableByName("FogColor").AsVector().Set(new Vector4(0.5f, 0.5f, 0.5f, 1));
-            }
+            _solidEffectDefinition.Update(camera, world);
+            _waterEffectDefinition.Update(camera, world);
+            _spriteEffectDefinition.Update(camera, world);
+            _boxEffectDefinition.Effect.GetVariableByName("WorldViewProjection").AsMatrix().SetMatrix(camera.WorldViewProjection);
         }
     }
 }

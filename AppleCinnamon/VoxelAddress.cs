@@ -1,18 +1,17 @@
-﻿using AppleCinnamon.Helper;
-using SharpDX;
+﻿using SharpDX;
 
 namespace AppleCinnamon
 {
-    public struct VoxelAddress
+    public readonly struct VoxelChunkAddress
     {
-        public static readonly VoxelAddress Zero = new();
+        public static readonly VoxelChunkAddress Zero = new();
 
-        public Int2 ChunkIndex { get; }
-        public Int3 RelativeVoxelIndex { get; }
+        public readonly Chunk Chunk;
+        public readonly Int3 RelativeVoxelIndex;
 
-        public VoxelAddress(Int2 chunkIndex, Int3 relativeVoxelIndex)
+        public VoxelChunkAddress(Chunk chunk, Int3 relativeVoxelIndex)
         {
-            ChunkIndex = chunkIndex;
+            Chunk = chunk;
             RelativeVoxelIndex = relativeVoxelIndex;
         }
     }

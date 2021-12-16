@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Windows.Forms;
 using AppleCinnamon.Helper;
+using AppleCinnamon.Vertices;
 using SharpDX;
 using Point = System.Drawing.Point;
 
@@ -9,12 +10,13 @@ namespace AppleCinnamon
 {
     public sealed class Game 
     {
-        public static readonly Vector3 StartPosition = new(0, 300, 0);
+        public static readonly Vector3 StartPosition = new(0, 140, 0);
 
-        public const int ViewDistance = 24;
+        public const int ViewDistance = 32;
         public static bool IsBackFaceCullingEnabled { get; set; }
         public static bool IsViewFrustumCullingEnabled { get; set; } = true;
         public static bool ShowChunkBoundingBoxes { get; set; } = false;
+        public static bool RenderSky { get; set; } = true;
         public static bool RenderWater { get; set; } = true;
         public static bool RenderSolid { get; set; } = true;
         public static bool RenderSprites { get; set; } = true;
@@ -27,14 +29,14 @@ namespace AppleCinnamon
 
         private readonly Graphics _graphics;
         private readonly Crosshair _crosshair;
+        private readonly SkyDome _skyDome;
         private readonly double[] _lastRenderTimes;
         private DateTime _lastTick;
         private int _lastRenderTimeIndex;
         public double AverageRenderTime { get; private set; }
         public double PeekRenderTime { get; private set; }
         public double AverageFps { get; private set; }
-        
-
+        public World World = new();
 
         public Game()
         {
@@ -44,6 +46,7 @@ namespace AppleCinnamon
             _camera = new Camera(_graphics);
             _chunkManager = new ChunkManager(_graphics);
             _debugLayout = new DebugLayout(_graphics);
+            _skyDome = new SkyDome(_graphics.Device);
 
             _lastRenderTimes = new double[20];
 
@@ -78,6 +81,8 @@ namespace AppleCinnamon
                         _chunkManager.Draw(_camera);
                     }
 
+                    _skyDome.Draw();
+
                     _crosshair.Draw();
                     _debugLayout.Draw(_chunkManager, _camera, this);
                 });
@@ -93,15 +98,12 @@ namespace AppleCinnamon
 
         private void Update(GameTime gameTime)
         {
-            _camera.Update(gameTime, _chunkManager);
+            _camera.Update(gameTime, _chunkManager, World);
             if (Game.Debug)
             {
-
-                _chunkManager.Update(_camera);
+                _skyDome.Update(_camera, World);
+                _chunkManager.Update(_camera, World);
             }
-            
-                
-            
         }
 
     }

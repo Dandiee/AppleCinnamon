@@ -19,13 +19,6 @@ namespace AppleCinnamon.Vertices
         public int Size => _size;
         public InputElement[] InputElements => _inputElements;
 
-        public VertexBox(Vector3 minimum, Vector3 maximum, Color3 color)
-        {
-            Minimum = minimum;
-            Maximum = maximum;
-            Color = color;
-        }
-
         public VertexBox(ref BoundingBox bb, Color3 color)
         {
             Minimum = bb.Minimum;

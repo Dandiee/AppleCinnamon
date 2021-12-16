@@ -1,6 +1,6 @@
-﻿using System.Runtime.InteropServices;
+﻿using System;
+using System.Runtime.InteropServices;
 using AppleCinnamon.Helper;
-using AppleCinnamon.Pipeline;
 using AppleCinnamon.Settings;
 
 namespace AppleCinnamon
@@ -8,50 +8,36 @@ namespace AppleCinnamon
     [StructLayout(LayoutKind.Explicit)]
     public struct Voxel
     {
-        public static readonly Voxel One = new(1, 15);
-        public static readonly Voxel Zero = new(0, 0);
-        public static readonly Voxel Invalid = new(255, 255);
-        public static readonly Voxel Air = new(0, 15);
+        public static readonly Voxel Zero;
+        public static readonly Voxel Bedrock = new(VoxelDefinition.Stone.Type, 15, 0, 0, Face.Top);
+        public static readonly Voxel SunBlock = new(0, 15, 0, 0, Face.Top);
 
-        [FieldOffset(0)]
-        public readonly byte Block;
+        [FieldOffset(0)] public readonly byte BlockType;
+        [FieldOffset(1)] public readonly byte CompositeLight;    // 4 + 4 bit Sun + Custom sunlight
+        [FieldOffset(2)] public readonly byte MetaData;          // 4 + 3 bit Hue + Orientation
 
-        [FieldOffset(1)]
-        public readonly byte Lightness;
+        public readonly byte Sunlight => (byte)(CompositeLight & 0b00001111);
+        public readonly byte EmittedLight => (byte)(CompositeLight >> 4);
+        public Face Orientation => (Face)(MetaData >> 4);
 
-        [FieldOffset(2)]
-        public readonly byte HueIndex;
-
-        public Face Orientation => (Face) (HueIndex >> 4);
-
-
-        public VoxelDefinition GetDefinition() => VoxelDefinition.DefinitionByType[Block];
-
-        public Voxel(byte block, byte lightness)
+        private Voxel(ref Voxel original, byte light) 
         {
-            Block = block;
-            Lightness = lightness;
-            HueIndex = 0;
+            BlockType = original.BlockType;
+            CompositeLight = light;
+            MetaData = original.MetaData;
         }
 
-        public Voxel(byte block, byte lightness, byte hueIndex)
+        [Obsolete("Do. Not. Use.")]
+        public Voxel(byte blockType, byte sunlight, byte emittedLight, byte metaData, Face face)
         {
-            Block = block;
-            Lightness = lightness;
-            HueIndex = hueIndex;
+            BlockType = blockType;
+            CompositeLight = (byte)((emittedLight << 4) | sunlight);
+            MetaData = metaData;
+            MetaData |= (byte)((byte)face << 4);
         }
 
-        public Voxel(byte block, byte lightness, byte hueIndex, Face orientation)
-        {
-            Block = block;
-            Lightness = lightness;
-            HueIndex = hueIndex;
-            HueIndex |= (byte) ((byte)orientation << 4);
-        }
-
-        public Voxel SetLight(byte light)
-        {
-            return new(Block, light, HueIndex);
-        }
+        public Voxel SetSunlight(byte sunlight) => new(ref this, (byte)((CompositeLight & 0b11110000) | sunlight));
+        public Voxel SetCustomLight(byte emittedLight) => new(ref this, (byte)((CompositeLight & 0b00001111) | (emittedLight << 4)));
+        public VoxelDefinition GetDefinition() => VoxelDefinition.DefinitionByType[BlockType];
     }
 }

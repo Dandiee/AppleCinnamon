@@ -16,12 +16,14 @@ namespace AppleCinnamon
         public readonly FaceBuildingContext Back;
 
         public readonly FaceBuildingContext[] Faces;
-        public readonly List<int> TransparentBlocks = new();
+
         public List<int> SpriteBlocks = new();
         public List<int> SingleSidedSpriteBlocks = new();
 
         public Dictionary<int, VisibilityFlag> VisibilityFlags = new();
         public Queue<int> LightPropagationVoxels = new(1024);
+        public List<int> TopMostWaterVoxels = new();
+        public List<int> TopMostLandVoxels = new();
 
         public ChunkBuildingContext()
         {
@@ -52,10 +54,10 @@ namespace AppleCinnamon
         private static readonly IReadOnlyDictionary<Face, Func<Int3, int, int>> NeighborIndexFuncs =
             new Dictionary<Face, Func<Int3, int, int>>
             {
-                [Face.Left] = (ijk, height) => Help.GetFlatIndex(Chunk.SizeXy - 1, ijk.Y, ijk.Z, height),
-                [Face.Right] = (ijk, height) => Help.GetFlatIndex(0, ijk.Y, ijk.Z, height),
-                [Face.Front] = (ijk, height) => Help.GetFlatIndex(ijk.X, ijk.Y, Chunk.SizeXy - 1, height),
-                [Face.Back] = (ijk, height) => Help.GetFlatIndex(ijk.X, ijk.Y, 0, height)
+                [Face.Left] = (ijk, height) => Chunk.GetFlatIndex(Chunk.SizeXy - 1, ijk.Y, ijk.Z, height),
+                [Face.Right] = (ijk, height) => Chunk.GetFlatIndex(0, ijk.Y, ijk.Z, height),
+                [Face.Front] = (ijk, height) => Chunk.GetFlatIndex(ijk.X, ijk.Y, Chunk.SizeXy - 1, height),
+                [Face.Back] = (ijk, height) => Chunk.GetFlatIndex(ijk.X, ijk.Y, 0, height)
             };
 
         public FaceBuildingContext(Face face)

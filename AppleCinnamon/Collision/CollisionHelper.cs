@@ -18,24 +18,22 @@ namespace AppleCinnamon.Collision
             for (var i = 0; i < exitCounter; i++)
             {
                 var index = position.Round();
-                var voxel = chunkManager.GetVoxel(index);
-
-                if (!voxel.HasValue)
+                if (!chunkManager.TryGetVoxel(index, out var voxel))
                 {
                     return null;
                 }
 
 
 
-                if (voxel.Value.Block > 0 && voxel.Value.Block != VoxelDefinition.Water.Type)
+                if (voxel.BlockType > 0 && voxel.BlockType != VoxelDefinition.Water.Type)
                 {
-                    var voxelDefinition = voxel.Value.GetDefinition();
+                    var voxelDefinition = voxel.GetDefinition();
 
                     //return new VoxelRayCollisionResult(index, -direction, voxelDefinition, voxel.Value);
-                    
+
                     if (voxelDefinition.IsUnitSized)
                     {
-                        return new VoxelRayCollisionResult(index, -direction, voxelDefinition, voxel.Value);
+                        return new VoxelRayCollisionResult(index, -direction, voxelDefinition, voxel);
                     }
                     else
                     {
@@ -44,7 +42,7 @@ namespace AppleCinnamon.Collision
                         var currentRay = new Ray(position, ray.Direction);
                         if (voxelBoundingBox.Intersects(ref currentRay))
                         {
-                            return new VoxelRayCollisionResult(index, -direction, voxelDefinition, voxel.Value);
+                            return new VoxelRayCollisionResult(index, -direction, voxelDefinition, voxel);
                         }
                     }
                 }
@@ -64,7 +62,7 @@ namespace AppleCinnamon.Collision
                     new {Impact = zDistance / Math.Abs(ray.Direction.Z), Direction = Int3.UnitZ * Math.Sign(ray.Direction.Z)}
                 };
 
-                var firstImpact = impacts.OrderBy(impact => impact.Impact).First();
+                var firstImpact = impacts.Where(impact => !float.IsNaN(impact.Impact)).OrderBy(impact => impact.Impact).First();
 
                 direction = firstImpact.Direction;
                 position += ray.Direction * (firstImpact.Impact * 1.0005f);
@@ -97,26 +95,20 @@ namespace AppleCinnamon.Collision
                     for (var k = minInd.Z; k <= maxInd.Z; k++)
                     {
                         var absoluteIndex = new Int3(i, j, k);
-                        var address = Chunk.GetVoxelAddress(absoluteIndex);
-                        if (!address.HasValue)
-                        {
-                            return; 
-                        }
-
-                        if (!chunkManager.TryGetChunk(address.Value.ChunkIndex, out var chunk))
+                        if (!chunkManager.TryGetVoxelAddress(absoluteIndex, out var address))
                         {
                             return;
                         }
-                        
-                        if (j >= chunk.CurrentHeight)
+
+                        if (j >= address.Chunk.CurrentHeight)
                         {
                             continue;
                         }
 
-                        var voxel = chunk.GetVoxel(address.Value.RelativeVoxelIndex.ToFlatIndex(chunk.CurrentHeight));
+                        var voxel = address.Chunk.GetVoxel(address.RelativeVoxelIndex);
 
-                        var voxelDefinition = VoxelDefinition.DefinitionByType[voxel.Block];
-                        
+                        var voxelDefinition = voxel.GetDefinition();
+
                         if (!voxelDefinition.IsPermeable)
                         {
                             var voxelPosition = absoluteIndex.ToVector3() + voxelDefinition.Offset;
@@ -176,8 +168,8 @@ namespace AppleCinnamon.Collision
 
                 if (timeOfImpact > 0 && timeOfImpact < realElapsedTime && earliestTimeOfImpact > timeOfImpact)
                 {
-                    var neighbor = chunkManager.GetVoxel(absoluteIndex + Int3.UnitX);
-                    if (neighbor.HasValue && neighbor.Value.GetDefinition().IsPermeable)
+                    if (chunkManager.TryGetVoxel(absoluteIndex + Int3.UnitX, out var neighbor)
+                        && neighbor.GetDefinition().IsPermeable)
                     {
                         result = -Vector3.UnitX * penetrationDepth;
                         earliestTimeOfImpact = timeOfImpact;
@@ -195,8 +187,8 @@ namespace AppleCinnamon.Collision
 
                 if (timeOfImpact > 0 && timeOfImpact < realElapsedTime && earliestTimeOfImpact > timeOfImpact)
                 {
-                    var neighbor = chunkManager.GetVoxel(absoluteIndex - Int3.UnitX);
-                    if (neighbor.HasValue && neighbor.Value.GetDefinition().IsPermeable)
+                    if (chunkManager.TryGetVoxel(absoluteIndex - Int3.UnitX, out var neighbor)
+                       && neighbor.GetDefinition().IsPermeable)
                     {
                         result = Vector3.UnitX * penetrationDepth;
                         earliestTimeOfImpact = timeOfImpact;
@@ -213,8 +205,8 @@ namespace AppleCinnamon.Collision
 
                 if (timeOfImpact > 0 && timeOfImpact < realElapsedTime && earliestTimeOfImpact > timeOfImpact)
                 {
-                    var neighbor = chunkManager.GetVoxel(absoluteIndex + Int3.UnitZ);
-                    if (neighbor.HasValue && neighbor.Value.GetDefinition().IsPermeable)
+                    if (chunkManager.TryGetVoxel(absoluteIndex + Int3.UnitZ, out var neighbor)
+                        && neighbor.GetDefinition().IsPermeable)
                     {
                         result = -Vector3.UnitZ * penetrationDepth;
                         earliestTimeOfImpact = timeOfImpact;
@@ -232,8 +224,8 @@ namespace AppleCinnamon.Collision
 
                 if (timeOfImpact > 0 && timeOfImpact < realElapsedTime && earliestTimeOfImpact > timeOfImpact)
                 {
-                    var neighbor = chunkManager.GetVoxel(absoluteIndex - Int3.UnitZ);
-                    if (neighbor.HasValue && neighbor.Value.GetDefinition().IsPermeable)
+                    if (chunkManager.TryGetVoxel(absoluteIndex - Int3.UnitZ, out var neighbor)
+                        && neighbor.GetDefinition().IsPermeable)
                     {
                         result = Vector3.UnitZ * penetrationDepth;
                         earliestTimeOfImpact = timeOfImpact;
@@ -251,8 +243,8 @@ namespace AppleCinnamon.Collision
 
                 if (timeOfImpact > 0 && timeOfImpact < realElapsedTime && earliestTimeOfImpact > timeOfImpact)
                 {
-                    var neighbor = chunkManager.GetVoxel(absoluteIndex + Int3.UnitY);
-                    if (neighbor.HasValue && neighbor.Value.GetDefinition().IsPermeable)
+                    if (chunkManager.TryGetVoxel(absoluteIndex + Int3.UnitY, out var neighbor)
+                       && neighbor.GetDefinition().IsPermeable)
                     {
                         result = -Vector3.UnitY * penetrationDepth;
                         earliestTimeOfImpact = timeOfImpact;
@@ -270,8 +262,8 @@ namespace AppleCinnamon.Collision
 
                 if (timeOfImpact > 0 && timeOfImpact < realElapsedTime && earliestTimeOfImpact > timeOfImpact)
                 {
-                    var neighbor = chunkManager.GetVoxel(absoluteIndex - Int3.UnitY);
-                    if (neighbor.HasValue && neighbor.Value.GetDefinition().IsPermeable)
+                    if(chunkManager.TryGetVoxel(absoluteIndex - Int3.UnitY, out var neighbor) 
+                       && neighbor.GetDefinition().IsPermeable)
                     {
                         result = Vector3.UnitY * penetrationDepth;
                         earliestTimeOfImpact = timeOfImpact;

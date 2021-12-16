@@ -1,11 +1,14 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Windows.Forms;
+using AppleCinnamon.Chunks;
 using AppleCinnamon.Helper;
 using AppleCinnamon.Pipeline.Context;
 using SharpDX;
 using SharpDX.Direct2D1;
 using SharpDX.DirectInput;
 using SharpDX.DirectWrite;
+using SharpDX.DXGI;
 using SharpDX.Mathematics.Interop;
 using TextAlignment = SharpDX.DirectWrite.TextAlignment;
 
@@ -45,25 +48,27 @@ namespace AppleCinnamon
         }
 
 
-        private string BuildLeftText(ChunkManager chunkManager, Camera camera)
+        private string BuildLeftText(ChunkManager chunkManager, Camera camera, Game game)
         {
             var targetInfo = camera.CurrentCursor == null
                 ? "No target"
-                : $"{camera.CurrentCursor.AbsoluteVoxelIndex} (Block: {camera.CurrentCursor.Voxel.Block}, Light: {camera.CurrentCursor.Voxel.Lightness})";
+                : $"{camera.CurrentCursor.AbsoluteVoxelIndex} (BlockType: {camera.CurrentCursor.Voxel.BlockType}, Light: {camera.CurrentCursor.Voxel.CompositeLight})";
 
             var targetTargetInfo = "No target target";
 
             if (camera.CurrentCursor != null)
             {
-                var targetTarget =
-                    chunkManager.GetVoxel(camera.CurrentCursor.AbsoluteVoxelIndex + camera.CurrentCursor.Direction);
-
-                if (targetTarget != null)
+                if (chunkManager.TryGetVoxel(camera.CurrentCursor.AbsoluteVoxelIndex + camera.CurrentCursor.Direction, out var targetTarget))
                 {
-                    var address = Chunk.GetVoxelAddress(camera.CurrentCursor.AbsoluteVoxelIndex + camera.CurrentCursor.Direction);
-                    targetTargetInfo = $"Block: {targetTarget.Value.Block}, Light: {targetTarget.Value.Lightness}, " +
-                                       $"Chunk: {address.Value.ChunkIndex.X}, {address.Value.ChunkIndex.Y}, " +
-                                       $"Voxel: {address.Value.RelativeVoxelIndex.X}, {address.Value.RelativeVoxelIndex.Y}, {address.Value.RelativeVoxelIndex.Z}";
+                    if (chunkManager.TryGetVoxelAddress(
+                        camera.CurrentCursor.AbsoluteVoxelIndex + camera.CurrentCursor.Direction, out var address))
+                    {
+                        targetTargetInfo =
+                            $"BlockType: {targetTarget.BlockType}, Sun: {targetTarget.Sunlight}, Light: {targetTarget.EmittedLight}" +
+                            $"Chunk: {address.Chunk.ChunkIndex.X}, {address.Chunk.ChunkIndex.Y}, " +
+                            $"Voxel: {address.RelativeVoxelIndex.X}, {address.RelativeVoxelIndex.Y}, {address.RelativeVoxelIndex.Z}";
+                    }
+                    else throw new Exception("that should not happen i guess");
                 }
             }
 
@@ -72,6 +77,7 @@ namespace AppleCinnamon
                    //$"Queued chunks {chunkManager.QueuedChunks:N0}\r\n" +
                    //$"Total visible faces {chunkManager.TotalVisibleFaces:N0}\r\n" +
                    //$"Total visible voxels {chunkManager.TotalVisibleVoxels:N0}\r\n" +
+                   $"Time: {game.World.Time:N2}\r\n" +
                    $"Current position {camera.Position.ToVector3().ToNonRetardedString()}\r\n" +
                    $"Orientation {camera.LookAt.ToVector3().ToNonRetardedString()}\r\n" +
                    $"Current target {targetInfo}\r\n" +
@@ -93,7 +99,9 @@ namespace AppleCinnamon
                    //$"Boot time: {chunkManager.BootTime.TotalMilliseconds:N0} ms\r\n" + 
                    $"Average render time: {game.AverageRenderTime:F2}\r\n" +
                    $"Peek render time: {game.PeekRenderTime:F2}\r\n" +
-                   $"Average FPS: {game.AverageFps:F2}\r\n";
+                   $"Average FPS: {game.AverageFps:F2}\r\n" + 
+                   $"SUN: {Hofman.SunDirection:F2}\r\n" +
+                   $"INTENSITY: {Hofman.SunlightFactor:F2}\r\n";
         }
 
         public void Draw(
@@ -101,7 +109,7 @@ namespace AppleCinnamon
             Camera camera,
             Game game)
         {
-            var leftText = BuildLeftText(chunkManager, camera);
+            var leftText = BuildLeftText(chunkManager, camera, game);
             var rightText = BuildRightText(chunkManager, game);
 
             if (_keyboard.GetCurrentState().IsPressed(Key.C) && _keyboard.GetCurrentState().IsPressed(Key.LeftControl))

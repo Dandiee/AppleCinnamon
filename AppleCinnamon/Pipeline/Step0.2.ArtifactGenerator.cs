@@ -1,44 +1,44 @@
 ﻿using System;
-using AppleCinnamon.Extensions;
 using AppleCinnamon.Helper;
 using AppleCinnamon.Pipeline.Context;
 using AppleCinnamon.Services;
 using AppleCinnamon.Settings;
-using SharpDX;
 
 namespace AppleCinnamon.Pipeline
 {
     public sealed class ArtifactGenerator : PipelineBlock<Chunk, Chunk>
     {
-        private static Random _rnd = new Random(4578);
+        private static readonly Random Rnd = new(4578);
+
+        private static readonly VoxelDefinition[] FlowersAndSuch = 
+        {
+            VoxelDefinition.FlowerRed, VoxelDefinition.FlowerYellow, VoxelDefinition.MushroomBrown, VoxelDefinition.MushroomRed,
+        };
 
         public override Chunk Process(Chunk chunk)
         {
-            foreach (var flatIndex in chunk.TopMostLandVoxels)
+            foreach (var flatIndex in chunk.BuildingContext.TopMostLandVoxels)
             {
-                var index = flatIndex.ToIndex(chunk.CurrentHeight);
+                var index = chunk.FromFlatIndex(flatIndex);
 
-
-                if (_rnd.Next() % 100 == 0)
+                if (Rnd.Next() % 70 == 0)
                 {
                     Artifacts.Tree(chunk, index);
                 }
                 else
                 {
-                    if (_rnd.Next() % 3 == 0)
+                    var voxel = chunk.Voxels[flatIndex];
+                    if (voxel.BlockType == 0)
                     {
-                        var fi = flatIndex;
-                        //chunk.Voxels[fi] = new Voxel(VoxelDefinition.Tendril.Type, 0, 2, Face.Front);
-                        //chunk.BuildingContext.SingleSidedSpriteBlocks.Add(fi);
-
-                        chunk.Voxels[fi] = new Voxel(VoxelDefinition.Weed.Type, 0, 2); 
-                        chunk.BuildingContext.SpriteBlocks.Add(fi);
-                    }
-                    else if (_rnd.Next() % 100 == 0)
-                    {
-                        var fi = flatIndex;
-                        chunk.Voxels[fi] = new Voxel(VoxelDefinition.Flower.Type, 0, 0);
-                        chunk.BuildingContext.SpriteBlocks.Add(fi);
+                        if (Rnd.Next() % 3 == 0)
+                        {
+                            chunk.SetSafe(flatIndex, VoxelDefinition.Weed.Create(2));
+                        }
+                        else if (Rnd.Next() % 50 == 0)
+                        {
+                            var flowerType = FlowersAndSuch[Rnd.Next(0, FlowersAndSuch.Length)];
+                            chunk.SetSafe(flatIndex, flowerType.Create());
+                        }
                     }
                 }
             }
@@ -50,7 +50,7 @@ namespace AppleCinnamon.Pipeline
 
         private void CleanUp(Chunk chunk)
         {
-            chunk.TopMostLandVoxels = null;
+            chunk.BuildingContext.TopMostLandVoxels = null;
         }
     }
 }

@@ -1,6 +1,6 @@
 float4x4 WorldViewProjection;
 
-float4 FogColor = float4(.5, .5, .5, 1);
+float4 FogColor;
 float FogStart = 64;
 float FogEnd = 256;
 float3 EyePosition;
@@ -18,7 +18,7 @@ SamplerState SS
 	Filter = MIN_MAG_MIP_POINT;	
 	MaxAnisotropy = 16;
 };
-//Filter = MIN_MAG_MIP_POINT;
+
 float4 HueColors[] = 
 {
 	float4(1,1,1,1),
@@ -33,17 +33,16 @@ float4 HueColors[] =
 	float4(0.698,  0.870, 0.226,1)
 };
 
-//float4(0.880,0.675,1,1),
 struct VertexShaderInput
 {
     float3 Position : POSITION0;
-	uint Asd: VISIBILITY;
+	uint MetaData: VISIBILITY;
 };
 
 
 struct VertexShaderOutput
 {
-    float4 Position : SV_POSITION; // GECIFONTOS
+    float4 Position : SV_POSITION;
 	float2 TexCoords : TEXCOORD0;
 	float AmbientOcclusion : COLOR0;
 	float FogFactor : COLOR1;
@@ -51,7 +50,8 @@ struct VertexShaderOutput
 };
 
 float textureFactor = 1.0 / 16.0;
-float totalLightness = 60.0f;
+float totalLightness = 1.0/60.0f;
+float lightFactor = 1.0f;
 
 float ComputeFogFactor(float dist)
 {
@@ -61,31 +61,28 @@ float ComputeFogFactor(float dist)
 VertexShaderOutput VertexShaderFunction(VertexShaderInput input)
 {
     VertexShaderOutput output = (VertexShaderOutput)0;
+	float4 position = float4(input.Position.xyz, 1);
 
-	float u =        ((input.Asd >>  0) & 31) * textureFactor;
-	float v =        ((input.Asd >>  5) & 31) * textureFactor;
-	float l =        ((input.Asd >> 10) & 63) / totalLightness + 0.2f;
-	float a = 1.0 - (((input.Asd >> 16) & 15) / 3.0);
-	int   h =        ((input.Asd >> 20) & 15);
+	float textureCoordinateU   = ((input.MetaData >>  0) & 31) * textureFactor;
+	float textureCoordinateV   = ((input.MetaData >>  5) & 31) * textureFactor;
+	float sunlight             = ((input.MetaData >> 10) & 63) * totalLightness * lightFactor;
+	float ambientNeighborCount = ((input.MetaData >> 16) & 15);
+	int   hueIndex             = ((input.MetaData >> 20) & 15);
+	float emittedLight         = ((input.MetaData >> 26) & 63) * totalLightness + 0.2f;
 
-	float4 hueColor = HueColors[h];
-
-    output.Position = mul(float4(input.Position.xyz, 1), WorldViewProjection);
-	output.TexCoords = float2(u, v);
-	output.AmbientOcclusion = l * a;
+    output.Position = mul(position, WorldViewProjection);
+	output.TexCoords = float2(textureCoordinateU, textureCoordinateV);
+	output.AmbientOcclusion = max(sunlight, emittedLight) * (1.0 - ambientNeighborCount / 3.0);
 	output.FogFactor = ComputeFogFactor(distance(EyePosition.xyz, input.Position.xyz));
-	output.HueColor = hueColor;
+	output.HueColor = HueColors[hueIndex];
 
     return output;
 }
 
 
-
-
 float4 PixelShaderFunction(VertexShaderOutput input) : SV_Target
 {
 	float4 textureColor = Textures.Sample(SS, input.TexCoords) * input.AmbientOcclusion /** float4(1.8, 1.8, 1.8, 1)*/ * input.HueColor;
-	// transparent solids
 	clip(textureColor.a == 0 ? -1 : 1);
 	float4 finalColor = (1.0 - input.FogFactor) * textureColor + (input.FogFactor) * FogColor;
 	return finalColor;

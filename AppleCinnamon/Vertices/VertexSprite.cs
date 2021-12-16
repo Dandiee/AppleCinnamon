@@ -1,9 +1,11 @@
-﻿using SharpDX;
+﻿using System.Runtime.InteropServices;
+using SharpDX;
 using SharpDX.Direct3D11;
 using SharpDX.DXGI;
 
 namespace AppleCinnamon.Vertices
 {
+    [StructLayout(LayoutKind.Sequential)]
     public struct VertexSprite : IVertex
     {
         private const int _size = 16;
@@ -17,23 +19,22 @@ namespace AppleCinnamon.Vertices
         public int Size => _size;
         public InputElement[] InputElements => _inputElements;
 
-        public VertexSprite(Vector3 position, int u, int v, byte baseLight, byte hueIndex)
+        public VertexSprite(Vector3 position, int u, int v, byte metaData, byte compositeLight)
         {
-            
             Position = position;
 
-            var l = baseLight;
-            var h = hueIndex & 15;
+            var l = compositeLight;
+            var h = metaData & 15;
 
-            Color = 0;
-            Color |= (uint)(u <<  0); // 5 bits
-            Color |= (uint)(v <<  5); // 5 bits
-            Color |= (uint)(l << 10); // 4 bits
-            Color |= (uint)(h << 14); // 4 bits
+            MetaData = 0;
+            MetaData |= (uint)(u <<  0); // 5 bits
+            MetaData |= (uint)(v <<  5); // 5 bits
+            MetaData |= (uint)(l << 10); // 8 bits
+            MetaData |= (uint)(h << 18); // 4 bits
         }
 
         public Vector3 Position;
-        public uint Color;
+        public uint MetaData;
 
     }
 }

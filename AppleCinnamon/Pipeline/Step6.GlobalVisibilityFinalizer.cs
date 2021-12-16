@@ -2,7 +2,6 @@
 using System.Linq;
 using AppleCinnamon.Helper;
 using AppleCinnamon.Pipeline.Context;
-using AppleCinnamon.Settings;
 
 namespace AppleCinnamon.Pipeline
 {
@@ -15,10 +14,10 @@ namespace AppleCinnamon.Pipeline
                 throw new Exception("nooooo waaaay");
             }
 
-            var leftChunk = chunk.Neighbors[Help.GetChunkFlatIndex(-1, 0)];
-            var rightChunk = chunk.Neighbors[Help.GetChunkFlatIndex(1, 0)];
-            var frontChunk = chunk.Neighbors[Help.GetChunkFlatIndex(0, -1)];
-            var backChunk = chunk.Neighbors[Help.GetChunkFlatIndex(0, 1)];
+            var leftChunk = chunk.GetNeighbor(-1, 0);
+            var rightChunk = chunk.GetNeighbor(1, 0);
+            var frontChunk = chunk.GetNeighbor(0, -1);
+            var backChunk = chunk.GetNeighbor(0, 1);
 
             ProcessSide(chunk, leftChunk, chunk.BuildingContext.Left);
             ProcessSide(chunk, rightChunk, chunk.BuildingContext.Right);
@@ -35,16 +34,16 @@ namespace AppleCinnamon.Pipeline
         {
             foreach (var flatIndex in context.PendingVoxels)
             {
-                var index = flatIndex.ToIndex(chunk.CurrentHeight);
+                var index = chunk.FromFlatIndex(flatIndex);
                 var voxel = chunk.Voxels[flatIndex];
                 var neighbor = neighborChunk.CurrentHeight <= index.Y
-                    ? Voxel.Air
+                    ? Voxel.SunBlock
                     : neighborChunk.GetVoxel(context.GetNeighborIndex(index, neighborChunk.CurrentHeight));
 
-                var voxelDefinition = VoxelDefinition.DefinitionByType[voxel.Block];
+                var voxelDefinition = voxel.GetDefinition();
                 if (voxelDefinition.IsBlock)
                 {
-                    var neighborDefinition = VoxelDefinition.DefinitionByType[neighbor.Block];
+                    var neighborDefinition = neighbor.GetDefinition();
                     if ((neighborDefinition.CoverFlags & context.OppositeDirection) == 0) 
                     {
                         chunk.BuildingContext.VisibilityFlags.TryGetValue(flatIndex, out var visibility);
