@@ -12,6 +12,8 @@ namespace AppleCinnamon
     {
         public static readonly Vector3 StartPosition = new(0, 300, 0);
 
+
+
         public const int ViewDistance = 24;
         public static bool IsBackFaceCullingEnabled { get; set; }
         public static bool IsViewFrustumCullingEnabled { get; set; } = true;
@@ -36,6 +38,7 @@ namespace AppleCinnamon
         public double AverageRenderTime { get; private set; }
         public double PeekRenderTime { get; private set; }
         public double AverageFps { get; private set; }
+        public World World = new();
 
         public Game()
         {
@@ -97,15 +100,12 @@ namespace AppleCinnamon
 
         private void Update(GameTime gameTime)
         {
-            _camera.Update(gameTime, _chunkManager);
+            _camera.Update(gameTime, _chunkManager, World);
             if (Game.Debug)
             {
-                _skyDome.Update(_camera);
-                _chunkManager.Update(_camera);
+                _skyDome.Update(_camera, World);
+                _chunkManager.Update(_camera, World);
             }
-            
-                
-            
         }
 
     }

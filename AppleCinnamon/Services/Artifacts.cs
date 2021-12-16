@@ -3,7 +3,6 @@ using AppleCinnamon.Extensions;
 using AppleCinnamon.Helper;
 using AppleCinnamon.Settings;
 using SharpDX;
-using Help = AppleCinnamon.Helper.Help;
 
 namespace AppleCinnamon.Services
 {

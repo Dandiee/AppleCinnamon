@@ -1,6 +1,7 @@
 ﻿using System;
 using AppleCinnamon.Extensions;
 using AppleCinnamon.Vertices;
+using SharpDX;
 using Vector3 = SharpDX.Vector3;
 using Vector4 = SharpDX.Vector4;
 
@@ -11,7 +12,7 @@ namespace AppleCinnamon.Chunks
         public static float SunlightFactor { get; set; } = 1f;
         public static float SunDirection { get; set; } = 3.17f;
 
-        public static Vector3 Position => Vector3.UnitZ.Rotate(Vector3.UnitX, SunDirection);
+        public static Vector3 Position { get; set; }
 
         public static float SunIntensity { get; set; } = 1.0f;
         public static float Turbitity { get; set; } = 1.0f;
@@ -84,8 +85,10 @@ namespace AppleCinnamon.Chunks
 
         
 
-        public static  void UpdateEffect(EffectDefinition<VertexSkyBox> skyEffectDefinition, Camera camera)
+        public static  void UpdateEffect(EffectDefinition<VertexSkyBox> skyEffectDefinition, Camera camera, World world)
         {
+            Position = Vector3.UnitZ.Rotate(-Vector3.UnitX, world.Time * MathUtil.Pi);
+
             init();
             Vector3 vZenith = new Vector3(0.0f, 1.0f, 0.0f);
 

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using AppleCinnamon.Chunks;
 using AppleCinnamon.Collision;
+using AppleCinnamon.Extensions;
 using AppleCinnamon.Helper;
 using AppleCinnamon.Settings;
 using SharpDX;
@@ -73,7 +74,7 @@ namespace AppleCinnamon
             IsInAir = true;
         }
 
-        public void UpdateCurrentCursor(ChunkManager chunkManager)
+        public void UpdateCurrentCursor(ChunkManager chunkManager, World world)
         {
             CurrentCursor = CollisionHelper.GetCurrentSelection(new Ray(Position.ToVector3(), LookAt.ToVector3()), chunkManager);
 
@@ -88,7 +89,7 @@ namespace AppleCinnamon
             }
         }
 
-        public void Update(GameTime gameTime, ChunkManager chunkManager)
+        public void Update(GameTime gameTime, ChunkManager chunkManager, World world)
         {
             if (!chunkManager.IsInitialized)
             {
@@ -102,10 +103,10 @@ namespace AppleCinnamon
             {
 
                 CollisionHelper.ApplyPlayerPhysics(this, chunkManager, (float)gameTime.ElapsedGameTime.TotalSeconds);
-                UpdateMove(gameTime, chunkManager);
+                UpdateMove(gameTime, chunkManager, world);
                 UpdateMatrices();
 
-                UpdateCurrentCursor(chunkManager);
+                UpdateCurrentCursor(chunkManager, world);
             }
 
             HandleDefaultInputs(chunkManager);
@@ -195,9 +196,10 @@ namespace AppleCinnamon
                 {
                     if (CurrentCursor != null)
                     {
-                        var direction = CurrentCursor.Direction;
-                        var targetBlock = CurrentCursor.AbsoluteVoxelIndex + direction;
-
+                        chunkManager.TryGetVoxel(CurrentCursor.AbsoluteVoxelIndex, out var directTargetVoxel);
+                        var targetBlock = directTargetVoxel.GetDefinition().IsSprite
+                            ? CurrentCursor.AbsoluteVoxelIndex
+                            : CurrentCursor.AbsoluteVoxelIndex + CurrentCursor.Direction;
 
                         var hasPositionConflict = false;
                         var min = (WorldSettings.PlayerMin + Position.ToVector3()).Round();
@@ -225,7 +227,7 @@ namespace AppleCinnamon
 
 
 
-        private void UpdateMove(GameTime gameTime, ChunkManager chunkManager)
+        private void UpdateMove(GameTime gameTime, ChunkManager chunkManager, World world)
         {
             const float MouseSensitivity = .01f;
             const float MovementSensitivity = 2f;
@@ -247,7 +249,7 @@ namespace AppleCinnamon
                 MathUtil.PiOverTwo);
 
 
-            var direction = Vector3.TransformCoordinate(Vector3.UnitX, Matrix.RotationY(Yaw)).ToDouble3();
+            var direction = Vector3.UnitX.Rotate(Vector3.UnitY, Yaw).ToDouble3();
             var directionNormal = new Double3(-direction.Z, 0, direction.X);
             var translationVector = Double3.Zero;
 
@@ -298,8 +300,11 @@ namespace AppleCinnamon
             if (_currentKeyboardState.IsPressed(Key.Down)) Hofman.SunDirection -= lilStep / 1;
 
 
-            if (_currentKeyboardState.IsPressed(Key.V)) Hofman.SunlightFactor += lilStep / 1;
-            if (_currentKeyboardState.IsPressed(Key.B)) Hofman.SunlightFactor -= lilStep / 1;
+            //if (_currentKeyboardState.IsPressed(Key.V)) Hofman.SunlightFactor += lilStep / 1;
+            //if (_currentKeyboardState.IsPressed(Key.B)) Hofman.SunlightFactor -= lilStep / 1;
+
+            if (_currentKeyboardState.IsPressed(Key.V)) world.IncreaseTime();
+            if (_currentKeyboardState.IsPressed(Key.B)) world.DecreaseTime();
 
 
 
@@ -329,10 +334,8 @@ namespace AppleCinnamon
         {
             var rotationMatrix = Matrix.RotationYawPitchRoll(Yaw, 0, Pitch);
             LookAt = Vector3.Normalize(Vector3.Transform(InitialLookAt, rotationMatrix).ToVector3()).ToDouble3();
-            View = Matrix.LookAtRH(Position.ToVector3(), Position.ToVector3() + LookAt.ToVector3(),
-                Vector3.TransformCoordinate(Vector3.UnitY, rotationMatrix));
-            Projection = Matrix.PerspectiveFovRH(MathUtil.Pi / 2f,
-                _graphics.RenderForm.Width / (float)_graphics.RenderForm.Height, 0.1f, 10000000000f);
+            View = Matrix.LookAtRH(Position.ToVector3(), Position.ToVector3() + LookAt.ToVector3(), Vector3.TransformCoordinate(Vector3.UnitY, rotationMatrix));
+            Projection = Matrix.PerspectiveFovRH(MathUtil.Pi / 2f, _graphics.RenderForm.Width / (float)_graphics.RenderForm.Height, 0.1f, 10000000000f);
             WorldView = World * View;
             WorldViewProjection = World * View * Projection;
 

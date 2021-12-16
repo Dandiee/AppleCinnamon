@@ -62,7 +62,7 @@ namespace AppleCinnamon.Collision
                     new {Impact = zDistance / Math.Abs(ray.Direction.Z), Direction = Int3.UnitZ * Math.Sign(ray.Direction.Z)}
                 };
 
-                var firstImpact = impacts.OrderBy(impact => impact.Impact).First();
+                var firstImpact = impacts.Where(impact => !float.IsNaN(impact.Impact)).OrderBy(impact => impact.Impact).First();
 
                 direction = firstImpact.Direction;
                 position += ray.Direction * (firstImpact.Impact * 1.0005f);

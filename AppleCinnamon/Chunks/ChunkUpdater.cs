@@ -83,11 +83,6 @@ namespace AppleCinnamon
                 var neighborVoxel = chunk.GetLocalWithNeighborChunk(neighbor.X, neighbor.Y, neighbor.Z, out var neighborAddress, out var neighborExists);
                 var neighborDefinition = neighborVoxel.GetDefinition();
 
-                if (flatIndex == 11328)
-                {
-
-                }
-
                 // old one was visible
                 if (oldDefinition.IsFaceVisible(neighborDefinition, direction.OppositeDirection, direction.Direction))
                 {
@@ -119,14 +114,8 @@ namespace AppleCinnamon
                     var hadNeighborVisibility =
                         neighborAddress.Chunk.BuildingContext.VisibilityFlags.TryGetValue(neighborIndex,
                             out var neighborOldVisibilityFlag);
-
-                    if (neighborIndex == 11328)
-                    {
-
-                    }
-
+                    
                     // neighbor was visible
-
                     if (neighborDefinition.IsFaceVisible(oldDefinition, direction.Direction,
                         direction.OppositeDirection))
                     {

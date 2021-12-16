@@ -8,6 +8,7 @@ using SharpDX;
 using SharpDX.Direct2D1;
 using SharpDX.DirectInput;
 using SharpDX.DirectWrite;
+using SharpDX.DXGI;
 using SharpDX.Mathematics.Interop;
 using TextAlignment = SharpDX.DirectWrite.TextAlignment;
 
@@ -47,7 +48,7 @@ namespace AppleCinnamon
         }
 
 
-        private string BuildLeftText(ChunkManager chunkManager, Camera camera)
+        private string BuildLeftText(ChunkManager chunkManager, Camera camera, Game game)
         {
             var targetInfo = camera.CurrentCursor == null
                 ? "No target"
@@ -76,6 +77,7 @@ namespace AppleCinnamon
                    //$"Queued chunks {chunkManager.QueuedChunks:N0}\r\n" +
                    //$"Total visible faces {chunkManager.TotalVisibleFaces:N0}\r\n" +
                    //$"Total visible voxels {chunkManager.TotalVisibleVoxels:N0}\r\n" +
+                   $"Time: {game.World.Time:N2}\r\n" +
                    $"Current position {camera.Position.ToVector3().ToNonRetardedString()}\r\n" +
                    $"Orientation {camera.LookAt.ToVector3().ToNonRetardedString()}\r\n" +
                    $"Current target {targetInfo}\r\n" +
@@ -107,7 +109,7 @@ namespace AppleCinnamon
             Camera camera,
             Game game)
         {
-            var leftText = BuildLeftText(chunkManager, camera);
+            var leftText = BuildLeftText(chunkManager, camera, game);
             var rightText = BuildRightText(chunkManager, game);
 
             if (_keyboard.GetCurrentState().IsPressed(Key.C) && _keyboard.GetCurrentState().IsPressed(Key.LeftControl))

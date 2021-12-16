@@ -117,10 +117,10 @@ namespace AppleCinnamon.Settings
             .Build();
 
         public static readonly VoxelDefinition Leaves = new BlockDefinitionBuilder(2).WithAllSideTexture(4, 8)
-            .WithCoverFlags(VisibilityFlag.None)
             .WithDimFactors(4)
             .WithHue(VisibilityFlag.All)
             .WithTransmittanceQuarters(TransmittanceFlags.All)
+            .WithCoverFlags(VisibilityFlag.None)
             .Build();
 
         public static readonly VoxelDefinition Lava = new BlockDefinitionBuilder(3).WithAllSideTexture(15, 15).AsFluid().Build();
@@ -139,7 +139,13 @@ namespace AppleCinnamon.Settings
 
         public static readonly VoxelDefinition Grass = new BlockDefinitionBuilder(23).WithBottomTexture(2, 0).WithTopTexture(0, 0).WithSideTexture(3, 0).WithHue(VisibilityFlag.Top).Build();
         public static readonly VoxelDefinition Snow = new BlockDefinitionBuilder(24).WithBottomTexture(2, 0).WithTopTexture(0, 4).WithSideTexture(4, 4).WithHeight(1f).Build();
-        public static readonly VoxelDefinition EmitterStone = new BlockDefinitionBuilder(25).WithAllSideTexture(1, 0).AsPermeable().WithLightEmitting(14).Build();
+        public static readonly VoxelDefinition Torch = new BlockDefinitionBuilder(25).WithSideTexture(0, 5).WithTopTexture(15,15)
+            .AsPermeable()
+            .WithLightEmitting(14)
+            .WithOffset(0, -3f/16f, 0)
+            .WithTransmittanceQuarters(TransmittanceFlags.All)
+            .WithCoverFlags(VisibilityFlag.None)
+            .WithSize(2f / 16f, 10f/16f, 2f/16f).Build();
         public static readonly VoxelDefinition Sand = new BlockDefinitionBuilder(26).WithAllSideTexture(2, 1).Build();
         public static readonly VoxelDefinition Wood1 = new BlockDefinitionBuilder(27).WithSideTexture(4, 1).WithTopTexture(5, 1).WithTopTexture(5, 1).Build();
         public static readonly VoxelDefinition Wood2 = new BlockDefinitionBuilder(28).WithSideTexture(4, 7).WithTopTexture(5, 1).WithTopTexture(5, 1).Build();
@@ -194,7 +200,7 @@ namespace AppleCinnamon.Settings
             HueFaces = hueFaces;
             Offset = offset;
             Size = size;
-            IsUnitSized = Offset == Vector3.Zero || Size == Vector3.One;
+            IsUnitSized = Offset == Vector3.Zero && Size == Vector3.One;
             Name = name;
             IsOriented = isOriented;
         }

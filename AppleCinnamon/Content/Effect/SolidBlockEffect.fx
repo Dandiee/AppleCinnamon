@@ -1,6 +1,6 @@
 float4x4 WorldViewProjection;
 
-float4 FogColor = float4(.5, .5, .5, 1);
+float4 FogColor;
 float FogStart = 64;
 float FogEnd = 256;
 float3 EyePosition;
