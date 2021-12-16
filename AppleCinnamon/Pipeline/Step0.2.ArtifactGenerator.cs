@@ -6,10 +6,8 @@ using AppleCinnamon.Settings;
 
 namespace AppleCinnamon.Pipeline
 {
-    public sealed class ArtifactGenerator : TransformChunkPipelineBlock
+    public sealed class ArtifactGenerator : TransformChunkPipelineBlock<Chunk>
     {
-        private static readonly Random Rnd = new(4578);
-
         private static readonly VoxelDefinition[] FlowersAndSuch = 
         {
             VoxelDefinition.FlowerRed, VoxelDefinition.FlowerYellow, VoxelDefinition.MushroomBrown, VoxelDefinition.MushroomRed,

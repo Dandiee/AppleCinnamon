@@ -40,7 +40,7 @@ namespace AppleCinnamon.Pipeline
     }
 
 
-    public sealed class FullScanner : TransformChunkPipelineBlock
+    public sealed class FullScanner : TransformChunkPipelineBlock<Chunk>
     {
         public override Chunk Process(Chunk chunk)
         {

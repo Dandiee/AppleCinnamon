@@ -6,7 +6,7 @@ using AppleCinnamon.Pipeline.Context;
 
 namespace AppleCinnamon.Pipeline
 {
-    public sealed class NeighborAssigner : PipelineBlock<Chunk, IEnumerable<Chunk>>
+    public sealed class NeighborAssigner : ChunkPoolPipelineBlock
     {
         public static readonly ConcurrentDictionary<Int2, Chunk> Chunks = new();
 

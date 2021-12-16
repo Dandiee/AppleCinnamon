@@ -12,10 +12,9 @@ namespace AppleCinnamon
 {
     public sealed partial class ChunkManager
     {
-        public static readonly int InitialDegreeOfParallelism = 1; //2;//Environment.ProcessorCount;
+        public static readonly int InitialDegreeOfParallelism = 2;//Environment.ProcessorCount;
         private int _finalizedChunks;
         public bool IsInitialized { get; private set; }
-
 
         public readonly ConcurrentDictionary<Int2, Chunk> Chunks;
         private readonly ConcurrentDictionary<Int2, object> _queuedChunks;

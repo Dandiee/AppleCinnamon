@@ -160,6 +160,11 @@ namespace AppleCinnamon
                 Game.RenderSky = !Game.RenderSky;
             }
 
+            if (!_currentKeyboardState.IsPressed(Key.F7) && _lastKeyboardState.IsPressed(Key.F7))
+            {
+                Game.ShowPipelineVisualization = !Game.ShowPipelineVisualization;
+            }
+
             if (!_currentKeyboardState.IsPressed(Key.F12) && _lastKeyboardState.IsPressed(Key.F12))
             {
                 Game.Debug = !Game.Debug;

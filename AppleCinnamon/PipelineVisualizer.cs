@@ -48,13 +48,23 @@ namespace AppleCinnamon
     {
         public static readonly Vector2 Offset = new(500, 500);
         public static readonly Vector2 Size = new(8, 8);
-        public static readonly Vector2 HalfSize = Size/2;
+        public static readonly Vector2 HalfSize = Size / 2;
 
         public static readonly RawColor4 RenderedColor = new(0, 1, 0, 1);
         public static readonly RawRectangle SourceRect = new(0, 0, 16, 16);
 
-        public static readonly RawColor4[] ColorsByStep = TransformChunkPipelineBlock.Blocks.Select(s =>
-            new RawColor4((float) s.PipelineStepIndex / TransformChunkPipelineBlock.Blocks.Count, 0, 0, 1)).ToArray();
+        public static readonly RawColor4[] ColorsByStep = PipelineBlock.Blocks.Select(s =>
+        {
+            if (s is ChunkPoolPipelineBlock)
+            {
+                return new RawColor4(0, 0, (float) s.PipelineStepIndex / PipelineBlock.Blocks.Count, 1);
+            }
+            else
+            {
+                return new RawColor4((float) s.PipelineStepIndex / PipelineBlock.Blocks.Count, 0, 0, 1);
+            }
+        }).ToArray();
+
 
         public static ChunkSprite Rect(this Chunk chunk)
         {

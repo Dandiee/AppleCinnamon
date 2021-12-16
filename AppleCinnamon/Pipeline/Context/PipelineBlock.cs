@@ -2,15 +2,20 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Threading.Tasks.Dataflow;
-using AppleCinnamon.Helper;
-using SharpDX;
 
 namespace AppleCinnamon.Pipeline.Context
 {
     public abstract class PipelineBlock
     {
+        public static readonly List<PipelineBlock> Blocks = new();
+        public readonly int PipelineStepIndex;
         public static readonly ConcurrentDictionary<Type, long> ElapsedTimes = new ();
+
+        protected PipelineBlock()
+        {
+            PipelineStepIndex = Blocks.Count;
+            Blocks.Add(this);
+        }
     }
 
     public abstract class PipelineBlock<TInput, TOutput> : PipelineBlock
@@ -40,19 +45,19 @@ namespace AppleCinnamon.Pipeline.Context
     }
 
 
-    public abstract class TransformChunkPipelineBlock : PipelineBlock<Chunk, Chunk>
+    public abstract class TransformChunkPipelineBlock<TOutput> : PipelineBlock<Chunk, TOutput>
     {
-        public static readonly List<TransformChunkPipelineBlock> Blocks = new();
-
-        public readonly int PipelineStepIndex;
-
-        protected TransformChunkPipelineBlock()
+        public override TOutput Execute(Chunk input)
         {
-            PipelineStepIndex = Blocks.Count;
-            Blocks.Add(this);
+            input.PipelineStep = PipelineStepIndex;
+            var result = base.Execute(input);
+            return result;
         }
+    }
 
-        public override Chunk Execute(Chunk input)
+    public abstract class ChunkPoolPipelineBlock : PipelineBlock<Chunk, IEnumerable<Chunk>>
+    {
+        public override IEnumerable<Chunk> Execute(Chunk input)
         {
             input.PipelineStep = PipelineStepIndex;
             var result = base.Execute(input);

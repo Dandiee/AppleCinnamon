@@ -7,7 +7,7 @@ using AppleCinnamon.Pipeline.Context;
 
 namespace AppleCinnamon.Pipeline
 {
-    public sealed class MapReadyPool : PipelineBlock<Chunk, IEnumerable<Chunk>>
+    public sealed class MapReadyPool : ChunkPoolPipelineBlock
     {
         private readonly ConcurrentDictionary<Int2, Chunk> _chunks;
         private readonly HashSet<Int2> _dispatchedChunks;

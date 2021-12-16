@@ -3,7 +3,7 @@ using SharpDX.Direct3D11;
 
 namespace AppleCinnamon.Pipeline
 {
-    public sealed class ChunkDispatcher : TransformChunkPipelineBlock
+    public sealed class ChunkDispatcher : TransformChunkPipelineBlock<Chunk>
     {
         private readonly Device _device;
         

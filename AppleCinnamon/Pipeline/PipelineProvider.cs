@@ -47,7 +47,7 @@ namespace AppleCinnamon.Pipeline
 
         public TransformBlock<Int2, Chunk> CreatePipeline(int maxDegreeOfParallelism, Action<Chunk> successCallback)
         {
-            var dataflowOptions = new ExecutionDataflowBlockOptions
+            var multiThreaded = new ExecutionDataflowBlockOptions
             {
                 MaxDegreeOfParallelism = maxDegreeOfParallelism
             };
@@ -57,24 +57,23 @@ namespace AppleCinnamon.Pipeline
                 MaxDegreeOfParallelism = 1
             };
 
-
-            var pipeline = new TransformBlock<Int2, Chunk>(_terrainGenerator.Execute, dataflowOptions);
+            var pipeline = new TransformBlock<Int2, Chunk>(_terrainGenerator.Execute, singleThreaded);
             var neighborAssigner = new TransformManyBlock<Chunk, Chunk>(_neighborAssigner.Execute, singleThreaded);
-            var artifactGenerator = new TransformBlock<Chunk, Chunk>(_artifactGenerator.Execute, dataflowOptions);
+            var artifactGenerator = new TransformBlock<Chunk, Chunk>(_artifactGenerator.Execute, singleThreaded);
             var mapReadyPool = new TransformManyBlock<Chunk, Chunk>(_mapReadyPool.Execute, singleThreaded);
 
-            var sunlightInitializer = new TransformBlock<Chunk, Chunk>(_localSunlightInitializer.Execute, dataflowOptions);
-            var fullScan = new TransformBlock<Chunk, Chunk>(_fullScanner.Execute, dataflowOptions);
-            var localLightPropagation = new TransformBlock<Chunk, Chunk>(_localLightPropagationService.Execute, dataflowOptions);
+            var sunlightInitializer = new TransformBlock<Chunk, Chunk>(_localSunlightInitializer.Execute, multiThreaded);
+            var fullScan = new TransformBlock<Chunk, Chunk>(_fullScanner.Execute, multiThreaded);
+            var localLightPropagation = new TransformBlock<Chunk, Chunk>(_localLightPropagationService.Execute, multiThreaded);
             var chunkPool = new TransformManyBlock<Chunk, Chunk>(_chunkPool.Execute, singleThreaded);
             
-            var globalVisibility = new TransformBlock<Chunk, Chunk>(_globalVisibilityFinalizer.Execute, dataflowOptions);
-            var lightFinalizer = new TransformBlock<Chunk, Chunk>(_globalLightFinalizer.Execute, dataflowOptions);
+            var globalVisibility = new TransformBlock<Chunk, Chunk>(_globalVisibilityFinalizer.Execute, singleThreaded);
+            var lightFinalizer = new TransformBlock<Chunk, Chunk>(_globalLightFinalizer.Execute, singleThreaded);
             var buildPool = new TransformManyBlock<Chunk, Chunk>(_buildPool.Execute, singleThreaded);
             
-            var dispatcher = new TransformBlock<Chunk, Chunk>(_chunkDispatcher.Execute, dataflowOptions);
+            var dispatcher = new TransformBlock<Chunk, Chunk>(_chunkDispatcher.Execute, singleThreaded);
             
-            var finalizer = new ActionBlock<Chunk>(successCallback, dataflowOptions);
+            var finalizer = new ActionBlock<Chunk>(successCallback, multiThreaded);
 
             pipeline.LinkTo(neighborAssigner);
             neighborAssigner.LinkTo(artifactGenerator);
