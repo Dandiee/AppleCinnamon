@@ -4,10 +4,9 @@ namespace AppleCinnamon.Extensions
 {
     public static class VoxelAddressExtensions
     {
-        public static void SetVoxel(this VoxelChunkAddress address, Chunk chunk, Voxel voxel)
+        public static void SetVoxel(this VoxelChunkAddress address, Voxel voxel)
         {
-            var targetFlatIndex = Help.GetFlatIndex(address.RelativeVoxelIndex, address.Chunk.CurrentHeight);
-            address.Chunk.SetSafe(targetFlatIndex, voxel);
+            address.Chunk.SetSafe(address.RelativeVoxelIndex, voxel);
         }
     }
 }

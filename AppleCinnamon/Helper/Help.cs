@@ -46,9 +46,6 @@ namespace AppleCinnamon.Helper
         [InlineMethod.Inline]
         public static int GetChunkFlatIndex(int i, int j) => 3 * i + j + 4;
 
-        [InlineMethod.Inline]
-        public static int GetChunkFlatIndex(Int2 ij) => 3 * ij.X + ij.Y + 4;
-
         public static bool TryGetChunkIndexByAbsoluteVoxelIndex(Int3 absoluteVoxelIndex, out Int2 chunkIndex)
         {
             if (absoluteVoxelIndex.Y < 0)

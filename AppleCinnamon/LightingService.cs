@@ -71,7 +71,7 @@ namespace AppleCinnamon
                             var neighborZ = index.Z + direction.Step.Z;
                             if ((neighborZ & Chunk.SizeXy) == 0)
                             {
-                                var neighborFlatIndex = Help.GetFlatIndex(neighborX, neighborY, neighborZ, chunk.CurrentHeight);
+                                var neighborFlatIndex = chunk.GetFlatIndex(neighborX, neighborY, neighborZ);
                                 var neighborVoxel = chunk.GetVoxel(neighborFlatIndex);
                                 var neighborDefinition = neighborVoxel.GetDefinition();
                                 var brightnessLoss = VoxelDefinition.GetBrightnessLoss(sourceDefinition, neighborDefinition, direction.Direction);
@@ -155,7 +155,7 @@ namespace AppleCinnamon
         {
             for (var j = relativeIndex.Y - 1; j > 0; j--)
             {
-                var flatIndex = Help.GetFlatIndex(relativeIndex.X, j, relativeIndex.Z, chunk.CurrentHeight);
+                var flatIndex = chunk.GetFlatIndex(relativeIndex.X, j, relativeIndex.Z);
                 var voxel = chunk.Voxels[flatIndex];
                 var definition = voxel.GetDefinition();
 

@@ -44,8 +44,15 @@ namespace AppleCinnamon
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)] public Voxel GetVoxel(int flatIndex) => Voxels[flatIndex];
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] public Voxel GetVoxel(Int3 ijk) => Voxels[Help.GetFlatIndex(ijk.X, ijk.Y, ijk.Z, CurrentHeight)];
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] public Voxel GetVoxel(int i, int j, int k) => Voxels[Help.GetFlatIndex(i, j, k, CurrentHeight)];
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)] public void SetVoxel(int flatIndex, Voxel voxel) => Voxels[flatIndex] = voxel;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] public void SetVoxel(int i, int j, int k, Voxel voxel) => Voxels[Help.GetFlatIndex(i, j, k, CurrentHeight)] = voxel;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] public int GetFlatIndex(Int3 flatIndex) => Help.GetFlatIndex(flatIndex, CurrentHeight);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] public int GetFlatIndex(int i, int j, int k) => Help.GetFlatIndex(i,j,k, CurrentHeight);
 
 
         public Voxel GetLocalWithNeighborChunk(int i, int j, int k, out VoxelChunkAddress address)
@@ -147,6 +154,8 @@ namespace AppleCinnamon
             CurrentHeight = expectedHeight;
             UpdateBoundingBox();
         }
+
+        public void SetSafe(int i, int j, int k, Voxel newVoxel) => SetSafe(GetFlatIndex(i, j, k), newVoxel);
 
         public void SetSafe(Int3 index, Voxel newVoxel) => SetSafe(Help.GetFlatIndex(index, CurrentHeight), newVoxel);
         public void SetSafe(int flatIndex, Voxel newVoxel)

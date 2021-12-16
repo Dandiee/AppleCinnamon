@@ -68,7 +68,7 @@ namespace AppleCinnamon.Pipeline
                 {
                     for (i = 0; i < Chunk.SizeXy; i++)
                     {
-                        var flatIndex = Help.GetFlatIndex(i, j, k, chunk.CurrentHeight);
+                        var flatIndex = chunk.GetFlatIndex(i, j, k);
                         var voxel = voxels[flatIndex];
 
                         var definition = voxel.GetDefinition();
@@ -84,7 +84,7 @@ namespace AppleCinnamon.Pipeline
 
                         if (j < chunk.CurrentHeight - 1) // top
                         {
-                            var neighbor = chunk.Voxels[Help.GetFlatIndex(i, j + 1, k, chunk.CurrentHeight)];
+                            var neighbor = chunk.GetVoxel(i, j + 1, k);
                             var neighborDefinition = neighbor.GetDefinition();
 
                             if (definition.IsBlock)
@@ -115,7 +115,7 @@ namespace AppleCinnamon.Pipeline
 
                         if (j > 0) // bottom
                         {
-                            var neighbor = chunk.Voxels[Help.GetFlatIndex(i, j - 1, k, chunk.CurrentHeight)];
+                            var neighbor = chunk.GetVoxel(i, j - 1, k);
                             var neighborDefinition = neighbor.GetDefinition();
 
                             if (definition.IsFaceVisible(neighborDefinition, VisibilityFlag.Top, VisibilityFlag.Bottom))
@@ -133,14 +133,10 @@ namespace AppleCinnamon.Pipeline
                             }
                         }
 
-                        BuildHorizontalFace(i > 0,
-                            Help.GetFlatIndex(i - 1, j, k, chunk.CurrentHeight), chunk, definition, flatIndex, ref visibilityFlag, ref voxelLight, chunk.BuildingContext.Left);
-                        BuildHorizontalFace(i < Chunk.SizeXy - 1,
-                            Help.GetFlatIndex(i + 1, j, k, chunk.CurrentHeight), chunk, definition, flatIndex, ref visibilityFlag, ref voxelLight, chunk.BuildingContext.Right);
-                        BuildHorizontalFace(k > 0,
-                            Help.GetFlatIndex(i, j, k - 1, chunk.CurrentHeight), chunk, definition, flatIndex, ref visibilityFlag, ref voxelLight, chunk.BuildingContext.Front);
-                        BuildHorizontalFace(k < Chunk.SizeXy - 1,
-                            Help.GetFlatIndex(i, j, k + 1, chunk.CurrentHeight), chunk, definition, flatIndex, ref visibilityFlag, ref voxelLight, chunk.BuildingContext.Back);
+                        BuildHorizontalFace(i > 0, chunk.GetFlatIndex(i - 1, j, k), chunk, definition, flatIndex, ref visibilityFlag, ref voxelLight, chunk.BuildingContext.Left);
+                        BuildHorizontalFace(i < Chunk.SizeXy - 1, chunk.GetFlatIndex(i + 1, j, k), chunk, definition, flatIndex, ref visibilityFlag, ref voxelLight, chunk.BuildingContext.Right);
+                        BuildHorizontalFace(k > 0, chunk.GetFlatIndex(i, j, k - 1), chunk, definition, flatIndex, ref visibilityFlag, ref voxelLight, chunk.BuildingContext.Front);
+                        BuildHorizontalFace(k < Chunk.SizeXy - 1, chunk.GetFlatIndex(i, j, k + 1), chunk, definition, flatIndex, ref visibilityFlag, ref voxelLight, chunk.BuildingContext.Back);
 
                         if (visibilityFlag != VisibilityFlag.None)
                         {

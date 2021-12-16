@@ -174,7 +174,7 @@ namespace AppleCinnamon
             {
                 foreach (var sunlightRelativeIndex in LightingService.Sunlight(chunk, relativeIndex, 0))
                 {
-                    var voxel = chunk.GetVoxel(Help.GetFlatIndex(sunlightRelativeIndex, chunk.CurrentHeight));
+                    var voxel = chunk.GetVoxel(sunlightRelativeIndex);
                     var definition = voxel.GetDefinition();
                     darknessSources.Enqueue(new LightingService.DarknessPropogationRecord(chunk, sunlightRelativeIndex, voxel.SetSunlight(0),
                         definition, voxel.SetSunlight(15), definition));
