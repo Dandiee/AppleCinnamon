@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using AppleCinnamon.Helper;
 using SharpDX;
 
@@ -8,13 +9,27 @@ namespace AppleCinnamon
     {
         public void UpdateLighting(Chunk chunk, Int3 relativeIndex, Voxel oldVoxel, Voxel newVoxel)
         {
-            var upperVoxelIndex = new Int3(relativeIndex.X, relativeIndex.Y + 1, relativeIndex.Z);
-            
+            // locally darkening sunlight vertically
+            var darknessSources = new Queue<LightingService.DarknessPropogationRecord>();
+            var lowerVoxelIndex = new Int3(relativeIndex.X, relativeIndex.Y - 1, relativeIndex.Z);
+            if (chunk.GetVoxel(lowerVoxelIndex.ToFlatIndex(chunk.CurrentHeight)).Sunlight == 15)
+            {
+                foreach (var sunlightRelativeIndex in LightingService.Sunlight(chunk, relativeIndex, 0))
+                {
+                    var voxel = chunk.GetVoxel(Help.GetFlatIndex(sunlightRelativeIndex, chunk.CurrentHeight));
+                    var definition = voxel.GetDefinition();
+                    darknessSources.Enqueue(new LightingService.DarknessPropogationRecord(chunk, sunlightRelativeIndex, voxel.SetSunlight(0), 
+                        definition, voxel.SetSunlight(15), definition));
+                }
+            }
+
             // globally propagate darkness
-            var lightSources = LightingService.GlobalPropagateDarkness(new LightingService.DarknessPropogationRecord(chunk, relativeIndex, newVoxel, 
-                newVoxel.GetDefinition(), oldVoxel, oldVoxel.GetDefinition()));
+            darknessSources.Enqueue(new LightingService.DarknessPropogationRecord(chunk, relativeIndex, newVoxel, newVoxel.GetDefinition(), oldVoxel, 
+                oldVoxel.GetDefinition()));
+            var lightSources = LightingService.GlobalPropagateDarkness(darknessSources);
 
             // locally propagate sunlight vertically
+            var upperVoxelIndex = new Int3(relativeIndex.X, relativeIndex.Y + 1, relativeIndex.Z);
             if (chunk.GetVoxel(upperVoxelIndex.ToFlatIndex(chunk.CurrentHeight)).Sunlight == 15)
             {
                 foreach (var sunlightSources in LightingService.Sunlight(chunk, upperVoxelIndex, 15))
