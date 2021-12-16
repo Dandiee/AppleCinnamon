@@ -45,22 +45,24 @@ namespace AppleCinnamon
             _chunkDrawer.Draw(chunksToRender, camera);
         }
 
-        public Voxel? GetVoxel(Int3 absoluteIndex)
+        public bool TryGetVoxel(Int3 absoluteIndex, out Voxel voxel)
         {
-            var address = Chunk.GetVoxelAddress(absoluteIndex);
-            if (address == null)
+            if (!Chunk.TryGetVoxelAddress(absoluteIndex, out var address))
             {
-                return null;
+                voxel = Voxel.Bedrock;
+                return false;
             }
 
-            if (!Chunks.TryGetValue(address.Value.ChunkIndex, out var chunk))
+            if (!Chunks.TryGetValue(address.ChunkIndex, out var chunk))
             {
-                return null;
+                voxel = Voxel.Bedrock;
+                return false;
             }
 
-            return chunk.CurrentHeight <= address.Value.RelativeVoxelIndex.Y
+            voxel = chunk.CurrentHeight <= address.RelativeVoxelIndex.Y
                 ? Voxel.SunBlock
-                : chunk.GetVoxel(address.Value.RelativeVoxelIndex.ToFlatIndex(chunk.CurrentHeight));
+                : chunk.GetVoxel(address.RelativeVoxelIndex.ToFlatIndex(chunk.CurrentHeight));
+            return true;
         }
 
         public bool TryGetChunk(Int2 chunkIndex, out Chunk chunk)

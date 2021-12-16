@@ -72,7 +72,7 @@ namespace AppleCinnamon
 
                 foreach (var ambientIndex in vertexInfo.AmbientOcclusionNeighbors)
                 {
-                    var ambientNeighborVoxel = chunk.GetLocalWithNeighbor(relativeIndexX + ambientIndex.X, relativeIndexY + ambientIndex.Y, relativeIndexZ + ambientIndex.Z, out var addr);
+                    var ambientNeighborVoxel = chunk.GetLocalWithNeighbor(relativeIndexX + ambientIndex.X, relativeIndexY + ambientIndex.Y, relativeIndexZ + ambientIndex.Z);
                     var ambientNeighborDefinition = ambientNeighborVoxel.GetDefinition();
 
                     if (!ambientNeighborDefinition.IsBlock)

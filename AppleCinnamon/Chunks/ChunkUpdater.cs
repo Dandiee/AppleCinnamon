@@ -32,19 +32,17 @@ namespace AppleCinnamon
                 return;
             }
 
-            var address = Chunk.GetVoxelAddress(absoluteIndex);
-            if (address.HasValue && _chunkManager.TryGetChunk(address.Value.ChunkIndex, out var chunk))
+            
+            if (Chunk.TryGetVoxelAddress(absoluteIndex, out var address) && _chunkManager.TryGetChunk(address.ChunkIndex, out var chunk))
             {
                 _isUpdateInProgress = true;
 
-                if (address.Value.RelativeVoxelIndex.Y >= chunk.CurrentHeight)
+                if (address.RelativeVoxelIndex.Y >= chunk.CurrentHeight)
                 {
-                    chunk.ExtendUpward(address.Value.RelativeVoxelIndex.Y);
+                    chunk.ExtendUpward(address.RelativeVoxelIndex.Y);
                 }
 
-
-
-                var flatIndex = address.Value.RelativeVoxelIndex.ToFlatIndex(chunk.CurrentHeight);
+                var flatIndex = address.RelativeVoxelIndex.ToFlatIndex(chunk.CurrentHeight);
                 var oldVoxel = chunk.GetVoxel(flatIndex);
                 var newDefinition = VoxelDefinition.DefinitionByType[voxel];
                 var newVoxel = newDefinition.HueFaces != VisibilityFlag.None
@@ -53,8 +51,8 @@ namespace AppleCinnamon
 
                 chunk.SetSafe(flatIndex, newVoxel);
 
-                UpdateVisibilityFlags(chunk, oldVoxel, newVoxel, address.Value.RelativeVoxelIndex);
-                UpdateLighting(chunk, address.Value.RelativeVoxelIndex, oldVoxel, newVoxel);
+                UpdateVisibilityFlags(chunk, oldVoxel, newVoxel, address.RelativeVoxelIndex);
+                UpdateLighting(chunk, address.RelativeVoxelIndex, oldVoxel, newVoxel);
                 ChunkBuilder.BuildChunk(chunk, _graphics.Device);
                 
                 Task.WaitAll(ChunkManager.GetSurroundingChunks(2).Select(chunkIndex =>
@@ -83,12 +81,10 @@ namespace AppleCinnamon
             foreach (var direction in BlockUpdateDirection.All)
             {
                 var neighbor = relativeIndex + direction.Step;
-                var neighborVoxel =
-                    chunk.GetLocalWithNeighbor(neighbor.X, neighbor.Y, neighbor.Z, out var neighborAddress);
+                var neighborVoxel = chunk.GetLocalWithNeighborChunk(neighbor.X, neighbor.Y, neighbor.Z, out var neighborAddress);
                 var neighborDefinition = neighborVoxel.GetDefinition();
 
-                var neighborChunk = chunk.Neighbors[Help.GetChunkFlatIndex(neighborAddress.ChunkIndex)];
-                var neighborIndex = neighborAddress.RelativeVoxelIndex.ToFlatIndex(neighborChunk.CurrentHeight);
+                var neighborIndex = neighborAddress.RelativeVoxelIndex.ToFlatIndex(neighborAddress.Chunk.CurrentHeight);
 
 
 
@@ -117,7 +113,7 @@ namespace AppleCinnamon
                     }
                 }
 
-                var hadNeighborVisibility = neighborChunk.BuildingContext.VisibilityFlags.TryGetValue(neighborIndex, out var neighborOldVisibilityFlag);
+                var hadNeighborVisibility = neighborAddress.Chunk.BuildingContext.VisibilityFlags.TryGetValue(neighborIndex, out var neighborOldVisibilityFlag);
 
 
                 // neighbor was visible
@@ -128,7 +124,7 @@ namespace AppleCinnamon
                     if (!neighborDefinition.IsFaceVisible(newDefinition, direction.Direction, direction.OppositeDirection))
                     {
                         neighborOldVisibilityFlag ^= direction.OppositeDirection;
-                        neighborChunk.BuildingContext.Faces[(byte)direction.OppositeFace].VoxelCount--;
+                        neighborAddress.Chunk.BuildingContext.Faces[(byte)direction.OppositeFace].VoxelCount--;
                     }
                 }
 
@@ -139,7 +135,7 @@ namespace AppleCinnamon
                     if (neighborDefinition.IsFaceVisible(newDefinition, direction.Direction, direction.OppositeDirection))
                     {
                         neighborOldVisibilityFlag |= direction.OppositeDirection;
-                        neighborChunk.BuildingContext.Faces[(byte)direction.OppositeFace].VoxelCount++;
+                        neighborAddress.Chunk.BuildingContext.Faces[(byte)direction.OppositeFace].VoxelCount++;
                     }
                 }
 
@@ -147,12 +143,12 @@ namespace AppleCinnamon
                 {
                     if (hadNeighborVisibility)
                     {
-                        neighborChunk.BuildingContext.VisibilityFlags.Remove(neighborIndex);
+                        neighborAddress.Chunk.BuildingContext.VisibilityFlags.Remove(neighborIndex);
                     }
                 }
                 else
                 {
-                    neighborChunk.BuildingContext.VisibilityFlags[neighborIndex] = neighborOldVisibilityFlag;
+                    neighborAddress.Chunk.BuildingContext.VisibilityFlags[neighborIndex] = neighborOldVisibilityFlag;
                 }
             }
 

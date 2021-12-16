@@ -48,5 +48,23 @@ namespace AppleCinnamon.Helper
 
         [InlineMethod.Inline]
         public static int GetChunkFlatIndex(Int2 ij) => 3 * ij.X + ij.Y + 4;
+
+        public static bool TryGetChunkIndexByAbsoluteVoxelIndex(Int3 absoluteVoxelIndex, out Int2 chunkIndex)
+        {
+            if (absoluteVoxelIndex.Y < 0)
+            {
+                chunkIndex = Int2.Zero;
+                return false;
+            }
+
+            chunkIndex = new Int2(
+                absoluteVoxelIndex.X < 0
+                    ? ((absoluteVoxelIndex.X + 1) / Chunk.SizeXy) - 1
+                    : absoluteVoxelIndex.X / Chunk.SizeXy,
+                absoluteVoxelIndex.Z < 0
+                    ? ((absoluteVoxelIndex.Z + 1) / Chunk.SizeXy) - 1
+                    : absoluteVoxelIndex.Z / Chunk.SizeXy);
+            return true;
+        }
     }
 }

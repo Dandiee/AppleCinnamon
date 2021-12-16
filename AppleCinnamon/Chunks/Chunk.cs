@@ -47,17 +47,18 @@ namespace AppleCinnamon
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)] public void SetVoxel(int flatIndex, Voxel voxel) => Voxels[flatIndex] = voxel;
 
-        public Voxel GetLocalWithNeighbor(int i, int j, int k, out VoxelAddress address)
+
+        public Voxel GetLocalWithNeighborChunk(int i, int j, int k, out VoxelChunkAddress address)
         {
             if (j < 0)
             {
-                address = VoxelAddress.Zero;
+                address = VoxelChunkAddress.Zero;
                 return Voxel.Bedrock;
             }
 
             if (j >= CurrentHeight)
             {
-                address = VoxelAddress.Zero;
+                address = VoxelChunkAddress.Zero;
                 return Voxel.SunBlock;
             }
 
@@ -65,21 +66,22 @@ namespace AppleCinnamon
             var cy = (int)(-((k & 0b10000000_00000000_00000000_00000000) >> 31) + ((k / SizeXy)));
 
             var chunk = Neighbors[Help.GetChunkFlatIndex(cx, cy)];
-            address = new VoxelAddress(new Int2(cx, cy), new Int3(i & (SizeXy - 1), j, k & (SizeXy - 1)));
+            address = new VoxelChunkAddress(chunk, new Int3(i & (SizeXy - 1), j, k & (SizeXy - 1)));
 
             return chunk.CurrentHeight <= j
                 ? Voxel.SunBlock
                 : chunk.GetVoxel(Help.GetFlatIndex(address.RelativeVoxelIndex.X, j, address.RelativeVoxelIndex.Z, chunk.CurrentHeight));
         }
 
-        public VoxelAddress GetAddress(int i, int j, int k)
+        public VoxelChunkAddress GetAddressChunk(Int3 ijk) => GetAddressChunk(ijk.X, ijk.Y, ijk.Z);
+
+        public VoxelChunkAddress GetAddressChunk(int i, int j, int k)
         {
             var cx = (int)(-((i & 0b10000000_00000000_00000000_00000000) >> 31) + ((i / SizeXy)));
             var cy = (int)(-((k & 0b10000000_00000000_00000000_00000000) >> 31) + ((k / SizeXy)));
-            return new VoxelAddress(new Int2(cx, cy), new Int3(i & (SizeXy - 1), j, k & (SizeXy - 1)));
+            return new VoxelChunkAddress(Neighbors[Help.GetChunkFlatIndex(cx, cy)],
+                new Int3(i & (SizeXy - 1), j, k & (SizeXy - 1)));
         }
-
-        public VoxelAddress GetAddress(Int3 ijk) => GetAddress(ijk.X, ijk.Y, ijk.Z);
 
         [InlineMethod.Inline]
         public Voxel GetLocalWithNeighbor(int i, int j, int k)
@@ -177,26 +179,17 @@ namespace AppleCinnamon
             Center2d = new Vector2(position.X, position.Z);
         }
         
-        public static Int2? GetChunkIndex(Int3 absoluteVoxelIndex)
+        public static bool TryGetVoxelAddress(Int3 absoluteVoxelIndex, out VoxelAddress address)
         {
-            if (absoluteVoxelIndex.Y < 0)
+            if (!Help.TryGetChunkIndexByAbsoluteVoxelIndex(absoluteVoxelIndex, out var chunkIndex))
             {
-                return null;
-            }
-
-            return new Int2(absoluteVoxelIndex.X < 0 ? ((absoluteVoxelIndex.X + 1) / SizeXy) - 1 : absoluteVoxelIndex.X / SizeXy, absoluteVoxelIndex.Z < 0 ? ((absoluteVoxelIndex.Z + 1) / SizeXy) - 1 : absoluteVoxelIndex.Z / SizeXy);
-        }
-
-        public static VoxelAddress? GetVoxelAddress(Int3 absoluteVoxelIndex)
-        {
-            var chunkIndex = GetChunkIndex(absoluteVoxelIndex);
-            if (!chunkIndex.HasValue)
-            {
-                return null;
+                address = VoxelAddress.Zero;
+                return false;
             }
 
             var voxelIndex = new Int3(absoluteVoxelIndex.X & SizeXy - 1, absoluteVoxelIndex.Y, absoluteVoxelIndex.Z & SizeXy - 1);
-            return new VoxelAddress(chunkIndex.Value, voxelIndex);
+            address = new VoxelAddress(chunkIndex, voxelIndex);
+            return true;
         }
     }
 }

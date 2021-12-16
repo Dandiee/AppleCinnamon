@@ -8,6 +8,7 @@ namespace AppleCinnamon
     [StructLayout(LayoutKind.Explicit)]
     public struct Voxel
     {
+        public static readonly Voxel Zero;
         public static readonly Voxel Bedrock = new(VoxelDefinition.Stone.Type, 15, 0, 0, Face.Top);
         public static readonly Voxel SunBlock = new(0, 15, 0, 0, Face.Top);
 

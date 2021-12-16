@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Windows.Forms;
 using AppleCinnamon.Chunks;
 using AppleCinnamon.Helper;
@@ -56,15 +57,17 @@ namespace AppleCinnamon
 
             if (camera.CurrentCursor != null)
             {
-                var targetTarget =
-                    chunkManager.GetVoxel(camera.CurrentCursor.AbsoluteVoxelIndex + camera.CurrentCursor.Direction);
-
-                if (targetTarget != null)
+                if (chunkManager.TryGetVoxel(camera.CurrentCursor.AbsoluteVoxelIndex + camera.CurrentCursor.Direction, out var targetTarget))
                 {
-                    var address = Chunk.GetVoxelAddress(camera.CurrentCursor.AbsoluteVoxelIndex + camera.CurrentCursor.Direction);
-                    targetTargetInfo = $"BlockType: {targetTarget.Value.BlockType}, Sun: {targetTarget.Value.Sunlight}, Light: {targetTarget.Value.EmittedLight}" +
-                                       $"Chunk: {address.Value.ChunkIndex.X}, {address.Value.ChunkIndex.Y}, " +
-                                       $"Voxel: {address.Value.RelativeVoxelIndex.X}, {address.Value.RelativeVoxelIndex.Y}, {address.Value.RelativeVoxelIndex.Z}";
+                    if (Chunk.TryGetVoxelAddress(
+                        camera.CurrentCursor.AbsoluteVoxelIndex + camera.CurrentCursor.Direction, out var address))
+                    {
+                        targetTargetInfo =
+                            $"BlockType: {targetTarget.BlockType}, Sun: {targetTarget.Sunlight}, Light: {targetTarget.EmittedLight}" +
+                            $"Chunk: {address.ChunkIndex.X}, {address.ChunkIndex.Y}, " +
+                            $"Voxel: {address.RelativeVoxelIndex.X}, {address.RelativeVoxelIndex.Y}, {address.RelativeVoxelIndex.Z}";
+                    }
+                    else throw new Exception("that should not happen i guess");
                 }
             }
 

@@ -55,7 +55,7 @@ namespace AppleCinnamon
         {
             _graphics = graphics;
             Position = new Double3(Game.StartPosition.X, Game.StartPosition.Y, Game.StartPosition.Z);
-            LookAt = Double3.Normalize(new Double3(1,0,0));
+            LookAt = Double3.Normalize(new Double3(1, 0, 0));
             InitialLookAt = LookAt.ToVector3();
 
             var directInput = new DirectInput();
@@ -77,7 +77,8 @@ namespace AppleCinnamon
         {
             CurrentCursor = CollisionHelper.GetCurrentSelection(new Ray(Position.ToVector3(), LookAt.ToVector3()), chunkManager);
 
-            if (VoxelDefinition.Water.Type == chunkManager.GetVoxel(Position.ToVector3().Round())?.BlockType)
+            if (chunkManager.TryGetVoxel(Position.ToVector3().Round(), out var voxel) &&
+                voxel.BlockType == VoxelDefinition.Water.Type)
             {
                 IsInWater = true;
             }
@@ -100,7 +101,7 @@ namespace AppleCinnamon
             if (!IsPaused)
             {
 
-                CollisionHelper.ApplyPlayerPhysics(this, chunkManager, (float) gameTime.ElapsedGameTime.TotalSeconds);
+                CollisionHelper.ApplyPlayerPhysics(this, chunkManager, (float)gameTime.ElapsedGameTime.TotalSeconds);
                 UpdateMove(gameTime, chunkManager);
                 UpdateMatrices();
 
@@ -135,7 +136,7 @@ namespace AppleCinnamon
 
             if (!_currentKeyboardState.IsPressed(Key.F2) && _lastKeyboardState.IsPressed(Key.F2))
             {
-                Game.RenderWater= !Game.RenderWater;
+                Game.RenderWater = !Game.RenderWater;
             }
 
             if (!_currentKeyboardState.IsPressed(Key.F3) && _lastKeyboardState.IsPressed(Key.F3))
@@ -315,14 +316,11 @@ namespace AppleCinnamon
 
 
 
-            var currentBlock = new Int3((int)Math.Round(Position.X), (int)Math.Round(Position.Y),
-                (int)Math.Round(Position.Z));
-            var chunkIndex = Chunk.GetChunkIndex(currentBlock);
-
-            if (chunkIndex.HasValue)
+            var currentBlock = new Int3((int)Math.Round(Position.X), (int)Math.Round(Position.Y), (int)Math.Round(Position.Z));
+            if (Help.TryGetChunkIndexByAbsoluteVoxelIndex(currentBlock, out var chunkIndex))
             {
-                CurrentChunkIndex = chunkIndex.Value;
-                var currentChunk = chunkManager.Chunks[chunkIndex.Value];
+                CurrentChunkIndex = chunkIndex;
+                var currentChunk = chunkManager.Chunks[chunkIndex];
                 CurrentChunkIndexVector = currentChunk.BoundingBox.Center;
             }
         }
