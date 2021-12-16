@@ -31,7 +31,7 @@ namespace AppleCinnamon.Services
 
         public static void Tree(Chunk chunk, Int3 relativeIndex)
         {
-            var trunkHeight = _rnd.Next(3, 12);
+            var trunkHeight = _rnd.Next(3, 15);
 
             var canopy = CanopyFunctions[_rnd.Next(0, CanopyFunctions.Length)];
             var treeType = TreeTypes[_rnd.Next(0, TreeTypes.Length)];
@@ -89,7 +89,7 @@ namespace AppleCinnamon.Services
             var address = chunk.GetAddressChunk(relativeIndex);
 
             var height = relativeIndex.Y;
-            var flatIndex = chunk.GetFlatIndex(address.RelativeVoxelIndex.X, height, address.RelativeVoxelIndex.Z);
+            var flatIndex = address.Chunk.GetFlatIndex(address.RelativeVoxelIndex.X, height, address.RelativeVoxelIndex.Z);
             var voxel = address.Chunk.Voxels[flatIndex];
             while (voxel.BlockType == 0)
             {

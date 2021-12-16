@@ -37,22 +37,22 @@ namespace AppleCinnamon
                 return Voxel.Bedrock;
             }
 
-            if (j >= CurrentHeight)
+            var cx = (int)(-((i & 0b10000000_00000000_00000000_00000000) >> 31) + ((i / SizeXy)));
+            var cy = (int)(-((k & 0b10000000_00000000_00000000_00000000) >> 31) + ((k / SizeXy)));
+
+            var chunk = GetNeighbor(cx, cy);
+            if (chunk.CurrentHeight <= j)
             {
                 address = VoxelChunkAddress.Zero;
                 isExists = false;
                 return Voxel.SunBlock;
             }
-
-            var cx = (int)(-((i & 0b10000000_00000000_00000000_00000000) >> 31) + ((i / SizeXy)));
-            var cy = (int)(-((k & 0b10000000_00000000_00000000_00000000) >> 31) + ((k / SizeXy)));
-
-            var chunk = GetNeighbor(cx, cy);
-            address = new VoxelChunkAddress(chunk, new Int3(i & (SizeXy - 1), j, k & (SizeXy - 1)));
-            isExists = true;
-            return chunk.CurrentHeight <= j
-                ? Voxel.SunBlock
-                : chunk.GetVoxel(address.RelativeVoxelIndex.X, j, address.RelativeVoxelIndex.Z);
+            else
+            {
+                address = new VoxelChunkAddress(chunk, new Int3(i & (SizeXy - 1), j, k & (SizeXy - 1)));
+                isExists = true;
+                return chunk.GetVoxel(address.RelativeVoxelIndex.X, j, address.RelativeVoxelIndex.Z);
+            }
         }
 
         public VoxelChunkAddress GetAddressChunk(Int3 ijk) => GetAddressChunk(ijk.X, ijk.Y, ijk.Z);

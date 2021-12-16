@@ -174,7 +174,7 @@ namespace AppleCinnamon
             // locally darkening sunlight vertically
             var darknessSources = new Queue<LightingService.DarknessPropogationRecord>();
             var lowerVoxelIndex = new Int3(relativeIndex.X, relativeIndex.Y - 1, relativeIndex.Z);
-            if (chunk.GetVoxel(lowerVoxelIndex).Sunlight == 15)
+            if (lowerVoxelIndex.Y > 0 && chunk.GetVoxel(lowerVoxelIndex).Sunlight == 15)
             {
                 foreach (var sunlightRelativeIndex in LightingService.Sunlight(chunk, relativeIndex, 0))
                 {
@@ -192,7 +192,7 @@ namespace AppleCinnamon
 
             // locally propagate sunlight vertically
             var upperVoxelIndex = new Int3(relativeIndex.X, relativeIndex.Y + 1, relativeIndex.Z);
-            if (chunk.GetVoxel(upperVoxelIndex).Sunlight == 15)
+            if (upperVoxelIndex.Y < chunk.CurrentHeight && chunk.GetVoxel(upperVoxelIndex).Sunlight == 15)
             {
                 foreach (var sunlightSources in LightingService.Sunlight(chunk, upperVoxelIndex, 15))
                 {

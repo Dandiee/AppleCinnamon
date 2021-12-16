@@ -300,11 +300,8 @@ namespace AppleCinnamon
             if (_currentKeyboardState.IsPressed(Key.Down)) Hofman.SunDirection -= lilStep / 1;
 
 
-            //if (_currentKeyboardState.IsPressed(Key.V)) Hofman.SunlightFactor += lilStep / 1;
-            //if (_currentKeyboardState.IsPressed(Key.B)) Hofman.SunlightFactor -= lilStep / 1;
-
-            if (_currentKeyboardState.IsPressed(Key.V)) world.IncreaseTime();
-            if (_currentKeyboardState.IsPressed(Key.B)) world.DecreaseTime();
+            if (_currentKeyboardState.IsPressed(Key.Up)) world.IncreaseTime();
+            if (_currentKeyboardState.IsPressed(Key.Down)) world.DecreaseTime();
 
 
 

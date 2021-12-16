@@ -35,7 +35,7 @@ namespace AppleCinnamon.Pipeline
                 }
             }
 
-            maxHeight += 32;
+            maxHeight += 64;
             var initialSlicesCount = maxHeight / Chunk.SliceHeight + 1;
             var voxels = new Voxel[Chunk.SizeXy * initialSlicesCount * Chunk.SliceHeight * Chunk.SizeXy];
             var chunk = new Chunk(chunkIndex, voxels);
