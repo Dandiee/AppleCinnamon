@@ -9,9 +9,9 @@ using SharpDX.Direct3D11;
 
 namespace AppleCinnamon
 {
-    public partial class ChunkBuilder
+    public static partial class ChunkBuilder
     {
-        private BufferDefinition<VertexSolidBlock> BuildSolid(Chunk chunk, Device device)
+        private static BufferDefinition<VertexSolidBlock> BuildSolid(Chunk chunk, Device device)
         {
             var faces = GetChunkFaces(chunk);
             var visibleFacesCount = chunk.BuildingContext.Faces.Sum(s => s.VoxelCount);
@@ -49,7 +49,7 @@ namespace AppleCinnamon
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void AddSolidFace(SolidFaceInfo faceInfo, Voxel voxel, int relativeIndexX, int relativeIndexY, int relativeIndexZ, VertexSolidBlock[] vertices,
+        private static void AddSolidFace(SolidFaceInfo faceInfo, Voxel voxel, int relativeIndexX, int relativeIndexY, int relativeIndexZ, VertexSolidBlock[] vertices,
             uint[] indexes, VoxelDefinition definition, Chunk chunk, Voxel neighbor, Vector3 voxelPositionOffset)
         {
             // Face specific base variables
@@ -102,7 +102,7 @@ namespace AppleCinnamon
             faceInfo.ProcessedVoxels++;
         }
 
-        private Cube<SolidFaceInfo> GetChunkFaces(Chunk chunk)
+        private static Cube<SolidFaceInfo> GetChunkFaces(Chunk chunk)
         {
             var topCount = chunk.BuildingContext.Top.VoxelCount;
             var botCount = chunk.BuildingContext.Bottom.VoxelCount;

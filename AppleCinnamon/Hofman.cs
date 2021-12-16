@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Numerics;
 using AppleCinnamon.Extensions;
 using AppleCinnamon.Vertices;
-using SharpDX;
 using Vector3 = SharpDX.Vector3;
 using Vector4 = SharpDX.Vector4;
 
@@ -86,7 +84,7 @@ namespace AppleCinnamon.Chunks
 
         
 
-        public static  void UpdateEffect(ChunkEffect<VertexSkyBox> skyEffect, Camera camera)
+        public static  void UpdateEffect(EffectDefinition<VertexSkyBox> skyEffectDefinition, Camera camera)
         {
             init();
             Vector3 vZenith = new Vector3(0.0f, 1.0f, 0.0f);
@@ -133,16 +131,16 @@ namespace AppleCinnamon.Chunks
             _multipliers = new Vector4(InscatteringMultiplier, 0.138f * reflectance, 0.113f * reflectance, 0.08f * reflectance);
 
             //SunDirection += 0.001f;
-            skyEffect.Effect.GetVariableByName("sunDirection").AsVector().Set(Position);
-            skyEffect.Effect.GetVariableByName("betaRPlusBetaM").AsVector().Set(_betaRPlusBetaM);
-            skyEffect.Effect.GetVariableByName("hGg").AsVector().Set(HGg);
-            skyEffect.Effect.GetVariableByName("betaDashR").AsVector().Set(_betaDashR);
-            skyEffect.Effect.GetVariableByName("betaDashM").AsVector().Set(_betaDashM);
-            skyEffect.Effect.GetVariableByName("oneOverBetaRPlusBetaM").AsVector().Set(_oneOverBetaRPlusBetaM);
-            skyEffect.Effect.GetVariableByName("multipliers").AsVector().Set(_multipliers);
-            skyEffect.Effect.GetVariableByName("sunColorAndIntensity").AsVector().Set(_sunColorAndIntensity);
-            skyEffect.Effect.GetVariableByName("worldViewProject").AsMatrix().SetMatrix(camera.WorldViewProjection);
-            skyEffect.Effect.GetVariableByName("worldView").AsMatrix().SetMatrix(camera.View);
+            skyEffectDefinition.Effect.GetVariableByName("sunDirection").AsVector().Set(Position);
+            skyEffectDefinition.Effect.GetVariableByName("betaRPlusBetaM").AsVector().Set(_betaRPlusBetaM);
+            skyEffectDefinition.Effect.GetVariableByName("hGg").AsVector().Set(HGg);
+            skyEffectDefinition.Effect.GetVariableByName("betaDashR").AsVector().Set(_betaDashR);
+            skyEffectDefinition.Effect.GetVariableByName("betaDashM").AsVector().Set(_betaDashM);
+            skyEffectDefinition.Effect.GetVariableByName("oneOverBetaRPlusBetaM").AsVector().Set(_oneOverBetaRPlusBetaM);
+            skyEffectDefinition.Effect.GetVariableByName("multipliers").AsVector().Set(_multipliers);
+            skyEffectDefinition.Effect.GetVariableByName("sunColorAndIntensity").AsVector().Set(_sunColorAndIntensity);
+            skyEffectDefinition.Effect.GetVariableByName("worldViewProject").AsMatrix().SetMatrix(camera.WorldViewProjection);
+            skyEffectDefinition.Effect.GetVariableByName("worldView").AsMatrix().SetMatrix(camera.View);
         }
     }
 }

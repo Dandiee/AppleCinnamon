@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using AppleCinnamon.Helper;
@@ -11,64 +9,22 @@ using SharpDX;
 
 namespace AppleCinnamon
 {
-    public readonly struct BlockUpdateDirection
-    {
-        private static readonly IReadOnlyDictionary<VisibilityFlag, Face> Mapping = new Dictionary<VisibilityFlag, Face>
-        {
-            [VisibilityFlag.Top] = Face.Top,
-            [VisibilityFlag.Bottom] = Face.Bottom,
-            [VisibilityFlag.Left] = Face.Left,
-            [VisibilityFlag.Right] = Face.Right,
-            [VisibilityFlag.Front] = Face.Front,
-            [VisibilityFlag.Back] = Face.Back,
-        };
-
-        public readonly Int3 Step;
-        public readonly VisibilityFlag Direction;
-        public readonly VisibilityFlag OppositeDirection;
-        public readonly Face Face;
-        public readonly Face OppositeFace;
-
-        private BlockUpdateDirection(Int3 step, VisibilityFlag direction, VisibilityFlag oppositeDirection)
-        {
-            Step = step;
-            Direction = direction;
-            OppositeDirection = oppositeDirection;
-            Face = Mapping[direction];
-            OppositeFace = Mapping[oppositeDirection];
-        }
-
-        public static BlockUpdateDirection[] All = {
-            new (Int3.UnitY, VisibilityFlag.Top, VisibilityFlag.Bottom),
-            new ( -Int3.UnitY, VisibilityFlag.Bottom, VisibilityFlag.Top),
-            new (-Int3.UnitX, VisibilityFlag.Left, VisibilityFlag.Right),
-            new (Int3.UnitX, VisibilityFlag.Right, VisibilityFlag.Left),
-            new (-Int3.UnitZ, VisibilityFlag.Front, VisibilityFlag.Back),
-            new (Int3.UnitZ, VisibilityFlag.Back, VisibilityFlag.Front)
-        };
-    }
-
     public sealed class ChunkUpdater
     {
         private bool _isUpdateInProgress;
 
+        private readonly Graphics _graphics;
         private readonly ChunkManager _chunkManager;
-        private readonly ChunkBuilder _chunkBuilder;
-        private readonly LightUpdater _lightUpdater;
 
         public ChunkUpdater(
             Graphics graphics,
             ChunkManager chunkManager)
         {
+            _graphics = graphics;
             _chunkManager = chunkManager;
-            _chunkBuilder = new ChunkBuilder(graphics.Device);
-            _lightUpdater = new LightUpdater();
         }
 
-        private static readonly Random _random = new(456);
-
-        public static long a;
-        public static long b;
+        
         public void SetVoxel(Int3 absoluteIndex, byte voxel)
         {
             if (_isUpdateInProgress)
@@ -81,7 +37,6 @@ namespace AppleCinnamon
             {
                 _isUpdateInProgress = true;
 
-                var sw = Stopwatch.StartNew();
                 if (address.Value.RelativeVoxelIndex.Y >= chunk.CurrentHeight)
                 {
                     chunk.ExtendUpward(address.Value.RelativeVoxelIndex.Y);
@@ -96,63 +51,23 @@ namespace AppleCinnamon
                     ? newDefinition.Create(2)
                     : newDefinition.Create();
 
-                
-
-                chunk.SetVoxel(flatIndex, newVoxel);
+                chunk.SetSafe(flatIndex, newVoxel);
 
                 UpdateVisibilityFlags(chunk, oldVoxel, newVoxel, address.Value.RelativeVoxelIndex);
-                UpdateSprites(chunk, oldVoxel, newVoxel, address.Value.RelativeVoxelIndex);
-                _lightUpdater.UpdateLighting(chunk, address.Value.RelativeVoxelIndex, oldVoxel, newVoxel);
-                _chunkBuilder.BuildChunk(chunk);
-                sw.Stop();
-                a += sw.ElapsedMilliseconds;
-
-                sw.Restart();
+                UpdateLighting(chunk, address.Value.RelativeVoxelIndex, oldVoxel, newVoxel);
+                ChunkBuilder.BuildChunk(chunk, _graphics.Device);
+                
                 Task.WaitAll(ChunkManager.GetSurroundingChunks(2).Select(chunkIndex =>
                 {
                     if (chunkIndex != Int2.Zero && _chunkManager.TryGetChunk(chunkIndex + chunk.ChunkIndex, out var chunkToReload))
                     {
-                        return Task.Run(() => _chunkBuilder.BuildChunk(chunkToReload));
+                        return Task.Run(() => ChunkBuilder.BuildChunk(chunkToReload, _graphics.Device));
                     }
-
-                    sw.Stop();
                     return Task.CompletedTask;
 
                 }).ToArray());
-                b += sw.ElapsedMilliseconds;
-                
 
                 _isUpdateInProgress = false;
-            }
-        }
-
-        private void UpdateSprites(Chunk chunk, Voxel oldVoxel, Voxel newVoxel, Int3 relativeIndex)
-        {
-            var oldDefinition = oldVoxel.GetDefinition();
-            var newDefinition = newVoxel.GetDefinition();
-            var flatIndex = relativeIndex.ToFlatIndex(chunk.CurrentHeight);
-
-            if (oldDefinition.IsSprite && !newDefinition.IsSprite)
-            {
-                if (oldDefinition.IsOriented)
-                {
-                    chunk.BuildingContext.SingleSidedSpriteBlocks.Remove(flatIndex);
-                }
-                else
-                {
-                    chunk.BuildingContext.SpriteBlocks.Remove(flatIndex);
-                }
-            }
-            else if (!oldDefinition.IsSprite && newDefinition.IsSprite)
-            {
-                if (newDefinition.IsOriented)
-                {
-                    chunk.BuildingContext.SingleSidedSpriteBlocks.Add(flatIndex);
-                }
-                else
-                {
-                    chunk.BuildingContext.SpriteBlocks.Add(flatIndex);
-                }
             }
         }
 
@@ -163,7 +78,7 @@ namespace AppleCinnamon
             var oldDefinition = oldVoxel.GetDefinition();
 
             var newVisibilityFlag = VisibilityFlag.None;
-            var hadVisibility = chunk.BuildingContext.VisibilityFlags.TryGetValue(flatIndex, out var oldVisibilityFlag);
+            var hadVisibility = chunk.BuildingContext.VisibilityFlags.TryGetValue(flatIndex, out _);
 
             foreach (var direction in BlockUpdateDirection.All)
             {
@@ -218,7 +133,6 @@ namespace AppleCinnamon
                 }
 
                 // neighbor wasnt visible
-
                 if (!neighborDefinition.IsFaceVisible(oldDefinition, direction.Direction, direction.OppositeDirection))
                 {
                     // but its visible now
@@ -252,6 +166,47 @@ namespace AppleCinnamon
             else
             {
                 chunk.BuildingContext.VisibilityFlags[flatIndex] = newVisibilityFlag;
+            }
+        }
+
+        private void UpdateLighting(Chunk chunk, Int3 relativeIndex, Voxel oldVoxel, Voxel newVoxel)
+        {
+            // locally darkening sunlight vertically
+            var darknessSources = new Queue<LightingService.DarknessPropogationRecord>();
+            var lowerVoxelIndex = new Int3(relativeIndex.X, relativeIndex.Y - 1, relativeIndex.Z);
+            if (chunk.GetVoxel(lowerVoxelIndex.ToFlatIndex(chunk.CurrentHeight)).Sunlight == 15)
+            {
+                foreach (var sunlightRelativeIndex in LightingService.Sunlight(chunk, relativeIndex, 0))
+                {
+                    var voxel = chunk.GetVoxel(Help.GetFlatIndex(sunlightRelativeIndex, chunk.CurrentHeight));
+                    var definition = voxel.GetDefinition();
+                    darknessSources.Enqueue(new LightingService.DarknessPropogationRecord(chunk, sunlightRelativeIndex, voxel.SetSunlight(0),
+                        definition, voxel.SetSunlight(15), definition));
+                }
+            }
+
+            // globally propagate darkness
+            darknessSources.Enqueue(new LightingService.DarknessPropogationRecord(chunk, relativeIndex, newVoxel, newVoxel.GetDefinition(), oldVoxel,
+                oldVoxel.GetDefinition()));
+            var lightSources = LightingService.GlobalPropagateDarkness(darknessSources);
+
+            // locally propagate sunlight vertically
+            var upperVoxelIndex = new Int3(relativeIndex.X, relativeIndex.Y + 1, relativeIndex.Z);
+            if (chunk.GetVoxel(upperVoxelIndex.ToFlatIndex(chunk.CurrentHeight)).Sunlight == 15)
+            {
+                foreach (var sunlightSources in LightingService.Sunlight(chunk, upperVoxelIndex, 15))
+                {
+                    lightSources.Add(new Tuple<Chunk, Int3>(chunk, sunlightSources));
+                }
+            }
+
+            // enqueue the new voxel itself - as an emitter it could be a light source as well
+            lightSources.Add(new Tuple<Chunk, Int3>(chunk, relativeIndex));
+
+            // globally propagate lightness
+            foreach (var lightSource in lightSources)
+            {
+                LightingService.GlobalPropagate(lightSource.Item1, lightSource.Item2);
             }
         }
     }

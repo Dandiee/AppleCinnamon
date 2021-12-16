@@ -7,7 +7,7 @@ using SharpDX.Direct3D11;
 
 namespace AppleCinnamon.Chunks
 {
-    public sealed class ChunkEffect<TVertex>
+    public sealed class EffectDefinition<TVertex>
         where TVertex : struct, IVertex
     {
         public readonly PrimitiveTopology PrimitiveTopology;
@@ -15,7 +15,7 @@ namespace AppleCinnamon.Chunks
         public readonly EffectPass Pass;
         public readonly InputLayout InputLayout;
 
-        public ChunkEffect(Device device, string shaderFilePath, PrimitiveTopology primitiveTopology, string textureFilePath = default)
+        public EffectDefinition(Device device, string shaderFilePath, PrimitiveTopology primitiveTopology, string textureFilePath = default)
         {
             PrimitiveTopology = primitiveTopology;
             Effect = new Effect(device, ShaderBytecode.CompileFromFile(shaderFilePath, "fx_5_0"));

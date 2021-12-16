@@ -6,20 +6,13 @@ using Device = SharpDX.Direct3D11.Device;
 
 namespace AppleCinnamon
 {
-    public sealed partial class ChunkBuilder
+    public static partial class ChunkBuilder
     {
-        private readonly Device _device;
-
-        public ChunkBuilder(Device device)
+        public static void BuildChunk(Chunk chunk, Device device)
         {
-            _device = device;
-        }
-
-        public void BuildChunk(Chunk chunk)
-        {
-            var bufferSolid = BuildSolid(chunk, _device);
-            var bufferWater = BuildWater(chunk, _device);
-            var bufferSprite = BuildSprite(chunk, _device);
+            var bufferSolid = BuildSolid(chunk, device);
+            var bufferWater = BuildWater(chunk, device);
+            var bufferSprite = BuildSprite(chunk, device);
 
             chunk.Buffers = new ChunkBuffers(bufferSolid, bufferWater, bufferSprite);
         }

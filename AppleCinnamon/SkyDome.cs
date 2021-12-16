@@ -14,12 +14,12 @@ namespace AppleCinnamon
         public const float Radius = 100;
 
         private readonly BufferDefinition<VertexSkyBox> _skyBuffer;
-        private readonly ChunkEffect<VertexSkyBox> _skyEffect;
+        private readonly EffectDefinition<VertexSkyBox> _skyEffectDefinition;
 
         public SkyDome(Device device)
         {
             _device = device;
-            _skyEffect = new(_device, "Content/Effect/RayleightScatter.fx", PrimitiveTopology.TriangleList);
+            _skyEffectDefinition = new(_device, "Content/Effect/RayleightScatter.fx", PrimitiveTopology.TriangleList);
             _skyBuffer = GenerateSkyDome(device);
         }
 
@@ -27,14 +27,14 @@ namespace AppleCinnamon
         {
             if (Game.RenderSky)
             {
-                _skyEffect.Use(_device);
+                _skyEffectDefinition.Use(_device);
                 _skyBuffer.Draw(_device);
             }
         }
 
         public void Update(Camera camera)
         {
-            Hofman.UpdateEffect(_skyEffect, camera);
+            Hofman.UpdateEffect(_skyEffectDefinition, camera);
         }
 
         public static BufferDefinition<VertexSkyBox> GenerateSkyDome(Device device)

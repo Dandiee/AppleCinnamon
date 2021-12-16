@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using AppleCinnamon.Helper;
 using AppleCinnamon.Vertices;
@@ -10,14 +9,14 @@ using Buffer = SharpDX.Direct3D11.Buffer;
 
 namespace AppleCinnamon.Chunks
 {
-    public sealed partial class ChunkDrawer
+    public sealed class ChunkDrawer
     {
         private readonly Device _device;
 
-        private ChunkEffect<VertexSolidBlock> _solidEffect;
-        private ChunkEffect<VertexWater> _waterEffect;
-        private ChunkEffect<VertexSprite> _spriteEffect;
-        private ChunkEffect<VertexBox> _boxEffect;
+        private EffectDefinition<VertexSolidBlock> _solidEffectDefinition;
+        private EffectDefinition<VertexWater> _waterEffectDefinition;
+        private EffectDefinition<VertexSprite> _spriteEffectDefinition;
+        private EffectDefinition<VertexBox> _boxEffectDefinition;
         
 
         
@@ -35,10 +34,10 @@ namespace AppleCinnamon.Chunks
 
         private void LoadContent()
         {
-            _solidEffect = new(_device, "Content/Effect/SolidBlockEffect.fx", PrimitiveTopology.TriangleList, "Content/Texture/terrain3.png");
-            _waterEffect = new(_device, "Content/Effect/WaterEffect.fx", PrimitiveTopology.TriangleList, "Content/Texture/custom_water_still.png");
-            _spriteEffect = new(_device, "Content/Effect/SpriteEffetct.fx", PrimitiveTopology.TriangleList, "Content/Texture/terrain3.png");
-            _boxEffect = new(_device, "Content/Effect/BoxDrawerEffect.fx", PrimitiveTopology.PointList);
+            _solidEffectDefinition = new(_device, "Content/Effect/SolidBlockEffect.fx", PrimitiveTopology.TriangleList, "Content/Texture/terrain3.png");
+            _waterEffectDefinition = new(_device, "Content/Effect/WaterEffect.fx", PrimitiveTopology.TriangleList, "Content/Texture/custom_water_still.png");
+            _spriteEffectDefinition = new(_device, "Content/Effect/SpriteEffetct.fx", PrimitiveTopology.TriangleList, "Content/Texture/terrain3.png");
+            _boxEffectDefinition = new(_device, "Content/Effect/BoxDrawerEffect.fx", PrimitiveTopology.PointList);
 
             var blendStateDescription = new BlendStateDescription { AlphaToCoverageEnable = false };
 
@@ -58,13 +57,11 @@ namespace AppleCinnamon.Chunks
 
         public void Draw(List<KeyValuePair<Int2, Chunk>> chunks, Camera camera)
         {
-           
-
             if (chunks.Count > 0)
             {
                 if (Game.RenderSolid)
                 {
-                    _solidEffect.Use(_device);
+                    _solidEffectDefinition.Use(_device);
                     foreach (var chunk in chunks)
                     {
                         chunk.Value.Buffers.BufferSolid?.Draw(_device);
@@ -73,7 +70,7 @@ namespace AppleCinnamon.Chunks
 
                 if (Game.RenderSprites)
                 {
-                    _spriteEffect.Use(_device);
+                    _spriteEffectDefinition.Use(_device);
                     foreach (var chunk in chunks)
                     {
                         if (chunk.Value.BuildingContext.SpriteBlocks.Count > 0)
@@ -87,7 +84,7 @@ namespace AppleCinnamon.Chunks
                 {
 
                     _device.ImmediateContext.OutputMerger.SetBlendState(_waterBlendState);
-                    _waterEffect.Use(_device);
+                    _waterEffectDefinition.Use(_device);
                     foreach (var chunk in chunks)
                     {
                         chunk.Value.Buffers.BufferWater?.Draw(_device);
@@ -116,7 +113,7 @@ namespace AppleCinnamon.Chunks
                         var vertexBuffer = Buffer.Create(_device, BindFlags.VertexBuffer, boxVertices);
                         var binding = new VertexBufferBinding(vertexBuffer, default(VertexBox).Size, 0);
 
-                        _boxEffect.Use(_device);
+                        _boxEffectDefinition.Use(_device);
                         _device.ImmediateContext.InputAssembler.SetVertexBuffers(0, binding);
                         _device.ImmediateContext.Draw(boxVertices.Length, 0);
                         _device.ImmediateContext.GeometryShader.Set(null);
@@ -131,7 +128,7 @@ namespace AppleCinnamon.Chunks
             while (true)
             {
                 _currentWaterTextureOffsetIndex = (_currentWaterTextureOffsetIndex + 1) % 32;
-                _waterEffect.Effect.GetVariableByName("TextureOffset").AsVector().Set(new Vector2(0, _currentWaterTextureOffsetIndex * 1 / 32f));
+                _waterEffectDefinition.Effect.GetVariableByName("TextureOffset").AsVector().Set(new Vector2(0, _currentWaterTextureOffsetIndex * 1 / 32f));
                 await Task.Delay(80);
             }
         }
@@ -139,10 +136,10 @@ namespace AppleCinnamon.Chunks
 
         public void Update(Camera camera)
         {
-            _solidEffect.Update(camera);
-            _waterEffect.Update(camera);
-            _spriteEffect.Update(camera);
-            _boxEffect.Effect.GetVariableByName("WorldViewProjection").AsMatrix().SetMatrix(camera.WorldViewProjection);
+            _solidEffectDefinition.Update(camera);
+            _waterEffectDefinition.Update(camera);
+            _spriteEffectDefinition.Update(camera);
+            _boxEffectDefinition.Effect.GetVariableByName("WorldViewProjection").AsMatrix().SetMatrix(camera.WorldViewProjection);
         }
     }
 }

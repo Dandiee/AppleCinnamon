@@ -5,7 +5,7 @@ using Device = SharpDX.Direct3D11.Device;
 
 namespace AppleCinnamon
 {
-    public partial class ChunkBuilder
+    public static partial class ChunkBuilder
     {
         public const float SingleSidedOffset = 0.1f;
 
@@ -19,7 +19,7 @@ namespace AppleCinnamon
             Vector3.UnitZ * -SingleSidedOffset,
         };
 
-        private BufferDefinition<VertexSprite> BuildSprite(Chunk chunk, Device device)
+        private static BufferDefinition<VertexSprite> BuildSprite(Chunk chunk, Device device)
         {
             var numberOfFaces = chunk.BuildingContext.SpriteBlocks.Count * 2 + chunk.BuildingContext.SingleSidedSpriteBlocks.Count;
             if (numberOfFaces == 0) return null;

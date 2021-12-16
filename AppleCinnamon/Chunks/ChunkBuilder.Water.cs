@@ -9,7 +9,7 @@ namespace AppleCinnamon
     {
         private static readonly Vector2[] WaterUvOffsets = { Vector2.Zero, new(1, 0), new(1, 1 / 32f), new(0, 1 / 32f) };
 
-        private BufferDefinition<VertexWater> BuildWater(Chunk chunk, Device device)
+        private static BufferDefinition<VertexWater> BuildWater(Chunk chunk, Device device)
         {
             if (chunk.BuildingContext.TopMostWaterVoxels.Count == 0)
             {

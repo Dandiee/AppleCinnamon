@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -21,20 +20,17 @@ namespace AppleCinnamon
         public readonly ConcurrentDictionary<Int2, Chunk> Chunks;
         private readonly ConcurrentDictionary<Int2, object> _queuedChunks;
         private readonly ChunkUpdater _chunkUpdater;
-        private readonly PipelineProvider _pipelineProvider;
         private readonly ChunkDrawer _chunkDrawer;
         private Int2? _lastQueueIndex;
-        private TransformBlock<Int2, Chunk> _pipeline;
+        private readonly TransformBlock<Int2, Chunk> _pipeline;
 
         public ChunkManager(Graphics graphics)
         {
-            _pipelineProvider = new PipelineProvider(graphics.Device);
             _chunkDrawer = new ChunkDrawer(graphics.Device);
             Chunks = new ConcurrentDictionary<Int2, Chunk>();
             _queuedChunks = new ConcurrentDictionary<Int2, object>();
-            _pipeline = _pipelineProvider.CreatePipeline(InitialDegreeOfParallelism, Finalize);
+            _pipeline = new PipelineProvider(graphics.Device).CreatePipeline(InitialDegreeOfParallelism, Finalize);
             _chunkUpdater = new ChunkUpdater(graphics, this);
-
             
             QueueChunksByIndex(Int2.Zero);
         }
@@ -86,26 +82,15 @@ namespace AppleCinnamon
             _queuedChunks.TryRemove(chunk.ChunkIndex, out _);
 
             Interlocked.Increment(ref _finalizedChunks);
-            var root = (Game.ViewDistance - 1) * 2;
+            const int root = (Game.ViewDistance - 1) * 2;
 
             if (!IsInitialized && _finalizedChunks == root)
             {
                 IsInitialized = true;
-                // _pipeline.Complete();
-                // _pipeline = _pipelineProvider.CreatePipeline(1, Finalize);
             }
         }
 
   
-        private static readonly IReadOnlyCollection<Int2> Directions = new[]
-        {
-            new Int2(1, 0),
-            new Int2(0, 1),
-            new Int2(-1, 0),
-            new Int2(0, -1)
-        };
-
-
         public static IEnumerable<Int2> GetSurroundingChunks(int size)
         {
             yield return new Int2();
@@ -114,7 +99,7 @@ namespace AppleCinnamon
             {
                 var cursor = new Int2(i * -1);
 
-                foreach (var direction in Directions)
+                foreach (var direction in AnnoyingMappings.ChunkManagerDirections)
                 {
                     for (var j = 1; j < i * 2 + 1; j++)
                     {
