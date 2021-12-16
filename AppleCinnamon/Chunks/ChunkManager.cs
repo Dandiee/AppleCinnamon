@@ -37,7 +37,7 @@ namespace AppleCinnamon
 
         public bool TryGetVoxelAddress(Int3 absoluteVoxelIndex, out VoxelChunkAddress address)
         {
-            if (!Help.TryGetChunkIndexByAbsoluteVoxelIndex(absoluteVoxelIndex, out var chunkIndex))
+            if (!TryGetChunkIndexByAbsoluteVoxelIndex(absoluteVoxelIndex, out var chunkIndex))
             {
                 address = VoxelChunkAddress.Zero;
                 return false;
@@ -54,6 +54,23 @@ namespace AppleCinnamon
             return true;
         }
 
+        public static bool TryGetChunkIndexByAbsoluteVoxelIndex(Int3 absoluteVoxelIndex, out Int2 chunkIndex)
+        {
+            if (absoluteVoxelIndex.Y < 0)
+            {
+                chunkIndex = Int2.Zero;
+                return false;
+            }
+
+            chunkIndex = new Int2(
+                absoluteVoxelIndex.X < 0
+                    ? ((absoluteVoxelIndex.X + 1) / Chunk.SizeXy) - 1
+                    : absoluteVoxelIndex.X / Chunk.SizeXy,
+                absoluteVoxelIndex.Z < 0
+                    ? ((absoluteVoxelIndex.Z + 1) / Chunk.SizeXy) - 1
+                    : absoluteVoxelIndex.Z / Chunk.SizeXy);
+            return true;
+        }
 
         public void Draw(Camera camera)
         {
@@ -74,7 +91,7 @@ namespace AppleCinnamon
 
             voxel = address.Chunk.CurrentHeight <= address.RelativeVoxelIndex.Y
                 ? Voxel.SunBlock
-                : address.Chunk.GetVoxel(address.RelativeVoxelIndex.ToFlatIndex(address.Chunk.CurrentHeight));
+                : address.Chunk.GetVoxel(address.RelativeVoxelIndex);
             return true;
         }
 

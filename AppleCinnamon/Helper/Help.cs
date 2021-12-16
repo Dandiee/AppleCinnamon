@@ -24,25 +24,6 @@ namespace AppleCinnamon.Helper
 
 
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Int3 ToIndex(this int index, int height)
-        {
-            var k = index / (Chunk.SizeXy * height);
-            var j = (index - k * Chunk.SizeXy * height) / Chunk.SizeXy;
-            var i = index - (k * Chunk.SizeXy * height + j * Chunk.SizeXy);
-
-            return new Int3(i, j, k);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int ToFlatIndex(this Int3 index, int height) => index.X + Chunk.SizeXy * (index.Y + height * index.Z);
-
-        [InlineMethod.Inline]
-        public static int GetFlatIndex(int i, int j, int k, int height) => i + Chunk.SizeXy * (j + height * k);
-
-        [InlineMethod.Inline]
-        public static int GetFlatIndex(Int3 ijk, int height) => ijk.X + Chunk.SizeXy * (ijk.Y + height * ijk.Z);
-
         [InlineMethod.Inline]
         public static int GetChunkFlatIndex(int i, int j) => 3 * i + j + 4;
 

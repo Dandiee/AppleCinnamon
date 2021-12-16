@@ -34,7 +34,7 @@ namespace AppleCinnamon.Pipeline
         {
             foreach (var flatIndex in context.PendingVoxels)
             {
-                var index = flatIndex.ToIndex(chunk.CurrentHeight);
+                var index = chunk.FromFlatIndex(flatIndex);
                 var voxel = chunk.Voxels[flatIndex];
                 var neighbor = neighborChunk.CurrentHeight <= index.Y
                     ? Voxel.SunBlock

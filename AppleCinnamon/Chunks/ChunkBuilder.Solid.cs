@@ -27,7 +27,7 @@ namespace AppleCinnamon
             foreach (var visibilityFlag in chunk.BuildingContext.VisibilityFlags)
             {
                 var flatIndex = visibilityFlag.Key;
-                var index = flatIndex.ToIndex(chunk.CurrentHeight);
+                var index = chunk.FromFlatIndex(flatIndex);
 
                 var voxel = chunk.GetVoxel(flatIndex);
                 var definition = voxel.GetDefinition();

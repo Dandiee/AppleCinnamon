@@ -105,7 +105,7 @@ namespace AppleCinnamon.Collision
                             continue;
                         }
 
-                        var voxel = address.Chunk.GetVoxel(address.RelativeVoxelIndex.ToFlatIndex(address.Chunk.CurrentHeight));
+                        var voxel = address.Chunk.GetVoxel(address.RelativeVoxelIndex);
 
                         var voxelDefinition = voxel.GetDefinition();
 

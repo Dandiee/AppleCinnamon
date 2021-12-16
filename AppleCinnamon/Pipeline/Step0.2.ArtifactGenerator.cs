@@ -14,7 +14,7 @@ namespace AppleCinnamon.Pipeline
         {
             foreach (var flatIndex in chunk.BuildingContext.TopMostLandVoxels)
             {
-                var index = flatIndex.ToIndex(chunk.CurrentHeight);
+                var index = chunk.FromFlatIndex(flatIndex);
 
                 if (Rnd.Next() % 70 == 0)
                 {

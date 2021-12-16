@@ -54,10 +54,10 @@ namespace AppleCinnamon
         private static readonly IReadOnlyDictionary<Face, Func<Int3, int, int>> NeighborIndexFuncs =
             new Dictionary<Face, Func<Int3, int, int>>
             {
-                [Face.Left] = (ijk, height) => Help.GetFlatIndex(Chunk.SizeXy - 1, ijk.Y, ijk.Z, height),
-                [Face.Right] = (ijk, height) => Help.GetFlatIndex(0, ijk.Y, ijk.Z, height),
-                [Face.Front] = (ijk, height) => Help.GetFlatIndex(ijk.X, ijk.Y, Chunk.SizeXy - 1, height),
-                [Face.Back] = (ijk, height) => Help.GetFlatIndex(ijk.X, ijk.Y, 0, height)
+                [Face.Left] = (ijk, height) => Chunk.ToFlatIndex(Chunk.SizeXy - 1, ijk.Y, ijk.Z, height),
+                [Face.Right] = (ijk, height) => Chunk.ToFlatIndex(0, ijk.Y, ijk.Z, height),
+                [Face.Front] = (ijk, height) => Chunk.ToFlatIndex(ijk.X, ijk.Y, Chunk.SizeXy - 1, height),
+                [Face.Back] = (ijk, height) => Chunk.ToFlatIndex(ijk.X, ijk.Y, 0, height)
             };
 
         public FaceBuildingContext(Face face)

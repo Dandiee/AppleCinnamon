@@ -19,13 +19,13 @@ namespace AppleCinnamon
                 var source = queue.Dequeue();
                 var sourceVoxel = source.Chunk.CurrentHeight <= source.RelativeVoxelIndex.Y
                     ? Voxel.SunBlock
-                    : source.Chunk.GetVoxel(source.RelativeVoxelIndex.ToFlatIndex(source.Chunk.CurrentHeight));
+                    : source.Chunk.GetVoxel(source.RelativeVoxelIndex);
                 var sourceDefinition = sourceVoxel.GetDefinition();
 
                 foreach (var direction in LightDirections.All)
                 {
                     var targetIndex = source.RelativeVoxelIndex + direction.Step;
-                    var targetVoxel = source.Chunk.GetLocalWithNeighborChunk(targetIndex.X, targetIndex.Y, targetIndex.Z, out var targetAddress);
+                    var targetVoxel = source.Chunk.GetLocalWithNeighborChunk(targetIndex.X, targetIndex.Y, targetIndex.Z, out var targetAddress, out _);
                     var targetDefinition = targetVoxel.GetDefinition();
 
                     var brightnessLoss = VoxelDefinition.GetBrightnessLoss(sourceDefinition, targetDefinition, direction.Direction);
@@ -36,12 +36,12 @@ namespace AppleCinnamon
                             // todo: talán ha nem írnánk és olvasnánk ugyanazt a memóriát hétezerszer észnélkül az segítene... csak talán...
                             if (targetVoxel.Sunlight < sourceVoxel.Sunlight - brightnessLoss)
                             {
-                                targetAddress.Chunk.SetVoxel(targetAddress.RelativeVoxelIndex.ToFlatIndex(targetAddress.Chunk.CurrentHeight), targetVoxel.SetSunlight((byte)(sourceVoxel.Sunlight - brightnessLoss)));
+                                targetAddress.Chunk.SetVoxel(targetAddress.RelativeVoxelIndex, targetVoxel.SetSunlight((byte)(sourceVoxel.Sunlight - brightnessLoss)));
                             }
 
                             if (targetVoxel.EmittedLight < sourceVoxel.EmittedLight - brightnessLoss)
                             {
-                                targetAddress.Chunk.SetVoxel(targetAddress.RelativeVoxelIndex.ToFlatIndex(targetAddress.Chunk.CurrentHeight), targetVoxel.SetCustomLight((byte)(sourceVoxel.EmittedLight - brightnessLoss)));
+                                targetAddress.Chunk.SetVoxel(targetAddress.RelativeVoxelIndex, targetVoxel.SetCustomLight((byte)(sourceVoxel.EmittedLight - brightnessLoss)));
                             }
 
                             queue.Enqueue(new VoxelChunkAddress(targetAddress.Chunk, targetAddress.RelativeVoxelIndex));
@@ -58,7 +58,7 @@ namespace AppleCinnamon
                 var lightSourceFlatIndex = localLightSources.Dequeue();
                 var sourceVoxel = chunk.GetVoxel(lightSourceFlatIndex);
                 var sourceDefinition = sourceVoxel.GetDefinition();
-                var index = lightSourceFlatIndex.ToIndex(chunk.CurrentHeight);
+                var index = chunk.FromFlatIndex(lightSourceFlatIndex);
 
                 foreach (var direction in LightDirections.All)
                 {
@@ -114,7 +114,7 @@ namespace AppleCinnamon
                 foreach (var direction in LightDirections.All)
                 {
                     var targetVoxel = source.sourceChunk.GetLocalWithNeighborChunk(source.sourceIndex.X + direction.Step.X, source.sourceIndex.Y + direction.Step.Y, 
-                        source.sourceIndex.Z + direction.Step.Z, out var targetAddress);
+                        source.sourceIndex.Z + direction.Step.Z, out var targetAddress, out _);
                     var targetDefinition = targetVoxel.GetDefinition();
                     var brightnessLoss = VoxelDefinition.GetBrightnessLoss(source.NewVoxelDefinition, targetDefinition, direction.Direction);
 
@@ -127,7 +127,7 @@ namespace AppleCinnamon
                         else  if (targetVoxel.Sunlight > 0)
                         {
                             var targetNewVoxel = targetVoxel.SetSunlight(0);
-                            targetAddress.Chunk.SetVoxel(targetAddress.RelativeVoxelIndex.ToFlatIndex(targetAddress.Chunk.CurrentHeight), targetNewVoxel);
+                            targetAddress.Chunk.SetVoxel(targetAddress.RelativeVoxelIndex, targetNewVoxel);
                             queue.Enqueue(new DarknessPropogationRecord(targetAddress.Chunk, targetAddress.RelativeVoxelIndex, targetNewVoxel, targetDefinition, 
                                 targetVoxel, targetDefinition));
                         }
@@ -140,7 +140,7 @@ namespace AppleCinnamon
                         else if (targetVoxel.EmittedLight > 0)
                         {
                             var targetNewVoxel = targetVoxel.SetCustomLight(0);
-                            targetAddress.Chunk.SetVoxel(targetAddress.RelativeVoxelIndex.ToFlatIndex(targetAddress.Chunk.CurrentHeight), targetNewVoxel);
+                            targetAddress.Chunk.SetVoxel(targetAddress.RelativeVoxelIndex, targetNewVoxel);
                             queue.Enqueue(new DarknessPropogationRecord(targetAddress.Chunk, targetAddress.RelativeVoxelIndex, targetNewVoxel, targetDefinition, 
                                 targetVoxel, targetDefinition ));
                         }

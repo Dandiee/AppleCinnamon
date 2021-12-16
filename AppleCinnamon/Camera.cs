@@ -317,7 +317,7 @@ namespace AppleCinnamon
 
 
             var currentBlock = new Int3((int)Math.Round(Position.X), (int)Math.Round(Position.Y), (int)Math.Round(Position.Z));
-            if (Help.TryGetChunkIndexByAbsoluteVoxelIndex(currentBlock, out var chunkIndex))
+            if (ChunkManager.TryGetChunkIndexByAbsoluteVoxelIndex(currentBlock, out var chunkIndex))
             {
                 CurrentChunkIndex = chunkIndex;
                 var currentChunk = chunkManager.Chunks[chunkIndex];

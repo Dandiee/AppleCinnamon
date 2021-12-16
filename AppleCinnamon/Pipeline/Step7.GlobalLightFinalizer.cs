@@ -70,12 +70,12 @@ namespace AppleCinnamon.Pipeline
                     var indexMask = new Int3(h * context.DirectionMask.X, j, h * context.DirectionMask.Z);
 
                     var sourceIndex = indexMask + context.SourceOffset;
-                    var sourceFlatIndex = sourceIndex.ToFlatIndex(sourceChunk.CurrentHeight);
+                    var sourceFlatIndex = sourceChunk.ToFlatIndex(sourceIndex);
                     var sourceVoxel = sourceChunk.Voxels[sourceFlatIndex];
                     var sourceDefinition = sourceVoxel.GetDefinition();
 
                     var targetIndex = indexMask + context.TargetOffset;
-                    var targetFlatIndex = targetIndex.ToFlatIndex(targetChunk.CurrentHeight);
+                    var targetFlatIndex = targetChunk.ToFlatIndex(targetIndex);
                     var targetVoxel = targetChunk.Voxels[targetFlatIndex];
                     var targetDefinition = targetVoxel.GetDefinition();
 

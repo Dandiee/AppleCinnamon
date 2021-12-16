@@ -32,7 +32,7 @@ namespace AppleCinnamon
             for (var n = 0; n < chunk.BuildingContext.SpriteBlocks.Count; n++)
             {
                 var flatIndex = chunk.BuildingContext.SpriteBlocks[n];
-                var index = flatIndex.ToIndex(chunk.CurrentHeight);
+                var index = chunk.FromFlatIndex(flatIndex);
 
                 var vertexOffset = n * 4;
                 var positionOffset = new Vector3(index.X, index.Y, index.Z);
@@ -48,7 +48,7 @@ namespace AppleCinnamon
             for (var n = 0; n < chunk.BuildingContext.SingleSidedSpriteBlocks.Count; n++)
             {
                 var flatIndex = chunk.BuildingContext.SingleSidedSpriteBlocks[n];
-                var index = flatIndex.ToIndex(chunk.CurrentHeight);
+                var index = chunk.FromFlatIndex(flatIndex);
 
                 var vertexOffset = n * 4;
 
