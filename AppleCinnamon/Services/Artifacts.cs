@@ -40,7 +40,7 @@ namespace AppleCinnamon.Services
             {
                 chunk.SetSafe(relativeIndex.X, relativeIndex.Y + j, relativeIndex.Z, treeType.Create());
 
-                if (true) //_rnd.Next() % 2 == 0)
+                if (_rnd.Next() % 2 == 0)
                 {
                     if (relativeIndex.X < Chunk.SizeXy - 1)
                     {
@@ -116,7 +116,7 @@ namespace AppleCinnamon.Services
                 {
                     GoDown(chunk, relativeVoxelIndex - Int3.UnitX, (c, fi) =>
                     {
-                        c.SetVoxel(fi, VoxelDefinition.Tendril.Create(2, Face.Right));
+                        c.SetSafe(fi, VoxelDefinition.Tendril.Create(2, Face.Right));
                         return _rnd.Next() % 2 == 0;
                     });
                 }
@@ -125,7 +125,7 @@ namespace AppleCinnamon.Services
                 {
                     GoDown(chunk, relativeVoxelIndex + Int3.UnitX, (c, fi) =>
                     {
-                        c.SetVoxel(fi, VoxelDefinition.Tendril.Create(2, Face.Left));
+                        c.SetSafe(fi, VoxelDefinition.Tendril.Create(2, Face.Left));
                         return _rnd.Next() % 2 == 0;
                     });
                 }
@@ -134,7 +134,7 @@ namespace AppleCinnamon.Services
                 {
                     GoDown(chunk, relativeVoxelIndex - Int3.UnitZ, (c, fi) =>
                     {
-                        c.SetVoxel(fi, VoxelDefinition.Tendril.Create(2, Face.Back));
+                        c.SetSafe(fi, VoxelDefinition.Tendril.Create(2, Face.Back));
                         return _rnd.Next() % 2 == 0;
                     });
                 }
@@ -143,7 +143,7 @@ namespace AppleCinnamon.Services
                 {
                     GoDown(chunk, relativeVoxelIndex + Int3.UnitZ, (c, fi) =>
                     {
-                        c.SetVoxel(fi, VoxelDefinition.Tendril.Create(2, Face.Front));
+                        c.SetSafe(fi, VoxelDefinition.Tendril.Create(2, Face.Front));
                         return _rnd.Next() % 2 == 0;
                     });
                 }

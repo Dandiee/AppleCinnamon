@@ -10,6 +10,11 @@ namespace AppleCinnamon.Pipeline
     {
         private static readonly Random Rnd = new(4578);
 
+        private static readonly VoxelDefinition[] FlowersAndSuch = 
+        {
+            VoxelDefinition.FlowerRed, VoxelDefinition.FlowerYellow, VoxelDefinition.MushroomBrown, VoxelDefinition.MushroomRed,
+        };
+
         public override Chunk Process(Chunk chunk)
         {
             foreach (var flatIndex in chunk.BuildingContext.TopMostLandVoxels)
@@ -29,9 +34,10 @@ namespace AppleCinnamon.Pipeline
                         {
                             chunk.SetSafe(flatIndex, VoxelDefinition.Weed.Create(2));
                         }
-                        else if (Rnd.Next() % 100 == 0)
+                        else if (Rnd.Next() % 50 == 0)
                         {
-                            chunk.SetSafe(flatIndex, VoxelDefinition.Flower.Create());
+                            var flowerType = FlowersAndSuch[Rnd.Next(0, FlowersAndSuch.Length)];
+                            chunk.SetSafe(flatIndex, flowerType.Create());
                         }
                     }
                 }

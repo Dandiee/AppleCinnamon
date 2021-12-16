@@ -153,7 +153,11 @@ namespace AppleCinnamon.Settings
         public static readonly VoxelDefinition Wood4 = new BlockDefinitionBuilder(30).WithSideTexture(7, 5).WithTopTexture(5, 1).WithTopTexture(5, 1).Build();
         public static readonly VoxelDefinition Wood5 = new BlockDefinitionBuilder(31).WithSideTexture(5, 7).WithTopTexture(5, 1).WithTopTexture(5, 1).Build();
         public static readonly VoxelDefinition Weed = new BlockDefinitionBuilder(32).WithAllSideTexture(7, 2).WithSize(1, .8f, 1).AsSprite().WithHue(VisibilityFlag.All).Build();
-        public static readonly VoxelDefinition Flower = new BlockDefinitionBuilder(33).WithAllSideTexture(12, 0).WithSize(.6f, .8f, .6f).AsSprite().Build();
+        public static readonly VoxelDefinition FlowerRed = new BlockDefinitionBuilder(33).WithAllSideTexture(12, 0)    .WithSize(6/16f, 11/16f, 6/16f).OffsetToBottom().AsSprite().Build();
+        public static readonly VoxelDefinition FlowerYellow = new BlockDefinitionBuilder(36).WithAllSideTexture(13, 0) .WithSize(6/16f, 8/16f, 6/16f).OffsetToBottom().AsSprite().Build();
+        public static readonly VoxelDefinition MushroomRed = new BlockDefinitionBuilder(37).WithAllSideTexture(12, 1)  .WithSize(8/16f, 6/16f, 8/16f).OffsetToBottom().AsSprite().Build();
+        public static readonly VoxelDefinition MushroomBrown = new BlockDefinitionBuilder(38).WithAllSideTexture(13, 1).WithSize(6/16f, 6/16f, 6/16f).OffsetToBottom().AsSprite().Build();
+
         public static readonly VoxelDefinition Tendril = new BlockDefinitionBuilder(35)
             .WithAllSideTexture(15, 8)
             .AsOriented()
@@ -420,6 +424,12 @@ namespace AppleCinnamon.Settings
         public BlockDefinitionBuilder WithTransmittanceQuarters(TransmittanceFlags value)
         {
             _transmittanceQuarters = new[] { value, value, value, value, value, value };
+            return this;
+        }
+
+        public BlockDefinitionBuilder OffsetToBottom()
+        {
+            _offset = new Vector3(0, -(1f - _size.Y) / 2f, 0);
             return this;
         }
     }

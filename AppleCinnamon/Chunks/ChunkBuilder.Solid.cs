@@ -75,12 +75,13 @@ namespace AppleCinnamon
                     var ambientNeighborVoxel = chunk.GetLocalWithNeighbor(relativeIndexX + ambientIndex.X, relativeIndexY + ambientIndex.Y, relativeIndexZ + ambientIndex.Z);
                     var ambientNeighborDefinition = ambientNeighborVoxel.GetDefinition();
 
+                    // gotta fine tune this one with non-unit-sized blocks and emitters like torch
                     if (!ambientNeighborDefinition.IsBlock || !ambientNeighborDefinition.IsUnitSized)
                     {
                         totalSunlight += ambientNeighborVoxel.Sunlight;
                         totalCustomLight += ambientNeighborVoxel.EmittedLight;
                     }
-                    else
+                    else if (definition.IsUnitSized)
                     {
                         numberOfAmbientNeighbors++;
                     }
