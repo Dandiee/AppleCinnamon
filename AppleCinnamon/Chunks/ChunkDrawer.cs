@@ -17,12 +17,7 @@ namespace AppleCinnamon.Chunks
         private EffectDefinition<VertexWater> _waterEffectDefinition;
         private EffectDefinition<VertexSprite> _spriteEffectDefinition;
         private EffectDefinition<VertexBox> _boxEffectDefinition;
-        
-
-        
-
         private int _currentWaterTextureOffsetIndex;
-
         private BlendState _waterBlendState;
 
         public ChunkDrawer(Device device)

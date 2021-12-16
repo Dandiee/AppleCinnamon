@@ -5,12 +5,6 @@ using SharpDX.DXGI;
 
 namespace AppleCinnamon.Vertices
 {
-    public interface IVertex
-    {
-        int Size { get; }
-        InputElement[] InputElements { get; }
-    }
-
     [StructLayout(LayoutKind.Sequential)]
     public struct VertexSolidBlock : IVertex
     {

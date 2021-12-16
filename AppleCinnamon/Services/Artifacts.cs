@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Windows.Forms;
 using AppleCinnamon.Extensions;
 using AppleCinnamon.Helper;
 using AppleCinnamon.Settings;

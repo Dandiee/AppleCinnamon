@@ -16,5 +16,14 @@ namespace AppleCinnamon
             new Int2(-1, 0),
             new Int2(0, -1)
         };
+
+        public static readonly IReadOnlyDictionary<int, Face[]> GlobalLightFinalizerCornerMapping =
+            new Dictionary<int, Face[]>
+            {
+                [Help.GetChunkFlatIndex(-1, -1)] = new[] { Face.Right, Face.Back },
+                [Help.GetChunkFlatIndex(1, -1)] = new[] { Face.Left, Face.Back },
+                [Help.GetChunkFlatIndex(1, 1)] = new[] { Face.Left, Face.Front },
+                [Help.GetChunkFlatIndex(-1, 1)] = new[] { Face.Right, Face.Front },
+            };
     }
 }

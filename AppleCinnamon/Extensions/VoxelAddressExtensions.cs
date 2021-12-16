@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using AppleCinnamon.Helper;
-using AppleCinnamon.Settings;
+﻿using AppleCinnamon.Helper;
 
 namespace AppleCinnamon.Extensions
 {

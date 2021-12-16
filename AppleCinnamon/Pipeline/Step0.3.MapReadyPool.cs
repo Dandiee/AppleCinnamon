@@ -4,8 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using AppleCinnamon.Helper;
 using AppleCinnamon.Pipeline.Context;
-using AppleCinnamon.Settings;
-using SharpDX;
 
 namespace AppleCinnamon.Pipeline
 {

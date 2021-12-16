@@ -2,7 +2,6 @@
 using System.Linq;
 using AppleCinnamon.Helper;
 using AppleCinnamon.Pipeline.Context;
-using AppleCinnamon.Settings;
 
 namespace AppleCinnamon.Pipeline
 {

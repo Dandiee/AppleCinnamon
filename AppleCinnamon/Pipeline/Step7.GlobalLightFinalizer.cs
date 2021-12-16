@@ -11,18 +11,9 @@ namespace AppleCinnamon.Pipeline
 {
     public sealed class GlobalLightFinalizer : PipelineBlock<Chunk, Chunk>
     {
-        private static readonly IReadOnlyDictionary<int, Face[]> CornerMapping =
-            new Dictionary<int, Face[]>
-            {
-                [Help.GetChunkFlatIndex(-1, -1)] = new []{ Face.Right, Face.Back },
-                [Help.GetChunkFlatIndex( 1, -1)] = new []{ Face.Left, Face.Back },
-                [Help.GetChunkFlatIndex( 1,  1)] = new []{ Face.Left, Face.Front },
-                [Help.GetChunkFlatIndex(-1,  1)] = new []{ Face.Right, Face.Front },
-            };
-
         public override Chunk Process(Chunk chunk)
         {
-            foreach (var corner in CornerMapping)
+            foreach (var corner in AnnoyingMappings.GlobalLightFinalizerCornerMapping)
             {
                 var cornerChunk = chunk.Neighbors[corner.Key];
                 EdgeSolver(cornerChunk, EdgePropogation.All[(byte)corner.Value[0]]);

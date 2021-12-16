@@ -1,16 +1,14 @@
 ﻿using System;
-using AppleCinnamon.Extensions;
 using AppleCinnamon.Helper;
 using AppleCinnamon.Pipeline.Context;
 using AppleCinnamon.Services;
 using AppleCinnamon.Settings;
-using SharpDX;
 
 namespace AppleCinnamon.Pipeline
 {
     public sealed class ArtifactGenerator : PipelineBlock<Chunk, Chunk>
     {
-        private static Random _rnd = new Random(4578);
+        private static readonly Random Rnd = new(4578);
 
         public override Chunk Process(Chunk chunk)
         {
@@ -18,7 +16,7 @@ namespace AppleCinnamon.Pipeline
             {
                 var index = flatIndex.ToIndex(chunk.CurrentHeight);
 
-                if (_rnd.Next() % 70 == 0)
+                if (Rnd.Next() % 70 == 0)
                 {
                     Artifacts.Tree(chunk, index);
                 }
@@ -27,11 +25,11 @@ namespace AppleCinnamon.Pipeline
                     var voxel = chunk.Voxels[flatIndex];
                     if (voxel.BlockType == 0)
                     {
-                        if (_rnd.Next() % 3 == 0)
+                        if (Rnd.Next() % 3 == 0)
                         {
                             chunk.SetSafe(flatIndex, VoxelDefinition.Weed.Create(2));
                         }
-                        else if (_rnd.Next() % 100 == 0)
+                        else if (Rnd.Next() % 100 == 0)
                         {
                             chunk.SetSafe(flatIndex, VoxelDefinition.Flower.Create());
                         }
