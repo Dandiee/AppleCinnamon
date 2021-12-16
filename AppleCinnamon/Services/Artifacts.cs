@@ -41,7 +41,7 @@ namespace AppleCinnamon.Services
             for (var j = 0; j < trunkHeight; j++)
             {
                 var flatIndex = Help.GetFlatIndex(relativeIndex.X, relativeIndex.Y + j, relativeIndex.Z, chunk.CurrentHeight);
-                chunk.Voxels[flatIndex] = treeType.Create();
+                chunk.SetSafe(flatIndex, treeType.Create());
 
                 if (true) //_rnd.Next() % 2 == 0)
                 {
@@ -50,8 +50,7 @@ namespace AppleCinnamon.Services
                         var fifi = Help.GetFlatIndex(relativeIndex.X + 1, relativeIndex.Y + j, relativeIndex.Z, chunk.CurrentHeight);
                         if (chunk.Voxels[fifi].BlockType == 0)
                         {
-                            chunk.Voxels[fifi] = VoxelDefinition.Tendril.Create(2, Face.Left);
-                            chunk.BuildingContext.SingleSidedSpriteBlocks.Add(fifi);
+                            chunk.SetSafe(fifi, VoxelDefinition.Tendril.Create(2, Face.Left));
                         }
                     }
 
@@ -60,8 +59,7 @@ namespace AppleCinnamon.Services
                         var fifi = Help.GetFlatIndex(relativeIndex.X - 1, relativeIndex.Y + j, relativeIndex.Z, chunk.CurrentHeight);
                         if (chunk.Voxels[fifi].BlockType == 0)
                         {
-                            chunk.Voxels[fifi] = VoxelDefinition.Tendril.Create(2, Face.Right);
-                            chunk.BuildingContext.SingleSidedSpriteBlocks.Add(fifi);
+                            chunk.SetSafe(fifi, VoxelDefinition.Tendril.Create(2, Face.Right));
                         }
                     }
 
@@ -70,8 +68,7 @@ namespace AppleCinnamon.Services
                         var fifi = Help.GetFlatIndex(relativeIndex.X, relativeIndex.Y + j, relativeIndex.Z + 1, chunk.CurrentHeight);
                         if (chunk.Voxels[fifi].BlockType == 0)
                         {
-                            chunk.Voxels[fifi] = VoxelDefinition.Tendril.Create(2, Face.Front);
-                            chunk.BuildingContext.SingleSidedSpriteBlocks.Add(fifi);
+                            chunk.SetSafe(fifi, VoxelDefinition.Tendril.Create(2, Face.Front));
                         }
                     }
 
@@ -80,8 +77,7 @@ namespace AppleCinnamon.Services
                         var fifi = Help.GetFlatIndex(relativeIndex.X, relativeIndex.Y + j, relativeIndex.Z - 1, chunk.CurrentHeight);
                         if (chunk.Voxels[fifi].BlockType == 0)
                         {
-                            chunk.Voxels[fifi] = VoxelDefinition.Tendril.Create(2, Face.Back);
-                            chunk.BuildingContext.SingleSidedSpriteBlocks.Add(fifi);
+                            chunk.SetSafe(fifi, VoxelDefinition.Tendril.Create(2, Face.Back));
                         }
                     }
                 }
@@ -125,8 +121,6 @@ namespace AppleCinnamon.Services
                     GoDown(chunk, relativeVoxelIndex - Int3.UnitX, (c, fi) =>
                     {
                         c.SetVoxel(fi, VoxelDefinition.Tendril.Create(2, Face.Right));
-                        c.BuildingContext.SingleSidedSpriteBlocks.Add(fi);
-
                         return _rnd.Next() % 2 == 0;
                     });
                 }
@@ -136,8 +130,6 @@ namespace AppleCinnamon.Services
                     GoDown(chunk, relativeVoxelIndex + Int3.UnitX, (c, fi) =>
                     {
                         c.SetVoxel(fi, VoxelDefinition.Tendril.Create(2, Face.Left));
-                        c.BuildingContext.SingleSidedSpriteBlocks.Add(fi);
-
                         return _rnd.Next() % 2 == 0;
                     });
                 }
@@ -147,8 +139,6 @@ namespace AppleCinnamon.Services
                     GoDown(chunk, relativeVoxelIndex - Int3.UnitZ, (c, fi) =>
                     {
                         c.SetVoxel(fi, VoxelDefinition.Tendril.Create(2, Face.Back));
-                        c.BuildingContext.SingleSidedSpriteBlocks.Add(fi);
-
                         return _rnd.Next() % 2 == 0;
                     });
                 }
@@ -158,8 +148,6 @@ namespace AppleCinnamon.Services
                     GoDown(chunk, relativeVoxelIndex + Int3.UnitZ, (c, fi) =>
                     {
                         c.SetVoxel(fi, VoxelDefinition.Tendril.Create(2, Face.Front));
-                        c.BuildingContext.SingleSidedSpriteBlocks.Add(fi);
-
                         return _rnd.Next() % 2 == 0;
                     });
                 }

@@ -29,13 +29,11 @@ namespace AppleCinnamon.Pipeline
                     {
                         if (_rnd.Next() % 3 == 0)
                         {
-                            chunk.Voxels[flatIndex] = VoxelDefinition.Weed.Create(2);
-                            chunk.BuildingContext.SpriteBlocks.Add(flatIndex);
+                            chunk.SetSafe(flatIndex, VoxelDefinition.Weed.Create(2));
                         }
                         else if (_rnd.Next() % 100 == 0)
                         {
-                            chunk.Voxels[flatIndex] = VoxelDefinition.Flower.Create();
-                            chunk.BuildingContext.SpriteBlocks.Add(flatIndex);
+                            chunk.SetSafe(flatIndex, VoxelDefinition.Flower.Create());
                         }
                     }
                 }

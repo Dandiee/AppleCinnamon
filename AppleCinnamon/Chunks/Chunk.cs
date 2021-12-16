@@ -146,6 +146,27 @@ namespace AppleCinnamon
             UpdateBoundingBox();
         }
 
+        public void SetSafe(Int3 index, Voxel newVoxel) => SetSafe(Help.GetFlatIndex(index, CurrentHeight), newVoxel);
+        public void SetSafe(int flatIndex, Voxel newVoxel)
+        {
+            var oldVoxel = Voxels[flatIndex];
+            var oldVoxelDefinition = oldVoxel.GetDefinition();
+            if (oldVoxelDefinition.IsSprite)
+            {
+                if (oldVoxelDefinition.IsOriented) BuildingContext.SingleSidedSpriteBlocks.Remove(flatIndex);
+                else BuildingContext.SpriteBlocks.Remove(flatIndex);
+            }
+
+            var newVoxelDefinition = newVoxel.GetDefinition();
+            if (newVoxelDefinition.IsSprite)
+            {
+                if (newVoxelDefinition.IsOriented) BuildingContext.SingleSidedSpriteBlocks.Add(flatIndex);
+                else BuildingContext.SpriteBlocks.Add(flatIndex);
+            }
+
+            Voxels[flatIndex] = newVoxel;
+        }
+
         private void UpdateBoundingBox()
         {
             var size = new Vector3(SizeXy, CurrentHeight, SizeXy) / 2f;

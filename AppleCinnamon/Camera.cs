@@ -153,6 +153,11 @@ namespace AppleCinnamon
                 Game.ShowChunkBoundingBoxes = !Game.ShowChunkBoundingBoxes;
             }
 
+            if (!_currentKeyboardState.IsPressed(Key.F6) && _lastKeyboardState.IsPressed(Key.F6))
+            {
+                Game.RenderSky = !Game.RenderSky;
+            }
+
             if (!_currentKeyboardState.IsPressed(Key.F12) && _lastKeyboardState.IsPressed(Key.F12))
             {
                 Game.Debug = !Game.Debug;

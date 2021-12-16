@@ -20,6 +20,8 @@ namespace AppleCinnamon.Chunks
         private ChunkEffect<VertexBox> _boxEffect;
         private ChunkEffect<VertexSkyBox> _skyEffect;
 
+        private BufferDefinition<VertexSkyBox> _skyBuffer;
+
         private int _currentWaterTextureOffsetIndex;
 
         private BlendState _waterBlendState;
@@ -67,18 +69,16 @@ namespace AppleCinnamon.Chunks
 
         public void Draw(List<KeyValuePair<Int2, Chunk>> chunks, Camera camera)
         {
+            if (Game.RenderSky)
+            {
+                _skyEffect.Use(_device);
+                _device.ImmediateContext.InputAssembler.SetVertexBuffers(0, skyDomeBidning);
+                _device.ImmediateContext.Draw(numberOfSkyDomeVertices, 0);
+                _device.ImmediateContext.GeometryShader.Set(null);
+            }
+
             if (chunks.Count > 0)
             {
-                if (true)
-                {
-                    _skyEffect.Use(_device);
-                    _device.ImmediateContext.InputAssembler.SetVertexBuffers(0, skyDomeBidning);
-                    _device.ImmediateContext.Draw(numberOfSkyDomeVertices, 0);
-                    _device.ImmediateContext.GeometryShader.Set(null);
-                }
-
-
-
                 if (Game.RenderSolid)
                 {
                     _solidEffect.Use(_device);
@@ -130,7 +130,7 @@ namespace AppleCinnamon.Chunks
 
                     if (boxVertices.Length > 0)
                     {
-                        var vertexBuffer = SharpDX.Direct3D11.Buffer.Create(_device, BindFlags.VertexBuffer, boxVertices);
+                        var vertexBuffer = Buffer.Create(_device, BindFlags.VertexBuffer, boxVertices);
                         var binding = new VertexBufferBinding(vertexBuffer, default(VertexBox).Size, 0);
 
                         _boxEffect.Use(_device);
@@ -156,51 +156,11 @@ namespace AppleCinnamon.Chunks
 
         public void Update(Camera camera)
         {
-            _solidEffect.Effect.GetVariableByName("WorldViewProjection").AsMatrix().SetMatrix(camera.WorldViewProjection);
-            _waterEffect.Effect.GetVariableByName("WorldViewProjection").AsMatrix().SetMatrix(camera.WorldViewProjection);
-            _spriteEffect.Effect.GetVariableByName("WorldViewProjection").AsMatrix().SetMatrix(camera.WorldViewProjection);
+            _solidEffect.Update(camera);
+            _waterEffect.Update(camera);
+            _spriteEffect.Update(camera);
             _boxEffect.Effect.GetVariableByName("WorldViewProjection").AsMatrix().SetMatrix(camera.WorldViewProjection);
-
-            _solidEffect.Effect.GetVariableByName("EyePosition").AsVector().Set(camera.Position.ToVector3());
-            _waterEffect.Effect.GetVariableByName("EyePosition").AsVector().Set(camera.Position.ToVector3());
-            _spriteEffect.Effect.GetVariableByName("EyePosition").AsVector().Set(camera.Position.ToVector3());
-
             Hofman.UpdateEffect(_skyEffect, camera);
-
-            _solidEffect.Effect.GetVariableByName("lightFactor").AsScalar().Set(Hofman.SunlightFactor);
-            _waterEffect.Effect.GetVariableByName("lightFactor").AsScalar().Set(Hofman.SunlightFactor);
-            _spriteEffect.Effect.GetVariableByName("lightFactor").AsScalar().Set(Hofman.SunlightFactor);
-
-
-
-            if (camera.IsInWater)
-            {
-                _solidEffect.Effect.GetVariableByName("FogStart").AsScalar().Set(8);
-                _solidEffect.Effect.GetVariableByName("FogEnd").AsScalar().Set(64);
-                _solidEffect.Effect.GetVariableByName("FogColor").AsVector().Set(new Vector4(0, 0.2f, 1, 0));
-
-                _waterEffect.Effect.GetVariableByName("FogStart").AsScalar().Set(8);
-                _waterEffect.Effect.GetVariableByName("FogEnd").AsScalar().Set(64);
-                _waterEffect.Effect.GetVariableByName("FogColor").AsVector().Set(new Vector4(0, 0.2f, 1, 0));
-
-                _spriteEffect.Effect.GetVariableByName("FogStart").AsScalar().Set(8);
-                _spriteEffect.Effect.GetVariableByName("FogEnd").AsScalar().Set(64);
-                _spriteEffect.Effect.GetVariableByName("FogColor").AsVector().Set(new Vector4(0, 0.2f, 1, 0));
-            }
-            else
-            {
-                _solidEffect.Effect.GetVariableByName("FogStart").AsScalar().Set(64);
-                _solidEffect.Effect.GetVariableByName("FogEnd").AsScalar().Set(Game.ViewDistance * Chunk.SizeXy);
-                _solidEffect.Effect.GetVariableByName("FogColor").AsVector().Set(new Vector4(0.5f, 0.5f, 0.5f, 1));
-
-                _waterEffect.Effect.GetVariableByName("FogStart").AsScalar().Set(64);
-                _waterEffect.Effect.GetVariableByName("FogEnd").AsScalar().Set(Game.ViewDistance * Chunk.SizeXy);
-                _waterEffect.Effect.GetVariableByName("FogColor").AsVector().Set(new Vector4(0.5f, 0.5f, 0.5f, 1));
-
-                _spriteEffect.Effect.GetVariableByName("FogStart").AsScalar().Set(64);
-                _spriteEffect.Effect.GetVariableByName("FogEnd").AsScalar().Set(Game.ViewDistance * Chunk.SizeXy);
-                _spriteEffect.Effect.GetVariableByName("FogColor").AsVector().Set(new Vector4(0.5f, 0.5f, 0.5f, 1));
-            }
         }
     }
 }

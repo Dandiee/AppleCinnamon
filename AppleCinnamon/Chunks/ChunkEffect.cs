@@ -1,5 +1,6 @@
 ﻿using AppleCinnamon.Extensions;
 using AppleCinnamon.Vertices;
+using SharpDX;
 using SharpDX.D3DCompiler;
 using SharpDX.Direct3D;
 using SharpDX.Direct3D11;
@@ -33,6 +34,26 @@ namespace AppleCinnamon.Chunks
             device.ImmediateContext.InputAssembler.InputLayout = InputLayout;
             device.ImmediateContext.InputAssembler.PrimitiveTopology = PrimitiveTopology;
             Pass.Apply(device.ImmediateContext);
+        }
+
+        public void Update(Camera camera)
+        {
+            Effect.GetVariableByName("WorldViewProjection").AsMatrix().SetMatrix(camera.WorldViewProjection);
+            Effect.GetVariableByName("EyePosition").AsVector().Set(camera.Position.ToVector3());
+            Effect.GetVariableByName("lightFactor").AsScalar().Set(Hofman.SunlightFactor);
+
+            if (camera.IsInWater)
+            {
+                Effect.GetVariableByName("FogStart").AsScalar().Set(8);
+                Effect.GetVariableByName("FogEnd").AsScalar().Set(64);
+                Effect.GetVariableByName("FogColor").AsVector().Set(new Vector4(0, 0.2f, 1, 0));
+            }
+            else
+            {
+                Effect.GetVariableByName("FogStart").AsScalar().Set(64);
+                Effect.GetVariableByName("FogEnd").AsScalar().Set(Game.ViewDistance * Chunk.SizeXy);
+                Effect.GetVariableByName("FogColor").AsVector().Set(new Vector4(0.5f, 0.5f, 0.5f, 1));
+            }
         }
     }
 }

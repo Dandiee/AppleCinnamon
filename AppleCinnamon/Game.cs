@@ -15,6 +15,7 @@ namespace AppleCinnamon
         public static bool IsBackFaceCullingEnabled { get; set; }
         public static bool IsViewFrustumCullingEnabled { get; set; } = true;
         public static bool ShowChunkBoundingBoxes { get; set; } = false;
+        public static bool RenderSky { get; set; } = true;
         public static bool RenderWater { get; set; } = true;
         public static bool RenderSolid { get; set; } = true;
         public static bool RenderSprites { get; set; } = true;
