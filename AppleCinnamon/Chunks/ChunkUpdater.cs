@@ -70,7 +70,7 @@ namespace AppleCinnamon
 
         private void UpdateVisibilityFlags(Chunk chunk, Voxel oldVoxel, Voxel newVoxel, Int3 relativeIndex)
         {
-            var flatIndex = chunk.ToFlatIndex(relativeIndex);
+            var flatIndex = chunk.GetFlatIndex(relativeIndex);
             var newDefinition = newVoxel.GetDefinition();
             var oldDefinition = oldVoxel.GetDefinition();
 
@@ -115,7 +115,7 @@ namespace AppleCinnamon
 
                 if (neighborExists)
                 {
-                    var neighborIndex = neighborAddress.Chunk.ToFlatIndex(neighborAddress.RelativeVoxelIndex);
+                    var neighborIndex = neighborAddress.Chunk.GetFlatIndex(neighborAddress.RelativeVoxelIndex);
                     var hadNeighborVisibility =
                         neighborAddress.Chunk.BuildingContext.VisibilityFlags.TryGetValue(neighborIndex,
                             out var neighborOldVisibilityFlag);

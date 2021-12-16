@@ -5,7 +5,6 @@ using AppleCinnamon.Helper;
 using AppleCinnamon.Pipeline.Context;
 using AppleCinnamon.Settings;
 using SharpDX;
-using Help = AppleCinnamon.Helper.Help;
 
 namespace AppleCinnamon.Pipeline
 {
@@ -33,10 +32,10 @@ namespace AppleCinnamon.Pipeline
             public static readonly EdgePropogation[] All =
             {
                 new(), new(),
-                new(Face.Left, Help.GetChunkFlatIndex(-1, 0), new Int3(0, 1, 1), new Int3(Chunk.SizeXy - 1,0,0), new Int3(0, 0, 0)),
-                new(Face.Right, Help.GetChunkFlatIndex(1, 0), new Int3(0, 1, 1), new Int3(0, 0, 0), new Int3(Chunk.SizeXy - 1, 0, 0)),
-                new(Face.Front, Help.GetChunkFlatIndex(0, -1), new Int3(1, 1, 0), new Int3(0, 0, Chunk.SizeXy - 1), new Int3(0, 0, 0)),
-                new(Face.Back, Help.GetChunkFlatIndex(0, 1), new Int3(1, 1, 0), new Int3(0, 0, 0), new Int3(0, 0, Chunk.SizeXy - 1)),
+                new(Face.Left, Chunk.GetChunkFlatIndex(-1, 0), new Int3(0, 1, 1), new Int3(Chunk.SizeXy - 1,0,0), new Int3(0, 0, 0)),
+                new(Face.Right, Chunk.GetChunkFlatIndex(1, 0), new Int3(0, 1, 1), new Int3(0, 0, 0), new Int3(Chunk.SizeXy - 1, 0, 0)),
+                new(Face.Front, Chunk.GetChunkFlatIndex(0, -1), new Int3(1, 1, 0), new Int3(0, 0, Chunk.SizeXy - 1), new Int3(0, 0, 0)),
+                new(Face.Back, Chunk.GetChunkFlatIndex(0, 1), new Int3(1, 1, 0), new Int3(0, 0, 0), new Int3(0, 0, Chunk.SizeXy - 1)),
             };
 
             public readonly Face TargetToSourceDirection;
@@ -70,12 +69,12 @@ namespace AppleCinnamon.Pipeline
                     var indexMask = new Int3(h * context.DirectionMask.X, j, h * context.DirectionMask.Z);
 
                     var sourceIndex = indexMask + context.SourceOffset;
-                    var sourceFlatIndex = sourceChunk.ToFlatIndex(sourceIndex);
+                    var sourceFlatIndex = sourceChunk.GetFlatIndex(sourceIndex);
                     var sourceVoxel = sourceChunk.Voxels[sourceFlatIndex];
                     var sourceDefinition = sourceVoxel.GetDefinition();
 
                     var targetIndex = indexMask + context.TargetOffset;
-                    var targetFlatIndex = targetChunk.ToFlatIndex(targetIndex);
+                    var targetFlatIndex = targetChunk.GetFlatIndex(targetIndex);
                     var targetVoxel = targetChunk.Voxels[targetFlatIndex];
                     var targetDefinition = targetVoxel.GetDefinition();
 

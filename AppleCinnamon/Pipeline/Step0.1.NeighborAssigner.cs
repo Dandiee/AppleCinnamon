@@ -13,9 +13,7 @@ namespace AppleCinnamon.Pipeline
         public override IEnumerable<Chunk> Process(Chunk chunk)
         {
             _chunks.TryAdd(chunk.ChunkIndex, chunk);
-
-            chunk.Neighbors[Help.GetChunkFlatIndex(0, 0)] = chunk;
-
+            chunk.SetNeighbor(0, 0, chunk);
             var chunks = GetFinishedChunks(chunk).ToList();
             return chunks;
         }
@@ -32,11 +30,8 @@ namespace AppleCinnamon.Pipeline
 
                     if (_chunks.TryGetValue(absoluteNeighborIndex, out var neighborChunk))
                     {
-                        var relativeNeighborFlatIndex = Help.GetChunkFlatIndex(i, j);
-
-                        chunk.Neighbors[relativeNeighborFlatIndex] = neighborChunk;
-                        neighborChunk.Neighbors[Help.GetChunkFlatIndex(i * -1, j * -1)] = chunk;
-
+                        chunk.SetNeighbor(i, j, neighborChunk);
+                        neighborChunk.SetNeighbor(i * -1, j * -1, chunk);
 
                         if (neighborChunk.Neighbors.All(a => a != null))
                         {

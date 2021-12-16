@@ -20,10 +20,10 @@ namespace AppleCinnamon
         public static readonly IReadOnlyDictionary<int, Face[]> GlobalLightFinalizerCornerMapping =
             new Dictionary<int, Face[]>
             {
-                [Help.GetChunkFlatIndex(-1, -1)] = new[] { Face.Right, Face.Back },
-                [Help.GetChunkFlatIndex(1, -1)] = new[] { Face.Left, Face.Back },
-                [Help.GetChunkFlatIndex(1, 1)] = new[] { Face.Left, Face.Front },
-                [Help.GetChunkFlatIndex(-1, 1)] = new[] { Face.Right, Face.Front },
+                [Chunk.GetChunkFlatIndex(-1, -1)] = new[] { Face.Right, Face.Back },
+                [Chunk.GetChunkFlatIndex(1, -1)] = new[] { Face.Left, Face.Back },
+                [Chunk.GetChunkFlatIndex(1, 1)] = new[] { Face.Left, Face.Front },
+                [Chunk.GetChunkFlatIndex(-1, 1)] = new[] { Face.Right, Face.Front },
             };
     }
 }

@@ -21,28 +21,5 @@ namespace AppleCinnamon.Helper
         public static Int3 Round(this Vector3 vector) => new((int) Math.Round(vector.X), (int) Math.Round(vector.Y), (int) Math.Round(vector.Z));
 
         public static string ToNonRetardedString(this Vector3 vector) => $"{vector.X:F2}, {vector.Y:F2}, {vector.Z:F2}";
-
-
-
-        [InlineMethod.Inline]
-        public static int GetChunkFlatIndex(int i, int j) => 3 * i + j + 4;
-
-        public static bool TryGetChunkIndexByAbsoluteVoxelIndex(Int3 absoluteVoxelIndex, out Int2 chunkIndex)
-        {
-            if (absoluteVoxelIndex.Y < 0)
-            {
-                chunkIndex = Int2.Zero;
-                return false;
-            }
-
-            chunkIndex = new Int2(
-                absoluteVoxelIndex.X < 0
-                    ? ((absoluteVoxelIndex.X + 1) / Chunk.SizeXy) - 1
-                    : absoluteVoxelIndex.X / Chunk.SizeXy,
-                absoluteVoxelIndex.Z < 0
-                    ? ((absoluteVoxelIndex.Z + 1) / Chunk.SizeXy) - 1
-                    : absoluteVoxelIndex.Z / Chunk.SizeXy);
-            return true;
-        }
     }
 }

@@ -14,10 +14,10 @@ namespace AppleCinnamon.Pipeline
                 throw new Exception("nooooo waaaay");
             }
 
-            var leftChunk = chunk.Neighbors[Help.GetChunkFlatIndex(-1, 0)];
-            var rightChunk = chunk.Neighbors[Help.GetChunkFlatIndex(1, 0)];
-            var frontChunk = chunk.Neighbors[Help.GetChunkFlatIndex(0, -1)];
-            var backChunk = chunk.Neighbors[Help.GetChunkFlatIndex(0, 1)];
+            var leftChunk = chunk.GetNeighbor(-1, 0);
+            var rightChunk = chunk.GetNeighbor(1, 0);
+            var frontChunk = chunk.GetNeighbor(0, -1);
+            var backChunk = chunk.GetNeighbor(0, 1);
 
             ProcessSide(chunk, leftChunk, chunk.BuildingContext.Left);
             ProcessSide(chunk, rightChunk, chunk.BuildingContext.Right);
