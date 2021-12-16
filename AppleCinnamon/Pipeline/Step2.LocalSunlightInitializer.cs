@@ -4,7 +4,7 @@ using SharpDX;
 
 namespace AppleCinnamon.Pipeline
 {
-    public sealed class LocalSunlightInitializer : PipelineBlock<Chunk, Chunk>
+    public sealed class LocalSunlightInitializer : TransformChunkPipelineBlock
     {
         public override Chunk Process(Chunk chunk)
         {

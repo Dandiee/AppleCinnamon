@@ -6,7 +6,7 @@ using AppleCinnamon.Settings;
 
 namespace AppleCinnamon.Pipeline
 {
-    public sealed class ArtifactGenerator : PipelineBlock<Chunk, Chunk>
+    public sealed class ArtifactGenerator : TransformChunkPipelineBlock
     {
         private static readonly Random Rnd = new(4578);
 

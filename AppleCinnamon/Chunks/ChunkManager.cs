@@ -1,4 +1,5 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks.Dataflow;
@@ -11,7 +12,7 @@ namespace AppleCinnamon
 {
     public sealed partial class ChunkManager
     {
-        public static readonly int InitialDegreeOfParallelism = 1; //Environment.ProcessorCount / 2;
+        public static readonly int InitialDegreeOfParallelism = 1; //2;//Environment.ProcessorCount;
         private int _finalizedChunks;
         public bool IsInitialized { get; private set; }
 
@@ -36,8 +37,17 @@ namespace AppleCinnamon
 
         public void Draw(Camera camera)
         {
-            var chunksToRender = Chunks
+            var chunksToRender = Chunks.Select(s =>
+                {
+                    s.Value.IsRendered = false;
+                    return s;
+                })
                 .Where(chunk => !Game.IsViewFrustumCullingEnabled || camera.BoundingFrustum.Contains(ref chunk.Value.BoundingBox) != ContainmentType.Disjoint)
+                .Select(s =>
+                {
+                    s.Value.IsRendered = true;
+                    return s;
+                })
                 .ToList();
 
             _chunkDrawer.Draw(chunksToRender, camera);

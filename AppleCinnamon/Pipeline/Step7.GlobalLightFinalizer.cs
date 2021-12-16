@@ -8,7 +8,7 @@ using SharpDX;
 
 namespace AppleCinnamon.Pipeline
 {
-    public sealed class GlobalLightFinalizer : PipelineBlock<Chunk, Chunk>
+    public sealed class GlobalLightFinalizer : TransformChunkPipelineBlock
     {
         public override Chunk Process(Chunk chunk)
         {

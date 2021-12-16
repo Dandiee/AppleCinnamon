@@ -2,7 +2,7 @@
 
 namespace AppleCinnamon.Pipeline
 {
-    public sealed class LocalLightPropagationService : PipelineBlock<Chunk, Chunk>
+    public sealed class LocalLightPropagationService : TransformChunkPipelineBlock
     {
         public override Chunk Process(Chunk chunk)
         {

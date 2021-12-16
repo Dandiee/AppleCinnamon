@@ -8,11 +8,11 @@ namespace AppleCinnamon.Pipeline
 {
     public sealed class NeighborAssigner : PipelineBlock<Chunk, IEnumerable<Chunk>>
     {
-        private readonly ConcurrentDictionary<Int2, Chunk> _chunks = new();
+        public static readonly ConcurrentDictionary<Int2, Chunk> Chunks = new();
 
         public override IEnumerable<Chunk> Process(Chunk chunk)
         {
-            _chunks.TryAdd(chunk.ChunkIndex, chunk);
+            Chunks.TryAdd(chunk.ChunkIndex, chunk);
             chunk.SetNeighbor(0, 0, chunk);
             var chunks = GetFinishedChunks(chunk).ToList();
             return chunks;
@@ -28,7 +28,7 @@ namespace AppleCinnamon.Pipeline
 
                     var absoluteNeighborIndex = new Int2(i + chunk.ChunkIndex.X, j + chunk.ChunkIndex.Y);
 
-                    if (_chunks.TryGetValue(absoluteNeighborIndex, out var neighborChunk))
+                    if (Chunks.TryGetValue(absoluteNeighborIndex, out var neighborChunk))
                     {
                         chunk.SetNeighbor(i, j, neighborChunk);
                         neighborChunk.SetNeighbor(i * -1, j * -1, chunk);

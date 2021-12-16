@@ -8,19 +8,6 @@ using AppleCinnamon.Settings;
 
 namespace AppleCinnamon.Pipeline
 {
-    [Flags]
-    public enum VisibilityFlag : byte
-    {
-        None = 0,
-        Top = 1,
-        Bottom = 2,
-        Left = 4,
-        Right = 8,
-        Front = 16,
-        Back = 32,
-        All = 63
-    }
-
     public static class VisibilityFlagExtensions
     {
         private static readonly IReadOnlyDictionary<VisibilityFlag, VisibilityFlag> OppositeMapping =
@@ -53,7 +40,7 @@ namespace AppleCinnamon.Pipeline
     }
 
 
-    public sealed class FullScanner : PipelineBlock<Chunk, Chunk>
+    public sealed class FullScanner : TransformChunkPipelineBlock
     {
         public override Chunk Process(Chunk chunk)
         {

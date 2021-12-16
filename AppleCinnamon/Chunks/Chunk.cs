@@ -24,6 +24,8 @@ namespace AppleCinnamon
         public ChunkBuffers Buffers { get; set; }
         public Vector3 Center { get; private set; }
         public Vector2 Center2d { get; private set; }
+        public bool IsRendered { get; set; }
+        public int PipelineStep { get; set; }
 
 
         public Chunk(Int2 chunkIndex, Voxel[] voxels)

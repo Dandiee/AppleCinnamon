@@ -21,6 +21,7 @@ namespace AppleCinnamon
         public static bool RenderSolid { get; set; } = true;
         public static bool RenderSprites { get; set; } = true;
         public static bool RenderBoxes { get; set; } = true;
+        public static bool ShowPipelineVisualization { get; set; } = false;
         public static bool Debug { get; set; } = true;
 
         private readonly ChunkManager _chunkManager;
@@ -30,6 +31,7 @@ namespace AppleCinnamon
         private readonly Graphics _graphics;
         private readonly Crosshair _crosshair;
         private readonly SkyDome _skyDome;
+        private readonly PipelineVisualizer _pipelineVisualizer;
         private readonly double[] _lastRenderTimes;
         private DateTime _lastTick;
         private int _lastRenderTimeIndex;
@@ -49,6 +51,7 @@ namespace AppleCinnamon
             _skyDome = new SkyDome(_graphics.Device);
 
             _lastRenderTimes = new double[20];
+            _pipelineVisualizer = new PipelineVisualizer(_graphics);
 
             StartLoop();
         }
@@ -85,6 +88,11 @@ namespace AppleCinnamon
 
                     _crosshair.Draw();
                     _debugLayout.Draw(_chunkManager, _camera, this);
+
+                    if (ShowPipelineVisualization)
+                    {
+                        _pipelineVisualizer.Draw();
+                    }
                 });
 
                 _lastRenderTimes[_lastRenderTimeIndex] = elapsedTime.TotalMilliseconds;

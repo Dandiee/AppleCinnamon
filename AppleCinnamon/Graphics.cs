@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Windows.Forms;
+using AppleCinnamon.Extensions;
 using SharpDX;
 using SharpDX.Direct2D1;
 using SharpDX.Direct3D;
@@ -11,6 +12,14 @@ using AlphaMode = SharpDX.Direct2D1.AlphaMode;
 using Device = SharpDX.Direct3D11.Device;
 using Factory = SharpDX.Direct2D1.Factory;
 using PixelFormat = SharpDX.Direct2D1.PixelFormat;
+
+using _d2d = SharpDX.Direct2D1;
+using _d3d = SharpDX.Direct3D;
+using _d3d11 = SharpDX.Direct3D11;
+using _dxgi = SharpDX.DXGI;
+using _directWrite = SharpDX.DirectWrite;
+using _wic = SharpDX.WIC;
+
 
 namespace AppleCinnamon
 {
@@ -27,6 +36,9 @@ namespace AppleCinnamon
         public readonly SharpDX.DirectWrite.Factory DirectWrite;
 
         public const float ScreenSizeScale = 0.9f;
+
+        public readonly _d2d.DeviceContext3 D2DeviceContext;
+        public readonly SpriteBatch SpriteBatch;
 
         public Graphics()
         {
@@ -53,6 +65,13 @@ namespace AppleCinnamon
 
             D2dFactory = new Factory();
 
+            D2DeviceContext =
+                new _d2d.DeviceContext3(
+                    new _d2d.Device3(new Factory().QueryInterface<_d2d.Factory4>(),
+                        device.QueryInterface<_dxgi.Device>()), DeviceContextOptions.None);
+            D2DeviceContext.Target = D2DeviceContext.CreateBitmapRenderTarget(swapChain);
+            SpriteBatch = new SpriteBatch(D2DeviceContext);
+
             SwapChain.GetParent<SharpDX.DXGI.Factory>().MakeWindowAssociation(RenderForm.Handle, WindowAssociationFlags.IgnoreAll);
 
             var backBuffer = FromSwapChain<Texture2D>(SwapChain, 0);
@@ -73,7 +92,13 @@ namespace AppleCinnamon
             }));
 
             DirectWrite = new SharpDX.DirectWrite.Factory();
+
+
+           
+
             Device.ImmediateContext.Rasterizer.SetViewport(new Viewport(0, 0, RenderForm.ClientSize.Width, RenderForm.ClientSize.Height, 0.0f, 1.0f));
+
+            
         }
 
         public void Draw(Action drawActions)

@@ -1,9 +1,13 @@
 ﻿using SharpDX;
+using SharpDX.Direct2D1;
 using SharpDX.Direct3D11;
 using SharpDX.DXGI;
+using SharpDX.IO;
 using SharpDX.WIC;
 using Device = SharpDX.Direct3D11.Device;
-
+using DeviceContext = SharpDX.Direct2D1.DeviceContext;
+using PixelFormat = SharpDX.WIC.PixelFormat;
+using _d2d = SharpDX.Direct2D1;
 namespace AppleCinnamon.Extensions
 {
     public static class DeviceExtensions
@@ -38,6 +42,40 @@ namespace AppleCinnamon.Extensions
             formatConverter.Initialize(new BitmapDecoder(factory, filename, DecodeOptions.CacheOnDemand).GetFrame(0),
                 PixelFormat.Format32bppPRGBA, BitmapDitherType.None, null, 0.0, BitmapPaletteType.Custom);
             return formatConverter;
+        }
+
+        public static Bitmap1 CreateD2DBitmap(this DeviceContext deviceContext, string filePath)
+        {
+            var imagingFactory = new ImagingFactory();
+
+            var fileStream = new NativeFileStream(
+                filePath,
+                NativeFileMode.Open,
+                NativeFileAccess.Read);
+
+            var bitmapDecoder = new BitmapDecoder(imagingFactory, fileStream, DecodeOptions.CacheOnDemand);
+            var frame = bitmapDecoder.GetFrame(0);
+
+            var converter = new FormatConverter(imagingFactory);
+            converter.Initialize(frame, SharpDX.WIC.PixelFormat.Format32bppPRGBA);
+
+            var newBitmap = Bitmap1.FromWicBitmap(deviceContext, converter);
+
+            return newBitmap;
+        }
+
+        public static Bitmap1 CreateBitmapRenderTarget(this _d2d.DeviceContext3 d2dDeContext, SwapChain swapChain)
+        {
+            using var backBuffer = SharpDX.Direct3D11.Resource.FromSwapChain<Texture2D>(swapChain, 0);
+            using var surface = backBuffer.QueryInterface<Surface>();
+
+            var bmpProperties = new BitmapProperties1(
+                new SharpDX.Direct2D1.PixelFormat(Format.R8G8B8A8_UNorm, SharpDX.Direct2D1.AlphaMode.Premultiplied),
+                dpiX: 96,
+                dpiY: 96,
+                bitmapOptions: BitmapOptions.Target | BitmapOptions.CannotDraw);
+
+            return new Bitmap1(d2dDeContext, surface, bmpProperties);
         }
     }
 }

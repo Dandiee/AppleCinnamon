@@ -2,6 +2,9 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading.Tasks.Dataflow;
+using AppleCinnamon.Helper;
+using SharpDX;
 
 namespace AppleCinnamon.Pipeline.Context
 {
@@ -19,7 +22,7 @@ namespace AppleCinnamon.Pipeline.Context
             _type = GetType();
         }
 
-        public TOutput Execute(TInput input)
+        public virtual TOutput Execute(TInput input)
         {
             var sw = Stopwatch.StartNew();
             var result = Process(input);
@@ -34,5 +37,26 @@ namespace AppleCinnamon.Pipeline.Context
         }
 
         public abstract TOutput Process(TInput input);
+    }
+
+
+    public abstract class TransformChunkPipelineBlock : PipelineBlock<Chunk, Chunk>
+    {
+        public static readonly List<TransformChunkPipelineBlock> Blocks = new();
+
+        public readonly int PipelineStepIndex;
+
+        protected TransformChunkPipelineBlock()
+        {
+            PipelineStepIndex = Blocks.Count;
+            Blocks.Add(this);
+        }
+
+        public override Chunk Execute(Chunk input)
+        {
+            input.PipelineStep = PipelineStepIndex;
+            var result = base.Execute(input);
+            return result;
+        }
     }
 }

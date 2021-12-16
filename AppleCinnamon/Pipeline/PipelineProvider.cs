@@ -52,19 +52,25 @@ namespace AppleCinnamon.Pipeline
                 MaxDegreeOfParallelism = maxDegreeOfParallelism
             };
 
+            var singleThreaded = new ExecutionDataflowBlockOptions
+            {
+                MaxDegreeOfParallelism = 1
+            };
+
+
             var pipeline = new TransformBlock<Int2, Chunk>(_terrainGenerator.Execute, dataflowOptions);
-            var neighborAssigner = new TransformManyBlock<Chunk, Chunk>(_neighborAssigner.Execute, dataflowOptions);
+            var neighborAssigner = new TransformManyBlock<Chunk, Chunk>(_neighborAssigner.Execute, singleThreaded);
             var artifactGenerator = new TransformBlock<Chunk, Chunk>(_artifactGenerator.Execute, dataflowOptions);
-            var mapReadyPool = new TransformManyBlock<Chunk, Chunk>(_mapReadyPool.Execute, dataflowOptions);
+            var mapReadyPool = new TransformManyBlock<Chunk, Chunk>(_mapReadyPool.Execute, singleThreaded);
 
             var sunlightInitializer = new TransformBlock<Chunk, Chunk>(_localSunlightInitializer.Execute, dataflowOptions);
             var fullScan = new TransformBlock<Chunk, Chunk>(_fullScanner.Execute, dataflowOptions);
             var localLightPropagation = new TransformBlock<Chunk, Chunk>(_localLightPropagationService.Execute, dataflowOptions);
-            var chunkPool = new TransformManyBlock<Chunk, Chunk>(_chunkPool.Execute, dataflowOptions);
+            var chunkPool = new TransformManyBlock<Chunk, Chunk>(_chunkPool.Execute, singleThreaded);
             
             var globalVisibility = new TransformBlock<Chunk, Chunk>(_globalVisibilityFinalizer.Execute, dataflowOptions);
             var lightFinalizer = new TransformBlock<Chunk, Chunk>(_globalLightFinalizer.Execute, dataflowOptions);
-            var buildPool = new TransformManyBlock<Chunk, Chunk>(_buildPool.Execute, dataflowOptions);
+            var buildPool = new TransformManyBlock<Chunk, Chunk>(_buildPool.Execute, singleThreaded);
             
             var dispatcher = new TransformBlock<Chunk, Chunk>(_chunkDispatcher.Execute, dataflowOptions);
             
