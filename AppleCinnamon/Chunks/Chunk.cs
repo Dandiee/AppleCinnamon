@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using AppleCinnamon.Helper;
 using SharpDX;
 
@@ -21,11 +22,17 @@ namespace AppleCinnamon
         public readonly Chunk[] Neighbors;
         public readonly Vector3 ChunkIndexVector;
 
+        public bool IsMarkedForDelete { get; set; }
+        public DateTime MarkedForDeleteAt { get; set; }
+
         public ChunkBuffers Buffers { get; set; }
         public Vector3 Center { get; private set; }
         public Vector2 Center2d { get; private set; }
         public bool IsRendered { get; set; }
         public int PipelineStep { get; set; }
+        public bool IsReadyToRender { get; set; }
+        public bool IsDebugHighlighted { get; set; }
+        public bool ShouldBeDeadByNow { get; set; }
 
 
         public Chunk(Int2 chunkIndex, Voxel[] voxels)
@@ -98,6 +105,24 @@ namespace AppleCinnamon
             BoundingBox = new BoundingBox(position - size, position + size);
             Center = position;
             Center2d = new Vector2(position.X, position.Z);
+        }
+
+
+        public void DereferenceNeighbors()
+        {
+            foreach (var neighbor in Neighbors)
+            {
+                if (neighbor != null)
+                {
+                    for (var i = 0; i < neighbor.Neighbors.Length; i++)
+                    {
+                        if (neighbor.Neighbors[i] == this)
+                        {
+                            neighbor.Neighbors[i] = null;
+                        }
+                    }
+                }
+            }
         }
     }
 }

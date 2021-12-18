@@ -10,7 +10,7 @@ namespace AppleCinnamon.Services
     {
         public const int LeavesDespawnRate = 100;
 
-        public static Action<Chunk, int, Int3>[] CanopyFunctions =
+        public static Action<Random, Chunk, int, Int3>[] CanopyFunctions =
         {
             //CanopyBeveledRectangle,
             //CanopyPyramid,
@@ -27,18 +27,18 @@ namespace AppleCinnamon.Services
             VoxelDefinition.Wood5
         };
 
-        public static void Tree(Chunk chunk, Int3 relativeIndex)
+        public static void Tree(Random rnd, Chunk chunk, Int3 relativeIndex)
         {
-            var trunkHeight = Rnd.Next(3, 15);
+            var trunkHeight = rnd.Next(3, 15);
 
-            var canopy = CanopyFunctions[Rnd.Next(0, CanopyFunctions.Length)];
-            var treeType = TreeTypes[Rnd.Next(0, TreeTypes.Length)];
+            var canopy = CanopyFunctions[rnd.Next(0, CanopyFunctions.Length)];
+            var treeType = TreeTypes[rnd.Next(0, TreeTypes.Length)];
 
             for (var j = 0; j < trunkHeight; j++)
             {
                 chunk.SetSafe(relativeIndex.X, relativeIndex.Y + j, relativeIndex.Z, treeType.Create());
 
-                if (Rnd.Next() % 2 == 0)
+                if (rnd.Next() % 2 == 0)
                 {
                     if (relativeIndex.X < Chunk.SizeXy - 1)
                     {
@@ -79,7 +79,7 @@ namespace AppleCinnamon.Services
 
             }
 
-            canopy(chunk, trunkHeight, relativeIndex + new Int3(0, trunkHeight, 0));
+            canopy(rnd, chunk, trunkHeight, relativeIndex + new Int3(0, trunkHeight, 0));
         }
 
         public static void GoDown(Chunk chunk, Int3 relativeIndex, Func<Chunk, int, bool> callback)
@@ -101,11 +101,11 @@ namespace AppleCinnamon.Services
             }
         }
 
-        public static void CanopyVanilla(Chunk chunk, int trunkHeight, Int3 trunkTop)
+        public static void CanopyVanilla(Random rnd, Chunk chunk, int trunkHeight, Int3 trunkTop)
         {
             foreach (var relativeVoxelIndex in ShapeGenerator.Rectangle(trunkTop, 3, 2, true))
             {
-                if (Rnd.Next() % LeavesDespawnRate == 0) continue;
+                if (rnd.Next() % LeavesDespawnRate == 0) continue;
 
                 var address = chunk.GetAddressChunk(relativeVoxelIndex);
                 address.SetVoxel(VoxelDefinition.Leaves.Create(2));
@@ -115,7 +115,7 @@ namespace AppleCinnamon.Services
                     GoDown(chunk, relativeVoxelIndex - Int3.UnitX, (c, fi) =>
                     {
                         c.SetSafe(fi, VoxelDefinition.Tendril.Create(2, Face.Right));
-                        return Rnd.Next() % 2 == 0;
+                        return rnd.Next() % 2 == 0;
                     });
                 }
 
@@ -124,7 +124,7 @@ namespace AppleCinnamon.Services
                     GoDown(chunk, relativeVoxelIndex + Int3.UnitX, (c, fi) =>
                     {
                         c.SetSafe(fi, VoxelDefinition.Tendril.Create(2, Face.Left));
-                        return Rnd.Next() % 2 == 0;
+                        return rnd.Next() % 2 == 0;
                     });
                 }
 
@@ -133,7 +133,7 @@ namespace AppleCinnamon.Services
                     GoDown(chunk, relativeVoxelIndex - Int3.UnitZ, (c, fi) =>
                     {
                         c.SetSafe(fi, VoxelDefinition.Tendril.Create(2, Face.Back));
-                        return Rnd.Next() % 2 == 0;
+                        return rnd.Next() % 2 == 0;
                     });
                 }
 
@@ -142,43 +142,43 @@ namespace AppleCinnamon.Services
                     GoDown(chunk, relativeVoxelIndex + Int3.UnitZ, (c, fi) =>
                     {
                         c.SetSafe(fi, VoxelDefinition.Tendril.Create(2, Face.Front));
-                        return Rnd.Next() % 2 == 0;
+                        return rnd.Next() % 2 == 0;
                     });
                 }
             }
 
             foreach (var relativeVoxelIndex in ShapeGenerator.Rectangle(trunkTop + new Int3(0, 2, 0), 1, 2, true))
             {
-                if (Rnd.Next() % LeavesDespawnRate == 0) continue;
+                if (rnd.Next() % LeavesDespawnRate == 0) continue;
 
                 var address = chunk.GetAddressChunk(relativeVoxelIndex);
                 address.SetVoxel(VoxelDefinition.Leaves.Create(2));
             }
         }
 
-        public static void CanopyPyramid(Chunk chunk, int trunkHeight, Int3 trunkTop)
+        public static void CanopyPyramid(Random rnd, Chunk chunk, int trunkHeight, Int3 trunkTop)
         {
             foreach (var relativeVoxelIndex in ShapeGenerator.Pyramid(trunkTop, 3, 4))
             {
-                if (Rnd.Next() % LeavesDespawnRate == 0) continue;
+                if (rnd.Next() % LeavesDespawnRate == 0) continue;
 
                 var address = chunk.GetAddressChunk(relativeVoxelIndex);
                 address.SetVoxel(VoxelDefinition.Leaves.Create(2));
             }
         }
 
-        public static void CanopySphere(Chunk chunk, int trunkHeight, Int3 trunkTop)
+        public static void CanopySphere(Random rnd, Chunk chunk, int trunkHeight, Int3 trunkTop)
         {
             foreach (var relativeVoxelIndex in ShapeGenerator.Sphere(trunkTop, 4))
             {
-                if (Rnd.Next() % LeavesDespawnRate == 0) continue;
+                if (rnd.Next() % LeavesDespawnRate == 0) continue;
 
                 var address = chunk.GetAddressChunk(relativeVoxelIndex);
                 address.SetVoxel(VoxelDefinition.Leaves.Create(2));
             }
         }
 
-        public static void CanopyBeveledRectangle(Chunk chunk, int trunkHeight, Int3 trunkTop)
+        public static void CanopyBeveledRectangle(Random rnd, Chunk chunk, int trunkHeight, Int3 trunkTop)
         {
             var radius = 2;
             var minCorner = trunkTop - new Int3(radius);
@@ -186,7 +186,7 @@ namespace AppleCinnamon.Services
 
             foreach (var relativeVoxelIndex in ShapeGenerator.RectangleWithBevel(minCorner, size))
             {
-                if (Rnd.Next() % LeavesDespawnRate == 0) continue;
+                if (rnd.Next() % LeavesDespawnRate == 0) continue;
 
                 var address = chunk.GetAddressChunk(relativeVoxelIndex);
                 address.SetVoxel(VoxelDefinition.Leaves.Create(2));

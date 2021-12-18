@@ -13,7 +13,10 @@ namespace AppleCinnamon
         public static readonly Vector3 StartPosition = new(0, 140, 0);
 
         public const int ViewDistance = 32;
+        public const int NumberOfPools = 4;
+        public static readonly TimeSpan ChunkDespawnCooldown = TimeSpan.FromSeconds(5);
         public static bool IsBackFaceCullingEnabled { get; set; }
+        
         public static bool IsViewFrustumCullingEnabled { get; set; } = true;
         public static bool ShowChunkBoundingBoxes { get; set; } = false;
         public static bool RenderSky { get; set; } = true;
@@ -21,7 +24,7 @@ namespace AppleCinnamon
         public static bool RenderSolid { get; set; } = true;
         public static bool RenderSprites { get; set; } = true;
         public static bool RenderBoxes { get; set; } = true;
-        public static bool ShowPipelineVisualization { get; set; } = false;
+        public static bool ShowPipelineVisualization { get; set; } = true;
         public static bool Debug { get; set; } = true;
 
         private readonly ChunkManager _chunkManager;
@@ -91,7 +94,7 @@ namespace AppleCinnamon
 
                     if (ShowPipelineVisualization)
                     {
-                        _pipelineVisualizer.Draw();
+                        _pipelineVisualizer.Draw(_camera, _chunkManager);
                     }
                 });
 

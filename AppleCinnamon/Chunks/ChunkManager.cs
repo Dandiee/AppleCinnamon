@@ -1,18 +1,23 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks.Dataflow;
+using System.Windows.Forms.VisualStyles;
 using AppleCinnamon.Chunks;
 using AppleCinnamon.Helper;
 using AppleCinnamon.Pipeline;
+using AppleCinnamon.Pipeline.Context;
 using SharpDX;
 
 namespace AppleCinnamon
 {
     public sealed partial class ChunkManager
     {
-        public static readonly int InitialDegreeOfParallelism = 2;//Environment.ProcessorCount;
+        public static readonly int InitialDegreeOfParallelism = 1;//Environment.ProcessorCount;
         private int _finalizedChunks;
         public bool IsInitialized { get; private set; }
 
@@ -22,38 +27,94 @@ namespace AppleCinnamon
         private readonly ChunkDrawer _chunkDrawer;
         private Int2? _lastQueueIndex;
         private readonly TransformBlock<Int2, Chunk> _pipeline;
+        public readonly NeighborAssigner _neighborAssignerPipelineBlock;
 
         public ChunkManager(Graphics graphics)
         {
             _chunkDrawer = new ChunkDrawer(graphics.Device);
             Chunks = new ConcurrentDictionary<Int2, Chunk>();
             _queuedChunks = new ConcurrentDictionary<Int2, object>();
-            _pipeline = new PipelineProvider(graphics.Device).CreatePipeline(InitialDegreeOfParallelism, Finalize);
+            _pipeline = new PipelineProvider(graphics.Device).CreatePipeline(InitialDegreeOfParallelism, Finalize, out _neighborAssignerPipelineBlock);
             _chunkUpdater = new ChunkUpdater(graphics, this);
             
             QueueChunksByIndex(Int2.Zero);
         }
 
+
+
+        [SuppressMessage("ReSharper.DPA", "DPA0002: Excessive memory allocations in SOH", MessageId = "type: System.Collections.Generic.KeyValuePair`2[AppleCinnamon.Helper.Int2,AppleCinnamon.Chunk][]")]
         public void Draw(Camera camera)
         {
-            var chunksToRender = Chunks.Select(s =>
+            var now = DateTime.Now;
+            var chunksToDelete = new List<Chunk>();
+            var chunksToRender = _neighborAssignerPipelineBlock.ChunkList.Select(s =>
                 {
-                    s.Value.IsRendered = false;
+                    s.IsRendered = false;
+
+                    var distanceX = Math.Abs(camera.CurrentChunkIndex.X - s.ChunkIndex.X);
+                    var distanceY = Math.Abs(camera.CurrentChunkIndex.Y - s.ChunkIndex.Y);
+                    var maxDistance = Math.Max(distanceX, distanceY);
+
+                    if (maxDistance > Game.ViewDistance + Game.NumberOfPools)
+                    {
+                        if (s.IsMarkedForDelete)
+                        {
+                            if ((now - s.MarkedForDeleteAt) > Game.ChunkDespawnCooldown)
+                            {
+                                chunksToDelete.Add(s);
+                            }
+                        }
+                        else
+                        {
+                            s.MarkedForDeleteAt = now;
+                            s.IsMarkedForDelete = true;
+                        }
+                    }
+                    else if (s.IsMarkedForDelete)
+                    {
+                        s.IsMarkedForDelete = false;
+                    }
+
                     return s;
                 })
-                .Where(chunk => !Game.IsViewFrustumCullingEnabled || camera.BoundingFrustum.Contains(ref chunk.Value.BoundingBox) != ContainmentType.Disjoint)
+                .Where(chunk => chunk.IsReadyToRender && (!Game.IsViewFrustumCullingEnabled || camera.BoundingFrustum.Contains(ref chunk.BoundingBox) != ContainmentType.Disjoint))
                 .Select(s =>
                 {
-                    s.Value.IsRendered = true;
+                    s.IsRendered = true;
                     return s;
                 })
                 .ToList();
+
+            if (true && chunksToDelete.Count > 0)
+            {
+                Debug.WriteLine($"ChunkDelted: {string.Join(", ", chunksToDelete.Select(s => $"({s.ChunkIndex})"))}");
+
+                foreach (var chunk in chunksToDelete)
+                {
+                    var b = true;
+                    ChunkPoolPipelineBlock.RemoveChunk(chunk.ChunkIndex);
+
+                    /*
+                    if (!b) throw new Exception(); b = NeighborAssigner.Chunks.TryRemove(chunk.ChunkIndex, out _);
+                    if (!b) throw new Exception(); b = MapReadyPool.Chunks.TryRemove(chunk.ChunkIndex, out _);
+                    if (!b) throw new Exception(); b = MapReadyPool.DispatchedChunks.Remove(chunk.ChunkIndex);
+                    if (!b) throw new Exception(); b = ChunkPool.Chunks.TryRemove(chunk.ChunkIndex, out _);
+                    if (!b) throw new Exception(); b = BuildPool.Chunks.TryRemove(chunk.ChunkIndex, out _);
+                    */
+                    _queuedChunks.TryRemove(chunk.ChunkIndex, out _);
+                    Chunks.TryRemove(chunk.ChunkIndex, out _);
+
+                    chunk.DereferenceNeighbors();
+                    chunk.ShouldBeDeadByNow = true;
+                }
+            }
 
             _chunkDrawer.Draw(chunksToRender, camera);
         }
 
         private void Finalize(Chunk chunk)
         {
+            chunk.IsReadyToRender = true;
             Chunks.TryAdd(chunk.ChunkIndex, chunk);
             _queuedChunks.TryRemove(chunk.ChunkIndex, out _);
 
@@ -81,11 +142,12 @@ namespace AppleCinnamon
         {
             if (!_lastQueueIndex.HasValue || _lastQueueIndex != currentChunkIndex)
             {
-                foreach (var relativeChunkIndex in GetSurroundingChunks(Game.ViewDistance))
+                foreach (var relativeChunkIndex in GetSurroundingChunks(Game.ViewDistance + Game.NumberOfPools - 1))
                 {
                     var chunkIndex = currentChunkIndex + relativeChunkIndex;
                     if (!_queuedChunks.ContainsKey(chunkIndex) && !Chunks.ContainsKey(chunkIndex))
                     {
+                        //Debug.WriteLine($"Chunk queued: ({chunkIndex})");
                         _queuedChunks.TryAdd(chunkIndex, null);
                         _pipeline.Post(chunkIndex);
                     }

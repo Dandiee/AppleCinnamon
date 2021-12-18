@@ -5,7 +5,7 @@ using AppleCinnamon.Pipeline.Context;
 
 namespace AppleCinnamon.Pipeline
 {
-    public sealed class GlobalVisibilityFinalizer : TransformChunkPipelineBlock<Chunk>
+    public sealed class GlobalVisibilityFinalizer : TransformChunkPipelineBlock
     {
         public override Chunk Process(Chunk chunk)
         {

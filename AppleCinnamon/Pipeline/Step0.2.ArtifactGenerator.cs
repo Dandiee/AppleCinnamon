@@ -6,7 +6,7 @@ using AppleCinnamon.Settings;
 
 namespace AppleCinnamon.Pipeline
 {
-    public sealed class ArtifactGenerator : TransformChunkPipelineBlock<Chunk>
+    public sealed class ArtifactGenerator : TransformChunkPipelineBlock
     {
         private static readonly VoxelDefinition[] FlowersAndSuch = 
         {
@@ -15,26 +15,28 @@ namespace AppleCinnamon.Pipeline
 
         public override Chunk Process(Chunk chunk)
         {
+            var rnd = new Random(chunk.ChunkIndex.GetHashCode());
+
             foreach (var flatIndex in chunk.BuildingContext.TopMostLandVoxels)
             {
                 var index = chunk.FromFlatIndex(flatIndex);
 
-                if (Rnd.Next() % 70 == 0)
+                if (rnd.Next() % 70 == 0)
                 {
-                    Artifacts.Tree(chunk, index);
+                    Artifacts.Tree(rnd, chunk, index);
                 }
                 else
                 {
                     var voxel = chunk.Voxels[flatIndex];
                     if (voxel.BlockType == 0)
                     {
-                        if (Rnd.Next() % 3 == 0)
+                        if (rnd.Next() % 3 == 0)
                         {
                             chunk.SetSafe(flatIndex, VoxelDefinition.Weed.Create(2));
                         }
-                        else if (Rnd.Next() % 50 == 0)
+                        else if (rnd.Next() % 50 == 0)
                         {
-                            var flowerType = FlowersAndSuch[Rnd.Next(0, FlowersAndSuch.Length)];
+                            var flowerType = FlowersAndSuch[rnd.Next(0, FlowersAndSuch.Length)];
                             chunk.SetSafe(flatIndex, flowerType.Create());
                         }
                     }

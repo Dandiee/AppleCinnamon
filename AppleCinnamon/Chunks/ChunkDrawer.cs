@@ -50,7 +50,7 @@ namespace AppleCinnamon.Chunks
             Task.Run(UpdateWaterTexture);
         }
 
-        public void Draw(List<KeyValuePair<Int2, Chunk>> chunks, Camera camera)
+        public void Draw(IList<Chunk> chunks, Camera camera)
         {
             if (chunks.Count > 0)
             {
@@ -59,7 +59,7 @@ namespace AppleCinnamon.Chunks
                     _solidEffectDefinition.Use(_device);
                     foreach (var chunk in chunks)
                     {
-                        chunk.Value.Buffers.BufferSolid?.Draw(_device);
+                        chunk.Buffers.BufferSolid?.Draw(_device);
                     }
                 }
 
@@ -68,9 +68,9 @@ namespace AppleCinnamon.Chunks
                     _spriteEffectDefinition.Use(_device);
                     foreach (var chunk in chunks)
                     {
-                        if (chunk.Value.BuildingContext.SpriteBlocks.Count > 0)
+                        if (chunk.BuildingContext.SpriteBlocks.Count > 0)
                         {
-                            chunk.Value.Buffers.BufferSprite?.Draw(_device);
+                            chunk.Buffers.BufferSprite?.Draw(_device);
                         }
                     }
                 }
@@ -82,7 +82,7 @@ namespace AppleCinnamon.Chunks
                     _waterEffectDefinition.Use(_device);
                     foreach (var chunk in chunks)
                     {
-                        chunk.Value.Buffers.BufferWater?.Draw(_device);
+                        chunk.Buffers.BufferWater?.Draw(_device);
                     }
                     _device.ImmediateContext.OutputMerger.SetBlendState(null);
                 }
@@ -99,7 +99,7 @@ namespace AppleCinnamon.Chunks
                     {
                         for (var i = 0; i < chunks.Count; i++)
                         {
-                            boxVertices[i] = new VertexBox(ref chunks[i].Value.BoundingBox, new Color3(0.713f, 0.125f, 0.878f));
+                            boxVertices[i] = new VertexBox(ref chunks[i].BoundingBox, new Color3(0.713f, 0.125f, 0.878f));
                         }
                     }
 
