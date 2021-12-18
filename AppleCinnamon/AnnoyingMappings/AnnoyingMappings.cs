@@ -25,5 +25,7 @@ namespace AppleCinnamon
                 [Chunk.GetChunkFlatIndex(1, 1)] = new[] { Face.Left, Face.Front },
                 [Chunk.GetChunkFlatIndex(-1, 1)] = new[] { Face.Right, Face.Front },
             };
+
+        
     }
 }

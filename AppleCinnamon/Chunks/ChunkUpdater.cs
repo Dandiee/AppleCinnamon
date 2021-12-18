@@ -172,8 +172,10 @@ namespace AppleCinnamon
 
         private void UpdateLighting(VoxelChunkAddress address, Voxel oldVoxel, Voxel newVoxel)
         {
-            // locally darkening sunlight vertically
+            // there are multiple steps which are generating dark spots
             var darknessSources = new Queue<DarknessSource>();
+
+            // SUNLIGHT DARKENING: in case the lower voxel is/was under the sky, the sunlight must be deleted downward
             if (address.RelativeVoxelIndex.Y > 1 && address.Chunk.GetVoxel(address.RelativeVoxelIndex - Int3.UnitY).Sunlight == 15)
             {
                 foreach (var sunlightRelativeIndex in LightingService.Sunlight(address, 0, true))
@@ -182,11 +184,13 @@ namespace AppleCinnamon
                 }
             }
 
-            // globally propagate darkness 
+            // ROOT DARKENING: the root cause voxel always suspect of darkening
             darknessSources.Enqueue(new DarknessSource(address, oldVoxel));
+
+            // PROPAGATE DARKNESS
             var lightSources = LightingService.GlobalPropagateDarkness(darknessSources);
 
-            // locally propagate sunlight vertically
+            // SUNLIGHT PROPAGATION: in case the upper voxel is/was under the sky, the sunlight must be propagated
             var upperVoxelIndex = address.RelativeVoxelIndex + Int3.UnitY;
             if (upperVoxelIndex.Y < address.Chunk.CurrentHeight - 1 && address.Chunk.GetVoxel(upperVoxelIndex).Sunlight == 15)
             {
@@ -196,16 +200,15 @@ namespace AppleCinnamon
                 }
             }
 
-            // add all beighbor as target
+            // NEIGHBOR SOURCES: in case a block was removed and was not under the sky, all the neighbors are potential light sources
             foreach (var neighborLightSourceAddress in LightingService.GetAllLightSourceNeighbor(address, newVoxel))
             {
                 lightSources.Add(neighborLightSourceAddress);
             }
 
-            // enqueue the new voxel itself - as an emitter it could be a light source as well
+            // ROOT PROPAGATE: the root case voxel always suspect of propagation
             lightSources.Add(address);
 
-            // globally propagate lightness
             foreach (var lightSource in lightSources)
             {
                 LightingService.GlobalPropagate(lightSource);
