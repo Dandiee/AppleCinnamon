@@ -39,12 +39,12 @@ namespace AppleCinnamon
                                 // todo: talán ha nem írnánk és olvasnánk ugyanazt a memóriát hétezerszer észnélkül az segítene... csak talán...
                                 if (targetVoxel.Sunlight < sourceVoxel.Sunlight - brightnessLoss)
                                 {
-                                    targetAddress.Chunk.SetVoxelTracking(targetAddress.RelativeVoxelIndex, targetVoxel.SetSunlight((byte)(sourceVoxel.Sunlight - brightnessLoss)), targetDefinition);
+                                    targetAddress.Chunk.UpdateVoxelLighting(targetAddress.RelativeVoxelIndex, targetVoxel.SetSunlight((byte)(sourceVoxel.Sunlight - brightnessLoss)), targetDefinition);
                                 }
 
                                 if (targetVoxel.EmittedLight < sourceVoxel.EmittedLight - brightnessLoss)
                                 {
-                                    targetAddress.Chunk.SetVoxelTracking(targetAddress.RelativeVoxelIndex, targetVoxel.SetCustomLight((byte)(sourceVoxel.EmittedLight - brightnessLoss)), targetDefinition);
+                                    targetAddress.Chunk.UpdateVoxelLighting(targetAddress.RelativeVoxelIndex, targetVoxel.SetCustomLight((byte)(sourceVoxel.EmittedLight - brightnessLoss)), targetDefinition);
                                 }
 
                                 queue.Enqueue(new VoxelChunkAddress(targetAddress.Chunk, targetAddress.RelativeVoxelIndex));
@@ -159,7 +159,7 @@ namespace AppleCinnamon
 
                             if (newTargetCompositeLight != targetVoxel.CompositeLight)
                             {
-                                targetAddress.Chunk.SetVoxelTracking(targetAddress.RelativeVoxelIndex, targetVoxel.SetCompositeLight(newTargetCompositeLight), targetVoxel.GetDefinition());
+                                targetAddress.Chunk.UpdateVoxelLighting(targetAddress.RelativeVoxelIndex, targetVoxel.SetCompositeLight(newTargetCompositeLight), targetVoxel.GetDefinition());
                                 queue.Enqueue(new DarknessSource(targetAddress, targetVoxel));
                             }
                         }
@@ -187,7 +187,7 @@ namespace AppleCinnamon
                 {
                     if (isChangeTracking)
                     {
-                        chunk.SetVoxelTracking(flatIndex, voxel.SetSunlight(toLightness), definition);
+                        chunk.UpdateVoxelLighting(relativeIndex.X, j, relativeIndex.Z, voxel.SetSunlight(toLightness), definition);
                     }
                     else
                     {

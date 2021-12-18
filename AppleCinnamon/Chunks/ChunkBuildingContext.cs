@@ -30,6 +30,13 @@ namespace AppleCinnamon
         public bool IsWaterChanged { get; set; } = true;
         public bool IsSolidChanged { get; set; } = true;
 
+        public void SetAllChanged()
+        {
+            IsSpriteChanged = true;
+            IsWaterChanged = true;
+            IsSolidChanged = true;
+        }
+
         public ChunkBuildingContext()
         {
             Top = new FaceBuildingContext(Face.Top);

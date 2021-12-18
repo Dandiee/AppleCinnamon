@@ -42,11 +42,20 @@ namespace AppleCinnamon
                 }
 
                 var oldVoxel = address.Chunk.GetVoxel(address.RelativeVoxelIndex);
+                var oldDefinition = oldVoxel.GetDefinition();
                 var newDefinition = VoxelDefinition.DefinitionByType[voxel];
                 var newVoxel = newDefinition.HueFaces != VisibilityFlag.None
                     ? newDefinition.Create(2)
                     : newDefinition.Create();
 
+                if (oldDefinition.IsBlock || newDefinition.IsBlock)
+                {
+                    var affectedChunks = address.Chunk.GetNeighborChunkIndexes(address.RelativeVoxelIndex.X, address.RelativeVoxelIndex.Z);
+                    foreach (var affectedChunk in affectedChunks)
+                    {
+                        affectedChunk.BuildingContext.SetAllChanged();
+                    }
+                }
 
                 address.Chunk.SetSafe(address.RelativeVoxelIndex, newVoxel);
 

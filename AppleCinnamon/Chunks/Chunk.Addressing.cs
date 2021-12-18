@@ -1,4 +1,6 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using AppleCinnamon.Helper;
 using AppleCinnamon.Settings;
 using SharpDX;
 
@@ -28,39 +30,40 @@ namespace AppleCinnamon
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)] public Int3 FromFlatIndex(int flatIndex) => FromFlatIndex(flatIndex, CurrentHeight);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void SetVoxelTracking(Int3 ijk, Voxel voxel, VoxelDefinition definition)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] public void UpdateVoxelLighting(Int3 ijk, Voxel voxel, VoxelDefinition definition) => UpdateVoxelLighting(ijk.X, ijk.Y, ijk.Z, voxel, definition);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] public void UpdateVoxelLighting(int i, int j, int k, Voxel voxel, VoxelDefinition definition)
         {
-            //if (definition.IsSprite)
-            {
-                BuildingContext.IsSpriteChanged = true;
-            }
-            //else  if (definition.IsBlock)
-            {
-                BuildingContext.IsSolidChanged = true;
-            }
+            BuildingContext.SetAllChanged();
 
-            SetVoxel(ijk, voxel);
+            foreach(var chunk in GetNeighborChunkIndexes(i, k))
+                chunk.BuildingContext.SetAllChanged();
+
+
+            SetVoxel(i, j, k, voxel);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void SetVoxelTracking(int flatIndex, Voxel voxel, VoxelDefinition definition)
+        public IEnumerable<Chunk> GetNeighborChunkIndexes(int i, int j)
         {
-            if (definition.IsSprite)
-            {
-                BuildingContext.IsSpriteChanged = true;
-            }
-            else if (definition.IsBlock)
-            {
-                BuildingContext.IsSolidChanged = true;
-            }
-
-            SetVoxel(flatIndex, voxel);
+            if (i == 0) 
+                yield return GetNeighbor(-1, 0);
+            if (i == SizeXy - 1) 
+                yield return GetNeighbor(1, 0);
+            if (j == 0) 
+                yield return GetNeighbor(0, -1);
+            if (j == SizeXy - 1) 
+                yield return GetNeighbor(0, 1);
+            
+            if (i == 0 && j == 0) 
+                yield return GetNeighbor(-1, -1);
+            if (i == SizeXy - 1 && j == SizeXy - 1) 
+                yield return GetNeighbor(1, 1);
+            if (i == 0 && j == SizeXy - 1) 
+                yield return GetNeighbor(-1, 1);
+            if (i == SizeXy - 1 && j == 0) 
+                yield return GetNeighbor(1, -1);
         }
 
-        public bool TryGetLocalWithNeighborChunk(Int3 ijk, out VoxelChunkAddress address, out Voxel voxel) =>
-            TryGetLocalWithNeighborChunk(ijk.X, ijk.Y, ijk.Z, out address, out voxel);
+        public bool TryGetLocalWithNeighborChunk(Int3 ijk, out VoxelChunkAddress address, out Voxel voxel) => TryGetLocalWithNeighborChunk(ijk.X, ijk.Y, ijk.Z, out address, out voxel);
         public bool TryGetLocalWithNeighborChunk(int i, int j, int k, out VoxelChunkAddress address, out Voxel voxel)
         {
             if (j < 0)

@@ -10,7 +10,7 @@ namespace AppleCinnamon
     {
         public static void BuildChunk(Chunk chunk, Device device)
         {
-            if (chunk.BuildingContext.IsChanged || true)
+            if (chunk.BuildingContext.IsChanged)
             {
                 var bufferSolid = BuildSolid(chunk, device);
                 var bufferWater = BuildWater(chunk, device);
