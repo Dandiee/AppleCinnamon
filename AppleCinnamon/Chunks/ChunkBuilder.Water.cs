@@ -1,4 +1,5 @@
 ﻿using AppleCinnamon.Helper;
+using AppleCinnamon.Settings;
 using AppleCinnamon.Vertices;
 using SharpDX;
 using Device = SharpDX.Direct3D11.Device;
@@ -11,6 +12,11 @@ namespace AppleCinnamon
 
         private static BufferDefinition<VertexWater> BuildWater(Chunk chunk, Device device)
         {
+            if (WorldSettings.IsChangeTrackingEnabled && !chunk.BuildingContext.IsWaterChanged)
+            {
+                return chunk.Buffers.BufferWater;
+            }
+
             if (chunk.BuildingContext.TopMostWaterVoxels.Count == 0)
             {
                 return null;

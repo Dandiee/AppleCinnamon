@@ -25,6 +25,11 @@ namespace AppleCinnamon
         public List<int> TopMostWaterVoxels = new();
         public List<int> TopMostLandVoxels = new();
 
+        public bool IsChanged => IsSpriteChanged || IsWaterChanged || IsSolidChanged;
+        public bool IsSpriteChanged { get; set; } = true;
+        public bool IsWaterChanged { get; set; } = true;
+        public bool IsSolidChanged { get; set; } = true;
+
         public ChunkBuildingContext()
         {
             Top = new FaceBuildingContext(Face.Top);

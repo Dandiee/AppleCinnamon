@@ -41,4 +41,16 @@ namespace AppleCinnamon
             new (Int3.UnitZ, VisibilityFlag.Back, VisibilityFlag.Front)
         };
     }
+
+    public struct DarknessSource
+    {
+        public VoxelChunkAddress Address;
+        public Voxel OldVoxel;
+
+        public DarknessSource(VoxelChunkAddress address, Voxel oldVoxel)
+        {
+            Address = address;
+            OldVoxel = oldVoxel;
+        }
+    }
 }

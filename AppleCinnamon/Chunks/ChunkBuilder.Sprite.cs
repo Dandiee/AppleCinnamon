@@ -1,4 +1,5 @@
 ﻿using AppleCinnamon.Helper;
+using AppleCinnamon.Settings;
 using AppleCinnamon.Vertices;
 using SharpDX;
 using Device = SharpDX.Direct3D11.Device;
@@ -21,6 +22,11 @@ namespace AppleCinnamon
 
         private static BufferDefinition<VertexSprite> BuildSprite(Chunk chunk, Device device)
         {
+            if (WorldSettings.IsChangeTrackingEnabled && !chunk.BuildingContext.IsSpriteChanged)
+            {
+                return chunk.Buffers.BufferSprite;
+            }
+
             var numberOfFaces = chunk.BuildingContext.SpriteBlocks.Count * 2 + chunk.BuildingContext.SingleSidedSpriteBlocks.Count;
             if (numberOfFaces == 0) return null;
 

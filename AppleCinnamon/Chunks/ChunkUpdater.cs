@@ -51,7 +51,7 @@ namespace AppleCinnamon
                 address.Chunk.SetSafe(address.RelativeVoxelIndex, newVoxel);
 
                 UpdateVisibilityFlags(address.Chunk, oldVoxel, newVoxel, address.RelativeVoxelIndex);
-                UpdateLighting(address.Chunk, address.RelativeVoxelIndex, oldVoxel, newVoxel);
+                UpdateLighting(address, oldVoxel, newVoxel);
                 ChunkBuilder.BuildChunk(address.Chunk, _graphics.Device);
 
                 Task.WaitAll(ChunkManager.GetSurroundingChunks(2).Select(chunkIndex =>
@@ -80,7 +80,7 @@ namespace AppleCinnamon
             foreach (var direction in BlockUpdateDirection.All)
             {
                 var neighbor = relativeIndex + direction.Step;
-                var neighborVoxel = chunk.GetLocalWithNeighborChunk(neighbor.X, neighbor.Y, neighbor.Z, out var neighborAddress, out var neighborExists);
+                var neighborExists = chunk.TryGetLocalWithNeighborChunk(neighbor.X, neighbor.Y, neighbor.Z, out var neighborAddress, out var neighborVoxel);
                 var neighborDefinition = neighborVoxel.GetDefinition();
 
                 // old one was visible
@@ -116,12 +116,10 @@ namespace AppleCinnamon
                             out var neighborOldVisibilityFlag);
                     
                     // neighbor was visible
-                    if (neighborDefinition.IsFaceVisible(oldDefinition, direction.Direction,
-                        direction.OppositeDirection))
+                    if (neighborDefinition.IsFaceVisible(oldDefinition, direction.Direction, direction.OppositeDirection))
                     {
                         // and its not visible anymore
-                        if (!neighborDefinition.IsFaceVisible(newDefinition, direction.Direction,
-                            direction.OppositeDirection))
+                        if (!neighborDefinition.IsFaceVisible(newDefinition, direction.Direction, direction.OppositeDirection))
                         {
                             neighborOldVisibilityFlag ^= direction.OppositeDirection;
                             neighborAddress.Chunk.BuildingContext.Faces[(byte)direction.OppositeFace].VoxelCount--;
@@ -146,12 +144,13 @@ namespace AppleCinnamon
                         if (hadNeighborVisibility)
                         {
                             neighborAddress.Chunk.BuildingContext.VisibilityFlags.Remove(neighborIndex);
+                            neighborAddress.Chunk.BuildingContext.IsSolidChanged = true;
                         }
                     }
                     else
                     {
-                        neighborAddress.Chunk.BuildingContext.VisibilityFlags[neighborIndex] =
-                            neighborOldVisibilityFlag;
+                        neighborAddress.Chunk.BuildingContext.VisibilityFlags[neighborIndex] = neighborOldVisibilityFlag;
+                        neighborAddress.Chunk.BuildingContext.IsSolidChanged = true;
                     }
                 }
             }
@@ -161,52 +160,55 @@ namespace AppleCinnamon
                 if (hadVisibility)
                 {
                     chunk.BuildingContext.VisibilityFlags.Remove(flatIndex);
+                    chunk.BuildingContext.IsSolidChanged = true;
                 }
             }
             else
             {
                 chunk.BuildingContext.VisibilityFlags[flatIndex] = newVisibilityFlag;
+                chunk.BuildingContext.IsSolidChanged = true;
             }
         }
 
-        private void UpdateLighting(Chunk chunk, Int3 relativeIndex, Voxel oldVoxel, Voxel newVoxel)
+        private void UpdateLighting(VoxelChunkAddress address, Voxel oldVoxel, Voxel newVoxel)
         {
             // locally darkening sunlight vertically
-            var darknessSources = new Queue<LightingService.DarknessPropogationRecord>();
-            var lowerVoxelIndex = new Int3(relativeIndex.X, relativeIndex.Y - 1, relativeIndex.Z);
-            if (lowerVoxelIndex.Y > 0 && chunk.GetVoxel(lowerVoxelIndex).Sunlight == 15)
+            var darknessSources = new Queue<DarknessSource>();
+            if (address.RelativeVoxelIndex.Y > 1 && address.Chunk.GetVoxel(address.RelativeVoxelIndex - Int3.UnitY).Sunlight == 15)
             {
-                foreach (var sunlightRelativeIndex in LightingService.Sunlight(chunk, relativeIndex, 0))
+                foreach (var sunlightRelativeIndex in LightingService.Sunlight(address, 0, true))
                 {
-                    var voxel = chunk.GetVoxel(sunlightRelativeIndex);
-                    var definition = voxel.GetDefinition();
-                    darknessSources.Enqueue(new LightingService.DarknessPropogationRecord(chunk, sunlightRelativeIndex, voxel.SetSunlight(0),
-                        definition, voxel.SetSunlight(15), definition));
+                    darknessSources.Enqueue(new DarknessSource(new VoxelChunkAddress(address.Chunk, sunlightRelativeIndex), oldVoxel.SetSunlight(15)));
                 }
             }
 
-            // globally propagate darkness
-            darknessSources.Enqueue(new LightingService.DarknessPropogationRecord(chunk, relativeIndex, newVoxel, newVoxel.GetDefinition(), oldVoxel,
-                oldVoxel.GetDefinition()));
+            // globally propagate darkness 
+            darknessSources.Enqueue(new DarknessSource(address, oldVoxel));
             var lightSources = LightingService.GlobalPropagateDarkness(darknessSources);
 
             // locally propagate sunlight vertically
-            var upperVoxelIndex = new Int3(relativeIndex.X, relativeIndex.Y + 1, relativeIndex.Z);
-            if (upperVoxelIndex.Y < chunk.CurrentHeight && chunk.GetVoxel(upperVoxelIndex).Sunlight == 15)
+            var upperVoxelIndex = address.RelativeVoxelIndex + Int3.UnitY;
+            if (upperVoxelIndex.Y < address.Chunk.CurrentHeight - 1 && address.Chunk.GetVoxel(upperVoxelIndex).Sunlight == 15)
             {
-                foreach (var sunlightSources in LightingService.Sunlight(chunk, upperVoxelIndex, 15))
+                foreach (var sunlightSources in LightingService.Sunlight(address.Chunk, upperVoxelIndex, 15, true))
                 {
-                    lightSources.Add(new Tuple<Chunk, Int3>(chunk, sunlightSources));
+                    lightSources.Add(new VoxelChunkAddress(address.Chunk, sunlightSources));
                 }
             }
 
+            // add all beighbor as target
+            foreach (var neighborLightSourceAddress in LightingService.GetAllLightSourceNeighbor(address, newVoxel))
+            {
+                lightSources.Add(neighborLightSourceAddress);
+            }
+
             // enqueue the new voxel itself - as an emitter it could be a light source as well
-            lightSources.Add(new Tuple<Chunk, Int3>(chunk, relativeIndex));
+            lightSources.Add(address);
 
             // globally propagate lightness
             foreach (var lightSource in lightSources)
             {
-                LightingService.GlobalPropagate(lightSource.Item1, lightSource.Item2);
+                LightingService.GlobalPropagate(lightSource);
             }
         }
     }

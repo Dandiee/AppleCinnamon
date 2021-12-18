@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using AppleCinnamon.Helper;
+﻿using System.Collections.Generic;
 using AppleCinnamon.Settings;
 using SharpDX;
 
@@ -8,9 +6,7 @@ namespace AppleCinnamon
 {
     public static class LightingService
     {
-        public static void GlobalPropagate(Chunk chunk, Int3 relativeIndex)
-            => GlobalPropagate(new Queue<VoxelChunkAddress>(new[]
-                {new VoxelChunkAddress(chunk, relativeIndex)}));
+        public static void GlobalPropagate(VoxelChunkAddress address) => GlobalPropagate(new Queue<VoxelChunkAddress>(new[] {address}));
 
         public static void GlobalPropagate(Queue<VoxelChunkAddress> queue)
         {
@@ -24,13 +20,18 @@ namespace AppleCinnamon
 
                 foreach (var direction in LightDirections.All)
                 {
-                    var targetIndex = source.RelativeVoxelIndex + direction.Step;
-                    var targetVoxel = source.Chunk.GetLocalWithNeighborChunk(targetIndex.X, targetIndex.Y, targetIndex.Z, out var targetAddress, out var isTargetExists);
+                    var isTargetExists = source.Chunk.TryGetLocalWithNeighborChunk(source.RelativeVoxelIndex + direction.Step, out var targetAddress, out var targetVoxel);
                     if (isTargetExists)
                     {
                         var targetDefinition = targetVoxel.GetDefinition();
 
-                        var brightnessLoss = VoxelDefinition.GetBrightnessLoss(sourceDefinition, targetDefinition, direction.Direction);
+                        if (targetAddress.RelativeVoxelIndex == new Int3(0, 131, 1))
+                        {
+
+                        }
+
+
+                    var brightnessLoss = VoxelDefinition.GetBrightnessLoss(sourceDefinition, targetDefinition, direction.Direction);
                         if (brightnessLoss != 0)
                         {
                             if (targetVoxel.Sunlight < sourceVoxel.Sunlight - brightnessLoss || targetVoxel.EmittedLight < sourceVoxel.EmittedLight - brightnessLoss)
@@ -38,12 +39,12 @@ namespace AppleCinnamon
                                 // todo: talán ha nem írnánk és olvasnánk ugyanazt a memóriát hétezerszer észnélkül az segítene... csak talán...
                                 if (targetVoxel.Sunlight < sourceVoxel.Sunlight - brightnessLoss)
                                 {
-                                    targetAddress.Chunk.SetVoxel(targetAddress.RelativeVoxelIndex, targetVoxel.SetSunlight((byte)(sourceVoxel.Sunlight - brightnessLoss)));
+                                    targetAddress.Chunk.SetVoxelTracking(targetAddress.RelativeVoxelIndex, targetVoxel.SetSunlight((byte)(sourceVoxel.Sunlight - brightnessLoss)), targetDefinition);
                                 }
 
                                 if (targetVoxel.EmittedLight < sourceVoxel.EmittedLight - brightnessLoss)
                                 {
-                                    targetAddress.Chunk.SetVoxel(targetAddress.RelativeVoxelIndex, targetVoxel.SetCustomLight((byte)(sourceVoxel.EmittedLight - brightnessLoss)));
+                                    targetAddress.Chunk.SetVoxelTracking(targetAddress.RelativeVoxelIndex, targetVoxel.SetCustomLight((byte)(sourceVoxel.EmittedLight - brightnessLoss)), targetDefinition);
                                 }
 
                                 queue.Enqueue(new VoxelChunkAddress(targetAddress.Chunk, targetAddress.RelativeVoxelIndex));
@@ -91,7 +92,7 @@ namespace AppleCinnamon
                                     if (neighborVoxel.EmittedLight < sourceVoxel.EmittedLight - brightnessLoss)
                                     {
                                         hasChanged = true;
-                                        chunk.SetVoxel(neighborFlatIndex, neighborVoxel.SetCustomLight((byte) (sourceVoxel.EmittedLight - brightnessLoss)));
+                                        chunk.SetVoxel(neighborFlatIndex, neighborVoxel.SetCustomLight((byte)(sourceVoxel.EmittedLight - brightnessLoss)));
                                     }
 
                                     if (hasChanged)
@@ -106,9 +107,10 @@ namespace AppleCinnamon
             }
         }
 
-        public static List<Tuple<Chunk, Int3>> GlobalPropagateDarkness(Queue<DarknessPropogationRecord> queue)
+
+        public static HashSet<VoxelChunkAddress> GlobalPropagateDarkness(Queue<DarknessSource> queue)
         {
-            var brightSpots = new List<Tuple<Chunk, Int3>>();
+            var brightSpots = new HashSet<VoxelChunkAddress>(VoxelChunkAddressComparer.Default);
 
             while (queue.Count > 0)
             {
@@ -116,38 +118,49 @@ namespace AppleCinnamon
 
                 foreach (var direction in LightDirections.All)
                 {
-                    var targetVoxel = source.sourceChunk.GetLocalWithNeighborChunk(source.sourceIndex.X + direction.Step.X, source.sourceIndex.Y + direction.Step.Y, 
-                        source.sourceIndex.Z + direction.Step.Z, out var targetAddress, out var isTargetExists);
-                    if (isTargetExists)
+                    if (source.Address.Chunk.TryGetLocalWithNeighborChunk(source.Address.RelativeVoxelIndex + direction.Step, out var targetAddress, out var targetVoxel))
                     {
-                        var targetDefinition = targetVoxel.GetDefinition();
-                        var brightnessLoss = VoxelDefinition.GetBrightnessLoss(source.NewVoxelDefinition, targetDefinition, direction.Direction);
-
-                        if (brightnessLoss > 0)
+                        if (VoxelDefinition.GetBrightnessLoss(source.OldVoxel.GetDefinition(), targetVoxel.GetDefinition(), direction.Direction) > 0)
                         {
-                            if (targetVoxel.Sunlight >= source.OldVoxel.Sunlight )
+                            var newTargetCompositeLight = targetVoxel.CompositeLight;
+                            var isBrightSpot = false;
+
+                            // Sunlight case
+                            if (targetVoxel.Sunlight >= source.OldVoxel.Sunlight)
                             {
-                                brightSpots.Add(new Tuple<Chunk, Int3>(targetAddress.Chunk, targetAddress.RelativeVoxelIndex));
+                                if (targetVoxel.Sunlight > 0)
+                                {
+                                    isBrightSpot = true;
+                                }
                             }
-                            else  if (targetVoxel.Sunlight > 0)
+                            else if (targetVoxel.Sunlight > 0)
                             {
-                                var targetNewVoxel = targetVoxel.SetSunlight(0);
-                                targetAddress.Chunk.SetVoxel(targetAddress.RelativeVoxelIndex, targetNewVoxel);
-                                queue.Enqueue(new DarknessPropogationRecord(targetAddress.Chunk, targetAddress.RelativeVoxelIndex, targetNewVoxel, targetDefinition, 
-                                    targetVoxel, targetDefinition));
+                                newTargetCompositeLight &= 0b11110000;
                             }
 
-
+                            // Emitted light case
                             if (targetVoxel.EmittedLight >= source.OldVoxel.EmittedLight)
                             {
-                                brightSpots.Add(new Tuple<Chunk, Int3>(targetAddress.Chunk, targetAddress.RelativeVoxelIndex));
+                                if (targetVoxel.EmittedLight > 0)
+                                {
+                                    isBrightSpot = true;
+                                }
                             }
                             else if (targetVoxel.EmittedLight > 0)
                             {
-                                var targetNewVoxel = targetVoxel.SetCustomLight(0);
-                                targetAddress.Chunk.SetVoxel(targetAddress.RelativeVoxelIndex, targetNewVoxel);
-                                queue.Enqueue(new DarknessPropogationRecord(targetAddress.Chunk, targetAddress.RelativeVoxelIndex, targetNewVoxel, targetDefinition, 
-                                    targetVoxel, targetDefinition ));
+                                newTargetCompositeLight &= 0b00001111;
+                            }
+
+
+                            if (isBrightSpot)
+                            {
+                                brightSpots.Add(targetAddress);
+                            }
+
+                            if (newTargetCompositeLight != targetVoxel.CompositeLight)
+                            {
+                                targetAddress.Chunk.SetVoxelTracking(targetAddress.RelativeVoxelIndex, targetVoxel.SetCompositeLight(newTargetCompositeLight), targetVoxel.GetDefinition());
+                                queue.Enqueue(new DarknessSource(targetAddress, targetVoxel));
                             }
                         }
                     }
@@ -157,7 +170,10 @@ namespace AppleCinnamon
             return brightSpots;
         }
 
-        public static IEnumerable<Int3> Sunlight(Chunk chunk, Int3 relativeIndex, byte toLightness)
+        public static IEnumerable<Int3> Sunlight(VoxelChunkAddress address, byte toLightness, bool isChangeTracking = false)
+         => Sunlight(address.Chunk, address.RelativeVoxelIndex, toLightness, isChangeTracking);
+
+        public static IEnumerable<Int3> Sunlight(Chunk chunk, Int3 relativeIndex, byte toLightness, bool isChangeTracking = false)
         {
             for (var j = relativeIndex.Y - 1; j > 0; j--)
             {
@@ -169,7 +185,14 @@ namespace AppleCinnamon
                 //if (definition.TransmittanceQuarters[(byte)Face.Bottom] > 0)
                 if (definition.Type == 0)
                 {
-                    chunk.SetVoxel(flatIndex, voxel.SetSunlight(toLightness));
+                    if (isChangeTracking)
+                    {
+                        chunk.SetVoxelTracking(flatIndex, voxel.SetSunlight(toLightness), definition);
+                    }
+                    else
+                    {
+                        chunk.SetVoxel(flatIndex, voxel.SetSunlight(toLightness));
+                    }
 
                     yield return new Int3(relativeIndex.X, j, relativeIndex.Z);
                 }
@@ -177,29 +200,24 @@ namespace AppleCinnamon
             }
         }
 
-        public struct DarknessPropogationRecord
+        public static IEnumerable<VoxelChunkAddress> GetAllLightSourceNeighbor(VoxelChunkAddress targetAddress, Voxel targetVoxel)
         {
-            public Chunk sourceChunk;
-            public Int3 sourceIndex;
-            //public List<Tuple<Chunk, Int3>> lightSources;
-            public Voxel NewVoxel;
-            public VoxelDefinition NewVoxelDefinition;
-
-            public Voxel OldVoxel;
-            public VoxelDefinition OldVoxelDefinition;
-
-            public DarknessPropogationRecord(Chunk sourceChunk, Int3 sourceIndex, Voxel newVoxel, VoxelDefinition newVoxelDefinition, Voxel oldVoxel, VoxelDefinition oldVoxelDefinition)
+            foreach (var direction in LightDirections.All)
             {
-                this.sourceChunk = sourceChunk;
-                this.sourceIndex = sourceIndex;
-                //this.lightSources = lightSources;
-                
-                NewVoxel = newVoxel;
-                NewVoxelDefinition = newVoxelDefinition;
-
-                OldVoxel = oldVoxel;
-                OldVoxelDefinition = oldVoxelDefinition;
+                var sourceIndex = targetAddress.RelativeVoxelIndex + direction.Step;
+                if (targetAddress.Chunk.TryGetLocalWithNeighborChunk(sourceIndex, out var sourceAddress, out var sourceVoxel) && sourceVoxel.CompositeLight > 0)
+                {
+                    var sourceDefinition = sourceVoxel.GetDefinition();
+                    var targetDefinition = targetVoxel.GetDefinition();
+                    var brightnessLoss = VoxelDefinition.GetBrightnessLoss(sourceDefinition, targetDefinition, direction.Direction);
+                    if (brightnessLoss > 0)
+                    {
+                        yield return sourceAddress;
+                    }
+                }
             }
         }
+
+        
     }
 }

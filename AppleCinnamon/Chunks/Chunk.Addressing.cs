@@ -1,4 +1,5 @@
 ﻿using System.Runtime.CompilerServices;
+using AppleCinnamon.Settings;
 using SharpDX;
 
 namespace AppleCinnamon
@@ -28,13 +29,46 @@ namespace AppleCinnamon
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)] public Int3 FromFlatIndex(int flatIndex) => FromFlatIndex(flatIndex, CurrentHeight);
 
-        public Voxel GetLocalWithNeighborChunk(int i, int j, int k, out VoxelChunkAddress address, out bool isExists)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void SetVoxelTracking(Int3 ijk, Voxel voxel, VoxelDefinition definition)
+        {
+            //if (definition.IsSprite)
+            {
+                BuildingContext.IsSpriteChanged = true;
+            }
+            //else  if (definition.IsBlock)
+            {
+                BuildingContext.IsSolidChanged = true;
+            }
+
+            SetVoxel(ijk, voxel);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void SetVoxelTracking(int flatIndex, Voxel voxel, VoxelDefinition definition)
+        {
+            if (definition.IsSprite)
+            {
+                BuildingContext.IsSpriteChanged = true;
+            }
+            else if (definition.IsBlock)
+            {
+                BuildingContext.IsSolidChanged = true;
+            }
+
+            SetVoxel(flatIndex, voxel);
+        }
+
+        public bool TryGetLocalWithNeighborChunk(Int3 ijk, out VoxelChunkAddress address, out Voxel voxel) =>
+            TryGetLocalWithNeighborChunk(ijk.X, ijk.Y, ijk.Z, out address, out voxel);
+        public bool TryGetLocalWithNeighborChunk(int i, int j, int k, out VoxelChunkAddress address, out Voxel voxel)
         {
             if (j < 0)
             {
                 address = VoxelChunkAddress.Zero;
-                isExists = false;
-                return Voxel.Bedrock;
+                voxel = Voxel.Bedrock;
+
+                return false;
             }
 
             var cx = (int)(-((i & 0b10000000_00000000_00000000_00000000) >> 31) + ((i / SizeXy)));
@@ -44,14 +78,16 @@ namespace AppleCinnamon
             if (chunk.CurrentHeight <= j)
             {
                 address = VoxelChunkAddress.Zero;
-                isExists = false;
-                return Voxel.SunBlock;
+                voxel = Voxel.SunBlock;
+
+                return false;
             }
             else
             {
                 address = new VoxelChunkAddress(chunk, new Int3(i & (SizeXy - 1), j, k & (SizeXy - 1)));
-                isExists = true;
-                return chunk.GetVoxel(address.RelativeVoxelIndex.X, j, address.RelativeVoxelIndex.Z);
+                voxel = chunk.GetVoxel(address.RelativeVoxelIndex.X, j, address.RelativeVoxelIndex.Z);
+
+                return true;
             }
         }
 
@@ -101,6 +137,7 @@ namespace AppleCinnamon
             {
                 if (oldVoxelDefinition.IsOriented) BuildingContext.SingleSidedSpriteBlocks.Remove(flatIndex);
                 else BuildingContext.SpriteBlocks.Remove(flatIndex);
+                BuildingContext.IsSpriteChanged = true;
             }
 
             var newVoxelDefinition = newVoxel.GetDefinition();
@@ -108,6 +145,7 @@ namespace AppleCinnamon
             {
                 if (newVoxelDefinition.IsOriented) BuildingContext.SingleSidedSpriteBlocks.Add(flatIndex);
                 else BuildingContext.SpriteBlocks.Add(flatIndex);
+                BuildingContext.IsSpriteChanged = true;
             }
 
             Voxels[flatIndex] = newVoxel;

@@ -1,4 +1,7 @@
-﻿using SharpDX;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using SharpDX;
 
 namespace AppleCinnamon
 {
@@ -13,6 +16,21 @@ namespace AppleCinnamon
         {
             Chunk = chunk;
             RelativeVoxelIndex = relativeVoxelIndex;
+        }
+    }
+
+    public sealed class VoxelChunkAddressComparer : IEqualityComparer<VoxelChunkAddress>
+    {
+        public static readonly VoxelChunkAddressComparer Default = new();
+
+        public bool Equals(VoxelChunkAddress x, VoxelChunkAddress y)
+        {
+            return Equals(x.Chunk, y.Chunk) && x.RelativeVoxelIndex.Equals(y.RelativeVoxelIndex);
+        }
+
+        public int GetHashCode(VoxelChunkAddress obj)
+        {
+            return HashCode.Combine(obj.Chunk, obj.RelativeVoxelIndex);
         }
     }
 }

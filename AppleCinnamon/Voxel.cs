@@ -38,6 +38,7 @@ namespace AppleCinnamon
 
         public Voxel SetSunlight(byte sunlight) => new(ref this, (byte)((CompositeLight & 0b11110000) | sunlight));
         public Voxel SetCustomLight(byte emittedLight) => new(ref this, (byte)((CompositeLight & 0b00001111) | (emittedLight << 4)));
+        public Voxel SetCompositeLight(byte compositeLight) => new(ref this, compositeLight);
         public VoxelDefinition GetDefinition() => VoxelDefinition.DefinitionByType[BlockType];
     }
 }

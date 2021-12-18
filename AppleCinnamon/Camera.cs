@@ -48,7 +48,7 @@ namespace AppleCinnamon
         private MouseState _currentMouseState;
         private MouseState _lastMouseState;
         public VoxelRayCollisionResult CurrentCursor { get; private set; }
-        private int _voxelDefinitionIndexInHand = 1;
+        private int _voxelDefinitionIndexInHand;
 
         private readonly Vector3 InitialLookAt;
 
@@ -70,6 +70,7 @@ namespace AppleCinnamon
             Mouse.Acquire();
 
             VoxelInHand = VoxelDefinition.Sand;
+            _voxelDefinitionIndexInHand = VoxelDefinition.RegisteredDefinitions.IndexOf(VoxelInHand.Type);
 
             IsInAir = true;
         }

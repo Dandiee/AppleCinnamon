@@ -10,11 +10,18 @@ namespace AppleCinnamon
     {
         public static void BuildChunk(Chunk chunk, Device device)
         {
-            var bufferSolid = BuildSolid(chunk, device);
-            var bufferWater = BuildWater(chunk, device);
-            var bufferSprite = BuildSprite(chunk, device);
+            if (chunk.BuildingContext.IsChanged || true)
+            {
+                var bufferSolid = BuildSolid(chunk, device);
+                var bufferWater = BuildWater(chunk, device);
+                var bufferSprite = BuildSprite(chunk, device);
 
-            chunk.Buffers = new ChunkBuffers(bufferSolid, bufferWater, bufferSprite);
+                chunk.Buffers = new ChunkBuffers(bufferSolid, bufferWater, bufferSprite);
+
+                chunk.BuildingContext.IsSpriteChanged = false;
+                chunk.BuildingContext.IsWaterChanged = false;
+                chunk.BuildingContext.IsSolidChanged = false;
+            }
         }
     }
 

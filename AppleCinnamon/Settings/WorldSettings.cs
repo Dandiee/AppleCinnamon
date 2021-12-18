@@ -11,6 +11,7 @@ namespace AppleCinnamon.Settings
         public static readonly Vector3 PlayerMin;
         public static readonly Vector3 PlayerMax;
         public const int WaterLevel = 130;
+        public const bool IsChangeTrackingEnabled = false;
 
         public static readonly SimplexOptions HighMapNoiseOptions = new(8, 0.2, 0.8, 134, 0.1, 1248);
         // mountains
