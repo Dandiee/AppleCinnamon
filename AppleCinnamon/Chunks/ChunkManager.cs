@@ -17,7 +17,7 @@ namespace AppleCinnamon
 {
     public sealed partial class ChunkManager
     {
-        public static readonly int InitialDegreeOfParallelism = 1;//Environment.ProcessorCount;
+        public static readonly int InitialDegreeOfParallelism = 2;//Environment.ProcessorCount;
         private int _finalizedChunks;
         public bool IsInitialized { get; private set; }
 
@@ -26,7 +26,7 @@ namespace AppleCinnamon
         private readonly ChunkUpdater _chunkUpdater;
         private readonly ChunkDrawer _chunkDrawer;
         private Int2? _lastQueueIndex;
-        private readonly TransformPipelineBlock<Int2, Chunk> _pipeline;
+        public readonly TransformPipelineBlock<Int2, Chunk> Pipeline;
         public readonly NeighborAssigner _neighborAssignerPipelineBlock;
 
         public ChunkManager(Graphics graphics)
@@ -34,7 +34,7 @@ namespace AppleCinnamon
             _chunkDrawer = new ChunkDrawer(graphics.Device);
             Chunks = new ConcurrentDictionary<Int2, Chunk>();
             _queuedChunks = new ConcurrentDictionary<Int2, object>();
-            _pipeline = new PipelineProvider(graphics.Device).CreatePipeline(InitialDegreeOfParallelism, Finalize, out _neighborAssignerPipelineBlock);
+            Pipeline = new PipelineProvider(graphics.Device).CreatePipeline(InitialDegreeOfParallelism, Finalize, out _neighborAssignerPipelineBlock);
             _chunkUpdater = new ChunkUpdater(graphics, this);
             
             QueueChunksByIndex(Int2.Zero);
@@ -149,7 +149,7 @@ namespace AppleCinnamon
                     {
                         //Debug.WriteLine($"Chunk queued: ({chunkIndex})");
                         _queuedChunks.TryAdd(chunkIndex, null);
-                        _pipeline.TransformBlock.Post(chunkIndex);
+                        Pipeline.TransformBlock.Post(chunkIndex);
                     }
                 }
 

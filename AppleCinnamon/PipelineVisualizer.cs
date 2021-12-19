@@ -56,7 +56,7 @@ namespace AppleCinnamon
 
         //public static readonly RawColor4[] ColorsByStep = PipelineBlock.Blocks.Select(s =>
         //{
-        //    if (s is ChunkPoolPipelineBlock)
+        //    if (s is DefaultChunkPoolPipelineBlock)
         //    {
         //        return s.DebugColor;
         //    }

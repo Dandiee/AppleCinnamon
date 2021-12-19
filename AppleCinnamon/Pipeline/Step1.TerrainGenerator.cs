@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
 using AppleCinnamon.Helper;
-using AppleCinnamon.Pipeline.Context;
 using AppleCinnamon.Settings;
 
 namespace AppleCinnamon.Pipeline

@@ -4,14 +4,14 @@ using AppleCinnamon.Settings;
 
 namespace AppleCinnamon.Pipeline
 {
-    public sealed class ArtifactGenerator
+    public sealed class ArtifactGenerator : IChunkTransformer
     {
         private static readonly VoxelDefinition[] FlowersAndSuch = 
         {
             VoxelDefinition.FlowerRed, VoxelDefinition.FlowerYellow, VoxelDefinition.MushroomBrown, VoxelDefinition.MushroomRed,
         };
 
-        public Chunk Process(Chunk chunk)
+        public Chunk Transform(Chunk chunk)
         {
             var rnd = new Random(chunk.ChunkIndex.GetHashCode());
 
@@ -19,7 +19,7 @@ namespace AppleCinnamon.Pipeline
             {
                 var index = chunk.FromFlatIndex(flatIndex);
 
-                if (rnd.Next() % 70000 == 0)
+                if (rnd.Next() % 30 == 0)
                 {
                     Artifacts.Tree(rnd, chunk, index);
                 }

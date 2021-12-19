@@ -1,9 +1,8 @@
-﻿using AppleCinnamon.Pipeline.Context;
-using SharpDX.Direct3D11;
+﻿using SharpDX.Direct3D11;
 
 namespace AppleCinnamon.Pipeline
 {
-    public sealed class ChunkDispatcher
+    public sealed class ChunkDispatcher : IChunkTransformer
     {
         private readonly Device _device;
         
@@ -12,11 +11,10 @@ namespace AppleCinnamon.Pipeline
             _device = device;
         }
 
-        public Chunk Process(Chunk chunk)
+        public Chunk Transform(Chunk chunk)
         {
             ChunkBuilder.BuildChunk(chunk, _device);
             return chunk;
         }
-
     }
 }

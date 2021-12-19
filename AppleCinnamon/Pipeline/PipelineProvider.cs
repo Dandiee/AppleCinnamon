@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using AppleCinnamon.Helper;
 using AppleCinnamon.Pipeline.Context;
@@ -29,32 +30,24 @@ namespace AppleCinnamon.Pipeline
 
         public TransformPipelineBlock<Int2, Chunk> CreatePipeline(int maxDegreeOfParallelism, Action<Chunk> successCallback, out NeighborAssigner assigner)
         {
-            var multiThreaded = new ExecutionDataflowBlockOptions
-            {
-                MaxDegreeOfParallelism = maxDegreeOfParallelism
-            };
+            var multiThreaded = new ExecutionDataflowBlockOptions {MaxDegreeOfParallelism = maxDegreeOfParallelism};
+            var singleThreaded = new ExecutionDataflowBlockOptions {MaxDegreeOfParallelism = 1};
 
-            var singleThreaded = new ExecutionDataflowBlockOptions
-            {
-                MaxDegreeOfParallelism = 1
-            };
-
-            
-            var terrainGenerator = new TransformPipelineBlock<Int2, Chunk>(_terrainGenerator.Process);
+            var terrainGenerator = new TransformPipelineBlock<Int2, Chunk>(_terrainGenerator.Process, nameof(TerrainGenerator), multiThreaded);
             terrainGenerator
-                .LinkTo(new TransformManyPipelineBlock<Chunk, Chunk>(_neighborAssigner.Process))
-                .LinkTo(new TransformPipelineBlock<Chunk, Chunk>(_artifactGenerator.Process))
-                .LinkTo(new ChunkPoolPipelineBlock(2))
-                .LinkTo(new TransformPipelineBlock<Chunk, Chunk>(_localFinalizer.Process))
-                .LinkTo(new ChunkPoolPipelineBlock(4))
-                .LinkTo(new TransformPipelineBlock<Chunk, Chunk>(_globalFinalizer.Process))
-                .LinkTo(new ChunkPoolPipelineBlock(6))
-                .LinkTo(new TransformPipelineBlock<Chunk, Chunk>(_chunkDispatcher.Process))
-                .LinkTo(new TransformPipelineBlock<Chunk, Chunk>(c =>
+                .LinkTo(new TransformManyPipelineBlock(_neighborAssigner.Process, singleThreaded))
+                .LinkTo(new ChunkTransformBlock(_artifactGenerator, singleThreaded))
+                .LinkTo(new DefaultChunkPoolPipelineBlock())
+                .LinkTo(new ChunkTransformBlock(_localFinalizer, multiThreaded))
+                .LinkTo(new DefaultChunkPoolPipelineBlock())
+                .LinkTo(new ChunkTransformBlock(_globalFinalizer, singleThreaded))
+                .LinkTo(new DefaultChunkPoolPipelineBlock())
+                .LinkTo(new ChunkTransformBlock(_chunkDispatcher, multiThreaded))
+                .LinkTo(new ChunkTransformBlock(c =>
                 {
                     successCallback(c);
                     return c;
-                }));
+                }, "Finalizer", singleThreaded));
 
             
             assigner = _neighborAssigner;

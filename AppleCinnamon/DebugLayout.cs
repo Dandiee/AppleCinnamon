@@ -87,15 +87,14 @@ namespace AppleCinnamon
                    $"Show chunk boxes [F3]: {(Game.ShowChunkBoundingBoxes ? "On" : "Off")}\r\n";
         }
 
-        private string GetPipelineMetrics() 
-            => string.Empty;
-            //=> string.Join("\r\n", PipelineBlock.ElapsedTimes.Select(block => $"{block.Key.Name}: {block.Value:N0}ms"));
+        private string GetPipelineMetrics(ChunkManager chunkManager) 
+            => string.Join("\r\n", chunkManager.Pipeline.MonitoredBlocks.Select(block => $"{block.Name}: {block.ElapsedTime:N0}ms"));
 
         private string BuildRightText(ChunkManager chunkManager, Game game)
         {
             return $"Chunk size {Chunk.SizeXy}, View distance: {Game.ViewDistance}, Slice: {Chunk.SliceHeight}\r\n" +
                    //string.Join("\r\n", chunkManager.PipelinePerformance.Select(s => $"{s.Key}: {s.Value:N0} ms")) + "\r\n" + 
-                   GetPipelineMetrics() +"\r\n" +
+                   GetPipelineMetrics(chunkManager) +"\r\n" +
                    //$"Total pipeline time: {chunkManager.PipelinePerformance.Values.Sum():N0} ms\r\n" + 
                    //$"Boot time: {chunkManager.BootTime.TotalMilliseconds:N0} ms\r\n" + 
                    $"Average render time: {game.AverageRenderTime:F2}\r\n" +

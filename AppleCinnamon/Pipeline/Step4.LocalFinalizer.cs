@@ -5,9 +5,9 @@ using SharpDX;
 
 namespace AppleCinnamon.Pipeline
 {
-    public sealed class LocalFinalizer
+    public sealed class LocalFinalizer : IChunkTransformer
     {
-        public Chunk Process(Chunk chunk)
+        public Chunk Transform(Chunk chunk)
         {
             InitializeSunlight(chunk);
             FullScanner.FullScan(chunk);
