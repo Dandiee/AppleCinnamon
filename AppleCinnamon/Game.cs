@@ -12,9 +12,9 @@ namespace AppleCinnamon
     {
         public static readonly Vector3 StartPosition = new(0, 140, 0);
 
-        public const int ViewDistance = 32;
+        public const int ViewDistance = 4;
         public const int NumberOfPools = 4;
-        public static readonly TimeSpan ChunkDespawnCooldown = TimeSpan.FromSeconds(5);
+        public static readonly TimeSpan ChunkDespawnCooldown = TimeSpan.FromSeconds(1);
         public static bool IsBackFaceCullingEnabled { get; set; }
         
         public static bool IsViewFrustumCullingEnabled { get; set; } = true;

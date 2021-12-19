@@ -1,12 +1,22 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using AppleCinnamon.Pipeline.Context;
 using SharpDX;
 
 namespace AppleCinnamon.Pipeline
 {
-    public sealed class LocalSunlightInitializer : TransformChunkPipelineBlock
+    public sealed class LocalFinalizer
     {
-        public override Chunk Process(Chunk chunk)
+        public Chunk Process(Chunk chunk)
+        {
+            InitializeSunlight(chunk);
+            FullScanner.FullScan(chunk);
+            LightingService.LocalPropagate(chunk, chunk.BuildingContext.LightPropagationVoxels);
+
+            return chunk;
+        }
+
+        private void InitializeSunlight(Chunk chunk)
         {
             for (var i = 0; i != Chunk.SizeXy; i++)
             {
@@ -15,8 +25,6 @@ namespace AppleCinnamon.Pipeline
                     _ = LightingService.Sunlight(chunk, new Int3(i, chunk.CurrentHeight, k), 15, false).ToList();
                 }
             }
-
-            return chunk;
         }
     }
 }

@@ -5,9 +5,9 @@ using AppleCinnamon.Pipeline.Context;
 
 namespace AppleCinnamon.Pipeline
 {
-    public sealed class GlobalVisibilityFinalizer : TransformChunkPipelineBlock
+    public sealed class GlobalVisibilityFinalizer
     {
-        public override Chunk Process(Chunk chunk)
+        public static void FinalizeGlobalVisibility(Chunk chunk)
         {
             if (chunk.Neighbors.Any(a => a == null))
             {
@@ -25,7 +25,6 @@ namespace AppleCinnamon.Pipeline
             ProcessSide(chunk, backChunk, chunk.BuildingContext.Back);
             
             CleanUpMemory(chunk);
-            return chunk;
         }
 
 
@@ -54,7 +53,7 @@ namespace AppleCinnamon.Pipeline
             }
         }
 
-        private void CleanUpMemory(Chunk chunk)
+        private static void CleanUpMemory(Chunk chunk)
         {
             foreach (var face in chunk.BuildingContext.Faces)
             {

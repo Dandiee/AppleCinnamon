@@ -1,19 +1,16 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using AppleCinnamon.Helper;
-using AppleCinnamon.Pipeline.Context;
-using SharpDX.Mathematics.Interop;
 
 namespace AppleCinnamon.Pipeline
 {
-    public sealed class NeighborAssigner : ChunkPoolPipelineBlock
+    public sealed class NeighborAssigner
     {
-        private static readonly RawColor4 Color = new(1, 1, 0, 1);
-        public override RawColor4 DebugColor => Color;
+        public static readonly ConcurrentDictionary<Int2, Chunk> Chunks = new();
+        public static readonly HashSet<Int2> DispatchedChunks = new();
 
-        public IEnumerable<Chunk> ChunkList => Chunks.Values;
-
-        public override IEnumerable<Chunk> Process(Chunk chunk)
+        public IEnumerable<Chunk> Process(Chunk chunk)
         {
             Chunks.TryAdd(chunk.ChunkIndex, chunk);
             chunk.SetNeighbor(0, 0, chunk);
@@ -57,6 +54,5 @@ namespace AppleCinnamon.Pipeline
                 }
             }
         }
-
     }
 }

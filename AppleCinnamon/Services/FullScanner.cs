@@ -1,48 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using AppleCinnamon.Helper;
-using AppleCinnamon.Pipeline.Context;
+﻿using AppleCinnamon.Helper;
 using AppleCinnamon.Settings;
 
 namespace AppleCinnamon.Pipeline
 {
-    public static class VisibilityFlagExtensions
+    public static class FullScanner
     {
-        private static readonly IReadOnlyDictionary<VisibilityFlag, VisibilityFlag> OppositeMapping =
-            new Dictionary<VisibilityFlag, VisibilityFlag>
-            {
-                [VisibilityFlag.Top] = VisibilityFlag.Bottom,
-                [VisibilityFlag.Bottom] = VisibilityFlag.Top,
-                [VisibilityFlag.Left] = VisibilityFlag.Right,
-                [VisibilityFlag.Right] = VisibilityFlag.Left,
-                [VisibilityFlag.Front] = VisibilityFlag.Back,
-                [VisibilityFlag.Back] = VisibilityFlag.Front,
-            };
-
-        public static VisibilityFlag GetOpposite(this VisibilityFlag flag)
-            => OppositeMapping[flag];
-    }
-
-    [Flags]
-    public enum TransmittanceFlags : byte
-    {
-        None = 0,
-        Quarter1 = 1,
-        Quarter2 = 2,
-        Quarter3 = 4,
-        Quarter4 = 8,
-
-        Top = 3,
-        Bottom = 12,
-        All = 15
-    }
-
-
-    public sealed class FullScanner : TransformChunkPipelineBlock
-    {
-        public override Chunk Process(Chunk chunk)
+        public static void FullScan(Chunk chunk)
         {
 
             var height = chunk.CurrentHeight;
@@ -138,12 +101,10 @@ namespace AppleCinnamon.Pipeline
                     }
                 }
             }
-
-            return chunk;
         }
 
         [InlineMethod.Inline]
-        private void BuildHorizontalFace(bool isInChunk, int neighborFlatIndex, Chunk chunk, VoxelDefinition definition,
+        private static void BuildHorizontalFace(bool isInChunk, int neighborFlatIndex, Chunk chunk, VoxelDefinition definition,
             int flatIndex, ref VisibilityFlag visibilityFlag, ref byte voxelLight, FaceBuildingContext context)
         {
             if (isInChunk)

@@ -8,9 +8,9 @@ using SharpDX;
 
 namespace AppleCinnamon.Pipeline
 {
-    public sealed class GlobalLightFinalizer : TransformChunkPipelineBlock
+    public static class GlobalLightFinalizer
     {
-        public override Chunk Process(Chunk chunk)
+        public static void FinalizeGlobalLighting(Chunk chunk)
         {
             foreach (var corner in AnnoyingMappings.GlobalLightFinalizerCornerMapping)
             {
@@ -23,8 +23,6 @@ namespace AppleCinnamon.Pipeline
             {
                 EdgeSolver(chunk, direction);
             }
-
-            return chunk;
         }
 
         private struct EdgePropogation
@@ -54,7 +52,7 @@ namespace AppleCinnamon.Pipeline
             }
         }
 
-        private void EdgeSolver(Chunk targetChunk, EdgePropogation context)
+        private static void EdgeSolver(Chunk targetChunk, EdgePropogation context)
         {
             var sourceChunk = targetChunk.Neighbors[context.RelativeSourceChunkIndex];
 

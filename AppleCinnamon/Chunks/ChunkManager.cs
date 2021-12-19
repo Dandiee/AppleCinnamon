@@ -26,7 +26,7 @@ namespace AppleCinnamon
         private readonly ChunkUpdater _chunkUpdater;
         private readonly ChunkDrawer _chunkDrawer;
         private Int2? _lastQueueIndex;
-        private readonly TransformBlock<Int2, Chunk> _pipeline;
+        private readonly TransformPipelineBlock<Int2, Chunk> _pipeline;
         public readonly NeighborAssigner _neighborAssignerPipelineBlock;
 
         public ChunkManager(Graphics graphics)
@@ -47,7 +47,7 @@ namespace AppleCinnamon
         {
             var now = DateTime.Now;
             var chunksToDelete = new List<Chunk>();
-            var chunksToRender = _neighborAssignerPipelineBlock.ChunkList.Select(s =>
+            var chunksToRender = NeighborAssigner.Chunks.Values.Select(s =>
                 {
                     s.IsRendered = false;
 
@@ -85,25 +85,14 @@ namespace AppleCinnamon
                 })
                 .ToList();
 
-            if (true && chunksToDelete.Count > 0)
+            if (chunksToDelete.Count > 0)
             {
-                Debug.WriteLine($"ChunkDelted: {string.Join(", ", chunksToDelete.Select(s => $"({s.ChunkIndex})"))}");
-
                 foreach (var chunk in chunksToDelete)
                 {
-                    var b = true;
-                    ChunkPoolPipelineBlock.RemoveChunk(chunk.ChunkIndex);
-
-                    /*
-                    if (!b) throw new Exception(); b = NeighborAssigner.Chunks.TryRemove(chunk.ChunkIndex, out _);
-                    if (!b) throw new Exception(); b = MapReadyPool.Chunks.TryRemove(chunk.ChunkIndex, out _);
-                    if (!b) throw new Exception(); b = MapReadyPool.DispatchedChunks.Remove(chunk.ChunkIndex);
-                    if (!b) throw new Exception(); b = ChunkPool.Chunks.TryRemove(chunk.ChunkIndex, out _);
-                    if (!b) throw new Exception(); b = BuildPool.Chunks.TryRemove(chunk.ChunkIndex, out _);
-                    */
+                    NeighborAssigner.Chunks.TryRemove(chunk.ChunkIndex, out _);
+                    NeighborAssigner.DispatchedChunks.Remove(chunk.ChunkIndex);
                     _queuedChunks.TryRemove(chunk.ChunkIndex, out _);
                     Chunks.TryRemove(chunk.ChunkIndex, out _);
-
                     chunk.DereferenceNeighbors();
                     chunk.ShouldBeDeadByNow = true;
                 }
@@ -145,11 +134,22 @@ namespace AppleCinnamon
                 foreach (var relativeChunkIndex in GetSurroundingChunks(Game.ViewDistance + Game.NumberOfPools - 1))
                 {
                     var chunkIndex = currentChunkIndex + relativeChunkIndex;
+
+                    if (!Chunks.ContainsKey(chunkIndex) && _queuedChunks.ContainsKey(chunkIndex))
+                    {
+
+                    }
+
+                    if (Chunks.ContainsKey(chunkIndex) && !_queuedChunks.ContainsKey(chunkIndex))
+                    {
+
+                    }
+
                     if (!_queuedChunks.ContainsKey(chunkIndex) && !Chunks.ContainsKey(chunkIndex))
                     {
                         //Debug.WriteLine($"Chunk queued: ({chunkIndex})");
                         _queuedChunks.TryAdd(chunkIndex, null);
-                        _pipeline.Post(chunkIndex);
+                        _pipeline.TransformBlock.Post(chunkIndex);
                     }
                 }
 

@@ -9,8 +9,6 @@ namespace AppleCinnamon
         [STAThread]
         static void Main()
         {
-            var fs = new FullScanner();
-
             Game g = new Game();
         }
 

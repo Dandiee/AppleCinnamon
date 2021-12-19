@@ -1,11 +1,12 @@
 ﻿using System;
+using System.Diagnostics;
 using AppleCinnamon.Helper;
 using AppleCinnamon.Pipeline.Context;
 using AppleCinnamon.Settings;
 
 namespace AppleCinnamon.Pipeline
 {
-    public sealed class TerrainGenerator : PipelineBlock<Int2, Chunk>
+    public sealed class TerrainGenerator
     {
         private readonly DaniNoise _noise;
         private static readonly DaniNoise _waterNoise = new(WorldSettings.RiverNoiseOptions);
@@ -15,8 +16,9 @@ namespace AppleCinnamon.Pipeline
             _noise = noise;
         }
 
-        public override Chunk Process(Int2 chunkIndex)
+        public Chunk Process(Int2 chunkIndex)
         {
+            Debug.WriteLine(chunkIndex);
             var chunkSizeXz = new Int2(Chunk.SizeXy, Chunk.SizeXy);
             var heatMap = new int[Chunk.SizeXy, Chunk.SizeXy];
             var maxHeight = WorldSettings.WaterLevel + 1;

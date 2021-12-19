@@ -1,130 +1,119 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using AppleCinnamon.Helper;
-using SharpDX;
-using SharpDX.Mathematics.Interop;
+using System.Threading.Tasks.Dataflow;
 
 namespace AppleCinnamon.Pipeline.Context
 {
     public abstract class PipelineBlock
     {
-        public static readonly List<PipelineBlock> Blocks = new();
-        public readonly int PipelineStepIndex;
-        public static readonly ConcurrentDictionary<Type, long> ElapsedTimes = new ();
-        public abstract RawColor4 DebugColor { get;  }
-
-        protected PipelineBlock()
-        {
-            PipelineStepIndex = Blocks.Count;
-            Blocks.Add(this);
-        }
+        public int PipelineStepIndex { get; protected set; }
     }
 
     public abstract class PipelineBlock<TInput, TOutput> : PipelineBlock
     {
-        private static RawColor4 DefaultColor = new(1, 0, 0, 1);
-        public override RawColor4 DebugColor => DefaultColor;
+        public IPropagatorBlock<TInput, TOutput> TransformBlock { get; protected set; }
 
-        private readonly Type _type;
-
-        protected PipelineBlock()
+        public PipelineBlock<TOutput, TNewOutput> LinkTo<TNewOutput>(PipelineBlock<TOutput, TNewOutput> next)
         {
-            _type = GetType();
-        }
-
-        public virtual TOutput Execute(TInput input)
-        {
-            if (input is Chunk c && c.ShouldBeDeadByNow)
-            {
-
-            }
-
-            var sw = Stopwatch.StartNew();
-            var result = Process(input);
-            sw.Stop();
+            TransformBlock.LinkTo(next.TransformBlock);
+            next.PipelineStepIndex = PipelineStepIndex + 1;
 
 
-            ElapsedTimes.TryGetValue(_type, out var ms);
-            ElapsedTimes[_type] = ms + sw.ElapsedMilliseconds;
-
-            return result;
-
-        }
-
-        public abstract TOutput Process(TInput input);
-    }
-
-
-    public abstract class TransformChunkPipelineBlock : PipelineBlock<Chunk, Chunk>
-    {
-        public override Chunk Execute(Chunk input)
-        {
-            if (input.PipelineStep > PipelineStepIndex)
-            {
-                return input;
-            }
-
-            input.PipelineStep = PipelineStepIndex;
-            var result = base.Execute(input);
-            return result;
+            return next;
         }
     }
 
-    public class ChunkPoolPipelineBlock : PipelineBlock<Chunk, IEnumerable<Chunk>>
+    public class TransformPipelineBlock<TInput, TOutput> : PipelineBlock<TInput, TOutput>
     {
-        protected readonly ConcurrentDictionary<Int2, Chunk> Chunks = new();
-        protected readonly HashSet<Int2> DispatchedChunks = new();
-        private static readonly List<ChunkPoolPipelineBlock> Instances = new();
+        private readonly Func<TInput, TOutput> _func;
 
-        public ChunkPoolPipelineBlock()
+
+
+        public TransformPipelineBlock(Func<TInput, TOutput> func)
         {
-            Instances.Add(this);
+            _func = func;
+            TransformBlock = new TransformBlock<TInput, TOutput>(s => Process(s), new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = 1 });
         }
 
-
-        public static void RemoveChunk(Int2 chunkIndex)
+        private TOutput Process(TInput input)
         {
-            foreach (var instance in Instances)
+            if (input is Chunk c)
             {
-                instance.Chunks.TryRemove(chunkIndex, out _);
-                instance.DispatchedChunks.Remove(chunkIndex);
+                if (c.PipelineStep != PipelineStepIndex - 1)
+                {
+                    if (input is TOutput output)
+                    {
+                        return output;
+                    }
+                    else
+                    {
+                        throw new Exception();
+                    }
+                }
+
+                c.PipelineStep++;
+                var result = _func(input);
+                return result;
             }
+
+            return _func(input);
+        }
+    }
+
+    public class TransformManyPipelineBlock<TInput, TOutput> : PipelineBlock<TInput, TOutput>
+    {
+        private readonly Func<TInput, IEnumerable<TOutput>> _func;
+
+        public TransformManyPipelineBlock(Func<TInput, IEnumerable<TOutput>> func)
+        {
+            _func = func;
+            TransformBlock = new TransformManyBlock<TInput, TOutput>(s => Process(s), new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = 1 });
         }
 
-        public override IEnumerable<Chunk> Execute(Chunk input)
+        private IEnumerable<TOutput> Process(TInput input)
         {
-            input.PipelineStep = PipelineStepIndex;
-            var result = base.Execute(input);
+            if (input is Chunk c)
+            {
+                c.PipelineStep++;
+            }
+
+            var result = _func(input);
+
             return result;
         }
+    }
 
-        public override IEnumerable<Chunk> Process(Chunk chunk)
+    public class ChunkPoolPipelineBlock : PipelineBlock<Chunk, Chunk>
+    {
+        private readonly int _expectedInputIndex;
+
+        public ChunkPoolPipelineBlock(int expectedInputIndex)
         {
-            if (DispatchedChunks.Contains(chunk.ChunkIndex))
-            {
-            }
+            _expectedInputIndex = expectedInputIndex;
+            TransformBlock = new TransformManyBlock<Chunk, Chunk>(Pool, new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = 1 });
+        }
 
-            if (!Chunks.TryAdd(chunk.ChunkIndex, chunk))
+        public IEnumerable<Chunk> Pool(Chunk chunk)
+        {
+            // a disposed and reloaded neighbor may re-proc an already processed chunk
+            // in which case we dont want to demote the pipeline step
+            if (chunk.PipelineStep == PipelineStepIndex - 1)
             {
-                //throw new Exception("The chunk is already in the pool");
+                chunk.PipelineStep++;
             }
 
             foreach (var n in chunk.Neighbors)
             {
-                if (n.Neighbors.All(a => a != null && Chunks.ContainsKey(a.ChunkIndex)))
+                if (!n.Neighbors.Any(s => s == null || s.PipelineStep < chunk.PipelineStep))
                 {
-                    if (!DispatchedChunks.Contains(n.ChunkIndex))
+                    //if (n.PipelineStep == chunk.PipelineStep)
                     {
-                        DispatchedChunks.Add(n.ChunkIndex);
                         yield return n;
                     }
                 }
             }
         }
     }
-
-    
 }
+

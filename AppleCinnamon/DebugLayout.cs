@@ -87,8 +87,9 @@ namespace AppleCinnamon
                    $"Show chunk boxes [F3]: {(Game.ShowChunkBoundingBoxes ? "On" : "Off")}\r\n";
         }
 
-        private string GetPipelineMetrics()
-            => string.Join("\r\n", PipelineBlock.ElapsedTimes.Select(block => $"{block.Key.Name}: {block.Value:N0}ms"));
+        private string GetPipelineMetrics() 
+            => string.Empty;
+            //=> string.Join("\r\n", PipelineBlock.ElapsedTimes.Select(block => $"{block.Key.Name}: {block.Value:N0}ms"));
 
         private string BuildRightText(ChunkManager chunkManager, Game game)
         {

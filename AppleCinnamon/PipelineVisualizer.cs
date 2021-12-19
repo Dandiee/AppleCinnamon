@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices.ComTypes;
+﻿using System.Linq;
 using AppleCinnamon.Extensions;
 using AppleCinnamon.Helper;
 using AppleCinnamon.Pipeline;
@@ -21,12 +19,12 @@ namespace AppleCinnamon
             _graphics = graphics;
             _textures = _graphics.D2DeviceContext.CreateD2DBitmap("Content/Texture/terrain3.png");
         }
-
+        
         public void Draw(Camera camera, ChunkManager chunkManager)
         {
             const int size = sizeof(float) * 4;
 
-            var chunks = chunkManager._neighborAssignerPipelineBlock.ChunkList.ToList();
+            var chunks = NeighborAssigner.Chunks.Values.ToList();
             var destinationRects = new RawRectangleF[chunks.Count];
             var sourceRects = new RawRectangle[chunks.Count];
             var colors = new RawColor4[chunks.Count];
@@ -56,19 +54,40 @@ namespace AppleCinnamon
         public static readonly RawColor4 RenderedColor = new(0, 1, 0, 1);
         public static readonly RawRectangle SourceRect = new(0, 0, 16, 16);
 
-        public static readonly RawColor4[] ColorsByStep = PipelineBlock.Blocks.Select(s =>
-        {
-            if (s is ChunkPoolPipelineBlock)
-            {
-                return s.DebugColor;
-                return new RawColor4(0, 0, (float)s.PipelineStepIndex / Game.NumberOfPools, 1);
-            }
-            else
-            {
-                return new RawColor4((float) s.PipelineStepIndex / (Game.NumberOfPools - Game.NumberOfPools), 0, 0, 1);
-            }
-        }).ToArray();
+        //public static readonly RawColor4[] ColorsByStep = PipelineBlock.Blocks.Select(s =>
+        //{
+        //    if (s is ChunkPoolPipelineBlock)
+        //    {
+        //        return s.DebugColor;
+        //    }
+        //    else
+        //    {
+        //        return new RawColor4((float) s.PipelineStepIndex / (PipelineBlock.Blocks.Count), 0, 0, 1);
+        //    }
+        //}).ToArray();
 
+        public static readonly RawColor4[] ColorsBySteps = new[]
+        {
+            Color.Orange.ToRawColor4(), // terraing gen
+            Color.Blue.ToRawColor4(), // neighbor assigner
+            Color.GreenYellow.ToRawColor4(), // artifact gen
+            Color.Red.ToRawColor4(), // pool
+            Color.Green.ToRawColor4(), // localizer
+            Color.Black.ToRawColor4(), // pool
+            Color.Pink.ToRawColor4(), // globalizer
+            Color.Gray.ToRawColor4(), // pool
+            Color.LightBlue.ToRawColor4(), // dispatcher
+            Color.Bisque.ToRawColor4(), // finalized
+            //Color.Black.ToRawColor4(),
+            //Color.Wheat.ToRawColor4(),
+            //Color.Wheat.ToRawColor4(),
+            //Color.Wheat.ToRawColor4(),
+            //Color.Wheat.ToRawColor4(),
+            //Color.Wheat.ToRawColor4(),
+            //Color.Wheat.ToRawColor4(),
+            //Color.Wheat.ToRawColor4(),
+            //Color.Wheat.ToRawColor4(),
+        };
 
         public static ChunkSprite Rect(this Chunk chunk, Int2 currentChunkIndex)
         {
@@ -76,7 +95,7 @@ namespace AppleCinnamon
             var color =  RenderedColor;
             if (!chunk.IsRendered)
             {
-                color = ColorsByStep[chunk.PipelineStep];
+                color = ColorsBySteps[chunk.PipelineStep];
             }
 
             if (chunk.IsMarkedForDelete)
