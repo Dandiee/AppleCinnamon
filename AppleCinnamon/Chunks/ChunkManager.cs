@@ -97,7 +97,7 @@ namespace AppleCinnamon
                     chunk.ShouldBeDeadByNow = true;
                 }
             }
-
+            
             _chunkDrawer.Draw(chunksToRender, camera);
         }
 

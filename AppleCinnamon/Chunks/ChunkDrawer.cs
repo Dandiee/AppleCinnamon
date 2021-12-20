@@ -63,6 +63,7 @@ namespace AppleCinnamon.Chunks
                     }
                 }
 
+
                 if (Game.RenderSprites)
                 {
                     _spriteEffectDefinition.Use(_device);
@@ -84,34 +85,39 @@ namespace AppleCinnamon.Chunks
                     {
                         chunk.Buffers.BufferWater?.Draw(_device);
                     }
+
                     _device.ImmediateContext.OutputMerger.SetBlendState(null);
                 }
 
                 if (Game.RenderBoxes)
                 {
-                    var boxVertices = new VertexBox[(camera.CurrentCursor != null ? 1 : 0) + (Game.ShowChunkBoundingBoxes ? chunks.Count : 0)];
+                    var boxVertices = new VertexBox[(camera.CurrentCursor != null ? 1 : 0) +
+                                                    (Game.ShowChunkBoundingBoxes ? chunks.Count : 0)];
                     if (camera.CurrentCursor != null)
                     {
-                        boxVertices[^1] = new VertexBox(camera.CurrentCursor.BoundingBox, new Color3(0.713f, 0.125f, 0.878f));
+                        boxVertices[^1] = new VertexBox(camera.CurrentCursor.BoundingBox,
+                            new Color3(0.713f, 0.125f, 0.878f));
                     }
 
                     if (Game.ShowChunkBoundingBoxes)
                     {
                         for (var i = 0; i < chunks.Count; i++)
                         {
-                            boxVertices[i] = new VertexBox(ref chunks[i].BoundingBox, new Color3(0.713f, 0.125f, 0.878f));
+                            boxVertices[i] = new VertexBox(ref chunks[i].BoundingBox,
+                                new Color3(0.713f, 0.125f, 0.878f));
                         }
                     }
 
                     if (boxVertices.Length > 0)
                     {
-                        var vertexBuffer = Buffer.Create(_device, BindFlags.VertexBuffer, boxVertices);
-                        var binding = new VertexBufferBinding(vertexBuffer, default(VertexBox).Size, 0);
-
-                        _boxEffectDefinition.Use(_device);
-                        _device.ImmediateContext.InputAssembler.SetVertexBuffers(0, binding);
-                        _device.ImmediateContext.Draw(boxVertices.Length, 0);
-                        _device.ImmediateContext.GeometryShader.Set(null);
+                        using (var vertexBuffer = Buffer.Create(_device, BindFlags.VertexBuffer, boxVertices))
+                        {
+                            var binding = new VertexBufferBinding(vertexBuffer, default(VertexBox).Size, 0);
+                            _boxEffectDefinition.Use(_device);
+                            _device.ImmediateContext.InputAssembler.SetVertexBuffers(0, binding);
+                            _device.ImmediateContext.Draw(boxVertices.Length, 0);
+                            _device.ImmediateContext.GeometryShader.Set(null);
+                        }
                     }
                 }
             }

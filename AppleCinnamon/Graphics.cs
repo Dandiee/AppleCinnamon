@@ -92,13 +92,7 @@ namespace AppleCinnamon
             }));
 
             DirectWrite = new SharpDX.DirectWrite.Factory();
-
-
-           
-
             Device.ImmediateContext.Rasterizer.SetViewport(new Viewport(0, 0, RenderForm.ClientSize.Width, RenderForm.ClientSize.Height, 0.0f, 1.0f));
-
-            
         }
 
         public void Draw(Action drawActions)

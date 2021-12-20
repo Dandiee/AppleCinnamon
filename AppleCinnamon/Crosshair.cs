@@ -8,6 +8,7 @@ namespace AppleCinnamon
     {
         private readonly Graphics _graphics;
         private readonly Geometry _geometry;
+        private readonly SolidColorBrush _brush;
 
         public Crosshair(Graphics graphics)
         {
@@ -22,12 +23,13 @@ namespace AppleCinnamon
                     new RectangleGeometry(graphics.D2dFactory, new RawRectangleF(midX - 20, midY - thickness/2, midX + 20, midY + thickness/2)),
                     new RectangleGeometry(graphics.D2dFactory, new RawRectangleF(midX - thickness/2, midY - 20, midX + thickness/2, midY + 20))
                 });
+            _brush = new SolidColorBrush(_graphics.RenderTarget2D, Color.White);
         }
 
 
         public void Draw()
         {
-            _graphics.RenderTarget2D.FillGeometry(_geometry, new SolidColorBrush(_graphics.RenderTarget2D, Color.White), null);
+            _graphics.RenderTarget2D.FillGeometry(_geometry, _brush, null);
         }
     }
 }

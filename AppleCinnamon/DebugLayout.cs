@@ -24,6 +24,11 @@ namespace AppleCinnamon
         private readonly TextFormat _bottomCenterAlignedTextFormat;
         private readonly Keyboard _keyboard;
 
+
+
+        private readonly SolidColorBrush _brush;
+
+
         public DebugLayout(Graphics graphics)
         {
             _graphics = graphics;
@@ -45,6 +50,8 @@ namespace AppleCinnamon
             _keyboard = new Keyboard(new DirectInput());
             _keyboard.Properties.BufferSize = 128;
             _keyboard.Acquire();
+
+            _brush = new SolidColorBrush(_graphics.RenderTarget2D, Color.White);
         }
 
 
@@ -117,26 +124,19 @@ namespace AppleCinnamon
                 Clipboard.SetText(rightText);
             }
 
-            using (var leftTextLayout = new TextLayout(_graphics.DirectWrite, leftText, _leftAlignedTextFormat,
-                _graphics.RenderForm.Width - 20, _graphics.RenderForm.Height))
+            using (var leftTextLayout = new TextLayout(_graphics.DirectWrite, leftText, _leftAlignedTextFormat ,_graphics.RenderForm.Width - 20, _graphics.RenderForm.Height))
             {
-                _graphics.RenderTarget2D.DrawTextLayout(new RawVector2(10, 10), leftTextLayout,
-                    new SolidColorBrush(_graphics.RenderTarget2D, Color.White));
+                _graphics.RenderTarget2D.DrawTextLayout(new RawVector2(10, 10), leftTextLayout, _brush);
             }
 
-            using (var rightTextLayout = new TextLayout(_graphics.DirectWrite, rightText, _rightAlignedTextFormat,
-                _graphics.RenderForm.Width - 30, _graphics.RenderForm.Height))
+            using (var rightTextLayout = new TextLayout(_graphics.DirectWrite, rightText, _rightAlignedTextFormat, _graphics.RenderForm.Width - 30, _graphics.RenderForm.Height))
             {
-                _graphics.RenderTarget2D.DrawTextLayout(new RawVector2(0, 10), rightTextLayout,
-                    new SolidColorBrush(_graphics.RenderTarget2D, Color.White));
+                _graphics.RenderTarget2D.DrawTextLayout(new RawVector2(0, 10), rightTextLayout, _brush);
             }
 
-
-            using (var bottomCenterTextLayout = new TextLayout(_graphics.DirectWrite, $"{camera.VoxelInHand.Name}: [{camera.VoxelInHand.Type}]", _bottomCenterAlignedTextFormat,
-                _graphics.RenderForm.Width - 30, _graphics.RenderForm.Height))
+            using (var bottomCenterTextLayout = new TextLayout(_graphics.DirectWrite, $"{camera.VoxelInHand.Name}: [{camera.VoxelInHand.Type}]", _bottomCenterAlignedTextFormat, _graphics.RenderForm.Width - 30, _graphics.RenderForm.Height))
             {
-                _graphics.RenderTarget2D.DrawTextLayout(new RawVector2(0, _graphics.RenderForm.Height - 100), bottomCenterTextLayout,
-                    new SolidColorBrush(_graphics.RenderTarget2D, Color.White));
+                _graphics.RenderTarget2D.DrawTextLayout(new RawVector2(0, _graphics.RenderForm.Height - 100), bottomCenterTextLayout, _brush);
             }
         }
     }

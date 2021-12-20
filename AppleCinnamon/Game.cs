@@ -8,15 +8,15 @@ using Point = System.Drawing.Point;
 
 namespace AppleCinnamon
 {
-    public sealed class Game 
+    public sealed class Game
     {
         public static readonly Vector3 StartPosition = new(0, 140, 0);
 
-        public const int ViewDistance = 8;
+        public const int ViewDistance = 16;
         public const int NumberOfPools = 4;
         public static readonly TimeSpan ChunkDespawnCooldown = TimeSpan.FromSeconds(1);
         public static bool IsBackFaceCullingEnabled { get; set; }
-        
+
         public static bool IsViewFrustumCullingEnabled { get; set; } = true;
         public static bool ShowChunkBoundingBoxes { get; set; } = false;
         public static bool RenderSky { get; set; } = true;
@@ -78,10 +78,11 @@ namespace AppleCinnamon
                     Cursor.Show();
                 }
 
-                
+
                 Update(new GameTime(TimeSpan.Zero, TimeSpan.FromMilliseconds(Math.Min(AverageRenderTime, 6))));
                 _graphics.Draw(() =>
                 {
+
                     if (_chunkManager.IsInitialized)
                     {
                         _chunkManager.Draw(_camera);
@@ -89,13 +90,18 @@ namespace AppleCinnamon
 
                     _skyDome.Draw();
 
-                    _crosshair.Draw();
-                    _debugLayout.Draw(_chunkManager, _camera, this);
+                    _crosshair.Draw(); // leaking
+                    _debugLayout.Draw(_chunkManager, _camera, this); // leaking
+
 
                     if (ShowPipelineVisualization)
                     {
                         _pipelineVisualizer.Draw(_camera, _chunkManager);
                     }
+
+
+
+
                 });
 
                 _lastRenderTimes[_lastRenderTimeIndex] = elapsedTime.TotalMilliseconds;
