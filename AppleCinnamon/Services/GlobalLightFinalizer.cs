@@ -30,10 +30,10 @@ namespace AppleCinnamon.Pipeline
             public static readonly EdgePropogation[] All =
             {
                 new(), new(),
-                new(Face.Left, Chunk.GetChunkFlatIndex(-1, 0), new Int3(0, 1, 1), new Int3(Chunk.SizeXy - 1,0,0), new Int3(0, 0, 0)),
-                new(Face.Right, Chunk.GetChunkFlatIndex(1, 0), new Int3(0, 1, 1), new Int3(0, 0, 0), new Int3(Chunk.SizeXy - 1, 0, 0)),
-                new(Face.Front, Chunk.GetChunkFlatIndex(0, -1), new Int3(1, 1, 0), new Int3(0, 0, Chunk.SizeXy - 1), new Int3(0, 0, 0)),
-                new(Face.Back, Chunk.GetChunkFlatIndex(0, 1), new Int3(1, 1, 0), new Int3(0, 0, 0), new Int3(0, 0, Chunk.SizeXy - 1)),
+                new(Face.Left, Chunk.GetChunkFlatIndex(-1, 0), new Int3(0, 1, 1), new Int3(WorldSettings.ChunkSize - 1,0,0), new Int3(0, 0, 0)),
+                new(Face.Right, Chunk.GetChunkFlatIndex(1, 0), new Int3(0, 1, 1), new Int3(0, 0, 0), new Int3(WorldSettings.ChunkSize - 1, 0, 0)),
+                new(Face.Front, Chunk.GetChunkFlatIndex(0, -1), new Int3(1, 1, 0), new Int3(0, 0, WorldSettings.ChunkSize - 1), new Int3(0, 0, 0)),
+                new(Face.Back, Chunk.GetChunkFlatIndex(0, 1), new Int3(1, 1, 0), new Int3(0, 0, 0), new Int3(0, 0, WorldSettings.ChunkSize - 1)),
             };
 
             public readonly Face TargetToSourceDirection;
@@ -62,7 +62,7 @@ namespace AppleCinnamon.Pipeline
 
             for (var j = height - 1; j > 0; j--)
             {
-                for (var h = 0; h < Chunk.SizeXy; h++)
+                for (var h = 0; h < WorldSettings.ChunkSize; h++)
                 {
                     var indexMask = new Int3(h * context.DirectionMask.X, j, h * context.DirectionMask.Z);
 

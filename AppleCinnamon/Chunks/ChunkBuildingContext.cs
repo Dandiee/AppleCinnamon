@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using AppleCinnamon.Helper;
 using AppleCinnamon.Pipeline;
+using AppleCinnamon.Settings;
 using SharpDX;
 
 namespace AppleCinnamon
@@ -66,9 +67,9 @@ namespace AppleCinnamon
         private static readonly IReadOnlyDictionary<Face, Func<Int3, int, int>> NeighborIndexFuncs =
             new Dictionary<Face, Func<Int3, int, int>>
             {
-                [Face.Left] = (ijk, height) => Chunk.GetFlatIndex(Chunk.SizeXy - 1, ijk.Y, ijk.Z, height),
+                [Face.Left] = (ijk, height) => Chunk.GetFlatIndex(WorldSettings.ChunkSize - 1, ijk.Y, ijk.Z, height),
                 [Face.Right] = (ijk, height) => Chunk.GetFlatIndex(0, ijk.Y, ijk.Z, height),
-                [Face.Front] = (ijk, height) => Chunk.GetFlatIndex(ijk.X, ijk.Y, Chunk.SizeXy - 1, height),
+                [Face.Front] = (ijk, height) => Chunk.GetFlatIndex(ijk.X, ijk.Y, WorldSettings.ChunkSize - 1, height),
                 [Face.Back] = (ijk, height) => Chunk.GetFlatIndex(ijk.X, ijk.Y, 0, height)
             };
 

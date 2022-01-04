@@ -17,13 +17,12 @@ namespace AppleCinnamon.Pipeline
 
         public Chunk Process(Int2 chunkIndex)
         {
-            Debug.WriteLine(chunkIndex);
-            var chunkSizeXz = new Int2(Chunk.SizeXy, Chunk.SizeXy);
-            var heatMap = new int[Chunk.SizeXy, Chunk.SizeXy];
+            var chunkSizeXz = new Int2(WorldSettings.ChunkSize, WorldSettings.ChunkSize);
+            var heatMap = new int[WorldSettings.ChunkSize, WorldSettings.ChunkSize];
             var maxHeight = WorldSettings.WaterLevel + 1;
-            for (var i = 0; i < Chunk.SizeXy; i++)
+            for (var i = 0; i < WorldSettings.ChunkSize; i++)
             {
-                for (var k = 0; k < Chunk.SizeXy; k++)
+                for (var k = 0; k < WorldSettings.ChunkSize; k++)
                 {
                     var coordinates = chunkIndex * chunkSizeXz + new Int2(i, k);
                     var height = (byte)((_noise.Compute(coordinates.X, coordinates.Y)));
@@ -38,12 +37,12 @@ namespace AppleCinnamon.Pipeline
 
             maxHeight += 64;
             var initialSlicesCount = maxHeight / Chunk.SliceHeight + 1;
-            var voxels = new Voxel[Chunk.SizeXy * initialSlicesCount * Chunk.SliceHeight * Chunk.SizeXy];
+            var voxels = new Voxel[WorldSettings.ChunkSize * initialSlicesCount * Chunk.SliceHeight * WorldSettings.ChunkSize];
             var chunk = new Chunk(chunkIndex, voxels);
 
-            for (var i = 0; i < Chunk.SizeXy; i++)
+            for (var i = 0; i < WorldSettings.ChunkSize; i++)
             {
-                for (var k = 0; k < Chunk.SizeXy; k++)
+                for (var k = 0; k < WorldSettings.ChunkSize; k++)
                 {
                     var height = heatMap[i, k];
 
@@ -55,7 +54,7 @@ namespace AppleCinnamon.Pipeline
                                 : VoxelDefinition.Dirt.Create());
                     }
 
-                    var waterRandom = _waterNoise.Compute(i + chunkIndex.X * Chunk.SizeXy, k + chunkIndex.Y * Chunk.SizeXy);
+                    var waterRandom = _waterNoise.Compute(i + chunkIndex.X * WorldSettings.ChunkSize, k + chunkIndex.Y * WorldSettings.ChunkSize);
                     var isWater = false;
                     if (Math.Abs(waterRandom - 128) <= 2)
                     {

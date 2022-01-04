@@ -12,11 +12,11 @@ namespace AppleCinnamon.Pipeline
             var voxels = chunk.Voxels;
 
             int i, j, k;
-            for (k = 0; k < Chunk.SizeXy; k++)
+            for (k = 0; k < WorldSettings.ChunkSize; k++)
             {
                 for (j = 0; j < height; j++)
                 {
-                    for (i = 0; i < Chunk.SizeXy; i++)
+                    for (i = 0; i < WorldSettings.ChunkSize; i++)
                     {
                         var flatIndex = chunk.GetFlatIndex(i, j, k);
                         var voxel = voxels[flatIndex];
@@ -84,9 +84,9 @@ namespace AppleCinnamon.Pipeline
                         }
 
                         BuildHorizontalFace(i > 0, chunk.GetFlatIndex(i - 1, j, k), chunk, definition, flatIndex, ref visibilityFlag, ref voxelLight, chunk.BuildingContext.Left);
-                        BuildHorizontalFace(i < Chunk.SizeXy - 1, chunk.GetFlatIndex(i + 1, j, k), chunk, definition, flatIndex, ref visibilityFlag, ref voxelLight, chunk.BuildingContext.Right);
+                        BuildHorizontalFace(i < WorldSettings.ChunkSize - 1, chunk.GetFlatIndex(i + 1, j, k), chunk, definition, flatIndex, ref visibilityFlag, ref voxelLight, chunk.BuildingContext.Right);
                         BuildHorizontalFace(k > 0, chunk.GetFlatIndex(i, j, k - 1), chunk, definition, flatIndex, ref visibilityFlag, ref voxelLight, chunk.BuildingContext.Front);
-                        BuildHorizontalFace(k < Chunk.SizeXy - 1, chunk.GetFlatIndex(i, j, k + 1), chunk, definition, flatIndex, ref visibilityFlag, ref voxelLight, chunk.BuildingContext.Back);
+                        BuildHorizontalFace(k < WorldSettings.ChunkSize - 1, chunk.GetFlatIndex(i, j, k + 1), chunk, definition, flatIndex, ref visibilityFlag, ref voxelLight, chunk.BuildingContext.Back);
 
                         if (visibilityFlag != VisibilityFlag.None)
                         {

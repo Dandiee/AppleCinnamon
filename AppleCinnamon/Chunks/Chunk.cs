@@ -1,15 +1,17 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using AppleCinnamon.Helper;
+using AppleCinnamon.Settings;
 using SharpDX;
 
 namespace AppleCinnamon
 {
-    public sealed partial class Chunk
+    public sealed partial class Chunk : IDisposable
     {
         public const int SliceHeight = 16;
-        public const int SizeXy = 16;
-        public const int SliceArea = SizeXy * SizeXy * SliceHeight;
+        public const int SliceArea = WorldSettings.ChunkSize * WorldSettings.ChunkSize * SliceHeight;
 
         public Voxel[] Voxels;
         public BoundingBox BoundingBox;
@@ -19,10 +21,11 @@ namespace AppleCinnamon
         public readonly Int2 ChunkIndex;
         public readonly Vector3 OffsetVector;
         public readonly Int2 Offset;
-        public readonly Chunk[] Neighbors;
+        public Chunk[] Neighbors;
         public readonly Vector3 ChunkIndexVector;
 
         public bool IsMarkedForDelete { get; set; }
+        public bool IsMarkedForDeleteForReal { get; set; }
         public DateTime MarkedForDeleteAt { get; set; }
 
         public ChunkBuffers Buffers { get; set; }
@@ -33,7 +36,21 @@ namespace AppleCinnamon
         public bool IsReadyToRender { get; set; }
         public bool IsDebugHighlighted { get; set; }
         public bool ShouldBeDeadByNow { get; set; }
+        public static int finalizers = 0;
+        private static Dictionary<int, int> finbySteps = new Dictionary<int, int>();
+        ~Chunk()
+        {
+            finbySteps.TryGetValue(PipelineStep, out var cumulative);
+            finbySteps[PipelineStep] = cumulative + 1;
+            finalizers++;
 
+            if (IsReadyToRender)
+            {
+                Debug.WriteLine("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+            }
+
+            Debug.WriteLine($"Chunk dead. - { string.Join(", ", finbySteps.Select(s => $"[{s.Key}]: {s.Value}db"))  }");
+        }
 
         public Chunk(Int2 chunkIndex, Voxel[] voxels)
         {
@@ -42,7 +59,7 @@ namespace AppleCinnamon
             BuildingContext = new ChunkBuildingContext();
             CurrentHeight = (voxels.Length / SliceArea) * SliceHeight;
             ChunkIndex = chunkIndex;
-            Offset = chunkIndex * new Int2(SizeXy, SizeXy);
+            Offset = chunkIndex * new Int2(WorldSettings.ChunkSize, WorldSettings.ChunkSize);
             OffsetVector = new Vector3(Offset.X, 0, Offset.Y);
             ChunkIndexVector = BoundingBox.Center;
 
@@ -56,14 +73,14 @@ namespace AppleCinnamon
             var expectedSlices = heightToFit / SliceHeight + 1;
             var expectedHeight = expectedSlices * SliceHeight;
 
-            var newVoxels = new Voxel[SizeXy * expectedHeight * SizeXy];
+            var newVoxels = new Voxel[WorldSettings.ChunkSize * expectedHeight * WorldSettings.ChunkSize];
 
             // In case of local sliced array addressing, a simple copy does the trick - Array.Copy(Voxels, newVoxels, Voxels.Length);
-            for (var i = 0; i < SizeXy; i++)
+            for (var i = 0; i < WorldSettings.ChunkSize; i++)
             {
                 for (var j = 0; j < CurrentHeight; j++)
                 {
-                    for (var k = 0; k < SizeXy; k++)
+                    for (var k = 0; k < WorldSettings.ChunkSize; k++)
                     {
                         var oldFlatIndex = GetFlatIndex(i, j, k, CurrentHeight);
                         var newFlatIndex = GetFlatIndex(i, j, k, expectedHeight);
@@ -81,9 +98,9 @@ namespace AppleCinnamon
             var originalHeight = CurrentHeight;
             CurrentHeight = expectedHeight;
 
-            for (var i = 0; i < SizeXy; i++)
+            for (var i = 0; i < WorldSettings.ChunkSize; i++)
             {
-                for (var k = 0; k < SizeXy; k++)
+                for (var k = 0; k < WorldSettings.ChunkSize; k++)
                 {
                     for (var j = expectedHeight - 1; j >= originalHeight; j--)
                     {
@@ -99,8 +116,8 @@ namespace AppleCinnamon
 
         private void UpdateBoundingBox()
         {
-            var size = new Vector3(SizeXy, CurrentHeight, SizeXy) / 2f;
-            var position = new Vector3(SizeXy / 2f - .5f + SizeXy * ChunkIndex.X, CurrentHeight / 2f - .5f, SizeXy / 2f - .5f + SizeXy * ChunkIndex.Y);
+            var size = new Vector3(WorldSettings.ChunkSize, CurrentHeight, WorldSettings.ChunkSize) / 2f;
+            var position = new Vector3(WorldSettings.ChunkSize / 2f - .5f + WorldSettings.ChunkSize * ChunkIndex.X, CurrentHeight / 2f - .5f, WorldSettings.ChunkSize / 2f - .5f + WorldSettings.ChunkSize * ChunkIndex.Y);
 
             BoundingBox = new BoundingBox(position - size, position + size);
             Center = position;
@@ -123,6 +140,15 @@ namespace AppleCinnamon
                     }
                 }
             }
+
+            Neighbors = null;
+            Buffers?.Dispose();
+
+        }
+
+        public void Dispose()
+        {
+            Buffers?.Dispose();
         }
     }
 }

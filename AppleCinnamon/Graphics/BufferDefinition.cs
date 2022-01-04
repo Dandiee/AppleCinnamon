@@ -1,11 +1,13 @@
-﻿using AppleCinnamon.Vertices;
+﻿using System;
+using AppleCinnamon.Vertices;
 using SharpDX.Direct3D11;
 using SharpDX.DXGI;
+using Buffer = SharpDX.Direct3D11.Buffer;
 using Device = SharpDX.Direct3D11.Device;
 
 namespace AppleCinnamon
 {
-    public sealed class BufferDefinition<TVertex>
+    public sealed class BufferDefinition<TVertex> : IDisposable
         where TVertex : struct, IVertex
     {
         public readonly bool IsValid;
@@ -31,6 +33,12 @@ namespace AppleCinnamon
                 device.ImmediateContext.InputAssembler.SetIndexBuffer(IndexBuffer, Format.R32_UInt, 0);
                 device.ImmediateContext.DrawIndexed(IndexCount, 0, 0);
             }
+        }
+
+        public void Dispose()
+        {
+            VertexBuffer?.Dispose();
+            IndexBuffer?.Dispose();
         }
     }
 }

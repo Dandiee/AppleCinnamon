@@ -4,6 +4,7 @@ using System.Windows.Forms;
 using AppleCinnamon.Chunks;
 using AppleCinnamon.Helper;
 using AppleCinnamon.Pipeline.Context;
+using AppleCinnamon.Settings;
 using SharpDX;
 using SharpDX.Direct2D1;
 using SharpDX.DirectInput;
@@ -99,7 +100,7 @@ namespace AppleCinnamon
 
         private string BuildRightText(ChunkManager chunkManager, Game game)
         {
-            return $"Chunk size {Chunk.SizeXy}, View distance: {Game.ViewDistance}, Slice: {Chunk.SliceHeight}\r\n" +
+            return $"Chunk size {WorldSettings.ChunkSize}, View distance: {Game.ViewDistance}, Slice: {Chunk.SliceHeight}\r\n" +
                    //string.Join("\r\n", chunkManager.PipelinePerformance.Select(s => $"{s.Key}: {s.Value:N0} ms")) + "\r\n" + 
                    GetPipelineMetrics(chunkManager) +"\r\n" +
                    //$"Total pipeline time: {chunkManager.PipelinePerformance.Values.Sum():N0} ms\r\n" + 

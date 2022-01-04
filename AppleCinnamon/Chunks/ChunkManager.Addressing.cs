@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using AppleCinnamon.Helper;
+using AppleCinnamon.Settings;
 using SharpDX;
 
 namespace AppleCinnamon
@@ -20,7 +21,7 @@ namespace AppleCinnamon
                 return false;
             }
 
-            var voxelIndex = new Int3(absoluteVoxelIndex.X & Chunk.SizeXy - 1, absoluteVoxelIndex.Y, absoluteVoxelIndex.Z & Chunk.SizeXy - 1);
+            var voxelIndex = new Int3(absoluteVoxelIndex.X & WorldSettings.ChunkSize - 1, absoluteVoxelIndex.Y, absoluteVoxelIndex.Z & WorldSettings.ChunkSize - 1);
             address = new VoxelChunkAddress(chunk, voxelIndex);
             return true;
         }
@@ -35,11 +36,11 @@ namespace AppleCinnamon
 
             chunkIndex = new Int2(
                 absoluteVoxelIndex.X < 0
-                    ? ((absoluteVoxelIndex.X + 1) / Chunk.SizeXy) - 1
-                    : absoluteVoxelIndex.X / Chunk.SizeXy,
+                    ? ((absoluteVoxelIndex.X + 1) / WorldSettings.ChunkSize) - 1
+                    : absoluteVoxelIndex.X / WorldSettings.ChunkSize,
                 absoluteVoxelIndex.Z < 0
-                    ? ((absoluteVoxelIndex.Z + 1) / Chunk.SizeXy) - 1
-                    : absoluteVoxelIndex.Z / Chunk.SizeXy);
+                    ? ((absoluteVoxelIndex.Z + 1) / WorldSettings.ChunkSize) - 1
+                    : absoluteVoxelIndex.Z / WorldSettings.ChunkSize);
             return true;
         }
 

@@ -67,13 +67,13 @@ namespace AppleCinnamon
                 foreach (var direction in LightDirections.All)
                 {
                     var neighborX = index.X + direction.Step.X;
-                    if ((neighborX & Chunk.SizeXy) == 0)
+                    if ((neighborX & WorldSettings.ChunkSize) == 0)
                     {
                         var neighborY = index.Y + direction.Step.Y;
                         if (neighborY > 0 && neighborY < chunk.CurrentHeight)
                         {
                             var neighborZ = index.Z + direction.Step.Z;
-                            if ((neighborZ & Chunk.SizeXy) == 0)
+                            if ((neighborZ & WorldSettings.ChunkSize) == 0)
                             {
                                 var neighborFlatIndex = chunk.GetFlatIndex(neighborX, neighborY, neighborZ);
                                 var neighborVoxel = chunk.GetVoxel(neighborFlatIndex);

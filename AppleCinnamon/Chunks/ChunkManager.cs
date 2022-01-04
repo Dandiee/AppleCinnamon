@@ -11,6 +11,7 @@ using AppleCinnamon.Chunks;
 using AppleCinnamon.Helper;
 using AppleCinnamon.Pipeline;
 using AppleCinnamon.Pipeline.Context;
+using AppleCinnamon.Settings;
 using SharpDX;
 
 namespace AppleCinnamon
@@ -40,7 +41,7 @@ namespace AppleCinnamon
             QueueChunksByIndex(Int2.Zero);
         }
 
-
+        public static int marked = 0;
 
         [SuppressMessage("ReSharper.DPA", "DPA0002: Excessive memory allocations in SOH", MessageId = "type: System.Collections.Generic.KeyValuePair`2[AppleCinnamon.Helper.Int2,AppleCinnamon.Chunk][]")]
         public void Draw(Camera camera)
@@ -50,30 +51,36 @@ namespace AppleCinnamon
             var chunksToRender = NeighborAssigner.Chunks.Values.Select(s =>
                 {
                     s.IsRendered = false;
-
-                    var distanceX = Math.Abs(camera.CurrentChunkIndex.X - s.ChunkIndex.X);
-                    var distanceY = Math.Abs(camera.CurrentChunkIndex.Y - s.ChunkIndex.Y);
-                    var maxDistance = Math.Max(distanceX, distanceY);
-
-                    if (maxDistance > Game.ViewDistance + Game.NumberOfPools)
+                    if (s.IsMarkedForDeleteForReal)
                     {
-                        if (s.IsMarkedForDelete)
+
+                    }
+                        var distanceX = Math.Abs(camera.CurrentChunkIndex.X - s.ChunkIndex.X);
+                        var distanceY = Math.Abs(camera.CurrentChunkIndex.Y - s.ChunkIndex.Y);
+                        var maxDistance = Math.Max(distanceX, distanceY);
+
+                        if (maxDistance > Game.ViewDistance + Game.NumberOfPools)
                         {
-                            if ((now - s.MarkedForDeleteAt) > Game.ChunkDespawnCooldown)
+                            if (s.IsMarkedForDelete)
                             {
-                                chunksToDelete.Add(s);
+                                if ((now - s.MarkedForDeleteAt) > Game.ChunkDespawnCooldown)
+                                {
+                                    chunksToDelete.Add(s);
+                                    s.IsMarkedForDeleteForReal = true;
+                                    marked++;
+                                    Debug.WriteLine($"Marked for death {marked}.");
+                                }
+                            }
+                            else
+                            {
+                                s.MarkedForDeleteAt = now;
+                                s.IsMarkedForDelete = true;
                             }
                         }
-                        else
+                        else if (s.IsMarkedForDelete)
                         {
-                            s.MarkedForDeleteAt = now;
-                            s.IsMarkedForDelete = true;
+                            s.IsMarkedForDelete = false;
                         }
-                    }
-                    else if (s.IsMarkedForDelete)
-                    {
-                        s.IsMarkedForDelete = false;
-                    }
 
                     return s;
                 })
@@ -89,12 +96,26 @@ namespace AppleCinnamon
             {
                 foreach (var chunk in chunksToDelete)
                 {
-                    NeighborAssigner.Chunks.TryRemove(chunk.ChunkIndex, out _);
+                    if (!NeighborAssigner.Chunks.TryRemove(chunk.ChunkIndex, out _))
+                    {
+                        throw new Exception();
+                    }
                     NeighborAssigner.DispatchedChunks.Remove(chunk.ChunkIndex);
-                    _queuedChunks.TryRemove(chunk.ChunkIndex, out _);
-                    Chunks.TryRemove(chunk.ChunkIndex, out _);
+                    if (_queuedChunks.TryRemove(chunk.ChunkIndex, out _))
+                    {
+
+                        //throw new Exception();
+                    }
+
+                    if (!Chunks.TryRemove(chunk.ChunkIndex, out _))
+                    {
+
+                        //throw new Exception();
+                    }
+                    chunk.Dispose();
                     chunk.DereferenceNeighbors();
                     chunk.ShouldBeDeadByNow = true;
+                    
                 }
             }
             
@@ -103,9 +124,24 @@ namespace AppleCinnamon
 
         private void Finalize(Chunk chunk)
         {
+
+            if (!_queuedChunks.TryRemove(chunk.ChunkIndex, out _))
+            {
+                throw new Exception();
+            }
+
+
+            if (!Chunks.TryAdd(chunk.ChunkIndex, chunk))
+            {
+                throw new Exception();
+            }
+
+            if (chunk.IsMarkedForDelete || chunk.IsMarkedForDeleteForReal)
+            {
+
+            }
+
             chunk.IsReadyToRender = true;
-            Chunks.TryAdd(chunk.ChunkIndex, chunk);
-            _queuedChunks.TryRemove(chunk.ChunkIndex, out _);
 
             Interlocked.Increment(ref _finalizedChunks);
             const int root = (Game.ViewDistance - 1) * 2;
@@ -122,7 +158,7 @@ namespace AppleCinnamon
             if (IsInitialized)
             {
                 _chunkDrawer.Update(camera, world);
-                var currentChunkIndex = new Int2((int)camera.Position.X / Chunk.SizeXy, (int)camera.Position.Z / Chunk.SizeXy);
+                var currentChunkIndex = new Int2((int)camera.Position.X / WorldSettings.ChunkSize, (int)camera.Position.Z / WorldSettings.ChunkSize);
                 QueueChunksByIndex(currentChunkIndex);
             }
         }
@@ -134,20 +170,8 @@ namespace AppleCinnamon
                 foreach (var relativeChunkIndex in GetSurroundingChunks(Game.ViewDistance + Game.NumberOfPools - 1))
                 {
                     var chunkIndex = currentChunkIndex + relativeChunkIndex;
-
-                    if (!Chunks.ContainsKey(chunkIndex) && _queuedChunks.ContainsKey(chunkIndex))
-                    {
-
-                    }
-
-                    if (Chunks.ContainsKey(chunkIndex) && !_queuedChunks.ContainsKey(chunkIndex))
-                    {
-
-                    }
-
                     if (!_queuedChunks.ContainsKey(chunkIndex) && !Chunks.ContainsKey(chunkIndex))
                     {
-                        //Debug.WriteLine($"Chunk queued: ({chunkIndex})");
                         _queuedChunks.TryAdd(chunkIndex, null);
                         Pipeline.TransformBlock.Post(chunkIndex);
                     }

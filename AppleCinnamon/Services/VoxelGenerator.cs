@@ -15,12 +15,12 @@ namespace AppleCinnamon.Pipeline
         
         public Chunk GenerateVoxels(Int2 chunkIndex)
         {
-            var chunkSizeXz = new Int2(Chunk.SizeXy, Chunk.SizeXy);
-            var heatMap = new int[Chunk.SizeXy, Chunk.SizeXy];
+            var chunkSizeXz = new Int2(WorldSettings.ChunkSize, WorldSettings.ChunkSize);
+            var heatMap = new int[WorldSettings.ChunkSize, WorldSettings.ChunkSize];
             var maxHeight = WorldSettings.WaterLevel + 1;
-            for (var i = 0; i < Chunk.SizeXy; i++)
+            for (var i = 0; i < WorldSettings.ChunkSize; i++)
             {
-                for (var k = 0; k < Chunk.SizeXy; k++)
+                for (var k = 0; k < WorldSettings.ChunkSize; k++)
                 {
                     var coord = chunkIndex * chunkSizeXz + new Int2(i, k);
                     var height = (byte)((_daniNoise.Compute(coord.X, coord.Y)));
@@ -37,13 +37,13 @@ namespace AppleCinnamon.Pipeline
 
 
             var initialSlicesCount = maxHeight / Chunk.SliceHeight + 1;
-            var voxels = new Voxel[Chunk.SizeXy * initialSlicesCount * Chunk.SliceHeight * Chunk.SizeXy];
+            var voxels = new Voxel[WorldSettings.ChunkSize * initialSlicesCount * Chunk.SliceHeight * WorldSettings.ChunkSize];
             var currentHeight = initialSlicesCount * Chunk.SliceHeight;
 
             var chunk = new Chunk(chunkIndex, voxels);
-            for (var i = 0; i < Chunk.SizeXy; i++)
+            for (var i = 0; i < WorldSettings.ChunkSize; i++)
             {
-                for (var k = 0; k < Chunk.SizeXy; k++)
+                for (var k = 0; k < WorldSettings.ChunkSize; k++)
                 {
                     var height = heatMap[i, k];
 
@@ -90,7 +90,7 @@ namespace AppleCinnamon.Pipeline
                         //         ? VoxelDefinition.Snow.BlockType
                         //         : VoxelDefinition.Grass.BlockType, 0);
 
-                    // voxels[i + Chunk.SizeXy * (height + Chunk.Height * k)] = new Voxel(4, 0);
+                    // voxels[i + WorldSettings.ChunkSize * (height + Chunk.Height * k)] = new Voxel(4, 0);
                 }
             }
 
@@ -103,17 +103,17 @@ namespace AppleCinnamon.Pipeline
         public Chunk GenerateVoxels3D(Int2 chunkIndex)
         {
             var maxHeight = 128;
-            var chunk = new Chunk(chunkIndex, new Voxel[Chunk.SizeXy * Chunk.SizeXy * maxHeight]);
+            var chunk = new Chunk(chunkIndex, new Voxel[WorldSettings.ChunkSize * WorldSettings.ChunkSize * maxHeight]);
 
 
-            for (var i = 0; i < Chunk.SizeXy; i++)
+            for (var i = 0; i < WorldSettings.ChunkSize; i++)
             {
-                for (var k = 0; k < Chunk.SizeXy; k++)
+                for (var k = 0; k < WorldSettings.ChunkSize; k++)
                 {
                     for (var j = 0; j <= maxHeight - 1; j++)
                     {
 
-                        var pixel = Noise.CalcPixel3D(i + (chunk.ChunkIndex.X * Chunk.SizeXy), j, k + chunk.ChunkIndex.Y * Chunk.SizeXy, .015f);
+                        var pixel = Noise.CalcPixel3D(i + (chunk.ChunkIndex.X * WorldSettings.ChunkSize), j, k + chunk.ChunkIndex.Y * WorldSettings.ChunkSize, .015f);
                         if (pixel < 128)// && pixel > 16)
                         {
                             chunk.SetVoxel(i, j, k, VoxelDefinition.Sand.Create());
@@ -131,14 +131,14 @@ namespace AppleCinnamon.Pipeline
         public Chunk GenerateVoxelsMock(Int2 chunkIndex)
         {
             var maxHeight = 128;
-            var voxels = new Voxel[Chunk.SizeXy * Chunk.SizeXy * maxHeight];
+            var voxels = new Voxel[WorldSettings.ChunkSize * WorldSettings.ChunkSize * maxHeight];
 
             var chunk = new Chunk(chunkIndex, voxels);
 
 
-            for (var i = 0; i < Chunk.SizeXy; i++)
+            for (var i = 0; i < WorldSettings.ChunkSize; i++)
             {
-                for (var k = 0; k < Chunk.SizeXy; k++)
+                for (var k = 0; k < WorldSettings.ChunkSize; k++)
                 {
 
                     if (chunk.ChunkIndex == new Int2(1, 1))

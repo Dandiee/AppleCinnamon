@@ -12,11 +12,6 @@ namespace AppleCinnamon
 
         private static BufferDefinition<VertexWater> BuildWater(Chunk chunk, Device device)
         {
-            if (WorldSettings.IsChangeTrackingEnabled && !chunk.BuildingContext.IsWaterChanged)
-            {
-                return chunk.Buffers.BufferWater;
-            }
-
             if (chunk.BuildingContext.TopMostWaterVoxels.Count == 0)
             {
                 return null;

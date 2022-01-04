@@ -1,18 +1,30 @@
-﻿using AppleCinnamon.Vertices;
+﻿using System;
+using AppleCinnamon.Vertices;
 
 namespace AppleCinnamon
 {
-    public sealed class ChunkBuffers
+    public sealed class ChunkBuffers : IDisposable
     {
-        public readonly BufferDefinition<VertexSolidBlock> BufferSolid;
-        public readonly BufferDefinition<VertexWater> BufferWater;
-        public readonly BufferDefinition<VertexSprite> BufferSprite;
+        public BufferDefinition<VertexSolidBlock> BufferSolid;
+        public BufferDefinition<VertexWater> BufferWater;
+        public BufferDefinition<VertexSprite> BufferSprite;
 
-        public ChunkBuffers(BufferDefinition<VertexSolidBlock> bufferSolid, BufferDefinition<VertexWater> bufferWater, BufferDefinition<VertexSprite> bufferSprite)
+        //public ChunkBuffers(BufferDefinition<VertexSolidBlock> bufferSolid, BufferDefinition<VertexWater> bufferWater, BufferDefinition<VertexSprite> bufferSprite)
+        //{
+        //    BufferSolid = bufferSolid;
+        //    BufferWater = bufferWater;
+        //    BufferSprite = bufferSprite;
+        //}
+
+        public void Dispose()
         {
-            BufferSolid = bufferSolid;
-            BufferWater = bufferWater;
-            BufferSprite = bufferSprite;
+            BufferSolid?.Dispose();
+            BufferWater?.Dispose();
+            BufferSprite?.Dispose();
+
+            BufferWater = null;
+            BufferSolid = null;
+            BufferSprite = null;
         }
     }
 }

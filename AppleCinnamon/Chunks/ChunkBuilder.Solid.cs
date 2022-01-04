@@ -13,11 +13,6 @@ namespace AppleCinnamon
     {
         private static BufferDefinition<VertexSolidBlock> BuildSolid(Chunk chunk, Device device)
         {
-            if (WorldSettings.IsChangeTrackingEnabled && !chunk.BuildingContext.IsSolidChanged)
-            {
-                return chunk.Buffers.BufferSolid;
-            }
-
             var faces = GetChunkFaces(chunk);
             var visibleFacesCount = chunk.BuildingContext.Faces.Sum(s => s.VoxelCount);
             if (visibleFacesCount == 0)

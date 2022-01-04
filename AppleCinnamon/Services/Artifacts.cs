@@ -40,7 +40,7 @@ namespace AppleCinnamon.Services
 
                 if (rnd.Next() % 2 == 0)
                 {
-                    if (relativeIndex.X < Chunk.SizeXy - 1)
+                    if (relativeIndex.X < WorldSettings.ChunkSize - 1)
                     {
                         var fifi = chunk.GetFlatIndex(relativeIndex.X + 1, relativeIndex.Y + j, relativeIndex.Z);
                         if (chunk.Voxels[fifi].BlockType == 0)
@@ -58,7 +58,7 @@ namespace AppleCinnamon.Services
                         }
                     }
 
-                    if (relativeIndex.Z < Chunk.SizeXy - 1)
+                    if (relativeIndex.Z < WorldSettings.ChunkSize - 1)
                     {
                         var fifi = chunk.GetFlatIndex(relativeIndex.X, relativeIndex.Y + j, relativeIndex.Z + 1);
                         if (chunk.Voxels[fifi].BlockType == 0)

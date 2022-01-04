@@ -5,13 +5,14 @@ namespace AppleCinnamon.Settings
 {
     public static class WorldSettings
     {
+        public const int ChunkSize = 16;
         public static Vector3 Gravity = new(0, -40f, 0);
         public static readonly Vector3 PlayerSize = new(.5f, 1.8f, .5f);
         public static readonly float EyeHeight = 1.7f;
         public static readonly Vector3 PlayerMin;
         public static readonly Vector3 PlayerMax;
         public const int WaterLevel = 130;
-        public const bool IsChangeTrackingEnabled = false;
+        public const bool IsChangeTrackingEnabled = true;
 
         public static readonly SimplexOptions HighMapNoiseOptions = new(8, 0.2, 0.8, 134, 0.1, 1248);
         // mountains

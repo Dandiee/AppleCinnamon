@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using AppleCinnamon.Pipeline.Context;
+using AppleCinnamon.Settings;
 using SharpDX;
 
 namespace AppleCinnamon.Pipeline
@@ -18,9 +19,9 @@ namespace AppleCinnamon.Pipeline
 
         private void InitializeSunlight(Chunk chunk)
         {
-            for (var i = 0; i != Chunk.SizeXy; i++)
+            for (var i = 0; i != WorldSettings.ChunkSize; i++)
             {
-                for (var k = 0; k != Chunk.SizeXy; k++)
+                for (var k = 0; k != WorldSettings.ChunkSize; k++)
                 {
                     _ = LightingService.Sunlight(chunk, new Int3(i, chunk.CurrentHeight, k), 15, false).ToList();
                 }

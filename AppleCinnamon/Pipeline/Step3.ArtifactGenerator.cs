@@ -19,7 +19,7 @@ namespace AppleCinnamon.Pipeline
             {
                 var index = chunk.FromFlatIndex(flatIndex);
 
-                if (rnd.Next() % 30 == 0)
+                if (rnd.Next() % 70000 == 0)
                 {
                     Artifacts.Tree(rnd, chunk, index);
                 }

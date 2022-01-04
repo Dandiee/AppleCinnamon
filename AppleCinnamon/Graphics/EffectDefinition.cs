@@ -1,5 +1,6 @@
 ﻿using System;
 using AppleCinnamon.Extensions;
+using AppleCinnamon.Settings;
 using AppleCinnamon.Vertices;
 using SharpDX;
 using SharpDX.D3DCompiler;
@@ -56,7 +57,7 @@ namespace AppleCinnamon.Chunks
             else
             {
                 Effect.GetVariableByName("FogStart").AsScalar().Set(64);
-                Effect.GetVariableByName("FogEnd").AsScalar().Set(Game.ViewDistance * Chunk.SizeXy);
+                Effect.GetVariableByName("FogEnd").AsScalar().Set(Game.ViewDistance * WorldSettings.ChunkSize);
                 Effect.GetVariableByName("FogColor").AsVector().Set(new Vector4(0, 0, 0, 1));
             }
         }

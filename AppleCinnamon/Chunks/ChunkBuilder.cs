@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using AppleCinnamon.Helper;
+using AppleCinnamon.Settings;
 using SharpDX;
 using Device = SharpDX.Direct3D11.Device;
 
@@ -10,14 +11,31 @@ namespace AppleCinnamon
     {
         public static void BuildChunk(Chunk chunk, Device device)
         {
-            if (chunk.BuildingContext.IsChanged)
+            if (!WorldSettings.IsChangeTrackingEnabled || chunk.BuildingContext.IsChanged)
             {
-                var bufferSolid = BuildSolid(chunk, device);
-                var bufferWater = BuildWater(chunk, device);
-                var bufferSprite = BuildSprite(chunk, device);
+                if (chunk.Buffers == null)
+                {
+                    chunk.Buffers = new ChunkBuffers();
+                }
 
-                chunk.Buffers = new ChunkBuffers(bufferSolid, bufferWater, bufferSprite);
+                if (!WorldSettings.IsChangeTrackingEnabled || chunk.BuildingContext.IsSolidChanged)
+                {
+                    chunk.Buffers.BufferSolid?.Dispose();
+                    chunk.Buffers.BufferSolid = BuildSolid(chunk, device);
+                }
 
+                if (!WorldSettings.IsChangeTrackingEnabled || chunk.BuildingContext.IsWaterChanged)
+                {
+                    chunk.Buffers.BufferWater?.Dispose();
+                    chunk.Buffers.BufferWater = BuildWater(chunk, device);
+                }
+
+                if (!WorldSettings.IsChangeTrackingEnabled || chunk.BuildingContext.IsSpriteChanged)
+                {
+                    chunk.Buffers.BufferSprite?.Dispose();
+                    chunk.Buffers.BufferSprite = BuildSprite(chunk, device);
+                }
+                
                 chunk.BuildingContext.IsSpriteChanged = false;
                 chunk.BuildingContext.IsWaterChanged = false;
                 chunk.BuildingContext.IsSolidChanged = false;

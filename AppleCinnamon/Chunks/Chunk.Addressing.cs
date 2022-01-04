@@ -18,13 +18,13 @@ namespace AppleCinnamon
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)] public int GetFlatIndex(int i, int j, int k) => GetFlatIndex(i, j, k, CurrentHeight);
         [MethodImpl(MethodImplOptions.AggressiveInlining)] public int GetFlatIndex(Int3 ijk) => GetFlatIndex(ijk.X, ijk.Y, ijk.Z, CurrentHeight);
-        [MethodImpl(MethodImplOptions.AggressiveInlining)] public static int GetFlatIndex(int i, int j, int k, int height) => i + SizeXy * (j + height * k);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] public static int GetFlatIndex(int i, int j, int k, int height) => i + WorldSettings.ChunkSize * (j + height * k);
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Int3 FromFlatIndex(int flatIndex, int height)
         {
-            var k = flatIndex / (SizeXy * height);
-            var j = (flatIndex - k * SizeXy * height) / SizeXy;
-            var i = flatIndex - (k * SizeXy * height + j * SizeXy);
+            var k = flatIndex / (WorldSettings.ChunkSize * height);
+            var j = (flatIndex - k * WorldSettings.ChunkSize * height) / WorldSettings.ChunkSize;
+            var i = flatIndex - (k * WorldSettings.ChunkSize * height + j * WorldSettings.ChunkSize);
 
             return new Int3(i, j, k);
         }
@@ -46,20 +46,20 @@ namespace AppleCinnamon
         {
             if (i == 0) 
                 yield return GetNeighbor(-1, 0);
-            if (i == SizeXy - 1) 
+            if (i == WorldSettings.ChunkSize - 1) 
                 yield return GetNeighbor(1, 0);
             if (j == 0) 
                 yield return GetNeighbor(0, -1);
-            if (j == SizeXy - 1) 
+            if (j == WorldSettings.ChunkSize - 1) 
                 yield return GetNeighbor(0, 1);
             
             if (i == 0 && j == 0) 
                 yield return GetNeighbor(-1, -1);
-            if (i == SizeXy - 1 && j == SizeXy - 1) 
+            if (i == WorldSettings.ChunkSize - 1 && j == WorldSettings.ChunkSize - 1) 
                 yield return GetNeighbor(1, 1);
-            if (i == 0 && j == SizeXy - 1) 
+            if (i == 0 && j == WorldSettings.ChunkSize - 1) 
                 yield return GetNeighbor(-1, 1);
-            if (i == SizeXy - 1 && j == 0) 
+            if (i == WorldSettings.ChunkSize - 1 && j == 0) 
                 yield return GetNeighbor(1, -1);
         }
 
@@ -74,8 +74,8 @@ namespace AppleCinnamon
                 return false;
             }
 
-            var cx = (int)(-((i & 0b10000000_00000000_00000000_00000000) >> 31) + ((i / SizeXy)));
-            var cy = (int)(-((k & 0b10000000_00000000_00000000_00000000) >> 31) + ((k / SizeXy)));
+            var cx = (int)(-((i & 0b10000000_00000000_00000000_00000000) >> 31) + ((i / WorldSettings.ChunkSize)));
+            var cy = (int)(-((k & 0b10000000_00000000_00000000_00000000) >> 31) + ((k / WorldSettings.ChunkSize)));
 
             var chunk = GetNeighbor(cx, cy);
             if (chunk.CurrentHeight <= j)
@@ -87,7 +87,7 @@ namespace AppleCinnamon
             }
             else
             {
-                address = new VoxelChunkAddress(chunk, new Int3(i & (SizeXy - 1), j, k & (SizeXy - 1)));
+                address = new VoxelChunkAddress(chunk, new Int3(i & (WorldSettings.ChunkSize - 1), j, k & (WorldSettings.ChunkSize - 1)));
                 voxel = chunk.GetVoxel(address.RelativeVoxelIndex.X, j, address.RelativeVoxelIndex.Z);
 
                 return true;
@@ -97,9 +97,9 @@ namespace AppleCinnamon
         public VoxelChunkAddress GetAddressChunk(Int3 ijk) => GetAddressChunk(ijk.X, ijk.Y, ijk.Z);
         public VoxelChunkAddress GetAddressChunk(int i, int j, int k)
         {
-            var cx = (int)(-((i & 0b10000000_00000000_00000000_00000000) >> 31) + ((i / SizeXy)));
-            var cy = (int)(-((k & 0b10000000_00000000_00000000_00000000) >> 31) + ((k / SizeXy)));
-            return new VoxelChunkAddress(GetNeighbor(cx, cy), new Int3(i & (SizeXy - 1), j, k & (SizeXy - 1)));
+            var cx = (int)(-((i & 0b10000000_00000000_00000000_00000000) >> 31) + ((i / WorldSettings.ChunkSize)));
+            var cy = (int)(-((k & 0b10000000_00000000_00000000_00000000) >> 31) + ((k / WorldSettings.ChunkSize)));
+            return new VoxelChunkAddress(GetNeighbor(cx, cy), new Int3(i & (WorldSettings.ChunkSize - 1), j, k & (WorldSettings.ChunkSize - 1)));
         }
 
         [InlineMethod.Inline]
@@ -111,12 +111,12 @@ namespace AppleCinnamon
             }
 
             var chunk = GetNeighbor(
-                (int)(-((i & 0b10000000_00000000_00000000_00000000) >> 31) + ((i / SizeXy))),
-                (int)(-((k & 0b10000000_00000000_00000000_00000000) >> 31) + ((k / SizeXy))));
+                (int)(-((i & 0b10000000_00000000_00000000_00000000) >> 31) + ((i / WorldSettings.ChunkSize))),
+                (int)(-((k & 0b10000000_00000000_00000000_00000000) >> 31) + ((k / WorldSettings.ChunkSize))));
 
             return chunk.CurrentHeight <= j
                 ? Voxel.SunBlock
-                : chunk.GetVoxel(i & (SizeXy - 1), j, k & (SizeXy - 1));
+                : chunk.GetVoxel(i & (WorldSettings.ChunkSize - 1), j, k & (WorldSettings.ChunkSize - 1));
         }
 
         public static int GetChunkFlatIndex(int i, int j) => 3 * i + j + 4;
@@ -153,5 +153,7 @@ namespace AppleCinnamon
 
             Voxels[flatIndex] = newVoxel;
         }
+
+        
     }
 }
