@@ -22,8 +22,8 @@ namespace AppleCinnamon
         private int _finalizedChunks;
         public bool IsInitialized { get; private set; }
 
-        public readonly ConcurrentDictionary<Int2, Chunk> Chunks;
-        private readonly ConcurrentDictionary<Int2, object> _queuedChunks;
+        public readonly Dictionary<Int2, Chunk> Chunks;
+        private readonly Dictionary<Int2, object> _queuedChunks;
         private readonly ChunkUpdater _chunkUpdater;
         private readonly ChunkDrawer _chunkDrawer;
         private Int2? _lastQueueIndex;
@@ -33,9 +33,9 @@ namespace AppleCinnamon
         public ChunkManager(Graphics graphics)
         {
             _chunkDrawer = new ChunkDrawer(graphics.Device);
-            Chunks = new ConcurrentDictionary<Int2, Chunk>();
-            _queuedChunks = new ConcurrentDictionary<Int2, object>();
-            Pipeline = new PipelineProvider(graphics.Device).CreatePipeline(InitialDegreeOfParallelism, Finalize, out _neighborAssignerPipelineBlock);
+            Chunks = new Dictionary<Int2, Chunk>();
+            _queuedChunks = new Dictionary<Int2, object>();
+            Pipeline = new PipelineProvider(graphics.Device).CreatePipeline(InitialDegreeOfParallelism, this, out _neighborAssignerPipelineBlock);
             _chunkUpdater = new ChunkUpdater(graphics, this);
             
             QueueChunksByIndex(Int2.Zero);
@@ -96,18 +96,23 @@ namespace AppleCinnamon
             {
                 foreach (var chunk in chunksToDelete)
                 {
+                    if (chunk.IsReadyToRender)
+                    {
+
+                    }
+
                     if (!NeighborAssigner.Chunks.TryRemove(chunk.ChunkIndex, out _))
                     {
                         throw new Exception();
                     }
                     NeighborAssigner.DispatchedChunks.Remove(chunk.ChunkIndex);
-                    if (_queuedChunks.TryRemove(chunk.ChunkIndex, out _))
+                    if (_queuedChunks.Remove(chunk.ChunkIndex, out _))
                     {
 
                         //throw new Exception();
                     }
 
-                    if (!Chunks.TryRemove(chunk.ChunkIndex, out _))
+                    if (!Chunks.Remove(chunk.ChunkIndex, out _))
                     {
 
                         //throw new Exception();
@@ -122,10 +127,10 @@ namespace AppleCinnamon
             _chunkDrawer.Draw(chunksToRender, camera);
         }
 
-        private void Finalize(Chunk chunk)
+        public void Finalize(Chunk chunk)
         {
 
-            if (!_queuedChunks.TryRemove(chunk.ChunkIndex, out _))
+            if (!_queuedChunks.Remove(chunk.ChunkIndex, out _))
             {
                 throw new Exception();
             }

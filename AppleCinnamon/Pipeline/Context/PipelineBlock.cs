@@ -30,6 +30,12 @@ namespace AppleCinnamon.Pipeline.Context
 
             return next;
         }
+
+        public void LinkTo(Action<TOutput> action)
+        {
+            var actionBlock = new ActionBlock<TOutput>(action);
+            TransformBlock.LinkTo(actionBlock);
+        }
     }
 
     public interface IMonitoredBlock
@@ -135,7 +141,7 @@ namespace AppleCinnamon.Pipeline.Context
                 {
                     yield return n;
                 }
-            } 
+            }
         }
     }
 }

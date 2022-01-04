@@ -120,10 +120,10 @@ namespace AppleCinnamon
             var leftText = BuildLeftText(chunkManager, camera, game);
             var rightText = BuildRightText(chunkManager, game);
 
-            if (_keyboard.GetCurrentState().IsPressed(Key.C) && _keyboard.GetCurrentState().IsPressed(Key.LeftControl))
-            {
-                Clipboard.SetText(rightText);
-            }
+            //if (_keyboard.GetCurrentState().IsPressed(Key.C) && _keyboard.GetCurrentState().IsPressed(Key.LeftControl))
+            //{
+            //    Clipboard.SetText(rightText);
+            //}
 
             using (var leftTextLayout = new TextLayout(_graphics.DirectWrite, leftText, _leftAlignedTextFormat ,_graphics.RenderForm.Width - 20, _graphics.RenderForm.Height))
             {

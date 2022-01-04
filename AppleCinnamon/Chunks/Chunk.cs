@@ -49,7 +49,7 @@ namespace AppleCinnamon
                 Debug.WriteLine("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
             }
 
-            Debug.WriteLine($"Chunk dead. - { string.Join(", ", finbySteps.Select(s => $"[{s.Key}]: {s.Value}db"))  }");
+            Debug.WriteLine($"Chunk dead. - { string.Join(", ", finbySteps.Select(s => $"[{s.Key}]: {s.Value}db"))  } - All finalized: {finbySteps.Sum(s => s.Value)} from {ChunkManager.marked}");
         }
 
         public Chunk(Int2 chunkIndex, Voxel[] voxels)

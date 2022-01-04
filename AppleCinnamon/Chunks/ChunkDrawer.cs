@@ -52,6 +52,7 @@ namespace AppleCinnamon.Chunks
 
         public void Draw(IList<Chunk> chunks, Camera camera)
         {
+            return;
             if (chunks.Count > 0)
             {
                 if (Game.RenderSolid)
