@@ -45,35 +45,13 @@ namespace AppleCinnamon
         public void Draw(Camera camera)
         {
             var now = DateTime.Now;
-            var chunksToDelete = new List<Chunk>();
             var chunksToRender = NeighborAssigner.Chunks.Values.Select(s =>
                 {
                     s.IsRendered = false;
 
-                    var distanceX = Math.Abs(camera.CurrentChunkIndex.X - s.ChunkIndex.X);
-                    var distanceY = Math.Abs(camera.CurrentChunkIndex.Y - s.ChunkIndex.Y);
-                    var maxDistance = Math.Max(distanceX, distanceY);
-
-                    if (maxDistance > Game.ViewDistance + Game.NumberOfPools)
+                    if (!s.CheckForValidity(camera, now))
                     {
-                        if (s.IsMarkedForDelete)
-                        {
-                            if ((now - s.MarkedForDeleteAt) > Game.ChunkDespawnCooldown)
-                            {
-                                chunksToDelete.Add(s);
-                                s.IsMarkedForDeleteForReal = true;
-                                s.Kill();
-                            }
-                        }
-                        else
-                        {
-                            s.MarkedForDeleteAt = now;
-                            s.IsMarkedForDelete = true;
-                        }
-                    }
-                    else if (s.IsMarkedForDelete)
-                    {
-                        s.IsMarkedForDelete = false;
+                        KillChunk(s);
                     }
 
                     return s;
@@ -86,39 +64,23 @@ namespace AppleCinnamon
                 })
                 .ToList();
 
-            if (chunksToDelete.Count > 0)
+            _chunkDrawer.Draw(chunksToRender, camera);
+        }
+
+        private void KillChunk(Chunk chunk)
+        {
+            if (!NeighborAssigner.Chunks.TryRemove(chunk.ChunkIndex, out _))
             {
-                foreach (var chunk in chunksToDelete)
-                {
-                    if (chunk.IsReadyToRender)
-                    {
-
-                    }
-
-                    if (!NeighborAssigner.Chunks.TryRemove(chunk.ChunkIndex, out _))
-                    {
-                        throw new Exception();
-                    }
-                    NeighborAssigner.DispatchedChunks.Remove(chunk.ChunkIndex);
-                    if (_queuedChunks.Remove(chunk.ChunkIndex, out _))
-                    {
-
-                        //throw new Exception();
-                    }
-
-                    if (!Chunks.Remove(chunk.ChunkIndex, out _))
-                    {
-
-                        //throw new Exception();
-                    }
-                    chunk.Dispose();
-                    chunk.DereferenceNeighbors();
-                    chunk.ShouldBeDeadByNow = true;
-
-                }
+                throw new Exception();
+            }
+            NeighborAssigner.DispatchedChunks.Remove(chunk.ChunkIndex);
+            if (_queuedChunks.Remove(chunk.ChunkIndex, out _))
+            {
             }
 
-            _chunkDrawer.Draw(chunksToRender, camera);
+            if (!Chunks.Remove(chunk.ChunkIndex, out _))
+            {
+            }
         }
 
         public void Finalize(Chunk chunk)

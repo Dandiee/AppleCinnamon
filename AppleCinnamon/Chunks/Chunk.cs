@@ -113,7 +113,7 @@ namespace AppleCinnamon
         }
 
 
-        public void DereferenceNeighbors()
+        private void DereferenceNeighbors()
         {
             foreach (var neighbor in Neighbors)
             {
@@ -141,8 +141,42 @@ namespace AppleCinnamon
 
         public static volatile int WaitingForGc = 0;
 
-        public void Kill()
+        public bool CheckForValidity(Camera camera, DateTime now)
         {
+            var distanceX = Math.Abs(camera.CurrentChunkIndex.X - ChunkIndex.X);
+            var distanceY = Math.Abs(camera.CurrentChunkIndex.Y - ChunkIndex.Y);
+            var maxDistance = Math.Max(distanceX, distanceY);
+
+            if (maxDistance > Game.ViewDistance + Game.NumberOfPools)
+            {
+                if (IsMarkedForDelete)
+                {
+                    if ((now - MarkedForDeleteAt) > Game.ChunkDespawnCooldown)
+                    {
+                        IsMarkedForDeleteForReal = true;
+                        Kill();
+                        return false;
+                    }
+                }
+                else
+                {
+                    MarkedForDeleteAt = now;
+                    IsMarkedForDelete = true;
+                }
+            }
+            else if (IsMarkedForDelete)
+            {
+                IsMarkedForDelete = false;
+            }
+
+            return true;
+        }
+
+        private void Kill()
+        {
+            DereferenceNeighbors();
+            Dispose();
+            ShouldBeDeadByNow = true;
             Interlocked.Increment(ref WaitingForGc);
             Debug.WriteLine($"Chunk killed. {WaitingForGc}.");
         }
