@@ -239,7 +239,7 @@ namespace AppleCinnamon
             const float MovementSensitivity = 2f;
             const float JumpVelocity = 12;
             const float MovmentFriction = 0.8f;
-            const float SprintSpeedFactor = 3f;
+            const float SprintSpeedFactor = 10f;
             var prevPos = Position;
             var t = (float)gameTime.ElapsedGameTime.TotalSeconds;
 

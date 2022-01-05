@@ -130,11 +130,20 @@ namespace AppleCinnamon.Pipeline.Context
                 chunk.PipelineStep++;
             }
 
-            foreach (var n in chunk.Neighbors)
+
+            // it might be null in case the chunk was marked for deletion in the background
+            if (chunk.Neighbors != null)
             {
-                if (!n.Neighbors.Any(s => s == null || s.PipelineStep < chunk.PipelineStep))
+                foreach (var n in chunk.Neighbors)
                 {
-                    yield return n;
+                    // okay it starts to get a bit funky here with the race condition
+                    if (n.Neighbors != null)
+                    {
+                        if (!n.Neighbors.Any(s => s == null || s.PipelineStep < chunk.PipelineStep))
+                        {
+                            yield return n;
+                        }
+                    }
                 }
             }
         }
