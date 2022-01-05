@@ -170,7 +170,7 @@ namespace AppleCinnamon
         {
             DereferenceNeighbors();
             Dispose();
-
+            //IsFinalized = false;
             Interlocked.Increment(ref WaitingForGc);
             Debug.WriteLine($"Chunk killed. {WaitingForGc}.");
         }

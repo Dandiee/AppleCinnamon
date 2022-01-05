@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks.Dataflow;
-using System.Windows.Forms.VisualStyles;
 using AppleCinnamon.Chunks;
 using AppleCinnamon.Helper;
 using AppleCinnamon.Pipeline;
@@ -23,7 +20,7 @@ namespace AppleCinnamon
         public bool IsInitialized { get; private set; }
 
         public readonly Dictionary<Int2, Chunk> Chunks;
-        private readonly Dictionary<Int2, object> _queuedChunks;
+        private readonly HashSet<Int2> _queuedChunks;
         private readonly ChunkUpdater _chunkUpdater;
         private readonly ChunkDrawer _chunkDrawer;
         private Int2? _lastQueueIndex;
@@ -34,7 +31,7 @@ namespace AppleCinnamon
         {
             _chunkDrawer = new ChunkDrawer(graphics.Device);
             Chunks = new Dictionary<Int2, Chunk>();
-            _queuedChunks = new Dictionary<Int2, object>();
+            _queuedChunks = new HashSet<Int2>();
             Pipeline = new PipelineProvider(graphics.Device).CreatePipeline(InitialDegreeOfParallelism, this, out _neighborAssignerPipelineBlock);
             _chunkUpdater = new ChunkUpdater(graphics, this);
 
@@ -75,7 +72,7 @@ namespace AppleCinnamon
             }
             else
             {
-                _queuedChunks.Remove(chunk.ChunkIndex, out _);
+                _queuedChunks.Remove(chunk.ChunkIndex);
             }
 
             NeighborAssigner.Chunks.TryRemove(chunk.ChunkIndex, out _);
@@ -84,7 +81,7 @@ namespace AppleCinnamon
 
         public void Finalize(Chunk chunk)
         {
-            _queuedChunks.Remove(chunk.ChunkIndex, out _);
+            _queuedChunks.Remove(chunk.ChunkIndex);
             Chunks.TryAdd(chunk.ChunkIndex, chunk);
             
             chunk.IsFinalized = true;
@@ -116,9 +113,9 @@ namespace AppleCinnamon
                 foreach (var relativeChunkIndex in GetSurroundingChunks(Game.ViewDistance + Game.NumberOfPools - 1))
                 {
                     var chunkIndex = currentChunkIndex + relativeChunkIndex;
-                    if (!_queuedChunks.ContainsKey(chunkIndex) && !Chunks.ContainsKey(chunkIndex))
+                    if (!_queuedChunks.Contains(chunkIndex) && !Chunks.ContainsKey(chunkIndex))
                     {
-                        _queuedChunks.TryAdd(chunkIndex, null);
+                        _queuedChunks.Add(chunkIndex);
                         Pipeline.TransformBlock.Post(chunkIndex);
                     }
                 }
