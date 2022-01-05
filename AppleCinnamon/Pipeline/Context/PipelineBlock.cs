@@ -77,11 +77,6 @@ namespace AppleCinnamon.Pipeline.Context
         
         protected override Chunk Process(Chunk chunk)
         {
-            if (chunk.IsMarkedForDeleteForReal)
-            {
-
-            }
-
             if (chunk.PipelineStep != PipelineStepIndex - 1)
             {
                 return chunk;

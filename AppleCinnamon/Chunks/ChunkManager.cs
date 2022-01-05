@@ -56,7 +56,7 @@ namespace AppleCinnamon
 
                     return s;
                 })
-                .Where(chunk => chunk.IsReadyToRender && (!Game.IsViewFrustumCullingEnabled || camera.BoundingFrustum.Contains(ref chunk.BoundingBox) != ContainmentType.Disjoint))
+                .Where(chunk => chunk.IsFinalized && (!Game.IsViewFrustumCullingEnabled || camera.BoundingFrustum.Contains(ref chunk.BoundingBox) != ContainmentType.Disjoint))
                 .Select(s =>
                 {
                     s.IsRendered = true;
@@ -69,40 +69,25 @@ namespace AppleCinnamon
 
         private void KillChunk(Chunk chunk)
         {
-            if (!NeighborAssigner.Chunks.TryRemove(chunk.ChunkIndex, out _))
+            if (chunk.IsFinalized)
             {
-                throw new Exception();
+                Chunks.Remove(chunk.ChunkIndex, out _);
             }
-            NeighborAssigner.DispatchedChunks.Remove(chunk.ChunkIndex);
-            if (_queuedChunks.Remove(chunk.ChunkIndex, out _))
+            else
             {
+                _queuedChunks.Remove(chunk.ChunkIndex, out _);
             }
 
-            if (!Chunks.Remove(chunk.ChunkIndex, out _))
-            {
-            }
+            NeighborAssigner.Chunks.TryRemove(chunk.ChunkIndex, out _);
+            NeighborAssigner.DispatchedChunks.Remove(chunk.ChunkIndex);
         }
 
         public void Finalize(Chunk chunk)
         {
-
-            if (!_queuedChunks.Remove(chunk.ChunkIndex, out _))
-            {
-                throw new Exception();
-            }
-
-
-            if (!Chunks.TryAdd(chunk.ChunkIndex, chunk))
-            {
-                throw new Exception();
-            }
-
-            if (chunk.IsMarkedForDelete || chunk.IsMarkedForDeleteForReal)
-            {
-
-            }
-
-            chunk.IsReadyToRender = true;
+            _queuedChunks.Remove(chunk.ChunkIndex, out _);
+            Chunks.TryAdd(chunk.ChunkIndex, chunk);
+            
+            chunk.IsFinalized = true;
 
             Interlocked.Increment(ref _finalizedChunks);
             const int root = (Game.ViewDistance - 1) * 2;

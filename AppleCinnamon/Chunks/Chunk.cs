@@ -26,7 +26,6 @@ namespace AppleCinnamon
         public readonly Vector3 ChunkIndexVector;
 
         public bool IsMarkedForDelete { get; set; }
-        public bool IsMarkedForDeleteForReal { get; set; }
         public DateTime MarkedForDeleteAt { get; set; }
 
         public ChunkBuffers Buffers { get; set; }
@@ -34,10 +33,8 @@ namespace AppleCinnamon
         public Vector2 Center2d { get; private set; }
         public bool IsRendered { get; set; }
         public int PipelineStep { get; set; }
-        public bool IsReadyToRender { get; set; }
+        public bool IsFinalized { get; set; }
         public bool IsDebugHighlighted { get; set; }
-        public bool ShouldBeDeadByNow { get; set; }
-        
         
 
         public Chunk(Int2 chunkIndex, Voxel[] voxels)
@@ -130,8 +127,6 @@ namespace AppleCinnamon
             }
 
             Neighbors = null;
-            Buffers?.Dispose();
-
         }
 
         public void Dispose()
@@ -151,9 +146,8 @@ namespace AppleCinnamon
             {
                 if (IsMarkedForDelete)
                 {
-                    if ((now - MarkedForDeleteAt) > Game.ChunkDespawnCooldown)
+                    if (now - MarkedForDeleteAt > Game.ChunkDespawnCooldown)
                     {
-                        IsMarkedForDeleteForReal = true;
                         Kill();
                         return false;
                     }
@@ -176,7 +170,7 @@ namespace AppleCinnamon
         {
             DereferenceNeighbors();
             Dispose();
-            ShouldBeDeadByNow = true;
+
             Interlocked.Increment(ref WaitingForGc);
             Debug.WriteLine($"Chunk killed. {WaitingForGc}.");
         }
