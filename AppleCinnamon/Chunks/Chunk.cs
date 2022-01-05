@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using AppleCinnamon.Helper;
 using AppleCinnamon.Settings;
 using SharpDX;
@@ -36,21 +37,8 @@ namespace AppleCinnamon
         public bool IsReadyToRender { get; set; }
         public bool IsDebugHighlighted { get; set; }
         public bool ShouldBeDeadByNow { get; set; }
-        public static int finalizers = 0;
-        private static Dictionary<int, int> finbySteps = new Dictionary<int, int>();
-        ~Chunk()
-        {
-            finbySteps.TryGetValue(PipelineStep, out var cumulative);
-            finbySteps[PipelineStep] = cumulative + 1;
-            finalizers++;
-
-            if (IsReadyToRender)
-            {
-                Debug.WriteLine("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
-            }
-
-            Debug.WriteLine($"Chunk dead. - { string.Join(", ", finbySteps.Select(s => $"[{s.Key}]: {s.Value}db"))  } - All finalized: {finbySteps.Sum(s => s.Value)} from {ChunkManager.marked}");
-        }
+        
+        
 
         public Chunk(Int2 chunkIndex, Voxel[] voxels)
         {
@@ -149,6 +137,20 @@ namespace AppleCinnamon
         public void Dispose()
         {
             Buffers?.Dispose();
+        }
+
+        public static volatile int WaitingForGc = 0;
+
+        public void Kill()
+        {
+            Interlocked.Increment(ref WaitingForGc);
+            Debug.WriteLine($"Chunk killed. {WaitingForGc}.");
+        }
+
+        ~Chunk()
+        {
+            Interlocked.Decrement(ref WaitingForGc);
+            Debug.WriteLine($"Chunk collected. {WaitingForGc}.");
         }
     }
 }

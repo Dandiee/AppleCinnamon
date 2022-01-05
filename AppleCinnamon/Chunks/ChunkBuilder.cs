@@ -11,7 +11,6 @@ namespace AppleCinnamon
     {
         public static void BuildChunk(Chunk chunk, Device device)
         {
-            return;
             if (!WorldSettings.IsChangeTrackingEnabled || chunk.BuildingContext.IsChanged)
             {
                 if (chunk.Buffers == null)

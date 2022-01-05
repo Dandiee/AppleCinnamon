@@ -37,11 +37,9 @@ namespace AppleCinnamon
             _queuedChunks = new Dictionary<Int2, object>();
             Pipeline = new PipelineProvider(graphics.Device).CreatePipeline(InitialDegreeOfParallelism, this, out _neighborAssignerPipelineBlock);
             _chunkUpdater = new ChunkUpdater(graphics, this);
-            
+
             QueueChunksByIndex(Int2.Zero);
         }
-
-        public static int marked = 0;
 
         [SuppressMessage("ReSharper.DPA", "DPA0002: Excessive memory allocations in SOH", MessageId = "type: System.Collections.Generic.KeyValuePair`2[AppleCinnamon.Helper.Int2,AppleCinnamon.Chunk][]")]
         public void Draw(Camera camera)
@@ -51,36 +49,32 @@ namespace AppleCinnamon
             var chunksToRender = NeighborAssigner.Chunks.Values.Select(s =>
                 {
                     s.IsRendered = false;
-                    if (s.IsMarkedForDeleteForReal)
+
+                    var distanceX = Math.Abs(camera.CurrentChunkIndex.X - s.ChunkIndex.X);
+                    var distanceY = Math.Abs(camera.CurrentChunkIndex.Y - s.ChunkIndex.Y);
+                    var maxDistance = Math.Max(distanceX, distanceY);
+
+                    if (maxDistance > Game.ViewDistance + Game.NumberOfPools)
                     {
-
+                        if (s.IsMarkedForDelete)
+                        {
+                            if ((now - s.MarkedForDeleteAt) > Game.ChunkDespawnCooldown)
+                            {
+                                chunksToDelete.Add(s);
+                                s.IsMarkedForDeleteForReal = true;
+                                s.Kill();
+                            }
+                        }
+                        else
+                        {
+                            s.MarkedForDeleteAt = now;
+                            s.IsMarkedForDelete = true;
+                        }
                     }
-                        var distanceX = Math.Abs(camera.CurrentChunkIndex.X - s.ChunkIndex.X);
-                        var distanceY = Math.Abs(camera.CurrentChunkIndex.Y - s.ChunkIndex.Y);
-                        var maxDistance = Math.Max(distanceX, distanceY);
-
-                        if (maxDistance > Game.ViewDistance + Game.NumberOfPools)
-                        {
-                            if (s.IsMarkedForDelete)
-                            {
-                                if ((now - s.MarkedForDeleteAt) > Game.ChunkDespawnCooldown)
-                                {
-                                    chunksToDelete.Add(s);
-                                    s.IsMarkedForDeleteForReal = true;
-                                    marked++;
-                                    Debug.WriteLine($"Marked for death {marked}.");
-                                }
-                            }
-                            else
-                            {
-                                s.MarkedForDeleteAt = now;
-                                s.IsMarkedForDelete = true;
-                            }
-                        }
-                        else if (s.IsMarkedForDelete)
-                        {
-                            s.IsMarkedForDelete = false;
-                        }
+                    else if (s.IsMarkedForDelete)
+                    {
+                        s.IsMarkedForDelete = false;
+                    }
 
                     return s;
                 })
@@ -120,10 +114,10 @@ namespace AppleCinnamon
                     chunk.Dispose();
                     chunk.DereferenceNeighbors();
                     chunk.ShouldBeDeadByNow = true;
-                    
+
                 }
             }
-            
+
             _chunkDrawer.Draw(chunksToRender, camera);
         }
 
@@ -157,7 +151,7 @@ namespace AppleCinnamon
             }
         }
 
-  
+
         public void Update(Camera camera, World world)
         {
             if (IsInitialized)
