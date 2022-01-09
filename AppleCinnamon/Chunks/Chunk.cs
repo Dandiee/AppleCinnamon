@@ -24,7 +24,9 @@ namespace AppleCinnamon
         public readonly Int2 Offset;
         public Chunk[] Neighbors;
         public readonly Vector3 ChunkIndexVector;
+        public CountdownEvent CountdownEvent { get; set; } = new CountdownEvent(1);
 
+        public bool IsDead { get; set; }
         public bool IsMarkedForDelete { get; set; }
         public DateTime MarkedForDeleteAt { get; set; }
 
@@ -35,7 +37,37 @@ namespace AppleCinnamon
         public int PipelineStep { get; set; }
         public bool IsFinalized { get; set; }
         public bool IsDebugHighlighted { get; set; }
-        
+
+        public void IncLock()
+        {
+            if (Neighbors != null)
+            {
+                foreach (var neighbor in Neighbors)
+                {
+                    if (neighbor != null)
+                    {
+                        neighbor.CountdownEvent.AddCount();
+                    }
+                }
+            }
+            else CountdownEvent.AddCount();
+        }
+
+        public void DecLock()
+        {
+            if (Neighbors != null)
+            {
+                foreach (var neighbor in Neighbors)
+                {
+                    if (neighbor != null)
+                    {
+                        neighbor.CountdownEvent.Signal();
+                    }
+                }
+            }
+            else CountdownEvent.Signal();
+        }
+
 
         public Chunk(Int2 chunkIndex, Voxel[] voxels)
         {
@@ -168,6 +200,7 @@ namespace AppleCinnamon
 
         private void Kill()
         {
+            IsDead = true;
             DereferenceNeighbors();
             Dispose();
             //IsFinalized = false;

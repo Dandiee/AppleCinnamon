@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks.Dataflow;
 
 namespace AppleCinnamon.Pipeline.Context
@@ -72,9 +73,9 @@ namespace AppleCinnamon.Pipeline.Context
     {
         public ChunkTransformBlock(Func<Chunk, Chunk> func, string name, ExecutionDataflowBlockOptions options)
             : base(func, name, options) { }
-        public ChunkTransformBlock(IChunkTransformer transformer, ExecutionDataflowBlockOptions options) 
+        public ChunkTransformBlock(IChunkTransformer transformer, ExecutionDataflowBlockOptions options)
             : this(transformer.Transform, transformer.GetType().Name, options) { }
-        
+
         protected override Chunk Process(Chunk chunk)
         {
             if (chunk.PipelineStep != PipelineStepIndex - 1)
@@ -83,7 +84,7 @@ namespace AppleCinnamon.Pipeline.Context
             }
 
             chunk.PipelineStep++;
-            
+
             return base.Process(chunk);
         }
     }
@@ -118,11 +119,13 @@ namespace AppleCinnamon.Pipeline.Context
         public DefaultChunkPoolPipelineBlock()
         {
             Func = Pool;
-            TransformBlock = new TransformManyBlock<Chunk, Chunk>(Process, new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism =  1} );
+            TransformBlock = new TransformManyBlock<Chunk, Chunk>(Process, new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = 1 });
         }
 
         public IEnumerable<Chunk> Pool(Chunk chunk)
         {
+            chunk.IncLock();
+            
             // a disposed and reloaded neighbor may re-proc an already processed chunk
             // in which case we don't want to demote the pipeline step
             if (chunk.PipelineStep == PipelineStepIndex - 1)
@@ -130,22 +133,18 @@ namespace AppleCinnamon.Pipeline.Context
                 chunk.PipelineStep++;
             }
 
-
+            // okay it starts to get a bit funky here with the race conditions
             // it might be null in case the chunk was marked for deletion in the background
-            if (chunk.Neighbors != null)
+            foreach (var neighbor in chunk.Neighbors)
             {
-                foreach (var n in chunk.Neighbors)
+                // the neighbors of the subject chunk's neighbors are eligible to promote the neighbor
+                if (!neighbor.Neighbors.Any(s => s == null || s.PipelineStep < chunk.PipelineStep))
                 {
-                    // okay it starts to get a bit funky here with the race condition
-                    if (n.Neighbors != null)
-                    {
-                        if (!n.Neighbors.Any(s => s == null || s.PipelineStep < chunk.PipelineStep))
-                        {
-                            yield return n;
-                        }
-                    }
+                    yield return neighbor;
                 }
             }
+
+            chunk.DecLock();
         }
     }
 }

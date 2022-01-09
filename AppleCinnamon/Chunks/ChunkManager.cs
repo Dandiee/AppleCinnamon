@@ -27,11 +27,13 @@ namespace AppleCinnamon
         private Int2? _lastQueueIndex;
         public readonly TransformPipelineBlock<Int2, Chunk> Pipeline;
         public readonly NeighborAssigner _neighborAssignerPipelineBlock;
+        private List<Chunk> _chunksToDraw;
 
         public ChunkManager(Graphics graphics)
         {
             _chunkDrawer = new ChunkDrawer(graphics.Device);
             Chunks = new ConcurrentDictionary<Int2, Chunk>();
+            _chunksToDraw = new List<Chunk>();
             _queuedChunks = new ConcurrentDictionary<Int2, object>();
             Pipeline = new PipelineProvider(graphics.Device).CreatePipeline(InitialDegreeOfParallelism, this, out _neighborAssignerPipelineBlock);
             _chunkUpdater = new ChunkUpdater(graphics, this);
@@ -43,26 +45,7 @@ namespace AppleCinnamon
         public void Draw(Camera camera)
         {
             var now = DateTime.Now;
-            var chunksToRender = NeighborAssigner.Chunks.Values.Select(s =>
-                {
-                    s.IsRendered = false;
-
-                    if (!s.CheckForValidity(camera, now))
-                    {
-                        KillChunk(s);
-                    }
-
-                    return s;
-                })
-                .Where(chunk => chunk.IsFinalized && (!Game.IsViewFrustumCullingEnabled || camera.BoundingFrustum.Contains(ref chunk.BoundingBox) != ContainmentType.Disjoint))
-                .Select(s =>
-                {
-                    s.IsRendered = true;
-                    return s;
-                })
-                .ToList();
-
-            _chunkDrawer.Draw(chunksToRender, camera);
+            _chunkDrawer.Draw(_chunksToDraw, camera);
         }
 
         private void KillChunk(Chunk chunk)
@@ -103,7 +86,32 @@ namespace AppleCinnamon
             {
                 _chunkDrawer.Update(camera, world);
                 var currentChunkIndex = new Int2((int)camera.Position.X / WorldSettings.ChunkSize, (int)camera.Position.Z / WorldSettings.ChunkSize);
+
+                UpdateChunks(camera);
                 QueueChunksByIndex(currentChunkIndex);
+            }
+        }
+
+        private void UpdateChunks(Camera camera)
+        {
+            var now = DateTime.Now;
+            _chunksToDraw.Clear();
+            foreach (var chunk in NeighborAssigner.Chunks.Values)
+            {
+                chunk.IsRendered = false;
+
+                if (!chunk.CheckForValidity(camera, now))
+                {
+                    KillChunk(chunk);
+                }
+
+                chunk.IsRendered = chunk.IsFinalized && (!Game.IsViewFrustumCullingEnabled ||
+                                                 camera.BoundingFrustum.Contains(ref chunk.BoundingBox) !=
+                                                 ContainmentType.Disjoint);
+                if (chunk.IsRendered)
+                {
+                    _chunksToDraw.Add(chunk);
+                }
             }
         }
 
