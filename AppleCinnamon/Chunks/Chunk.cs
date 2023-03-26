@@ -36,10 +36,12 @@ namespace AppleCinnamon
         public bool IsRendered { get; set; }
         public int PipelineStep { get; set; }
         public bool IsFinalized { get; set; }
+        public int NumberOfResurrection { get; set; }
 
         public Chunk Resurrect(Int2 chunkIndex)
         {
             Neighbors = new Chunk[9];
+            //Voxels = Array.Empty<Voxel>();
             BuildingContext.Clear();
             ChunkIndex = chunkIndex;
             Offset = chunkIndex * new Int2(WorldSettings.ChunkSize, WorldSettings.ChunkSize);
@@ -49,6 +51,7 @@ namespace AppleCinnamon
             PipelineStep = 0;
             IsFinalized = false;
             IsRendered = false;
+            NumberOfResurrection++;
             return this;
         }
 

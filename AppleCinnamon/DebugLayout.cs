@@ -111,10 +111,11 @@ namespace AppleCinnamon
                    $"SUN: {Hofman.SunDirection:F2}\r\n" +
                    $"INTENSITY: {Hofman.SunlightFactor:F2}\r\n" +
                    $"InProcChunks: {ChunkManager.InProcessChunks}\r\n" +
-                   $"Death queue: {ChunkManager.ChunksToDelete.Count}\r\n" + 
-                   $"Cemetery: {ChunkManager.Cemetery.Count}\r\n" +
+                   $"Death queue: {ChunkManager.BagOfDeath.Count}\r\n" + 
+                   $"Graveyard: {ChunkManager.Graveyard.Count}\r\n" +
                    $"Chunks created: {ChunkManager.CreatedChunkInstances}\r\n" + 
-                   $"Chunks resurrected: {ChunkManager.ChunksResurrected}\r\n";
+                   $"Chunks resurrected: {ChunkManager.ChunksResurrected}\r\n" +
+                   $"Chunks: {ChunkManager.Chunks.Count}\r\n";
         }
 
         public void Draw(

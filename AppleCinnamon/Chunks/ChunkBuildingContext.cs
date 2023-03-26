@@ -52,12 +52,20 @@ namespace AppleCinnamon
 
         public void Clear()
         {
-            SpriteBlocks.Clear();
-            SingleSidedSpriteBlocks.Clear();
-            VisibilityFlags.Clear();
-            LightPropagationVoxels.Clear();
-            TopMostWaterVoxels.Clear();
-            TopMostLandVoxels.Clear();
+            // O(n) clearing
+            // SpriteBlocks.Clear();
+            // SingleSidedSpriteBlocks.Clear();
+            // VisibilityFlags.Clear();
+            // LightPropagationVoxels.Clear();
+            // TopMostWaterVoxels.Clear();
+            // TopMostLandVoxels.Clear();
+
+            SpriteBlocks = new ();
+            SingleSidedSpriteBlocks = new();
+            VisibilityFlags = new();
+            LightPropagationVoxels = new(1024);
+            TopMostWaterVoxels = new();
+            TopMostLandVoxels = new();
 
             SetAllChanged();
 
@@ -106,13 +114,14 @@ namespace AppleCinnamon
         public readonly Face OppositeFace;
         public readonly VisibilityFlag Direction;
         public readonly VisibilityFlag OppositeDirection;
-        public readonly List<int> PendingVoxels = new();
+        public List<int> PendingVoxels = new();
         public readonly Func<Int3, int, int> GetNeighborIndex;
         public int VoxelCount;
 
         public void Clear()
         {
-            PendingVoxels.Clear();
+            //PendingVoxels.Clear();
+            PendingVoxels = new();
         }
     }
     

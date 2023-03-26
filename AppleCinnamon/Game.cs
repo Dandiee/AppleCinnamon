@@ -13,7 +13,7 @@ namespace AppleCinnamon
     {
         public static readonly Vector3 StartPosition = new(0, 140, 0);
 
-        public const int ViewDistance = 24;
+        public const int ViewDistance = 16;
         public const int NumberOfPools = 4;
         public static readonly TimeSpan ChunkDespawnCooldown = TimeSpan.FromSeconds(1);
         public static bool IsBackFaceCullingEnabled { get; set; }
@@ -68,8 +68,6 @@ namespace AppleCinnamon
                 var now = DateTime.Now;
                 var elapsedTime = now - _lastTick;
                 _lastTick = now;
-
-
 
                 if (!_camera.IsPaused)
                 {

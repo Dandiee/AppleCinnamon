@@ -40,7 +40,6 @@ namespace AppleCinnamon
             QueueChunksByIndex(Int2.Zero);
         }
 
-        [SuppressMessage("ReSharper.DPA", "DPA0002: Excessive memory allocations in SOH", MessageId = "type: System.Collections.Generic.KeyValuePair`2[AppleCinnamon.Helper.Int2,AppleCinnamon.Chunk][]")]
         public void Draw(Camera camera)
         {
             var now = DateTime.Now;
@@ -76,9 +75,9 @@ namespace AppleCinnamon
         }
 
         public static ManualResetEvent WaitForDeletionEvent = new(true);
-        public static readonly ConcurrentDictionary<Int2, Chunk> ChunksToDelete = new();
-        public static readonly ConcurrentBag<Chunk> Cemetery = new(); 
-        public static int InProcessChunks = 0;
+        public static readonly ConcurrentDictionary<Int2, Chunk> BagOfDeath = new();
+        public static readonly ConcurrentBag<Chunk> Graveyard = new(); 
+        public static volatile int InProcessChunks = 0;
         public static int CreatedChunkInstances = 0;
         public static int ChunksResurrected = 0;
 
@@ -92,9 +91,8 @@ namespace AppleCinnamon
 
                 if (!chunk.CheckForValidity(camera, now))
                 {
-                    // Chunks.Remove(chunk.ChunkIndex, out _);
                     chunk.IsTimeToDie = true;
-                    ChunksToDelete.TryAdd(chunk.ChunkIndex, chunk);
+                    BagOfDeath.TryAdd(chunk.ChunkIndex, chunk);
                 }
 
                 chunk.IsRendered = !chunk.IsTimeToDie && chunk.IsFinalized && (!Game.IsViewFrustumCullingEnabled ||
@@ -106,7 +104,7 @@ namespace AppleCinnamon
                 }
             }
 
-            if (ChunksToDelete.Count > 30)
+            if (BagOfDeath.Count > 30)
             {
                 if (InProcessChunks == 0)
                 {
@@ -118,26 +116,26 @@ namespace AppleCinnamon
 
         private void CleanUpChunkToDieQueue()
         {
-            foreach (var chunk in ChunksToDelete)
+            foreach (var chunk in BagOfDeath)
             {
                 chunk.Value.Kill();
                 Chunks.Remove(chunk.Key, out var _);
-                Cemetery.Add(chunk.Value);
+                Graveyard.Add(chunk.Value);
             }
 
-            ChunksToDelete.Clear();
+            BagOfDeath.Clear();
             WaitForDeletionEvent.Set();
         }
 
         public Chunk CreateChunk(Int2 chunkIndex)
         {
-            if (Cemetery.Count == 0)
+            if (Graveyard.Count == 0)
             {
                 CreatedChunkInstances++;
                 return new Chunk(chunkIndex);
             }
 
-            if (Cemetery.TryTake(out var deadChunk))
+            if (Graveyard.TryTake(out var deadChunk))
             {
                 ChunksResurrected++;
                 return deadChunk.Resurrect(chunkIndex);
