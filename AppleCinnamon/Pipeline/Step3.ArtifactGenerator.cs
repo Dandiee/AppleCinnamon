@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using AppleCinnamon.Services;
 using AppleCinnamon.Settings;
 
@@ -13,6 +14,7 @@ namespace AppleCinnamon.Pipeline
 
         public Chunk Transform(Chunk chunk)
         {
+            // if (Game.Debug) Thread.Sleep(100);
             var rnd = new Random(chunk.ChunkIndex.GetHashCode());
 
             foreach (var flatIndex in chunk.BuildingContext.TopMostLandVoxels)
@@ -48,7 +50,7 @@ namespace AppleCinnamon.Pipeline
 
         private void CleanUp(Chunk chunk)
         {
-            chunk.BuildingContext.TopMostLandVoxels = null;
+            chunk.BuildingContext.TopMostLandVoxels.Clear();
         }
     }
 }

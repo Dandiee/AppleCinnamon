@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading;
 using System.Windows.Forms;
 using AppleCinnamon.Helper;
 using AppleCinnamon.Vertices;
@@ -26,6 +27,7 @@ namespace AppleCinnamon
         public static bool RenderBoxes { get; set; } = true;
         public static bool ShowPipelineVisualization { get; set; } = true;
         public static bool Debug { get; set; } = true;
+        //public static bool Debug2 { get; set; } = true;
 
         private readonly ChunkManager _chunkManager;
         private readonly Camera _camera;
@@ -66,6 +68,8 @@ namespace AppleCinnamon
                 var now = DateTime.Now;
                 var elapsedTime = now - _lastTick;
                 _lastTick = now;
+
+
 
                 if (!_camera.IsPaused)
                 {

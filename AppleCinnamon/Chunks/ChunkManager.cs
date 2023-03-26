@@ -5,12 +5,14 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks.Dataflow;
+using System.Windows.Forms;
 using AppleCinnamon.Chunks;
 using AppleCinnamon.Helper;
 using AppleCinnamon.Pipeline;
 using AppleCinnamon.Pipeline.Context;
 using AppleCinnamon.Settings;
 using SharpDX;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.ProgressBar;
 
 namespace AppleCinnamon
 {
@@ -20,21 +22,18 @@ namespace AppleCinnamon
         private int _finalizedChunks;
         public bool IsInitialized { get; private set; }
 
-        public readonly ConcurrentDictionary<Int2, Chunk> Chunks;
-        private readonly ConcurrentDictionary<Int2, object> _queuedChunks;
+        public static readonly ConcurrentDictionary<Int2, Chunk> Chunks = new();
         private readonly ChunkUpdater _chunkUpdater;
         private readonly ChunkDrawer _chunkDrawer;
         private Int2? _lastQueueIndex;
-        public readonly TransformPipelineBlock<Int2, Chunk> Pipeline;
+        public readonly TransformPipelineBlock<Chunk, Chunk> Pipeline;
         public readonly NeighborAssigner _neighborAssignerPipelineBlock;
         private List<Chunk> _chunksToDraw;
 
         public ChunkManager(Graphics graphics)
         {
             _chunkDrawer = new ChunkDrawer(graphics.Device);
-            Chunks = new ConcurrentDictionary<Int2, Chunk>();
             _chunksToDraw = new List<Chunk>();
-            _queuedChunks = new ConcurrentDictionary<Int2, object>();
             Pipeline = new PipelineProvider(graphics.Device).CreatePipeline(InitialDegreeOfParallelism, this, out _neighborAssignerPipelineBlock);
             _chunkUpdater = new ChunkUpdater(graphics, this);
 
@@ -48,26 +47,8 @@ namespace AppleCinnamon
             _chunkDrawer.Draw(_chunksToDraw, camera);
         }
 
-        private void KillChunk(Chunk chunk)
-        {
-            if (chunk.IsFinalized)
-            {
-                Chunks.Remove(chunk.ChunkIndex, out _);
-            }
-            else
-            {
-                _queuedChunks.TryRemove(chunk.ChunkIndex, out _);
-            }
-
-            NeighborAssigner.Chunks.TryRemove(chunk.ChunkIndex, out _);
-            NeighborAssigner.DispatchedChunks.Remove(chunk.ChunkIndex);
-        }
-
         public void Finalize(Chunk chunk)
         {
-            _queuedChunks.TryRemove(chunk.ChunkIndex, out _);
-            Chunks.TryAdd(chunk.ChunkIndex, chunk);
-            
             chunk.IsFinalized = true;
 
             Interlocked.Increment(ref _finalizedChunks);
@@ -77,6 +58,8 @@ namespace AppleCinnamon
             {
                 IsInitialized = true;
             }
+
+            Interlocked.Decrement(ref InProcessChunks);
         }
 
 
@@ -92,26 +75,77 @@ namespace AppleCinnamon
             }
         }
 
+        public static ManualResetEvent WaitForDeletionEvent = new(true);
+        public static readonly ConcurrentDictionary<Int2, Chunk> ChunksToDelete = new();
+        public static readonly ConcurrentBag<Chunk> Cemetery = new(); 
+        public static int InProcessChunks = 0;
+        public static int CreatedChunkInstances = 0;
+        public static int ChunksResurrected = 0;
+
         private void UpdateChunks(Camera camera)
         {
             var now = DateTime.Now;
             _chunksToDraw.Clear();
-            foreach (var chunk in NeighborAssigner.Chunks.Values)
+            foreach (var chunk in Chunks.Values)
             {
                 chunk.IsRendered = false;
 
                 if (!chunk.CheckForValidity(camera, now))
                 {
-                    KillChunk(chunk);
+                    // Chunks.Remove(chunk.ChunkIndex, out _);
+                    chunk.IsTimeToDie = true;
+                    ChunksToDelete.TryAdd(chunk.ChunkIndex, chunk);
                 }
 
-                chunk.IsRendered = chunk.IsFinalized && (!Game.IsViewFrustumCullingEnabled ||
+                chunk.IsRendered = !chunk.IsTimeToDie && chunk.IsFinalized && (!Game.IsViewFrustumCullingEnabled ||
                                                  camera.BoundingFrustum.Contains(ref chunk.BoundingBox) !=
                                                  ContainmentType.Disjoint);
                 if (chunk.IsRendered)
                 {
                     _chunksToDraw.Add(chunk);
                 }
+            }
+
+            if (ChunksToDelete.Count > 30)
+            {
+                if (InProcessChunks == 0)
+                {
+                    WaitForDeletionEvent.Reset();
+                    CleanUpChunkToDieQueue();
+                }
+            }
+        }
+
+        private void CleanUpChunkToDieQueue()
+        {
+            foreach (var chunk in ChunksToDelete)
+            {
+                chunk.Value.Kill();
+                Chunks.Remove(chunk.Key, out var _);
+                Cemetery.Add(chunk.Value);
+            }
+
+            ChunksToDelete.Clear();
+            WaitForDeletionEvent.Set();
+        }
+
+        public Chunk CreateChunk(Int2 chunkIndex)
+        {
+            if (Cemetery.Count == 0)
+            {
+                CreatedChunkInstances++;
+                return new Chunk(chunkIndex);
+            }
+
+            if (Cemetery.TryTake(out var deadChunk))
+            {
+                ChunksResurrected++;
+                return deadChunk.Resurrect(chunkIndex);
+            }
+            else
+            {
+                CreatedChunkInstances++;
+                return new Chunk(chunkIndex);
             }
         }
 
@@ -122,10 +156,12 @@ namespace AppleCinnamon
                 foreach (var relativeChunkIndex in GetSurroundingChunks(Game.ViewDistance + Game.NumberOfPools - 1))
                 {
                     var chunkIndex = currentChunkIndex + relativeChunkIndex;
-                    if (!_queuedChunks.ContainsKey(chunkIndex) && !Chunks.ContainsKey(chunkIndex))
+
+                    if (!Chunks.ContainsKey(chunkIndex))
                     {
-                        _queuedChunks.TryAdd(chunkIndex, null);
-                        Pipeline.TransformBlock.Post(chunkIndex);
+                        var newChunk = CreateChunk(chunkIndex);// new Chunk(chunkIndex);
+                        Chunks.TryAdd(chunkIndex, newChunk);
+                        Pipeline.TransformBlock.Post(newChunk);
                     }
                 }
 

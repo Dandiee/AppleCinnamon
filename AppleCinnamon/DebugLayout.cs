@@ -109,7 +109,12 @@ namespace AppleCinnamon
                    $"Peek render time: {game.PeekRenderTime:F2}\r\n" +
                    $"Average FPS: {game.AverageFps:F2}\r\n" + 
                    $"SUN: {Hofman.SunDirection:F2}\r\n" +
-                   $"INTENSITY: {Hofman.SunlightFactor:F2}\r\n";
+                   $"INTENSITY: {Hofman.SunlightFactor:F2}\r\n" +
+                   $"InProcChunks: {ChunkManager.InProcessChunks}\r\n" +
+                   $"Death queue: {ChunkManager.ChunksToDelete.Count}\r\n" + 
+                   $"Cemetery: {ChunkManager.Cemetery.Count}\r\n" +
+                   $"Chunks created: {ChunkManager.CreatedChunkInstances}\r\n" + 
+                   $"Chunks resurrected: {ChunkManager.ChunksResurrected}\r\n";
         }
 
         public void Draw(

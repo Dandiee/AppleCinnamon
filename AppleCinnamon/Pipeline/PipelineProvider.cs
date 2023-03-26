@@ -1,7 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using System.Threading.Tasks.Dataflow;
-using AppleCinnamon.Helper;
+﻿using System.Threading.Tasks.Dataflow;
 using AppleCinnamon.Pipeline.Context;
 using AppleCinnamon.Settings;
 using SharpDX.Direct3D11;
@@ -28,12 +25,13 @@ namespace AppleCinnamon.Pipeline
             _chunkDispatcher = new ChunkDispatcher(device);
         }
 
-        public TransformPipelineBlock<Int2, Chunk> CreatePipeline(int maxDegreeOfParallelism, ChunkManager chunkManager, out NeighborAssigner assigner)
+        public TransformPipelineBlock<Chunk, Chunk> CreatePipeline(int maxDegreeOfParallelism, ChunkManager chunkManager, out NeighborAssigner assigner)
         {
             var multiThreaded = new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = 1 };//maxDegreeOfParallelism};
             var singleThreaded = new ExecutionDataflowBlockOptions {MaxDegreeOfParallelism = 1, };
-
-            var terrainGenerator = new TransformPipelineBlock<Int2, Chunk>(_terrainGenerator.Process, nameof(TerrainGenerator), multiThreaded);
+           
+            var terrainGenerator = 
+                new TransformPipelineBlock<Chunk, Chunk>(_terrainGenerator.Process, nameof(TerrainGenerator), multiThreaded);
             terrainGenerator
                 .LinkTo(new TransformManyPipelineBlock(_neighborAssigner.Process, singleThreaded)) // 169
                 .LinkTo(new ChunkTransformBlock(_artifactGenerator, singleThreaded))

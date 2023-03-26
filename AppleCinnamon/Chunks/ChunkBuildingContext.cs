@@ -49,6 +49,21 @@ namespace AppleCinnamon
 
             Faces = new[] {Top, Bottom, Left, Right, Front, Back};
         }
+
+        public void Clear()
+        {
+            SpriteBlocks.Clear();
+            SingleSidedSpriteBlocks.Clear();
+            VisibilityFlags.Clear();
+            LightPropagationVoxels.Clear();
+            TopMostWaterVoxels.Clear();
+            TopMostLandVoxels.Clear();
+
+            foreach (var face in Faces)
+            {
+                face.Clear();
+            }
+        }
     }
 
     public sealed class FaceBuildingContext
@@ -92,6 +107,11 @@ namespace AppleCinnamon
         public readonly List<int> PendingVoxels = new();
         public readonly Func<Int3, int, int> GetNeighborIndex;
         public int VoxelCount;
+
+        public void Clear()
+        {
+            PendingVoxels.Clear();
+        }
     }
     
 }

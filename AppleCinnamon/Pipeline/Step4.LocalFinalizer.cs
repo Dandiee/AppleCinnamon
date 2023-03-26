@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading;
 using AppleCinnamon.Pipeline.Context;
 using AppleCinnamon.Settings;
 using SharpDX;
@@ -10,6 +11,7 @@ namespace AppleCinnamon.Pipeline
     {
         public Chunk Transform(Chunk chunk)
         {
+            // if (Game.Debug) Thread.Sleep(100);
             InitializeSunlight(chunk);
             FullScanner.FullScan(chunk);
             LightingService.LocalPropagate(chunk, chunk.BuildingContext.LightPropagationVoxels);

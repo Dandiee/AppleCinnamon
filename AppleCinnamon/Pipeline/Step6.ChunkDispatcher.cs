@@ -1,4 +1,5 @@
 ﻿using SharpDX.Direct3D11;
+using System.Threading;
 
 namespace AppleCinnamon.Pipeline
 {
@@ -13,6 +14,7 @@ namespace AppleCinnamon.Pipeline
 
         public Chunk Transform(Chunk chunk)
         {
+            // if (Game.Debug) Thread.Sleep(100);
             ChunkBuilder.BuildChunk(chunk, _device);
             return chunk;
         }

@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Windows.Forms;
 using AppleCinnamon.Chunks;
 using AppleCinnamon.Collision;
 using AppleCinnamon.Extensions;
@@ -235,6 +237,8 @@ namespace AppleCinnamon
 
         private void UpdateMove(GameTime gameTime, ChunkManager chunkManager, World world)
         {
+            //MessageBox.Show(Thread.CurrentThread.ManagedThreadId.ToString());
+
             const float MouseSensitivity = .01f;
             const float MovementSensitivity = 2f;
             const float JumpVelocity = 12;
@@ -328,7 +332,7 @@ namespace AppleCinnamon
             if (ChunkManager.TryGetChunkIndexByAbsoluteVoxelIndex(currentBlock, out var chunkIndex))
             {
                 CurrentChunkIndex = chunkIndex;
-                var currentChunk = chunkManager.Chunks[chunkIndex];
+                var currentChunk = ChunkManager.Chunks[chunkIndex];
                 CurrentChunkIndexVector = currentChunk.BoundingBox.Center;
             }
         }

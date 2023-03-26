@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading;
 using AppleCinnamon.Helper;
 using AppleCinnamon.Settings;
@@ -9,7 +10,7 @@ using SharpDX;
 
 namespace AppleCinnamon
 {
-    public sealed partial class Chunk : IDisposable
+    public sealed partial class Chunk
     {
         public const int SliceHeight = 16;
         public const int SliceArea = WorldSettings.ChunkSize * WorldSettings.ChunkSize * SliceHeight;
@@ -19,15 +20,14 @@ namespace AppleCinnamon
         public int CurrentHeight;
 
         public readonly ChunkBuildingContext BuildingContext;
-        public readonly Int2 ChunkIndex;
-        public readonly Vector3 OffsetVector;
-        public readonly Int2 Offset;
+        public Int2 ChunkIndex;
+        public Vector3 OffsetVector;
+        public Int2 Offset;
         public Chunk[] Neighbors;
-        public readonly Vector3 ChunkIndexVector;
-        public CountdownEvent CountdownEvent { get; set; } = new CountdownEvent(1);
+        public Vector3 ChunkIndexVector;
 
-        public bool IsDead { get; set; }
         public bool IsMarkedForDelete { get; set; }
+        public bool IsTimeToDie { get; set; }
         public DateTime MarkedForDeleteAt { get; set; }
 
         public ChunkBuffers Buffers { get; set; }
@@ -38,52 +38,26 @@ namespace AppleCinnamon
         public bool IsFinalized { get; set; }
         public bool IsDebugHighlighted { get; set; }
 
-        public void IncLock()
-        {
-            if (Neighbors != null)
-            {
-                foreach (var neighbor in Neighbors)
-                {
-                    if (neighbor != null)
-                    {
-                        neighbor.CountdownEvent.AddCount();
-                    }
-                }
-            }
-            else CountdownEvent.AddCount();
-        }
-
-        public void DecLock()
-        {
-            if (Neighbors != null)
-            {
-                foreach (var neighbor in Neighbors)
-                {
-                    if (neighbor != null)
-                    {
-                        neighbor.CountdownEvent.Signal();
-                    }
-                }
-            }
-            else CountdownEvent.Signal();
-        }
-
-
-        public Chunk(Int2 chunkIndex, Voxel[] voxels)
+        public Chunk Resurrect(Int2 chunkIndex)
         {
             Neighbors = new Chunk[9];
-            Voxels = voxels;
-            BuildingContext = new ChunkBuildingContext();
-            CurrentHeight = (voxels.Length / SliceArea) * SliceHeight;
+            BuildingContext.Clear();
             ChunkIndex = chunkIndex;
             Offset = chunkIndex * new Int2(WorldSettings.ChunkSize, WorldSettings.ChunkSize);
             OffsetVector = new Vector3(Offset.X, 0, Offset.Y);
-            ChunkIndexVector = BoundingBox.Center;
-
-            UpdateBoundingBox();
+            IsMarkedForDelete = false;
+            IsTimeToDie = false;
+            return this;
         }
 
-       
+        public Chunk(Int2 chunkIndex)
+        {
+            Neighbors = new Chunk[9];
+            BuildingContext = new ChunkBuildingContext();
+            ChunkIndex = chunkIndex;
+            Offset = chunkIndex * new Int2(WorldSettings.ChunkSize, WorldSettings.ChunkSize);
+            OffsetVector = new Vector3(Offset.X, 0, Offset.Y);
+        }
 
         public void ExtendUpward(int heightToFit)
         {
@@ -131,7 +105,7 @@ namespace AppleCinnamon
 
         
 
-        private void UpdateBoundingBox()
+        public void UpdateBoundingBox()
         {
             var size = new Vector3(WorldSettings.ChunkSize, CurrentHeight, WorldSettings.ChunkSize) / 2f;
             var position = new Vector3(WorldSettings.ChunkSize / 2f - .5f + WorldSettings.ChunkSize * ChunkIndex.X, CurrentHeight / 2f - .5f, WorldSettings.ChunkSize / 2f - .5f + WorldSettings.ChunkSize * ChunkIndex.Y);
@@ -142,8 +116,15 @@ namespace AppleCinnamon
         }
 
 
-        private void DereferenceNeighbors()
+        public void Kill()
         {
+            Buffers?.Dispose();
+
+            if (Neighbors == null)
+            {
+                return;
+            }
+
             foreach (var neighbor in Neighbors)
             {
                 if (neighbor != null)
@@ -161,15 +142,14 @@ namespace AppleCinnamon
             Neighbors = null;
         }
 
-        public void Dispose()
-        {
-            Buffers?.Dispose();
-        }
+        
 
         public static volatile int WaitingForGc = 0;
 
         public bool CheckForValidity(Camera camera, DateTime now)
         {
+            if (IsTimeToDie) return false;
+
             var distanceX = Math.Abs(camera.CurrentChunkIndex.X - ChunkIndex.X);
             var distanceY = Math.Abs(camera.CurrentChunkIndex.Y - ChunkIndex.Y);
             var maxDistance = Math.Max(distanceX, distanceY);
@@ -180,7 +160,7 @@ namespace AppleCinnamon
                 {
                     if (now - MarkedForDeleteAt > Game.ChunkDespawnCooldown)
                     {
-                        Kill();
+                        //Kill();
                         return false;
                     }
                 }
@@ -196,22 +176,6 @@ namespace AppleCinnamon
             }
 
             return true;
-        }
-
-        private void Kill()
-        {
-            IsDead = true;
-            DereferenceNeighbors();
-            Dispose();
-            //IsFinalized = false;
-            Interlocked.Increment(ref WaitingForGc);
-            Debug.WriteLine($"Chunk killed. {WaitingForGc}.");
-        }
-
-        ~Chunk()
-        {
-            Interlocked.Decrement(ref WaitingForGc);
-            Debug.WriteLine($"Chunk collected. {WaitingForGc}.");
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using AppleCinnamon.Pipeline.Context;
 using SharpDX.Mathematics.Interop;
+using System.Threading;
 
 namespace AppleCinnamon.Pipeline
 {
@@ -7,6 +8,7 @@ namespace AppleCinnamon.Pipeline
     {
         public Chunk Transform(Chunk chunk)
         {
+            // if (Game.Debug) Thread.Sleep(100);
             GlobalVisibilityFinalizer.FinalizeGlobalVisibility(chunk);
             GlobalLightFinalizer.FinalizeGlobalLighting(chunk);
 

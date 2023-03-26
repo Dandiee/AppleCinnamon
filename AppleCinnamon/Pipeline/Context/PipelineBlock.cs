@@ -124,8 +124,9 @@ namespace AppleCinnamon.Pipeline.Context
 
         public IEnumerable<Chunk> Pool(Chunk chunk)
         {
-            chunk.IncLock();
-            
+            Interlocked.Decrement(ref ChunkManager.InProcessChunks);
+            ChunkManager.WaitForDeletionEvent.WaitOne();
+
             // a disposed and reloaded neighbor may re-proc an already processed chunk
             // in which case we don't want to demote the pipeline step
             if (chunk.PipelineStep == PipelineStepIndex - 1)
@@ -138,13 +139,12 @@ namespace AppleCinnamon.Pipeline.Context
             foreach (var neighbor in chunk.Neighbors)
             {
                 // the neighbors of the subject chunk's neighbors are eligible to promote the neighbor
-                if (!neighbor.Neighbors.Any(s => s == null || s.PipelineStep < chunk.PipelineStep))
+                if (neighbor != null && !neighbor.Neighbors.Any(s => s == null || s.PipelineStep < chunk.PipelineStep))
                 {
+                    Interlocked.Increment(ref ChunkManager.InProcessChunks);
                     yield return neighbor;
                 }
             }
-
-            chunk.DecLock();
         }
     }
 }

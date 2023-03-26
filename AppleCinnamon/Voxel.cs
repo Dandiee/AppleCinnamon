@@ -27,7 +27,7 @@ namespace AppleCinnamon
             MetaData = original.MetaData;
         }
 
-        [Obsolete("Do. Not. Use.")]
+        [Obsolete("Do. Not. Use.")] // why?
         public Voxel(byte blockType, byte sunlight, byte emittedLight, byte metaData, Face face)
         {
             BlockType = blockType;

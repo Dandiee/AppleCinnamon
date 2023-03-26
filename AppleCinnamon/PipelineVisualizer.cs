@@ -3,6 +3,7 @@ using AppleCinnamon.Extensions;
 using AppleCinnamon.Helper;
 using AppleCinnamon.Pipeline;
 using AppleCinnamon.Pipeline.Context;
+using InlineIL;
 using SharpDX;
 using SharpDX.Direct2D1;
 using SharpDX.Mathematics.Interop;
@@ -24,23 +25,27 @@ namespace AppleCinnamon
         {
             const int size = sizeof(float) * 4;
 
-            var chunks = NeighborAssigner.Chunks.Values.ToList();
-            var destinationRects = new RawRectangleF[chunks.Count];
-            var sourceRects = new RawRectangle[chunks.Count];
-            var colors = new RawColor4[chunks.Count];
+            var destinationRects = new RawRectangleF[ChunkManager.Chunks.Count];
+            var sourceRects = new RawRectangle[ChunkManager.Chunks.Count];
+            var colors = new RawColor4[ChunkManager.Chunks.Count];
 
-            for (var i = 0; i < chunks.Count; i++)
+            var i = 0;
+
+            foreach (var chunk in ChunkManager.Chunks.Values)
             {
-                var result = chunks[i].Rect(camera.CurrentChunkIndex);
+                var result = chunk.Rect(camera.CurrentChunkIndex);
                 destinationRects[i] = result.Dest;
                 sourceRects[i] = result.Source;
                 colors[i] = result.Color;
+
+                i++;
             }
+
             _graphics.D2DeviceContext.AntialiasMode = AntialiasMode.Aliased;
             _graphics.D2DeviceContext.BeginDraw();
             _graphics.SpriteBatch.Clear();
-            _graphics.SpriteBatch.AddSprites(chunks.Count, destinationRects, sourceRects, colors, null, size, size, size, 0);
-            _graphics.D2DeviceContext.DrawSpriteBatch(_graphics.SpriteBatch, 0, chunks.Count, _textures, BitmapInterpolationMode.Linear, SpriteOptions.ClampToSourceRectangle);
+            _graphics.SpriteBatch.AddSprites(ChunkManager.Chunks.Count, destinationRects, sourceRects, colors, null, size, size, size, 0);
+            _graphics.D2DeviceContext.DrawSpriteBatch(_graphics.SpriteBatch, 0, ChunkManager.Chunks.Count, _textures, BitmapInterpolationMode.Linear, SpriteOptions.ClampToSourceRectangle);
             _graphics.D2DeviceContext.EndDraw();
         }
     }

@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Threading;
 using AppleCinnamon.Helper;
 using AppleCinnamon.Settings;
+using Microsoft.VisualBasic;
+using SharpDX;
 
 namespace AppleCinnamon.Pipeline
 {
@@ -15,8 +18,10 @@ namespace AppleCinnamon.Pipeline
             _noise = noise;
         }
 
-        public Chunk Process(Int2 chunkIndex)
+        public Chunk Process(Chunk chunk)
         {
+            // if (Game.Debug) Thread.Sleep(100);
+
             var chunkSizeXz = new Int2(WorldSettings.ChunkSize, WorldSettings.ChunkSize);
             var heatMap = new int[WorldSettings.ChunkSize, WorldSettings.ChunkSize];
             var maxHeight = WorldSettings.WaterLevel + 1;
@@ -24,7 +29,7 @@ namespace AppleCinnamon.Pipeline
             {
                 for (var k = 0; k < WorldSettings.ChunkSize; k++)
                 {
-                    var coordinates = chunkIndex * chunkSizeXz + new Int2(i, k);
+                    var coordinates = chunk.ChunkIndex * chunkSizeXz + new Int2(i, k);
                     var height = (byte)((_noise.Compute(coordinates.X, coordinates.Y)));
 
                     heatMap[i, k] = height;
@@ -37,8 +42,10 @@ namespace AppleCinnamon.Pipeline
 
             maxHeight += 64;
             var initialSlicesCount = maxHeight / Chunk.SliceHeight + 1;
-            var voxels = new Voxel[WorldSettings.ChunkSize * initialSlicesCount * Chunk.SliceHeight * WorldSettings.ChunkSize];
-            var chunk = new Chunk(chunkIndex, voxels);
+            chunk.Voxels  = new Voxel[WorldSettings.ChunkSize * initialSlicesCount * Chunk.SliceHeight * WorldSettings.ChunkSize];
+            chunk.CurrentHeight = (chunk.Voxels.Length / Chunk.SliceArea) * Chunk.SliceHeight;
+            chunk.UpdateBoundingBox();
+            chunk.ChunkIndexVector = chunk.BoundingBox.Center;
 
             for (var i = 0; i < WorldSettings.ChunkSize; i++)
             {
@@ -54,7 +61,7 @@ namespace AppleCinnamon.Pipeline
                                 : VoxelDefinition.Dirt.Create());
                     }
 
-                    var waterRandom = _waterNoise.Compute(i + chunkIndex.X * WorldSettings.ChunkSize, k + chunkIndex.Y * WorldSettings.ChunkSize);
+                    var waterRandom = _waterNoise.Compute(i + chunk.ChunkIndex.X * WorldSettings.ChunkSize, k + chunk.ChunkIndex.Y * WorldSettings.ChunkSize);
                     var isWater = false;
                     if (Math.Abs(waterRandom - 128) <= 2)
                     {
@@ -91,6 +98,7 @@ namespace AppleCinnamon.Pipeline
                 }
             }
 
+            
             return chunk;
         }
     }
