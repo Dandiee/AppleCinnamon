@@ -104,17 +104,20 @@ namespace AppleCinnamon
                 }
             }
 
-            if (BagOfDeath.Count > 30)
+            if (BagOfDeath.Count > Game.ViewDistance * 2) // we have victims
             {
-                if (InProcessChunks == 0)
+                if (InProcessChunks == 0) // its the good time for massacre
                 {
-                    WaitForDeletionEvent.Reset();
-                    CleanUpChunkToDieQueue();
+                    WaitForDeletionEvent.Reset(); // suspend all pipeline process
+                    Massacre();
+                    WaitForDeletionEvent.Set(); // let em go
                 }
             }
+
+            
         }
 
-        private void CleanUpChunkToDieQueue()
+        private void Massacre()
         {
             foreach (var chunk in BagOfDeath)
             {
@@ -124,7 +127,6 @@ namespace AppleCinnamon
             }
 
             BagOfDeath.Clear();
-            WaitForDeletionEvent.Set();
         }
 
         public Chunk CreateChunk(Int2 chunkIndex)
