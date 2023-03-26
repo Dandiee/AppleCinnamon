@@ -59,6 +59,8 @@ namespace AppleCinnamon
             TopMostWaterVoxels.Clear();
             TopMostLandVoxels.Clear();
 
+            SetAllChanged();
+
             foreach (var face in Faces)
             {
                 face.Clear();

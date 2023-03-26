@@ -27,7 +27,7 @@ namespace AppleCinnamon.Pipeline
 
         public TransformPipelineBlock<Chunk, Chunk> CreatePipeline(int maxDegreeOfParallelism, ChunkManager chunkManager, out NeighborAssigner assigner)
         {
-            var multiThreaded = new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = 1 };//maxDegreeOfParallelism};
+            var multiThreaded = new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = 8 };//maxDegreeOfParallelism};
             var singleThreaded = new ExecutionDataflowBlockOptions {MaxDegreeOfParallelism = 1, };
            
             var terrainGenerator = 

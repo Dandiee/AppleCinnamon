@@ -36,7 +36,6 @@ namespace AppleCinnamon
         public bool IsRendered { get; set; }
         public int PipelineStep { get; set; }
         public bool IsFinalized { get; set; }
-        public bool IsDebugHighlighted { get; set; }
 
         public Chunk Resurrect(Int2 chunkIndex)
         {
@@ -47,6 +46,9 @@ namespace AppleCinnamon
             OffsetVector = new Vector3(Offset.X, 0, Offset.Y);
             IsMarkedForDelete = false;
             IsTimeToDie = false;
+            PipelineStep = 0;
+            IsFinalized = false;
+            IsRendered = false;
             return this;
         }
 
@@ -119,6 +121,7 @@ namespace AppleCinnamon
         public void Kill()
         {
             Buffers?.Dispose();
+            Buffers = null;
 
             if (Neighbors == null)
             {
@@ -141,10 +144,6 @@ namespace AppleCinnamon
 
             Neighbors = null;
         }
-
-        
-
-        public static volatile int WaitingForGc = 0;
 
         public bool CheckForValidity(Camera camera, DateTime now)
         {
