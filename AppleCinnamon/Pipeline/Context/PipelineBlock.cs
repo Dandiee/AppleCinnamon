@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks.Dataflow;
+using System.Xml.Linq;
 
 namespace AppleCinnamon.Pipeline.Context
 {
@@ -12,13 +13,10 @@ namespace AppleCinnamon.Pipeline.Context
         public PipelineBlock Head { get; protected set; }
         public int PipelineStepIndex { get; protected set; }
         public readonly List<IMonitoredBlock> MonitoredBlocks = new();
-    }
 
-    public abstract class PipelineBlock<TInput, TOutput> : PipelineBlock
-    {
-        public IPropagatorBlock<TInput, TOutput> TransformBlock { get; protected set; }
+        public IPropagatorBlock<Chunk, Chunk> TransformBlock { get; protected set; }
 
-        public PipelineBlock<TOutput, TNewOutput> LinkTo<TNewOutput>(PipelineBlock<TOutput, TNewOutput> next)
+        public PipelineBlock LinkTo(PipelineBlock next)
         {
             TransformBlock.LinkTo(next.TransformBlock);
             next.PipelineStepIndex = PipelineStepIndex + 1;
@@ -32,10 +30,11 @@ namespace AppleCinnamon.Pipeline.Context
             return next;
         }
 
-        public void LinkTo(Action<TOutput> action)
+        public PipelineBlock LinkTo(Action<Chunk> action)
         {
-            var actionBlock = new ActionBlock<TOutput>(action);
+            var actionBlock = new ActionBlock<Chunk>(action);
             TransformBlock.LinkTo(actionBlock);
+            return Head;
         }
     }
 
@@ -45,23 +44,30 @@ namespace AppleCinnamon.Pipeline.Context
         long ElapsedTime { get; }
     }
 
-    public class TransformPipelineBlock<TInput, TOutput> : PipelineBlock<TInput, TOutput>, IMonitoredBlock
+    public class ChunkTransformBlock : PipelineBlock, IMonitoredBlock
     {
         public string Name { get; }
-        private readonly Func<TInput, TOutput> _func;
+        private readonly Func<Chunk, Chunk> _func;
         private readonly Stopwatch _stopwatch;
         public long ElapsedTime => _stopwatch.ElapsedMilliseconds;
 
-        public TransformPipelineBlock(Func<TInput, TOutput> func, string name, ExecutionDataflowBlockOptions options)
+        public ChunkTransformBlock(IChunkTransformer transformer, ExecutionDataflowBlockOptions options)
         {
-            Name = name;
-            _func = func;
-            TransformBlock = new TransformBlock<TInput, TOutput>(s => Process(s), options);
+            Name = transformer.GetType().Name;
+            _func = transformer.Transform;
+            TransformBlock = new TransformBlock<Chunk, Chunk>(Process, options);
             _stopwatch = new Stopwatch();
         }
 
-        protected virtual TOutput Process(TInput input)
+        protected virtual Chunk Process(Chunk input)
         {
+            if (PipelineStepIndex > 0 && input.PipelineStep != PipelineStepIndex - 1)
+            {
+                return input;
+            }
+
+            input.PipelineStep++;
+
             _stopwatch.Start();
             var result = _func(input);
             _stopwatch.Stop();
@@ -69,27 +75,7 @@ namespace AppleCinnamon.Pipeline.Context
         }
     }
 
-    public class ChunkTransformBlock : TransformPipelineBlock<Chunk, Chunk>
-    {
-        public ChunkTransformBlock(Func<Chunk, Chunk> func, string name, ExecutionDataflowBlockOptions options)
-            : base(func, name, options) { }
-        public ChunkTransformBlock(IChunkTransformer transformer, ExecutionDataflowBlockOptions options)
-            : this(transformer.Transform, transformer.GetType().Name, options) { }
-
-        protected override Chunk Process(Chunk chunk)
-        {
-            if (chunk.PipelineStep != PipelineStepIndex - 1)
-            {
-                return chunk;
-            }
-
-            chunk.PipelineStep++;
-
-            return base.Process(chunk);
-        }
-    }
-
-    public class TransformManyPipelineBlock : PipelineBlock<Chunk, Chunk>
+    public class TransformManyPipelineBlock : PipelineBlock
     {
         protected Func<Chunk, IEnumerable<Chunk>> Func;
 

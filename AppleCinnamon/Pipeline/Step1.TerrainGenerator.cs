@@ -8,7 +8,7 @@ using SharpDX;
 
 namespace AppleCinnamon.Pipeline
 {
-    public sealed class TerrainGenerator
+    public sealed class TerrainGenerator : IChunkTransformer
     {
         private readonly DaniNoise _noise;
         private static readonly DaniNoise _waterNoise = new(WorldSettings.RiverNoiseOptions);
@@ -18,7 +18,7 @@ namespace AppleCinnamon.Pipeline
             _noise = noise;
         }
 
-        public Chunk Process(Chunk chunk)
+        public Chunk Transform(Chunk chunk)
         {
             // if (Game.Debug) Thread.Sleep(100);
 

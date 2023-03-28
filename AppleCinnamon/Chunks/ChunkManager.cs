@@ -28,8 +28,7 @@ namespace AppleCinnamon
         private readonly ChunkUpdater _chunkUpdater;
         private readonly ChunkDrawer _chunkDrawer;
         private Int2? _lastQueueIndex;
-        public readonly TransformPipelineBlock<Chunk, Chunk> Pipeline;
-        public readonly NeighborAssigner _neighborAssignerPipelineBlock;
+        public readonly PipelineBlock Pipeline;
         private List<Chunk> _chunksToDraw;
 
         public ChunkManager(Graphics graphics)
@@ -37,7 +36,7 @@ namespace AppleCinnamon
             _graphics = graphics;
             _chunkDrawer = new ChunkDrawer(graphics.Device);
             _chunksToDraw = new List<Chunk>();
-            Pipeline = new PipelineProvider(graphics.Device).CreatePipeline(InitialDegreeOfParallelism, this, out _neighborAssignerPipelineBlock);
+            Pipeline = new PipelineProvider(graphics.Device).CreatePipeline(InitialDegreeOfParallelism, this);
             _chunkUpdater = new ChunkUpdater(graphics, this);
 
             QueueChunksByIndex(Int2.Zero);

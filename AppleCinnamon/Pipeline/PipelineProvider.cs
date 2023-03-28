@@ -25,14 +25,12 @@ namespace AppleCinnamon.Pipeline
             _chunkDispatcher = new ChunkDispatcher(device);
         }
 
-        public TransformPipelineBlock<Chunk, Chunk> CreatePipeline(int maxDegreeOfParallelism, ChunkManager chunkManager, out NeighborAssigner assigner)
+        public PipelineBlock CreatePipeline(int maxDegreeOfParallelism, ChunkManager chunkManager, out NeighborAssigner assigner)
         {
             var multiThreaded = new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = 16 };//maxDegreeOfParallelism};
             var singleThreaded = new ExecutionDataflowBlockOptions {MaxDegreeOfParallelism = 1, };
            
-            var terrainGenerator = 
-                new TransformPipelineBlock<Chunk, Chunk>(_terrainGenerator.Process, nameof(TerrainGenerator), multiThreaded);
-            terrainGenerator
+            var pipeline = new ChunkTransformBlock(_terrainGenerator, multiThreaded)
                 .LinkTo(new TransformManyPipelineBlock(_neighborAssigner.Process, singleThreaded)) // 169
                 .LinkTo(new ChunkTransformBlock(_artifactGenerator, singleThreaded))
                 .LinkTo(new DefaultChunkPoolPipelineBlock()) // 165
@@ -41,11 +39,11 @@ namespace AppleCinnamon.Pipeline
                 .LinkTo(new ChunkTransformBlock(_globalFinalizer, singleThreaded))
                 .LinkTo(new DefaultChunkPoolPipelineBlock()) // 157
                 .LinkTo(new ChunkTransformBlock(_chunkDispatcher, multiThreaded))
-                .LinkTo(chunkManager.Finalize);
+                .SinkTo(chunkManager.Finalize);
             
             assigner = _neighborAssigner;
 
-            return terrainGenerator;
+            return pipeline;
         }
     }
     
