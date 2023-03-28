@@ -13,6 +13,8 @@ namespace AppleCinnamon
 {
     public sealed partial class Chunk
     {
+        public readonly List<string> History = new();
+
         public const int SliceHeight = 16;
         public const int SliceArea = WorldSettings.ChunkSize * WorldSettings.ChunkSize * SliceHeight;
 

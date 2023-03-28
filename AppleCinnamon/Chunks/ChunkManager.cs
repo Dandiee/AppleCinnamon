@@ -50,6 +50,11 @@ namespace AppleCinnamon
 
         public void Finalize(Chunk chunk)
         {
+            if (chunk.IsFinalized)
+            {
+
+            }
+
             chunk.IsFinalized = true;
 
             Interlocked.Increment(ref _finalizedChunks);
@@ -61,6 +66,8 @@ namespace AppleCinnamon
             }
 
             Interlocked.Decrement(ref InProcessChunks);
+            chunk.History.Add("Finalized");
+            
         }
 
 

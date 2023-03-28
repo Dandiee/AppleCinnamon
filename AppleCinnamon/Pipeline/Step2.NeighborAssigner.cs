@@ -2,12 +2,15 @@
 using System.Linq;
 using System.Threading;
 using AppleCinnamon.Helper;
+using AppleCinnamon.Pipeline.Context;
 
 namespace AppleCinnamon.Pipeline
 {
-    public sealed class NeighborAssigner
+    public sealed class NeighborAssigner : IChunksTransformer
     {
-        public IEnumerable<Chunk> Process(Chunk chunk)
+        public PipelineBlock Owner { get; set; }
+
+        public IEnumerable<Chunk> TransformMany(Chunk chunk)
         {
             if (chunk.IsTimeToDie)
                 return Enumerable.Empty<Chunk>();
@@ -35,6 +38,9 @@ namespace AppleCinnamon.Pipeline
 
                         if (neighborChunk.Neighbors.All(a => a != null && a.PipelineStep >= 1))
                         {
+                            //if (Owner.PipelineStepIndex < neighborChunk.PipelineStep)
+                            //    continue;
+
                             Interlocked.Increment(ref ChunkManager.InProcessChunks);
                             yield return neighborChunk;
                         }

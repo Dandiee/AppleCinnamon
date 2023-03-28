@@ -8,7 +8,6 @@ namespace AppleCinnamon.Pipeline
     {
         public Chunk Transform(Chunk chunk)
         {
-            // if (Game.Debug) Thread.Sleep(100);
             GlobalVisibilityFinalizer.FinalizeGlobalVisibility(chunk);
             GlobalLightFinalizer.FinalizeGlobalLighting(chunk);
 

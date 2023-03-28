@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Threading;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks.Dataflow;
 using System.Xml.Linq;
 
@@ -10,18 +10,24 @@ namespace AppleCinnamon.Pipeline.Context
 {
     public abstract class PipelineBlock
     {
+        public string Name { get; private set; }
         public PipelineBlock Head { get; protected set; }
         public int PipelineStepIndex { get; protected set; }
         public readonly List<IMonitoredBlock> MonitoredBlocks = new();
 
         public IPropagatorBlock<Chunk, Chunk> TransformBlock { get; protected set; }
 
+        protected PipelineBlock(string name)
+        {
+            Name = name;
+        }
+
         public PipelineBlock LinkTo(PipelineBlock next)
         {
             TransformBlock.LinkTo(next.TransformBlock);
             next.PipelineStepIndex = PipelineStepIndex + 1;
             next.Head = Head ?? next.Head ?? this;
-
+            next.Name += $" ({next.PipelineStepIndex})";
             if (this is IMonitoredBlock monitoredBlock)
             {
                 next.Head.MonitoredBlocks.Add(monitoredBlock);
@@ -30,12 +36,12 @@ namespace AppleCinnamon.Pipeline.Context
             return next;
         }
 
-        public PipelineBlock LinkTo(Action<Chunk> action)
+        public PipelineBlock SinkTo(Action<Chunk> action)
         {
-            var actionBlock = new ActionBlock<Chunk>(action);
-            TransformBlock.LinkTo(actionBlock);
+            TransformBlock.LinkTo(new ActionBlock<Chunk>(action));
             return Head;
         }
+
     }
 
     public interface IMonitoredBlock
@@ -46,14 +52,13 @@ namespace AppleCinnamon.Pipeline.Context
 
     public class ChunkTransformBlock : PipelineBlock, IMonitoredBlock
     {
-        public string Name { get; }
         private readonly Func<Chunk, Chunk> _func;
         private readonly Stopwatch _stopwatch;
         public long ElapsedTime => _stopwatch.ElapsedMilliseconds;
 
         public ChunkTransformBlock(IChunkTransformer transformer, ExecutionDataflowBlockOptions options)
+         : base(transformer.GetType().Name)
         {
-            Name = transformer.GetType().Name;
             _func = transformer.Transform;
             TransformBlock = new TransformBlock<Chunk, Chunk>(Process, options);
             _stopwatch = new Stopwatch();
@@ -61,10 +66,13 @@ namespace AppleCinnamon.Pipeline.Context
 
         protected virtual Chunk Process(Chunk input)
         {
-            if (PipelineStepIndex > 0 && input.PipelineStep != PipelineStepIndex - 1)
+            if (PipelineStepIndex > 0 && input.PipelineStep >= PipelineStepIndex)
             {
+                input.History.Add($"Shortcut from: {Name}");
                 return input;
             }
+
+            input.History.Add(Name);
 
             input.PipelineStep++;
 
@@ -77,59 +85,26 @@ namespace AppleCinnamon.Pipeline.Context
 
     public class TransformManyPipelineBlock : PipelineBlock
     {
-        protected Func<Chunk, IEnumerable<Chunk>> Func;
+        protected Func<Chunk, IEnumerable<Chunk>> Callback;
 
-        protected TransformManyPipelineBlock() { }
-        public TransformManyPipelineBlock(Func<Chunk, IEnumerable<Chunk>> func, ExecutionDataflowBlockOptions options)
+        public TransformManyPipelineBlock(IChunksTransformer transformer, ExecutionDataflowBlockOptions options)
+         : base(transformer.GetType().Name)
         {
-            Func = func;
+            Callback = transformer.TransformMany;
+            transformer.Owner = this;
             TransformBlock = new TransformManyBlock<Chunk, Chunk>(Process, options);
         }
 
         protected IEnumerable<Chunk> Process(Chunk chunk)
         {
-            // a disposed and reloaded neighbor may re-proc an already processed chunk
-            // in which case we dont want to demote the pipeline step
             if (chunk.PipelineStep == PipelineStepIndex - 1)
             {
                 chunk.PipelineStep++;
             }
 
-            var result = Func(chunk);
-            return result;
-        }
-    }
+            chunk.History.Add(Name);
 
-    public class DefaultChunkPoolPipelineBlock : TransformManyPipelineBlock
-    {
-        public DefaultChunkPoolPipelineBlock()
-        {
-            Func = Pool;
-            TransformBlock = new TransformManyBlock<Chunk, Chunk>(Process, new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = 1 });
-        }
-
-        public IEnumerable<Chunk> Pool(Chunk chunk)
-        {
-            // chunk reached a pool => one less chunk in transformation
-            Interlocked.Decrement(ref ChunkManager.InProcessChunks);
-
-            // massacre condition
-            ChunkManager.WaitForDeletionEvent.WaitOne(); 
-
-            if (chunk.PipelineStep == PipelineStepIndex - 1)
-            {
-                chunk.PipelineStep++;
-            }
-
-            foreach (var neighbor in chunk.Neighbors)
-            {
-                if (neighbor != null && !neighbor.Neighbors.Any(s => s == null || s.PipelineStep < chunk.PipelineStep))
-                {
-                    // if a chunk is emitted from the pool its back in the transformation
-                    Interlocked.Increment(ref ChunkManager.InProcessChunks);
-                    yield return neighbor;
-                }
-            }
+            return Callback(chunk);
         }
     }
 }

@@ -73,16 +73,22 @@ namespace AppleCinnamon
 
         public static readonly RawColor4[] ColorsBySteps = new[]
         {
-            Color.Orange.ToRawColor4(), // terraing gen
-            Color.Blue.ToRawColor4(), // neighbor assigner
-            Color.GreenYellow.ToRawColor4(), // artifact gen
-            Color.Red.ToRawColor4(), // pool
-            Color.Green.ToRawColor4(), // localizer
-            Color.Black.ToRawColor4(), // pool
-            Color.Pink.ToRawColor4(), // globalizer
+            Color.White.ToRawColor4(), // terraing gen
+
+            Color.LightGray.ToRawColor4(), // neighbor assigner
+            Color.Yellow.ToRawColor4(), // artifact gen
+            
             Color.Gray.ToRawColor4(), // pool
-            Color.LightBlue.ToRawColor4(), // dispatcher
-            Color.Bisque.ToRawColor4(), // finalized
+            Color.Red.ToRawColor4(), // localizer
+            
+            Color.DarkGray.ToRawColor4(), // pool
+            Color.Green.ToRawColor4(), // globalizer
+            
+            Color.Black.ToRawColor4(), // pool
+
+            Color.Blue.ToRawColor4(), // dispatcher
+            Color.Yellow.ToRawColor4(), // finalized
+
             //Color.Black.ToRawColor4(),
             //Color.Wheat.ToRawColor4(),
             //Color.Wheat.ToRawColor4(),
@@ -98,6 +104,7 @@ namespace AppleCinnamon
         {
             var center = chunk.Center2d / 2f + Offset;
             var color =  RenderedColor;
+           
             if (!chunk.IsRendered)
             {
                 color = ColorsBySteps[chunk.PipelineStep];
@@ -105,7 +112,7 @@ namespace AppleCinnamon
 
             if (chunk.IsMarkedForDelete)
             {
-                color = new RawColor4(1, 1, 1, 1);
+                color = Color.DarkRed.ToRawColor4();
             }
 
             if (chunk.ChunkIndex == currentChunkIndex)

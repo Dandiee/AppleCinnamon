@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Diagnostics;
-using System.Threading;
 using AppleCinnamon.Helper;
 using AppleCinnamon.Settings;
-using Microsoft.VisualBasic;
-using SharpDX;
 
 namespace AppleCinnamon.Pipeline
 {

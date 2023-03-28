@@ -25,25 +25,21 @@ namespace AppleCinnamon.Pipeline
             _chunkDispatcher = new ChunkDispatcher(device);
         }
 
-        public PipelineBlock CreatePipeline(int maxDegreeOfParallelism, ChunkManager chunkManager, out NeighborAssigner assigner)
+        public PipelineBlock CreatePipeline(int maxDegreeOfParallelism, ChunkManager chunkManager)
         {
-            var multiThreaded = new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = 16 };//maxDegreeOfParallelism};
-            var singleThreaded = new ExecutionDataflowBlockOptions {MaxDegreeOfParallelism = 1, };
+            var mt = new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = 16 };//maxDegreeOfParallelism};
+            var st = new ExecutionDataflowBlockOptions {MaxDegreeOfParallelism = 1, };
            
-            var pipeline = new ChunkTransformBlock(_terrainGenerator, multiThreaded)
-                .LinkTo(new TransformManyPipelineBlock(_neighborAssigner.Process, singleThreaded)) // 169
-                .LinkTo(new ChunkTransformBlock(_artifactGenerator, singleThreaded))
-                .LinkTo(new DefaultChunkPoolPipelineBlock()) // 165
-                .LinkTo(new ChunkTransformBlock(_localFinalizer, multiThreaded))
-                .LinkTo(new DefaultChunkPoolPipelineBlock()) // 161
-                .LinkTo(new ChunkTransformBlock(_globalFinalizer, singleThreaded))
-                .LinkTo(new DefaultChunkPoolPipelineBlock()) // 157
-                .LinkTo(new ChunkTransformBlock(_chunkDispatcher, multiThreaded))
+            return      new ChunkTransformBlock(_terrainGenerator, mt)
+                .LinkTo(new TransformManyPipelineBlock(_neighborAssigner, st)) // 169
+                .LinkTo(new ChunkTransformBlock(_artifactGenerator, st))
+                .LinkTo(new TransformManyPipelineBlock(new Pool(), st)) // 165
+                .LinkTo(new ChunkTransformBlock(_localFinalizer, mt))
+                .LinkTo(new TransformManyPipelineBlock(new Pool(), st)) // 165
+                .LinkTo(new ChunkTransformBlock(_globalFinalizer, st))
+                .LinkTo(new TransformManyPipelineBlock(new Pool(), st)) // 165
+                .LinkTo(new ChunkTransformBlock(_chunkDispatcher, mt))
                 .SinkTo(chunkManager.Finalize);
-            
-            assigner = _neighborAssigner;
-
-            return pipeline;
         }
     }
     
