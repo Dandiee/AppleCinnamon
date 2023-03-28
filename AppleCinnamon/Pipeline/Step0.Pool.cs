@@ -26,11 +26,14 @@ namespace AppleCinnamon.Pipeline
 
             foreach (var neighbor in chunk.Neighbors)
             {
-                if (neighbor != null && !neighbor.Neighbors.Any(s => s == null || s.PipelineStep < chunk.PipelineStep))
+                if (neighbor.PipelineStep == Owner.PipelineStepIndex)
                 {
-                    // if a chunk is emitted from the pool its back in the transformation
-                    Interlocked.Increment(ref ChunkManager.InProcessChunks);
-                    yield return neighbor;
+                    if (neighbor != null && !neighbor.Neighbors.Any(s => s == null || s.PipelineStep < chunk.PipelineStep))
+                    {
+                        // if a chunk is emitted from the pool its back in the transformation
+                        Interlocked.Increment(ref ChunkManager.InProcessChunks);
+                        yield return neighbor;
+                    }
                 }
             }
         }

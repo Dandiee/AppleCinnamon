@@ -37,12 +37,14 @@ namespace AppleCinnamon
         public Vector3 Center { get; private set; }
         public Vector2 Center2d { get; private set; }
         public bool IsRendered { get; set; }
-        public int PipelineStep { get; set; }
+        public int PipelineStep;
         public bool IsFinalized { get; set; }
         public int NumberOfResurrection { get; set; }
 
         public Chunk Resurrect(Int2 chunkIndex)
         {
+            //History.Clear();
+            History.Add("Resurrected");
             Neighbors = new Chunk[9];
             //Voxels = Array.Empty<Voxel>();
             BuildingContext.Clear();

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks.Dataflow;
 using System.Xml.Linq;
 
@@ -74,7 +75,7 @@ namespace AppleCinnamon.Pipeline.Context
 
             input.History.Add(Name);
 
-            input.PipelineStep++;
+            Interlocked.Increment(ref input.PipelineStep);
 
             _stopwatch.Start();
             var result = _func(input);
@@ -99,7 +100,7 @@ namespace AppleCinnamon.Pipeline.Context
         {
             if (chunk.PipelineStep == PipelineStepIndex - 1)
             {
-                chunk.PipelineStep++;
+                Interlocked.Increment(ref chunk.PipelineStep);
             }
 
             chunk.History.Add(Name);

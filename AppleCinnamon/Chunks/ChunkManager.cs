@@ -67,7 +67,7 @@ namespace AppleCinnamon
 
             Interlocked.Decrement(ref InProcessChunks);
             chunk.History.Add("Finalized");
-            
+            chunk.PipelineStep++;
         }
 
 
@@ -132,6 +132,7 @@ namespace AppleCinnamon
                 chunk.Value.Kill(_graphics.Device);
                 Chunks.Remove(chunk.Key, out var _);
                 Graveyard.Add(chunk.Value);
+                NeighborAssigner.EmittedChunks.Remove(chunk.Key);
             }
 
             BagOfDeath.Clear();

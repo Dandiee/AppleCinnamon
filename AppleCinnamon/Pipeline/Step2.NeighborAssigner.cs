@@ -8,6 +8,8 @@ namespace AppleCinnamon.Pipeline
 {
     public sealed class NeighborAssigner : IChunksTransformer
     {
+        public static readonly HashSet<Int2> EmittedChunks = new();
+
         public PipelineBlock Owner { get; set; }
 
         public IEnumerable<Chunk> TransformMany(Chunk chunk)
@@ -36,22 +38,28 @@ namespace AppleCinnamon.Pipeline
                         chunk.SetNeighbor(i, j, neighborChunk);
                         neighborChunk.SetNeighbor(i * -1, j * -1, chunk);
 
-                        if (neighborChunk.Neighbors.All(a => a != null && a.PipelineStep >= 1))
-                        {
-                            //if (Owner.PipelineStepIndex < neighborChunk.PipelineStep)
-                            //    continue;
+                        if (EmittedChunks.Contains(neighborChunk.ChunkIndex))
+                            continue;
 
-                            Interlocked.Increment(ref ChunkManager.InProcessChunks);
-                            yield return neighborChunk;
+                        if (neighborChunk.Neighbors.All(a => a != null && a.PipelineStep >= Owner.PipelineStepIndex))
+                        {
+                            if (EmittedChunks.Add(neighborChunk.ChunkIndex))
+                            {
+                                Interlocked.Increment(ref ChunkManager.InProcessChunks);
+                                yield return neighborChunk;
+                            }
                         }
                     }
                 }
             }
 
-            if (chunk.Neighbors.All(a => a != null && a.PipelineStep >= 1))
+            if (chunk.Neighbors.All(a => a != null && a.PipelineStep >= Owner.PipelineStepIndex))
             {
-                Interlocked.Increment(ref ChunkManager.InProcessChunks);
-                yield return chunk;
+                if (EmittedChunks.Add(chunk.ChunkIndex))
+                {
+                    Interlocked.Increment(ref ChunkManager.InProcessChunks);
+                    yield return chunk;
+                }
             }
         }
     }
