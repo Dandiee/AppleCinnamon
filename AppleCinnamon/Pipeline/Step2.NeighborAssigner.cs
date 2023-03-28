@@ -9,7 +9,8 @@ namespace AppleCinnamon.Pipeline
     {
         public IEnumerable<Chunk> Process(Chunk chunk)
         {
-            // if (Game.Debug) Thread.Sleep(100);
+            if (chunk.IsTimeToDie)
+                return Enumerable.Empty<Chunk>();
 
             chunk.SetNeighbor(0, 0, chunk);
             var chunks = GetFinishedChunks(chunk).ToList();

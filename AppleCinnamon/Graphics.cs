@@ -42,6 +42,10 @@ namespace AppleCinnamon
 
         public Graphics()
         {
+            Configuration.EnableReleaseOnFinalizer = true;
+            
+            //Configuration.EnableObjectTracking = true;
+
             RenderForm = new RenderForm("Apple & Cinnamon")
             {
                 Width = (int)(Screen.PrimaryScreen.Bounds.Width * ScreenSizeScale),
@@ -61,6 +65,7 @@ namespace AppleCinnamon
             }, out var device, out var swapChain);
 
             Device = device;
+            
             SwapChain = swapChain;
 
             D2dFactory = new Factory();
@@ -93,10 +98,14 @@ namespace AppleCinnamon
 
             DirectWrite = new SharpDX.DirectWrite.Factory();
             Device.ImmediateContext.Rasterizer.SetViewport(new Viewport(0, 0, RenderForm.ClientSize.Width, RenderForm.ClientSize.Height, 0.0f, 1.0f));
+            
         }
 
         public void Draw(Action drawActions)
         {
+            //Device.ImmediateContext.ClearState();
+            //Device.ImmediateContext.Flush();
+            
             Device.ImmediateContext.OutputMerger.SetTargets(DepthStencilView, RenderTargetView);
             Device.ImmediateContext.ClearDepthStencilView(DepthStencilView, DepthStencilClearFlags.Depth, 1.0f, 0);
             Device.ImmediateContext.ClearRenderTargetView(RenderTargetView, Color.CornflowerBlue);
@@ -104,6 +113,7 @@ namespace AppleCinnamon
             drawActions();
             RenderTarget2D.EndDraw();
             SwapChain.Present(0, PresentFlags.None);
+            
         }
     }
 }

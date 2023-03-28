@@ -7,6 +7,7 @@ using System.Threading;
 using AppleCinnamon.Helper;
 using AppleCinnamon.Settings;
 using SharpDX;
+using SharpDX.Direct3D11;
 
 namespace AppleCinnamon
 {
@@ -121,9 +122,9 @@ namespace AppleCinnamon
         }
 
 
-        public void Kill()
+        public void Kill(Device device)
         {
-            Buffers?.Dispose();
+            Buffers?.Dispose(device);
             Buffers = null;
 
             if (Neighbors == null)

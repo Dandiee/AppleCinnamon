@@ -1,5 +1,9 @@
 ﻿using System;
+using System.Diagnostics;
+using System.Windows.Forms;
 using AppleCinnamon.Vertices;
+using SharpDX;
+using SharpDX.Direct2D1;
 using SharpDX.Direct3D11;
 using SharpDX.DXGI;
 using Buffer = SharpDX.Direct3D11.Buffer;
@@ -7,14 +11,14 @@ using Device = SharpDX.Direct3D11.Device;
 
 namespace AppleCinnamon
 {
-    public sealed class BufferDefinition<TVertex> : IDisposable
+    public sealed class BufferDefinition<TVertex>
         where TVertex : struct, IVertex
     {
         public readonly bool IsValid;
         public readonly int IndexCount;
-        public readonly Buffer VertexBuffer;
-        public readonly Buffer IndexBuffer;
-        public readonly VertexBufferBinding Binding;
+        public Buffer VertexBuffer;
+        public Buffer IndexBuffer;
+        public VertexBufferBinding Binding;
 
         public BufferDefinition(Device device, TVertex[] vertices, uint[] indexes)
         {
@@ -35,10 +39,32 @@ namespace AppleCinnamon
             }
         }
 
-        public void Dispose()
+        public void Dispose(Device device)
         {
-            VertexBuffer?.Dispose();
-            IndexBuffer?.Dispose();
+            Binding = default;
+
+            Utilities.Dispose(ref IndexBuffer);
+            Utilities.Dispose(ref VertexBuffer);
+            //device.ImmediateContext.ClearState();
+            //device.ImmediateContext.Flush();
+            //IndexBuffer?.Dispose(device);
+            //VertexBuffer?.Dispose(device);
+            
+            IndexBuffer = null;
+            VertexBuffer = null;
+
+            Asd.counter2++;
         }
+
+        ~BufferDefinition()
+        {
+            
+        }
+    }
+
+    public static class Asd
+    {
+        public static int counter1 = 0;
+        public static int counter2 = 0;
     }
 }

@@ -1,9 +1,10 @@
 ﻿using System;
 using AppleCinnamon.Vertices;
+using SharpDX.Direct3D11;
 
 namespace AppleCinnamon
 {
-    public sealed class ChunkBuffers : IDisposable
+    public sealed class ChunkBuffers
     {
         public BufferDefinition<VertexSolidBlock> BufferSolid;
         public BufferDefinition<VertexWater> BufferWater;
@@ -16,11 +17,11 @@ namespace AppleCinnamon
         //    BufferSprite = bufferSprite;
         //}
 
-        public void Dispose()
+        public void Dispose(Device device)
         {
-            BufferSolid?.Dispose();
-            BufferWater?.Dispose();
-            BufferSprite?.Dispose();
+            BufferSolid?.Dispose(device);
+            BufferWater?.Dispose(device);
+            BufferSprite?.Dispose(device);
 
             BufferWater = null;
             BufferSolid = null;

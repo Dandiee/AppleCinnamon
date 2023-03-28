@@ -100,22 +100,24 @@ namespace AppleCinnamon
 
         private string BuildRightText(ChunkManager chunkManager, Game game)
         {
-            return $"Chunk size {WorldSettings.ChunkSize}, View distance: {Game.ViewDistance}, Slice: {Chunk.SliceHeight}\r\n" +
-                   //string.Join("\r\n", chunkManager.PipelinePerformance.Select(s => $"{s.Key}: {s.Value:N0} ms")) + "\r\n" + 
-                   GetPipelineMetrics(chunkManager) +"\r\n" +
-                   //$"Total pipeline time: {chunkManager.PipelinePerformance.Values.Sum():N0} ms\r\n" + 
-                   //$"Boot time: {chunkManager.BootTime.TotalMilliseconds:N0} ms\r\n" + 
-                   $"Average render time: {game.AverageRenderTime:F2}\r\n" +
-                   $"Peek render time: {game.PeekRenderTime:F2}\r\n" +
-                   $"Average FPS: {game.AverageFps:F2}\r\n" + 
-                   $"SUN: {Hofman.SunDirection:F2}\r\n" +
-                   $"INTENSITY: {Hofman.SunlightFactor:F2}\r\n" +
-                   $"InProcChunks: {ChunkManager.InProcessChunks}\r\n" +
-                   $"Death queue: {ChunkManager.BagOfDeath.Count}\r\n" + 
-                   $"Graveyard: {ChunkManager.Graveyard.Count}\r\n" +
-                   $"Chunks created: {ChunkManager.CreatedChunkInstances}\r\n" + 
-                   $"Chunks resurrected: {ChunkManager.ChunksResurrected}\r\n" +
-                   $"Chunks: {ChunkManager.Chunks.Count}\r\n";
+            return
+                $"Chunk size {WorldSettings.ChunkSize}, View distance: {Game.ViewDistance}, Slice: {Chunk.SliceHeight}\r\n" +
+                //string.Join("\r\n", chunkManager.PipelinePerformance.Select(s => $"{s.Key}: {s.Value:N0} ms")) + "\r\n" + 
+                GetPipelineMetrics(chunkManager) + "\r\n" +
+                //$"Total pipeline time: {chunkManager.PipelinePerformance.Values.Sum():N0} ms\r\n" + 
+                //$"Boot time: {chunkManager.BootTime.TotalMilliseconds:N0} ms\r\n" + 
+                $"Average render time: {game.AverageRenderTime:F2}\r\n" +
+                $"Peek render time: {game.PeekRenderTime:F2}\r\n" +
+                $"Average FPS: {game.AverageFps:F2}\r\n" +
+                $"SUN: {Hofman.SunDirection:F2}\r\n" +
+                $"INTENSITY: {Hofman.SunlightFactor:F2}\r\n" +
+                $"InProcChunks: {ChunkManager.InProcessChunks}\r\n" +
+                $"Death queue: {ChunkManager.BagOfDeath.Count}\r\n" +
+                $"Graveyard: {ChunkManager.Graveyard.Count}\r\n" +
+                $"Chunks created: {ChunkManager.CreatedChunkInstances}\r\n" +
+                $"Chunks resurrected: {ChunkManager.ChunksResurrected}\r\n" +
+                $"Chunks: {ChunkManager.Chunks.Count}\r\n";
+                   //$"{SharpDX.Diagnostics.ObjectTracker.ReportActiveObjects()}\r\n";
         }
 
         public void Draw(

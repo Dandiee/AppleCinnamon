@@ -20,19 +20,19 @@ namespace AppleCinnamon
 
                 if (!WorldSettings.IsChangeTrackingEnabled || chunk.BuildingContext.IsSolidChanged)
                 {
-                    chunk.Buffers.BufferSolid?.Dispose();
+                    chunk.Buffers.BufferSolid?.Dispose(device);
                     chunk.Buffers.BufferSolid = BuildSolid(chunk, device);
                 }
 
                 if (!WorldSettings.IsChangeTrackingEnabled || chunk.BuildingContext.IsWaterChanged)
                 {
-                    chunk.Buffers.BufferWater?.Dispose();
+                    chunk.Buffers.BufferWater?.Dispose(device);
                     chunk.Buffers.BufferWater = BuildWater(chunk, device);
                 }
 
                 if (!WorldSettings.IsChangeTrackingEnabled || chunk.BuildingContext.IsSpriteChanged)
                 {
-                    chunk.Buffers.BufferSprite?.Dispose();
+                    chunk.Buffers.BufferSprite?.Dispose(device);
                     chunk.Buffers.BufferSprite = BuildSprite(chunk, device);
                 }
                 

@@ -12,12 +12,14 @@ using AppleCinnamon.Pipeline;
 using AppleCinnamon.Pipeline.Context;
 using AppleCinnamon.Settings;
 using SharpDX;
+using SharpDX.Direct3D11;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.ProgressBar;
 
 namespace AppleCinnamon
 {
     public sealed partial class ChunkManager
     {
+        private readonly Graphics _graphics;
         public static readonly int InitialDegreeOfParallelism = 2;//Environment.ProcessorCount;
         private int _finalizedChunks;
         public bool IsInitialized { get; private set; }
@@ -32,6 +34,7 @@ namespace AppleCinnamon
 
         public ChunkManager(Graphics graphics)
         {
+            _graphics = graphics;
             _chunkDrawer = new ChunkDrawer(graphics.Device);
             _chunksToDraw = new List<Chunk>();
             Pipeline = new PipelineProvider(graphics.Device).CreatePipeline(InitialDegreeOfParallelism, this, out _neighborAssignerPipelineBlock);
@@ -62,14 +65,14 @@ namespace AppleCinnamon
         }
 
 
-        public void Update(Camera camera, World world)
+        public void Update(Camera camera, World world, Device device)
         {
             if (IsInitialized)
             {
                 _chunkDrawer.Update(camera, world);
                 var currentChunkIndex = new Int2((int)camera.Position.X / WorldSettings.ChunkSize, (int)camera.Position.Z / WorldSettings.ChunkSize);
 
-                UpdateChunks(camera);
+                UpdateChunks(camera, device);
                 QueueChunksByIndex(currentChunkIndex);
             }
         }
@@ -81,7 +84,7 @@ namespace AppleCinnamon
         public static int CreatedChunkInstances = 0;
         public static int ChunksResurrected = 0;
 
-        private void UpdateChunks(Camera camera)
+        private void UpdateChunks(Camera camera, Device device)
         {
             var now = DateTime.Now;
             _chunksToDraw.Clear();
@@ -110,18 +113,17 @@ namespace AppleCinnamon
                 {
                     WaitForDeletionEvent.Reset(); // suspend all pipeline process
                     Massacre();
+                    device.ImmediateContext.Flush();
                     WaitForDeletionEvent.Set(); // let em go
                 }
             }
-
-            
         }
 
         private void Massacre()
         {
             foreach (var chunk in BagOfDeath)
             {
-                chunk.Value.Kill();
+                chunk.Value.Kill(_graphics.Device);
                 Chunks.Remove(chunk.Key, out var _);
                 Graveyard.Add(chunk.Value);
             }

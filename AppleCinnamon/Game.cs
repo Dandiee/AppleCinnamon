@@ -5,6 +5,7 @@ using System.Windows.Forms;
 using AppleCinnamon.Helper;
 using AppleCinnamon.Vertices;
 using SharpDX;
+using SharpDX.Direct3D11;
 using Point = System.Drawing.Point;
 
 namespace AppleCinnamon
@@ -15,7 +16,7 @@ namespace AppleCinnamon
 
         public const int ViewDistance = 16;
         public const int NumberOfPools = 4;
-        public static readonly TimeSpan ChunkDespawnCooldown = TimeSpan.FromSeconds(1);
+        public static readonly TimeSpan ChunkDespawnCooldown = TimeSpan.FromMilliseconds(10);
         public static bool IsBackFaceCullingEnabled { get; set; }
 
         public static bool IsViewFrustumCullingEnabled { get; set; } = true;
@@ -81,7 +82,7 @@ namespace AppleCinnamon
                 }
 
 
-                Update(new GameTime(TimeSpan.Zero, TimeSpan.FromMilliseconds(Math.Min(AverageRenderTime, 6))));
+                Update(new GameTime(TimeSpan.Zero, TimeSpan.FromMilliseconds(Math.Min(AverageRenderTime, 6))), _graphics.Device);
                 _graphics.Draw(() =>
                 {
 
@@ -115,13 +116,13 @@ namespace AppleCinnamon
         }
 
 
-        private void Update(GameTime gameTime)
+        private void Update(GameTime gameTime, Device device)
         {
             _camera.Update(gameTime, _chunkManager, World);
             if (Game.Debug)
             {
                 _skyDome.Update(_camera, World);
-                _chunkManager.Update(_camera, World);
+                _chunkManager.Update(_camera, World, device);
             }
         }
 
