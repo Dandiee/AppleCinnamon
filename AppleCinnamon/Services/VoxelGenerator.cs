@@ -2,7 +2,7 @@
 using AppleCinnamon.Settings;
 using SimplexNoise;
 
-namespace AppleCinnamon.Pipeline
+namespace AppleCinnamon
 {
 
     // public sealed class VoxelGenerator

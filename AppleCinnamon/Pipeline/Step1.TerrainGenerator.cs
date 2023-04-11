@@ -1,10 +1,11 @@
 ﻿using System;
+using System.Threading;
 using AppleCinnamon.Helper;
 using AppleCinnamon.Settings;
 
-namespace AppleCinnamon.Pipeline
+namespace AppleCinnamon
 {
-    public sealed class TerrainGenerator : IChunkTransformer
+    public sealed class TerrainGenerator
     {
         private readonly DaniNoise _noise;
         private static readonly DaniNoise _waterNoise = new(WorldSettings.RiverNoiseOptions);
@@ -94,7 +95,6 @@ namespace AppleCinnamon.Pipeline
                 }
             }
 
-            
             return chunk;
         }
     }

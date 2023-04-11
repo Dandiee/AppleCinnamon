@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using AppleCinnamon.Helper;
 using AppleCinnamon.Settings;
 using SharpDX;
@@ -31,11 +33,12 @@ namespace AppleCinnamon
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)] public Int3 FromFlatIndex(int flatIndex) => FromFlatIndex(flatIndex, CurrentHeight);
         [MethodImpl(MethodImplOptions.AggressiveInlining)] public void UpdateVoxelLighting(Int3 ijk, Voxel voxel, VoxelDefinition definition) => UpdateVoxelLighting(ijk.X, ijk.Y, ijk.Z, voxel, definition);
-        [MethodImpl(MethodImplOptions.AggressiveInlining)] public void UpdateVoxelLighting(int i, int j, int k, Voxel voxel, VoxelDefinition definition)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void UpdateVoxelLighting(int i, int j, int k, Voxel voxel, VoxelDefinition definition)
         {
             BuildingContext.SetAllChanged();
 
-            foreach(var chunk in GetNeighborChunkIndexes(i, k))
+            foreach (var chunk in GetNeighborChunkIndexes(i, k))
                 chunk.BuildingContext.SetAllChanged();
 
 
@@ -44,22 +47,22 @@ namespace AppleCinnamon
 
         public IEnumerable<Chunk> GetNeighborChunkIndexes(int i, int j)
         {
-            if (i == 0) 
+            if (i == 0)
                 yield return GetNeighbor(-1, 0);
-            if (i == WorldSettings.ChunkSize - 1) 
+            if (i == WorldSettings.ChunkSize - 1)
                 yield return GetNeighbor(1, 0);
-            if (j == 0) 
+            if (j == 0)
                 yield return GetNeighbor(0, -1);
-            if (j == WorldSettings.ChunkSize - 1) 
+            if (j == WorldSettings.ChunkSize - 1)
                 yield return GetNeighbor(0, 1);
-            
-            if (i == 0 && j == 0) 
+
+            if (i == 0 && j == 0)
                 yield return GetNeighbor(-1, -1);
-            if (i == WorldSettings.ChunkSize - 1 && j == WorldSettings.ChunkSize - 1) 
+            if (i == WorldSettings.ChunkSize - 1 && j == WorldSettings.ChunkSize - 1)
                 yield return GetNeighbor(1, 1);
-            if (i == 0 && j == WorldSettings.ChunkSize - 1) 
+            if (i == 0 && j == WorldSettings.ChunkSize - 1)
                 yield return GetNeighbor(-1, 1);
-            if (i == WorldSettings.ChunkSize - 1 && j == 0) 
+            if (i == WorldSettings.ChunkSize - 1 && j == 0)
                 yield return GetNeighbor(1, -1);
         }
 
@@ -121,8 +124,8 @@ namespace AppleCinnamon
 
         public static int GetChunkFlatIndex(int i, int j) => 3 * i + j + 4;
         public Chunk GetNeighbor(int i, int j) => Neighbors[GetChunkFlatIndex(i, j)];
-        public void SetNeighbor(int i, int j, Chunk neighborChunk) => Neighbors[GetChunkFlatIndex(i, j)] = neighborChunk;
 
+        public void SetNeighbor(int i, int j, Chunk neighborChunk) => Neighbors[GetChunkFlatIndex(i, j)] = neighborChunk;
         private static int ConvertFlatIndex(int originalFlatIndex, int originalHeight, int targetHeight)
         {
             var oldIndex = FromFlatIndex(originalFlatIndex, originalHeight);
@@ -154,6 +157,6 @@ namespace AppleCinnamon
             Voxels[flatIndex] = newVoxel;
         }
 
-        
+
     }
 }

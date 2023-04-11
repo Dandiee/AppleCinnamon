@@ -3,9 +3,9 @@ using System.Threading;
 using AppleCinnamon.Services;
 using AppleCinnamon.Settings;
 
-namespace AppleCinnamon.Pipeline
+namespace AppleCinnamon
 {
-    public sealed class ArtifactGenerator : IChunkTransformer
+    public sealed class ArtifactGenerator
     {
         private static readonly VoxelDefinition[] FlowersAndSuch = 
         {

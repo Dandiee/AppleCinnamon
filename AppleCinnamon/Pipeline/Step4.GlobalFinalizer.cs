@@ -1,10 +1,6 @@
-﻿using AppleCinnamon.Pipeline.Context;
-using SharpDX.Mathematics.Interop;
-using System.Threading;
-
-namespace AppleCinnamon.Pipeline
+﻿namespace AppleCinnamon
 {
-    public sealed class GlobalFinalizer : IChunkTransformer
+    public sealed class GlobalFinalizer
     {
         public Chunk Transform(Chunk chunk)
         {

@@ -1,8 +1,6 @@
 ﻿using System.Linq;
 using AppleCinnamon.Extensions;
 using AppleCinnamon.Helper;
-using AppleCinnamon.Pipeline;
-using AppleCinnamon.Pipeline.Context;
 using InlineIL;
 using SharpDX;
 using SharpDX.Direct2D1;
@@ -87,7 +85,7 @@ namespace AppleCinnamon
             Color.Black.ToRawColor4(), // pool
 
             Color.Blue.ToRawColor4(), // dispatcher
-            Color.Yellow.ToRawColor4(), // finalized
+            Color.Purple.ToRawColor4(), // finalized
 
             //Color.Black.ToRawColor4(),
             //Color.Wheat.ToRawColor4(),
@@ -107,7 +105,7 @@ namespace AppleCinnamon
            
             if (!chunk.IsRendered)
             {
-                color = ColorsBySteps[chunk.PipelineStep];
+                color = ColorsBySteps[chunk.Stage];
             }
 
             if (chunk.IsMarkedForDelete)

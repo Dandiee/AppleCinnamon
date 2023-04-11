@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AppleCinnamon.Helper;
-using AppleCinnamon.Pipeline;
 using AppleCinnamon.Settings;
 using SharpDX;
 
@@ -27,6 +26,8 @@ namespace AppleCinnamon
 
         public void SetVoxel(Int3 absoluteIndex, byte voxel)
         {
+            ChunkManager.NumberOfChanges++;
+
             if (_isUpdateInProgress)
             {
                 return;

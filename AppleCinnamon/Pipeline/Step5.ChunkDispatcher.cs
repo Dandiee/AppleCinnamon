@@ -1,9 +1,8 @@
 ﻿using SharpDX.Direct3D11;
-using System.Threading;
 
-namespace AppleCinnamon.Pipeline
+namespace AppleCinnamon
 {
-    public sealed class ChunkDispatcher : IChunkTransformer
+    public sealed class ChunkDispatcher
     {
         private readonly Device _device;
         
@@ -12,10 +11,14 @@ namespace AppleCinnamon.Pipeline
             _device = device;
         }
 
+        public ChunkDispatcher()
+        {
+        }
+
         public Chunk Transform(Chunk chunk)
         {
             // if (Game.Debug) Thread.Sleep(100);
-            ChunkBuilder.BuildChunk(chunk, _device);
+            ChunkBuilder.BuildChunk(chunk, _device ?? Game.Grfx.Device);
             return chunk;
         }
     }

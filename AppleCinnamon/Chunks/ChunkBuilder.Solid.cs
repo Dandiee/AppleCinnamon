@@ -1,7 +1,6 @@
 ﻿using System.Linq;
 using System.Runtime.CompilerServices;
 using AppleCinnamon.Helper;
-using AppleCinnamon.Pipeline;
 using AppleCinnamon.Settings;
 using AppleCinnamon.Vertices;
 using SharpDX;

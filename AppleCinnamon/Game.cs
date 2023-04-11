@@ -46,9 +46,12 @@ namespace AppleCinnamon
         public double AverageFps { get; private set; }
         public World World = new();
 
+        public static Graphics Grfx;
+
         public Game()
         {
             _graphics = new Graphics();
+            Grfx = _graphics;
 
             _crosshair = new Crosshair(_graphics);
             _camera = new Camera(_graphics);
@@ -119,6 +122,10 @@ namespace AppleCinnamon
         private void Update(GameTime gameTime, Device device)
         {
             _camera.Update(gameTime, _chunkManager, World);
+            _chunkManager.CleanUp(device);
+
+
+
             if (Game.Debug)
             {
                 _skyDome.Update(_camera, World);

@@ -1,7 +1,7 @@
 ﻿using System;
 using AppleCinnamon.Settings;
 
-namespace AppleCinnamon.Pipeline
+namespace AppleCinnamon
 {
     public sealed class ImprovedNoise
     {

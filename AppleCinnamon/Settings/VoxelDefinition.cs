@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using AppleCinnamon.Helper;
-using AppleCinnamon.Pipeline;
 using SharpDX;
 
 namespace AppleCinnamon.Settings

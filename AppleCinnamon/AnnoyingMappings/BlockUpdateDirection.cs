@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using AppleCinnamon.Helper;
-using AppleCinnamon.Pipeline;
 using SharpDX;
 
 namespace AppleCinnamon

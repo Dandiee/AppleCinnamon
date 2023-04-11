@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace AppleCinnamon.Pipeline
+namespace AppleCinnamon
 {
     [Flags]
     public enum TransmittanceFlags : byte

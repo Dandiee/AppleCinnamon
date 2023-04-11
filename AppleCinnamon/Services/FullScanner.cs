@@ -1,7 +1,7 @@
 ﻿using AppleCinnamon.Helper;
 using AppleCinnamon.Settings;
 
-namespace AppleCinnamon.Pipeline
+namespace AppleCinnamon
 {
     public static class FullScanner
     {

@@ -1,15 +1,11 @@
 ﻿using System;
-using System.Linq;
-using System.Windows.Forms;
 using AppleCinnamon.Chunks;
 using AppleCinnamon.Helper;
-using AppleCinnamon.Pipeline.Context;
 using AppleCinnamon.Settings;
 using SharpDX;
 using SharpDX.Direct2D1;
 using SharpDX.DirectInput;
 using SharpDX.DirectWrite;
-using SharpDX.DXGI;
 using SharpDX.Mathematics.Interop;
 using TextAlignment = SharpDX.DirectWrite.TextAlignment;
 
@@ -96,7 +92,7 @@ namespace AppleCinnamon
         }
 
         private string GetPipelineMetrics(ChunkManager chunkManager) 
-            => string.Join("\r\n", chunkManager.Pipeline.MonitoredBlocks.Select(block => $"{block.Name}: {block.ElapsedTime:N0}ms"));
+            => "";
 
         private string BuildRightText(ChunkManager chunkManager, Game game)
         {
@@ -111,13 +107,19 @@ namespace AppleCinnamon
                 $"Average FPS: {game.AverageFps:F2}\r\n" +
                 $"SUN: {Hofman.SunDirection:F2}\r\n" +
                 $"INTENSITY: {Hofman.SunlightFactor:F2}\r\n" +
-                $"InProcChunks: {ChunkManager.InProcessChunks}\r\n" +
+                $"In Proc Chunks: {ChunkManager.InProcessChunks}\r\n" +
                 $"Death queue: {ChunkManager.BagOfDeath.Count}\r\n" +
                 $"Graveyard: {ChunkManager.Graveyard.Count}\r\n" +
                 $"Chunks created: {ChunkManager.CreatedChunkInstances}\r\n" +
                 $"Chunks resurrected: {ChunkManager.ChunksResurrected}\r\n" +
-                $"Chunks: {ChunkManager.Chunks.Count}\r\n";
-                   //$"{SharpDX.Diagnostics.ObjectTracker.ReportActiveObjects()}\r\n";
+                $"Chunks: {ChunkManager.Chunks.Count}\r\n" +
+                //$"Suspended: {!ChunkManager.SuspendPipeline.WaitOne(0)}\r\n" +
+                $"Cleanups: {ChunkManager.Cleanups}\r\n" +
+                $"Changes: {ChunkManager.NumberOfChanges}\r\n" +
+                $"Chunk CTOR: {Chunk.CtorCounter}\r\n";
+                //$"AnotherChunkCounter: {ChunkManager.AnotherChunkCounter}\r\n" +
+            //$"Sinked: {ChunkManager.Sinked}\r\n";
+            //$"{SharpDX.Diagnostics.ObjectTracker.ReportActiveObjects()}\r\n";
         }
 
         public void Draw(

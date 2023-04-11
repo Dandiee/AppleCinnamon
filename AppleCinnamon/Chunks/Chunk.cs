@@ -11,8 +11,17 @@ using SharpDX.Direct3D11;
 
 namespace AppleCinnamon
 {
+    public enum ChunkState
+    {
+        New,
+        Finished,
+        Killed
+    }
+
     public sealed partial class Chunk
     {
+        public int Stage;
+        public ChunkState State;
         public readonly List<string> History = new();
 
         public const int SliceHeight = 16;
@@ -33,19 +42,28 @@ namespace AppleCinnamon
         public bool IsTimeToDie { get; set; }
         public DateTime MarkedForDeleteAt { get; set; }
 
+
+
         public ChunkBuffers Buffers { get; set; }
         public Vector3 Center { get; private set; }
         public Vector2 Center2d { get; private set; }
         public bool IsRendered { get; set; }
-        public int PipelineStep;
         public bool IsFinalized { get; set; }
         public int NumberOfResurrection { get; set; }
+        public bool IsSinking = false;
+
+        public static int CtorCounter = 0;
 
         public Chunk Resurrect(Int2 chunkIndex)
         {
             //History.Clear();
             History.Add("Resurrected");
             Neighbors = new Chunk[9];
+            SetNeighbor(0, 0, this);
+
+            Stage = 0;
+            State = ChunkState.New;
+
             //Voxels = Array.Empty<Voxel>();
             BuildingContext.Clear();
             ChunkIndex = chunkIndex;
@@ -53,7 +71,7 @@ namespace AppleCinnamon
             OffsetVector = new Vector3(Offset.X, 0, Offset.Y);
             IsMarkedForDelete = false;
             IsTimeToDie = false;
-            PipelineStep = 0;
+            State = 0;
             IsFinalized = false;
             IsRendered = false;
             NumberOfResurrection++;
@@ -62,7 +80,9 @@ namespace AppleCinnamon
 
         public Chunk(Int2 chunkIndex)
         {
+            Interlocked.Increment(ref CtorCounter);
             Neighbors = new Chunk[9];
+            SetNeighbor(0, 0, this);
             BuildingContext = new ChunkBuildingContext();
             ChunkIndex = chunkIndex;
             Offset = chunkIndex * new Int2(WorldSettings.ChunkSize, WorldSettings.ChunkSize);
@@ -113,7 +133,7 @@ namespace AppleCinnamon
             UpdateBoundingBox();
         }
 
-        
+
 
         public void UpdateBoundingBox()
         {
@@ -151,6 +171,9 @@ namespace AppleCinnamon
             }
 
             Neighbors = null;
+            State = ChunkState.Killed;
+            Stage = 0;
+            History.Add("Killed");
         }
 
         public bool CheckForValidity(Camera camera, DateTime now)

@@ -1,13 +1,10 @@
-﻿using System;
-using System.Linq;
-using System.Threading;
-using AppleCinnamon.Pipeline.Context;
+﻿using System.Linq;
 using AppleCinnamon.Settings;
 using SharpDX;
 
-namespace AppleCinnamon.Pipeline
+namespace AppleCinnamon
 {
-    public sealed class LocalFinalizer : IChunkTransformer
+    public sealed class LocalFinalizer
     {
         public Chunk Transform(Chunk chunk)
         {

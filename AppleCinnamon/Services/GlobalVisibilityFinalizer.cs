@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Linq;
-using AppleCinnamon.Helper;
-using AppleCinnamon.Pipeline.Context;
 
-namespace AppleCinnamon.Pipeline
+namespace AppleCinnamon
 {
     public sealed class GlobalVisibilityFinalizer
     {

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace AppleCinnamon.Pipeline
+namespace AppleCinnamon
 {
     public static class VisibilityFlagExtensions
     {
