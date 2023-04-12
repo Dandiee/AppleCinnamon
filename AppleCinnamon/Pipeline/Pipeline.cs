@@ -1,8 +1,8 @@
 ﻿using AppleCinnamon.Helper;
 using AppleCinnamon.Settings;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
@@ -25,12 +25,15 @@ namespace AppleCinnamon
 
         public PipelineStage[] Stages { get; }
 
+        public TimeSpan TimeSpentInTransform { get; private set; }
 
         private readonly ChunkManager _chunkManager;
+        private readonly ChunkDispatcher _chunkDispatcher;
 
         public Pipeline(ChunkManager chunkManager)
         {
             _chunkManager = chunkManager;
+            _chunkDispatcher = new ChunkDispatcher();
 
             var terrain = new TerrainGenerator(new DaniNoise(WorldSettings.HighMapNoiseOptions));
             var artifact = new ArtifactGenerator();
@@ -84,9 +87,7 @@ namespace AppleCinnamon
 
         private void BuildPipeline()
         {
-            var dispatcher = new ChunkDispatcher();
-
-            Dispatcher = new TransformBlock<Chunk, Chunk>(dispatcher.Transform, new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = MDoP});
+            Dispatcher = new TransformBlock<Chunk, Chunk>(BenchmarkedDispatcher, new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = MDoP});
             FinishBlock = new ActionBlock<Chunk>(_chunkManager.Finalize);
 
             foreach (var stage in Stages)
@@ -151,6 +152,15 @@ namespace AppleCinnamon
                 //stage.ReturnedIndexes.TryRemove(chunkIndex, out var _);
                 stage.ReturnedIndexes2.Remove(chunkIndex);
             }
+        }
+
+        private Chunk BenchmarkedDispatcher(Chunk chunk)
+        {
+            var sw = Stopwatch.StartNew();
+            var result = _chunkDispatcher.Transform(chunk);
+            sw.Stop();
+            TimeSpentInTransform += sw.Elapsed;
+            return result;
         }
     }
 

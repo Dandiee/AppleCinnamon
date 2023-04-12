@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
+using System.Diagnostics;
 using System.Threading.Tasks.Dataflow;
 using AppleCinnamon.Helper;
 
@@ -9,13 +9,16 @@ namespace AppleCinnamon
 {
     public sealed class PipelineStage
     {
+        
         public string Name { get; }
-        public TransformBlock<Chunk, Chunk> Transform { get; set; }
-        public TransformManyBlock<Chunk, Chunk> Staging { get; set; }
 
         public BufferBlock<Chunk> Buffer { get; }
 
-        public PipelineStage Next { get; set; }
+        public TransformBlock<Chunk, Chunk> Transform { get; private set; }
+        public TransformManyBlock<Chunk, Chunk> Staging { get; private set; }
+
+        public PipelineStage Next { get; private set; }
+
 
         private readonly Func<Chunk, Chunk> _transformCallback;
         private readonly Func<Chunk, IEnumerable<Chunk>> _stagingCallback;
@@ -26,6 +29,8 @@ namespace AppleCinnamon
 
         public readonly ConcurrentDictionary<Int2, object> ReturnedIndexes;
         public readonly HashSet<Int2> ReturnedIndexes2;
+
+        public TimeSpan TimeSpentInTransform { get; private set; }
 
         public PipelineStage(
             string name,
@@ -52,7 +57,7 @@ namespace AppleCinnamon
 
         public void CreateBlocks()
         {
-            Transform = new TransformBlock<Chunk, Chunk>(_transformCallback, _transformOptions);
+            Transform = new TransformBlock<Chunk, Chunk>(BenchmarkedTransform, _transformOptions);
             Staging = new TransformManyBlock<Chunk, Chunk>(_stagingCallback);
             _transformToStagingLink = Transform.LinkTo(Staging);
         }
@@ -74,6 +79,15 @@ namespace AppleCinnamon
                     Staging.Post(chunk);
                 }
             }
+        }
+
+        private Chunk BenchmarkedTransform(Chunk chunk)
+        {
+            var sw = Stopwatch.StartNew();
+            var result = _transformCallback(chunk);
+            sw.Stop();
+            TimeSpentInTransform += sw.Elapsed;
+            return result;
         }
     }
 }

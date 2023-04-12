@@ -15,7 +15,6 @@ namespace AppleCinnamon
     public sealed partial class ChunkManager
     {
         public readonly Graphics _graphics;
-        public static readonly int InitialDegreeOfParallelism = 2;//Environment.ProcessorCount;
         private int _finalizedChunks;
         public bool IsInitialized { get; private set; }
 
@@ -80,7 +79,6 @@ namespace AppleCinnamon
         }
 
         public static readonly ConcurrentDictionary<Int2, Chunk> BagOfDeath = new();
-        public static readonly ConcurrentBag<Chunk> Graveyard = new();
         public static volatile int InProcessChunks = 0;
         //public static volatile int AnotherChunkCounter = 0;
         public static int CreatedChunkInstances = 0;
@@ -109,19 +107,6 @@ namespace AppleCinnamon
                     _chunksToDraw.Add(chunk);
                 }
             }
-
-            //if (BagOfDeath.Count > Game.ViewDistance * 2) // we have victims
-            //{
-            //    if (InProcessChunks == 0) // its the good time for massacre
-            //    {
-            //        WaitForDeletionEvent.Reset(); // suspend all pipeline process
-            //        Massacre();
-            //        device.ImmediateContext.Flush();
-            //        WaitForDeletionEvent.Set(); // let em go
-            //    }
-            //}
-
-            
         }
 
         public void CleanUp(Device device)
@@ -148,52 +133,19 @@ namespace AppleCinnamon
 
         private void Massacre(Device device)
         {
-            var guys = BagOfDeath.Values.ToList();
             foreach (var chunk in BagOfDeath)
             {
-                if (!Chunks.Remove(chunk.Key, out var _))
-                {
-
-                }
-
+                Chunks.Remove(chunk.Key, out var _);
                 chunk.Value.Kill(_graphics.Device);
-                
                 Pipeline.RemoveItem(chunk.Key);
             }
-
-            //Task.Run(() =>
-            //{
-            //    Thread.Sleep(2000);
-            //    foreach (var guy in guys)
-            //    {
-            //        Graveyard.Add(guy);
-            //    }
-            //});
 
             BagOfDeath.Clear();
             Pipeline.Resume();
             isSuspended = false;
         }
 
-        public Chunk CreateChunk(Int2 chunkIndex)
-        {
-            if (Graveyard.Count == 0)
-            {
-                CreatedChunkInstances++;
-                return new Chunk(chunkIndex);
-            }
-
-            if (Graveyard.TryTake(out var deadChunk))
-            {
-                ChunksResurrected++;
-                return deadChunk.Resurrect(chunkIndex);
-            }
-            else
-            {
-                CreatedChunkInstances++;
-                return new Chunk(chunkIndex);
-            }
-        }
+        public Chunk CreateChunk(Int2 chunkIndex) => new(chunkIndex);
 
         private void QueueChunksByIndex(Int2 currentChunkIndex)
         {

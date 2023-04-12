@@ -49,38 +49,10 @@ namespace AppleCinnamon
         public Vector2 Center2d { get; private set; }
         public bool IsRendered { get; set; }
         public bool IsFinalized { get; set; }
-        public int NumberOfResurrection { get; set; }
         public bool IsSinking = false;
-
-        public static int CtorCounter = 0;
-
-        public Chunk Resurrect(Int2 chunkIndex)
-        {
-            //History.Clear();
-            History.Add("Resurrected");
-            Neighbors = new Chunk[9];
-            SetNeighbor(0, 0, this);
-
-            Stage = 0;
-            State = ChunkState.New;
-
-            //Voxels = Array.Empty<Voxel>();
-            BuildingContext.Clear();
-            ChunkIndex = chunkIndex;
-            Offset = chunkIndex * new Int2(WorldSettings.ChunkSize, WorldSettings.ChunkSize);
-            OffsetVector = new Vector3(Offset.X, 0, Offset.Y);
-            IsMarkedForDelete = false;
-            IsTimeToDie = false;
-            State = 0;
-            IsFinalized = false;
-            IsRendered = false;
-            NumberOfResurrection++;
-            return this;
-        }
 
         public Chunk(Int2 chunkIndex)
         {
-            Interlocked.Increment(ref CtorCounter);
             Neighbors = new Chunk[9];
             SetNeighbor(0, 0, this);
             BuildingContext = new ChunkBuildingContext();

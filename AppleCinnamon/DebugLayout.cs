@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+using System.Threading.Tasks.Dataflow;
 using AppleCinnamon.Chunks;
 using AppleCinnamon.Helper;
 using AppleCinnamon.Settings;
@@ -91,8 +93,19 @@ namespace AppleCinnamon
                    $"Show chunk boxes [F3]: {(Game.ShowChunkBoundingBoxes ? "On" : "Off")}\r\n";
         }
 
-        private string GetPipelineMetrics(ChunkManager chunkManager) 
-            => "";
+        private string GetPipelineMetrics(ChunkManager chunkManager)
+        {
+            var pipe = chunkManager.Pipeline;
+
+            var stages = string.Join("", pipe.Stages.Select(stage => PipelineStageSummary(stage.Name, stage.Transform, stage.TimeSpentInTransform, stage)));
+            return $"Pipeline ({pipe.State}) \r\n" +
+                   stages +
+                   PipelineStageSummary("Dispatcher", pipe.Dispatcher, pipe.TimeSpentInTransform);
+        }
+
+        private string PipelineStageSummary(string name, TransformBlock<Chunk, Chunk> transform, TimeSpan elapsedTime, PipelineStage stage = null)
+            =>
+                $"{name} {elapsedTime.TotalMilliseconds:N0}ms\r\n";
 
         private string BuildRightText(ChunkManager chunkManager, Game game)
         {
@@ -109,15 +122,13 @@ namespace AppleCinnamon
                 $"INTENSITY: {Hofman.SunlightFactor:F2}\r\n" +
                 $"In Proc Chunks: {ChunkManager.InProcessChunks}\r\n" +
                 $"Death queue: {ChunkManager.BagOfDeath.Count}\r\n" +
-                $"Graveyard: {ChunkManager.Graveyard.Count}\r\n" +
                 $"Chunks created: {ChunkManager.CreatedChunkInstances}\r\n" +
                 $"Chunks resurrected: {ChunkManager.ChunksResurrected}\r\n" +
                 $"Chunks: {ChunkManager.Chunks.Count}\r\n" +
                 //$"Suspended: {!ChunkManager.SuspendPipeline.WaitOne(0)}\r\n" +
                 $"Cleanups: {ChunkManager.Cleanups}\r\n" +
-                $"Changes: {ChunkManager.NumberOfChanges}\r\n" +
-                $"Chunk CTOR: {Chunk.CtorCounter}\r\n";
-                //$"AnotherChunkCounter: {ChunkManager.AnotherChunkCounter}\r\n" +
+                $"Changes: {ChunkManager.NumberOfChanges}\r\n";
+            //$"AnotherChunkCounter: {ChunkManager.AnotherChunkCounter}\r\n" +
             //$"Sinked: {ChunkManager.Sinked}\r\n";
             //$"{SharpDX.Diagnostics.ObjectTracker.ReportActiveObjects()}\r\n";
         }

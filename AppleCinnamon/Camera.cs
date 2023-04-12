@@ -176,40 +176,6 @@ namespace AppleCinnamon
                 Game.Debug = !Game.Debug;
             }
 
-            if (!_currentKeyboardState.IsPressed(Key.P) && _lastKeyboardState.IsPressed(Key.P))
-            {
-                var chs = ChunkManager.Chunks.Select(s => s.Value).Where(s => s.State == ChunkState.Finished).ToList();
-                List<Action> tasks = new List<Action>();
-                foreach (var chk in chs)
-                {
-                    chk.BuildingContext.IsSpriteChanged = true;
-                    chk.BuildingContext.IsWaterChanged = true;
-                    chk.BuildingContext.IsSolidChanged = true;
-                    tasks.Add(new Action(() =>
-                    {
-                        chk.Voxels = chk.Voxels.ToList().ToArray();
-                        ChunkBuilder.BuildChunk(chk, _graphics.Device);
-                    }));
-                }
-
-                Parallel.ForEach(tasks, tsk =>
-                {
-                    tsk.Invoke();
-                });
-
-            }
-
-            if (!_currentKeyboardState.IsPressed(Key.Q) && _lastKeyboardState.IsPressed(Key.Q))
-            {
-                var chks = ChunkManager.Chunks.Where(c => (c.Key - CurrentChunkIndex).Length() > 6).Select(s => s.Value).ToList();
-                foreach (var chk in chks)
-                {
-                    ChunkManager.Chunks.Remove(chk.ChunkIndex, out var _);
-                    chk.Kill(_graphics.Device);
-                    ChunkManager.Graveyard.Add(chk);
-                }
-            }
-
             var delta = _currentMouseState.Z / 120;
             if (delta != 0)
             {
