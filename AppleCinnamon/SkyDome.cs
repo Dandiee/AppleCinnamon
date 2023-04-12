@@ -81,7 +81,7 @@ namespace AppleCinnamon
                 }
             }
 
-            return new BufferDefinition<VertexSkyBox>(device, vertices, indexes);
+            return new BufferDefinition<VertexSkyBox>(device, ref vertices, ref indexes);
         }
     }
 }

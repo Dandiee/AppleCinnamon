@@ -1,4 +1,6 @@
-﻿namespace AppleCinnamon.Helper
+﻿using System;
+
+namespace AppleCinnamon.Helper
 {
 	public struct Int2
 	{
@@ -41,6 +43,10 @@
             X = Y = xy;
         }
 
+        public float Length()
+        {
+            return (float)Math.Sqrt(X * X + Y * Y);
+        }
 
         public static Int2 operator -(Int2 lhs)
         {

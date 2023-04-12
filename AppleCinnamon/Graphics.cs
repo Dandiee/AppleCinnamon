@@ -43,8 +43,6 @@ namespace AppleCinnamon
         public Graphics()
         {
             Configuration.EnableReleaseOnFinalizer = true;
-            
-            //Configuration.EnableObjectTracking = true;
 
             RenderForm = new RenderForm("Apple & Cinnamon")
             {

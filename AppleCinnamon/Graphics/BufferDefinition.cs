@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Reflection;
+using System.Threading;
 using System.Windows.Forms;
 using AppleCinnamon.Vertices;
 using SharpDX;
@@ -20,13 +22,15 @@ namespace AppleCinnamon
         public Buffer IndexBuffer;
         public VertexBufferBinding Binding;
 
-        public BufferDefinition(Device device, TVertex[] vertices, uint[] indexes)
+        public BufferDefinition(Device device, ref TVertex[] vertices, ref uint[] indexes)
         {
             IsValid = indexes.Length > 0;
             IndexCount = indexes.Length;
             VertexBuffer = Buffer.Create(device, BindFlags.VertexBuffer, vertices, vertices.Length * default(TVertex).Size, ResourceUsage.Immutable);
             IndexBuffer = Buffer.Create(device, BindFlags.IndexBuffer, indexes, indexes.Length * sizeof(uint), ResourceUsage.Immutable);
             Binding = new VertexBufferBinding(VertexBuffer, default(TVertex).Size, 0);
+            vertices = null;
+            indexes = null;
         }
 
         public void Draw(Device device)
@@ -41,24 +45,37 @@ namespace AppleCinnamon
 
         public void Dispose(Device device)
         {
-            Binding = default;
+            //var q = Binding.Buffer == VertexBuffer;
 
+            //IndexBuffer = Buffer.Create<uint>(device, BindFlags.VertexBuffer, Array.Empty<uint>());
+            //VertexBuffer = Buffer.Create<TVertex>(device, BindFlags.IndexBuffer, Array.Empty<TVertex>());
+            //Binding = new VertexBufferBinding(VertexBuffer, default(TVertex).Size, 0);
+
+            
+
+            IndexBuffer.Dispose();
             Utilities.Dispose(ref IndexBuffer);
+
+            //Utilities.Dispose(ref VertexBuffer);
+
+            VertexBuffer.Dispose();
             Utilities.Dispose(ref VertexBuffer);
             //device.ImmediateContext.ClearState();
             //device.ImmediateContext.Flush();
             //IndexBuffer?.Dispose(device);
             //VertexBuffer?.Dispose(device);
-            
+
             IndexBuffer = null;
             VertexBuffer = null;
 
             Asd.counter2++;
         }
 
+        public static int Lofasz;
         ~BufferDefinition()
         {
-            
+            Interlocked.Increment(ref Lofasz);
+            //Debug.WriteLine(Lofasz.ToString());
         }
     }
 

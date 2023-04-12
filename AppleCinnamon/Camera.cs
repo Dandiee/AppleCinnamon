@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Net;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using AppleCinnamon.Chunks;
 using AppleCinnamon.Collision;
@@ -15,7 +18,7 @@ namespace AppleCinnamon
     public sealed class Camera
     {
         private readonly Graphics _graphics;
-        private static readonly TimeSpan BuildCooldown = TimeSpan.FromMilliseconds(100);
+        private static readonly TimeSpan BuildCooldown = TimeSpan.FromMilliseconds(10);
         private DateTime _lastModification;
 
         public Vector2 Position2d { get; private set; }
@@ -171,6 +174,40 @@ namespace AppleCinnamon
             if (!_currentKeyboardState.IsPressed(Key.F12) && _lastKeyboardState.IsPressed(Key.F12))
             {
                 Game.Debug = !Game.Debug;
+            }
+
+            if (!_currentKeyboardState.IsPressed(Key.P) && _lastKeyboardState.IsPressed(Key.P))
+            {
+                var chs = ChunkManager.Chunks.Select(s => s.Value).Where(s => s.State == ChunkState.Finished).ToList();
+                List<Action> tasks = new List<Action>();
+                foreach (var chk in chs)
+                {
+                    chk.BuildingContext.IsSpriteChanged = true;
+                    chk.BuildingContext.IsWaterChanged = true;
+                    chk.BuildingContext.IsSolidChanged = true;
+                    tasks.Add(new Action(() =>
+                    {
+                        chk.Voxels = chk.Voxels.ToList().ToArray();
+                        ChunkBuilder.BuildChunk(chk, _graphics.Device);
+                    }));
+                }
+
+                Parallel.ForEach(tasks, tsk =>
+                {
+                    tsk.Invoke();
+                });
+
+            }
+
+            if (!_currentKeyboardState.IsPressed(Key.Q) && _lastKeyboardState.IsPressed(Key.Q))
+            {
+                var chks = ChunkManager.Chunks.Where(c => (c.Key - CurrentChunkIndex).Length() > 6).Select(s => s.Value).ToList();
+                foreach (var chk in chks)
+                {
+                    ChunkManager.Chunks.Remove(chk.ChunkIndex, out var _);
+                    chk.Kill(_graphics.Device);
+                    ChunkManager.Graveyard.Add(chk);
+                }
             }
 
             var delta = _currentMouseState.Z / 120;

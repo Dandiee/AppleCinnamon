@@ -55,7 +55,7 @@ namespace AppleCinnamon
                 indexes[indexOffset + 11] = (uint)(vertexOffset + 0);
             }
 
-            return new BufferDefinition<VertexWater>(device, vertices, indexes);
+            return new BufferDefinition<VertexWater>(device, ref vertices, ref indexes);
         }
     }
 }

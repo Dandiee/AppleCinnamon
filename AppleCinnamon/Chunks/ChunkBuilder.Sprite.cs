@@ -45,8 +45,8 @@ namespace AppleCinnamon
                 var voxel = chunk.GetVoxel(flatIndex);
                 var definition = voxel.GetDefinition();
 
-                AddSpriteFace(chunk, FaceBuildInfo.SpriteVertices.Left, positionOffset, voxel, definition.TextureIndexes.Faces[(byte)Face.Left], vertices, indexes, vertexOffset, n, 0);
-                AddSpriteFace(chunk, FaceBuildInfo.SpriteVertices.Right, positionOffset, voxel, definition.TextureIndexes.Faces[(byte)Face.Right], vertices, indexes, vertexOffset, n, secondFaceOffset);
+                AddSpriteFace(chunk, FaceBuildInfo.SpriteVertices.Left, positionOffset, voxel, definition.TextureIndexes.Faces[(byte)Face.Left], ref vertices, ref indexes, vertexOffset, n, 0);
+                AddSpriteFace(chunk, FaceBuildInfo.SpriteVertices.Right, positionOffset, voxel, definition.TextureIndexes.Faces[(byte)Face.Right], ref vertices, ref indexes, vertexOffset, n, secondFaceOffset);
             }
 
             var thirdFaceOffset = secondFaceOffset * 2;
@@ -63,15 +63,15 @@ namespace AppleCinnamon
                 var definition = voxel.GetDefinition();
                 var face = FaceBuildInfo.FaceVertices.Faces[(byte)voxel.Orientation];
 
-                AddSpriteFace(chunk, face, positionOffset, voxel, definition.TextureIndexes.Faces[(byte)Face.Left], vertices, indexes, vertexOffset, n, thirdFaceOffset);
+                AddSpriteFace(chunk, face, positionOffset, voxel, definition.TextureIndexes.Faces[(byte)Face.Left], ref vertices, ref indexes, vertexOffset, n, thirdFaceOffset);
             }
 
             //return null;
-            return new BufferDefinition<VertexSprite>(device, vertices, indexes);
+            return new BufferDefinition<VertexSprite>(device, ref vertices, ref indexes);
         }
 
         private static void AddSpriteFace(Chunk chunk, Vector3[] faceOffsetVertices, Vector3 positionOffset, Voxel voxel, Int2 textureIndicies,
-            VertexSprite[] vertices, uint[] indexes, int vertexOffset, int vertexIndex, int faceOffset)
+            ref VertexSprite[] vertices, ref uint[] indexes, int vertexOffset, int vertexIndex, int faceOffset)
         {
             for (var m = 0; m < faceOffsetVertices.Length; m++)
             {

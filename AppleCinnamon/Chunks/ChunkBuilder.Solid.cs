@@ -39,17 +39,17 @@ namespace AppleCinnamon
                     if (((byte)visibilityFlag.Value & faceInfo.BuildInfo.DirectionFlag) == faceInfo.BuildInfo.DirectionFlag)
                     {
                         var neighbor = chunk.GetLocalWithNeighbor(index.X + faceInfo.BuildInfo.Direction.X, index.Y + faceInfo.BuildInfo.Direction.Y, index.Z + faceInfo.BuildInfo.Direction.Z);
-                        AddSolidFace(faceInfo, voxel, index.X, index.Y, index.Z, vertices, indexes, definition, chunk, neighbor, voxelPositionOffset);
+                        AddSolidFace(faceInfo, voxel, index.X, index.Y, index.Z, ref vertices, ref indexes, definition, chunk, neighbor, voxelPositionOffset);
                     }
                 }
             }
 
-            return new BufferDefinition<VertexSolidBlock>(device, vertices, indexes);
+            return new BufferDefinition<VertexSolidBlock>(device, ref vertices, ref indexes);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void AddSolidFace(SolidFaceInfo faceInfo, Voxel voxel, int relativeIndexX, int relativeIndexY, int relativeIndexZ, VertexSolidBlock[] vertices,
-            uint[] indexes, VoxelDefinition definition, Chunk chunk, Voxel neighbor, Vector3 voxelPositionOffset)
+        private static void AddSolidFace(SolidFaceInfo faceInfo, Voxel voxel, int relativeIndexX, int relativeIndexY, int relativeIndexZ, ref VertexSolidBlock[] vertices,
+            ref uint[] indexes, VoxelDefinition definition, Chunk chunk, Voxel neighbor, Vector3 voxelPositionOffset)
         {
             // Face specific base variables
             var textureUv = definition.TextureIndexes.Faces[(byte)faceInfo.BuildInfo.Face];

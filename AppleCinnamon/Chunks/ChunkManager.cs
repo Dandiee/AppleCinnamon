@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using AppleCinnamon.Chunks;
 using AppleCinnamon.Helper;
 using AppleCinnamon.Settings;
@@ -13,7 +14,7 @@ namespace AppleCinnamon
 {
     public sealed partial class ChunkManager
     {
-        private readonly Graphics _graphics;
+        public readonly Graphics _graphics;
         public static readonly int InitialDegreeOfParallelism = 2;//Environment.ProcessorCount;
         private int _finalizedChunks;
         public bool IsInitialized { get; private set; }
@@ -138,14 +139,16 @@ namespace AppleCinnamon
 
             if (isSuspended)
             {
+                //Pipeline.Resume();
                 Massacre(device);
             }
         }
 
         public bool isSuspended = false;
 
-        private void Massacre(Device  device)
+        private void Massacre(Device device)
         {
+            var guys = BagOfDeath.Values.ToList();
             foreach (var chunk in BagOfDeath)
             {
                 if (!Chunks.Remove(chunk.Key, out var _))
@@ -154,15 +157,22 @@ namespace AppleCinnamon
                 }
 
                 chunk.Value.Kill(_graphics.Device);
-                Graveyard.Add(chunk.Value);
+                
                 Pipeline.RemoveItem(chunk.Key);
             }
 
+            //Task.Run(() =>
+            //{
+            //    Thread.Sleep(2000);
+            //    foreach (var guy in guys)
+            //    {
+            //        Graveyard.Add(guy);
+            //    }
+            //});
+
             BagOfDeath.Clear();
-            device.ImmediateContext.Flush();
             Pipeline.Resume();
             isSuspended = false;
-            
         }
 
         public Chunk CreateChunk(Int2 chunkIndex)
