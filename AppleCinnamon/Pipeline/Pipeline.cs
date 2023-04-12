@@ -106,7 +106,6 @@ namespace AppleCinnamon
 
         public IEnumerable<Chunk> Staging(int stageIndex, Chunk chunk)
         {
-            chunk.History.Add($"{chunk.Stage} - {Stages[stageIndex].Name}");
             chunk.Stage++;
 
             foreach (var neighbor in chunk.Neighbors)
@@ -116,7 +115,7 @@ namespace AppleCinnamon
                     && neighbor.Neighbors.All(s => s != null && s.Stage >= stageIndex + 1))
                 {
                     //if (Stages[stageIndex].ReturnedIndexes.TryAdd(neighbor.ChunkIndex, null))
-                    if (Stages[stageIndex].ReturnedIndexes2.Add(neighbor.ChunkIndex))
+                    if (Stages[stageIndex].ReturnedIndexes.Add(neighbor.ChunkIndex))
                     {
                         yield return neighbor;
                     }
@@ -150,7 +149,7 @@ namespace AppleCinnamon
             foreach (var stage in Stages)
             {
                 //stage.ReturnedIndexes.TryRemove(chunkIndex, out var _);
-                stage.ReturnedIndexes2.Remove(chunkIndex);
+                stage.ReturnedIndexes.Remove(chunkIndex);
             }
         }
 

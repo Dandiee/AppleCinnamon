@@ -78,12 +78,7 @@ namespace AppleCinnamon
                 }
             }
 
-            return //$"Finalized chunks {chunkManager.FinalizedChunks:N0}\r\n" +
-                   //$"Rendered chunks {chunkManager.RenderedChunks:N0}\r\n" +
-                   //$"Queued chunks {chunkManager.QueuedChunks:N0}\r\n" +
-                   //$"Total visible faces {chunkManager.TotalVisibleFaces:N0}\r\n" +
-                   //$"Total visible voxels {chunkManager.TotalVisibleVoxels:N0}\r\n" +
-                   $"Time: {game.World.Time:N2}\r\n" +
+            return $"Time: {game.World.Time:N2}\r\n" +
                    $"Current position {camera.Position.ToNonRetardedString()}\r\n" +
                    $"Orientation {camera.LookAt.ToNonRetardedString()}\r\n" +
                    $"Current target {targetInfo}\r\n" +
@@ -111,26 +106,14 @@ namespace AppleCinnamon
         {
             return
                 $"Chunk size {WorldSettings.ChunkSize}, View distance: {Game.ViewDistance}, Slice: {Chunk.SliceHeight}\r\n" +
-                //string.Join("\r\n", chunkManager.PipelinePerformance.Select(s => $"{s.Key}: {s.Value:N0} ms")) + "\r\n" + 
                 GetPipelineMetrics(chunkManager) + "\r\n" +
-                //$"Total pipeline time: {chunkManager.PipelinePerformance.Values.Sum():N0} ms\r\n" + 
-                //$"Boot time: {chunkManager.BootTime.TotalMilliseconds:N0} ms\r\n" + 
                 $"Average render time: {game.AverageRenderTime:F2}\r\n" +
                 $"Peek render time: {game.PeekRenderTime:F2}\r\n" +
                 $"Average FPS: {game.AverageFps:F2}\r\n" +
                 $"SUN: {Hofman.SunDirection:F2}\r\n" +
                 $"INTENSITY: {Hofman.SunlightFactor:F2}\r\n" +
-                $"In Proc Chunks: {ChunkManager.InProcessChunks}\r\n" +
                 $"Death queue: {ChunkManager.BagOfDeath.Count}\r\n" +
-                $"Chunks created: {ChunkManager.CreatedChunkInstances}\r\n" +
-                $"Chunks resurrected: {ChunkManager.ChunksResurrected}\r\n" +
-                $"Chunks: {ChunkManager.Chunks.Count}\r\n" +
-                //$"Suspended: {!ChunkManager.SuspendPipeline.WaitOne(0)}\r\n" +
-                $"Cleanups: {ChunkManager.Cleanups}\r\n" +
-                $"Changes: {ChunkManager.NumberOfChanges}\r\n";
-            //$"AnotherChunkCounter: {ChunkManager.AnotherChunkCounter}\r\n" +
-            //$"Sinked: {ChunkManager.Sinked}\r\n";
-            //$"{SharpDX.Diagnostics.ObjectTracker.ReportActiveObjects()}\r\n";
+                $"Chunks: {ChunkManager.Chunks.Count}\r\n";
         }
 
         public void Draw(

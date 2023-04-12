@@ -27,8 +27,7 @@ namespace AppleCinnamon
         private IDisposable _transformToStagingLink;
         private IDisposable _transformToBufferLink;
 
-        public readonly ConcurrentDictionary<Int2, object> ReturnedIndexes;
-        public readonly HashSet<Int2> ReturnedIndexes2;
+        public readonly HashSet<Int2> ReturnedIndexes;
 
         public TimeSpan TimeSpentInTransform { get; private set; }
 
@@ -45,7 +44,6 @@ namespace AppleCinnamon
             Buffer = new BufferBlock<Chunk>();
             _transformOptions = new() { MaxDegreeOfParallelism = mDoP };
             ReturnedIndexes = new ();
-            ReturnedIndexes2 = new();
         }
 
         public PipelineStage LinkTo(PipelineStage stage)

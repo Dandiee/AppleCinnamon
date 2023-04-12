@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using AppleCinnamon.Chunks;
 using AppleCinnamon.Helper;
 using AppleCinnamon.Settings;
@@ -24,7 +22,7 @@ namespace AppleCinnamon
         private Int2? _lastQueueIndex;
         public readonly Pipeline Pipeline;
         private List<Chunk> _chunksToDraw;
-        public static int NumberOfChanges = 0;
+        public bool _isSuspended;
 
         public ChunkManager(Graphics graphics)
         {
@@ -45,13 +43,6 @@ namespace AppleCinnamon
 
         public void Finalize(Chunk chunk)
         {
-            if (chunk.State == ChunkState.Finished)
-            {
-
-            }
-
-            chunk.IsFinalized = true;
-
             Interlocked.Increment(ref _finalizedChunks);
             const int root = (Game.ViewDistance - 1) * 2;
 
@@ -60,8 +51,6 @@ namespace AppleCinnamon
                 IsInitialized = true;
             }
 
-            chunk.IsSinking = false;
-            chunk.History.Add("Finalized");
             chunk.State = ChunkState.Finished;
         }
 
@@ -79,11 +68,6 @@ namespace AppleCinnamon
         }
 
         public static readonly ConcurrentDictionary<Int2, Chunk> BagOfDeath = new();
-        public static volatile int InProcessChunks = 0;
-        //public static volatile int AnotherChunkCounter = 0;
-        public static int CreatedChunkInstances = 0;
-        public static int ChunksResurrected = 0;
-        public static int Cleanups = 0;
 
         private void UpdateChunks(Camera camera, Device device)
         {
@@ -99,7 +83,7 @@ namespace AppleCinnamon
                     BagOfDeath.TryAdd(chunk.ChunkIndex, chunk);
                 }
 
-                chunk.IsRendered = !chunk.IsTimeToDie && chunk.IsFinalized && (!Game.IsViewFrustumCullingEnabled ||
+                chunk.IsRendered = !chunk.IsTimeToDie && chunk.State == ChunkState.Finished && (!Game.IsViewFrustumCullingEnabled ||
                                                                                camera.BoundingFrustum.Contains(ref chunk.BoundingBox) !=
                                                                                ContainmentType.Disjoint);
                 if (chunk.IsRendered)
@@ -111,25 +95,25 @@ namespace AppleCinnamon
 
         public void CleanUp(Device device)
         {
-            if (!isSuspended && Pipeline.State == PipelineState.Running)
+            if (!_isSuspended && Pipeline.State == PipelineState.Running)
             {
                 if (BagOfDeath.Count > Game.ViewDistance * 2)
                 {
                     Pipeline.Suspend(() =>
                     {
-                        isSuspended = true;
+                        _isSuspended = true;
                     });
                 }
             }
 
-            if (isSuspended)
+            if (_isSuspended)
             {
                 //Pipeline.Resume();
                 Massacre(device);
             }
         }
 
-        public bool isSuspended = false;
+        
 
         private void Massacre(Device device)
         {
@@ -142,7 +126,7 @@ namespace AppleCinnamon
 
             BagOfDeath.Clear();
             Pipeline.Resume();
-            isSuspended = false;
+            _isSuspended = false;
         }
 
         public Chunk CreateChunk(Int2 chunkIndex) => new(chunkIndex);

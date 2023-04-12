@@ -15,14 +15,12 @@ namespace AppleCinnamon
     {
         New,
         Finished,
-        Killed
     }
 
     public sealed partial class Chunk
     {
         public int Stage;
         public ChunkState State;
-        public readonly List<string> History = new();
 
         public const int SliceHeight = 16;
         public const int SliceArea = WorldSettings.ChunkSize * WorldSettings.ChunkSize * SliceHeight;
@@ -48,8 +46,6 @@ namespace AppleCinnamon
         public Vector3 Center { get; private set; }
         public Vector2 Center2d { get; private set; }
         public bool IsRendered { get; set; }
-        public bool IsFinalized { get; set; }
-        public bool IsSinking = false;
 
         public Chunk(Int2 chunkIndex)
         {
@@ -123,29 +119,22 @@ namespace AppleCinnamon
             Buffers?.Dispose(device);
             Buffers = null;
 
-            if (Neighbors == null)
+            if (Neighbors != null)
             {
-                return;
-            }
-
-            foreach (var neighbor in Neighbors)
-            {
-                if (neighbor != null)
+                foreach (var neighbor in Neighbors)
                 {
-                    for (var i = 0; i < neighbor.Neighbors.Length; i++)
+                    if (neighbor != null)
                     {
-                        if (neighbor.Neighbors[i] == this)
+                        for (var i = 0; i < neighbor.Neighbors.Length; i++)
                         {
-                            neighbor.Neighbors[i] = null;
+                            if (neighbor.Neighbors[i] == this)
+                            {
+                                neighbor.Neighbors[i] = null;
+                            }
                         }
                     }
                 }
             }
-
-            Neighbors = null;
-            State = ChunkState.Killed;
-            Stage = 0;
-            History.Add("Killed");
         }
 
         public bool CheckForValidity(Camera camera, DateTime now)

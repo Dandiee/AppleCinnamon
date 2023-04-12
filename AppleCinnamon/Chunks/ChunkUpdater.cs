@@ -26,8 +26,6 @@ namespace AppleCinnamon
 
         public void SetVoxel(Int3 absoluteIndex, byte voxel)
         {
-            ChunkManager.NumberOfChanges++;
-
             if (_isUpdateInProgress)
             {
                 return;
