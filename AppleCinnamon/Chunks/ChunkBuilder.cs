@@ -15,7 +15,7 @@ namespace AppleCinnamon
             {
                 if (chunk.Buffers == null)
                 {
-                    chunk.Buffers = new ChunkBuffers();
+                    chunk.Buffers = new ChunkBuffers(chunk);
                 }
 
                 if (!WorldSettings.IsChangeTrackingEnabled || chunk.BuildingContext.IsSolidChanged)

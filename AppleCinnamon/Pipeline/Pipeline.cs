@@ -9,6 +9,7 @@ using System.Threading.Tasks.Dataflow;
 
 namespace AppleCinnamon
 {
+    // https://app.diagrams.net/#G1bx3H_GUN2TbOa55sV8_Cw-4TyGCXFWeh
     public sealed class Pipeline
     {
         public static readonly DataflowLinkOptions PropagateCompletionOptions = new() { PropagateCompletion = true };
@@ -52,7 +53,7 @@ namespace AppleCinnamon
 
         public void Post(Chunk chunk) => TerrainStage.Transform.Post(chunk);
 
-        public void Suspend(Action onSuspendedCallback)
+        public void Suspend()
         {
             State = PipelineState.Stopping;
 
@@ -70,7 +71,6 @@ namespace AppleCinnamon
                 .ContinueWith(_ =>
                 {
                     State = PipelineState.Stopped;
-                    onSuspendedCallback();
                 });
         }
 
@@ -87,7 +87,7 @@ namespace AppleCinnamon
 
         private void BuildPipeline()
         {
-            Dispatcher = new TransformBlock<Chunk, Chunk>(BenchmarkedDispatcher, new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = MDoP});
+            Dispatcher = new TransformBlock<Chunk, Chunk>(BenchmarkedDispatcher, new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = MDoP });
             FinishBlock = new ActionBlock<Chunk>(_chunkManager.Finalize);
 
             foreach (var stage in Stages)
@@ -114,7 +114,6 @@ namespace AppleCinnamon
                     && neighbor.Stage == stageIndex + 1
                     && neighbor.Neighbors.All(s => s != null && s.Stage >= stageIndex + 1))
                 {
-                    //if (Stages[stageIndex].ReturnedIndexes.TryAdd(neighbor.ChunkIndex, null))
                     if (Stages[stageIndex].ReturnedIndexes.Add(neighbor.ChunkIndex))
                     {
                         yield return neighbor;
@@ -148,7 +147,6 @@ namespace AppleCinnamon
         {
             foreach (var stage in Stages)
             {
-                //stage.ReturnedIndexes.TryRemove(chunkIndex, out var _);
                 stage.ReturnedIndexes.Remove(chunkIndex);
             }
         }

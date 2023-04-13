@@ -76,12 +76,17 @@ namespace AppleCinnamon
                 {
                     Staging.Post(chunk);
                 }
+                else if (chunk.State == ChunkState.Killed)
+                {
+                    chunk.History.Add("Drained");
+                }
             }
         }
 
         private Chunk BenchmarkedTransform(Chunk chunk)
         {
             var sw = Stopwatch.StartNew();
+            chunk.History.Add(Name);
             var result = _transformCallback(chunk);
             sw.Stop();
             TimeSpentInTransform += sw.Elapsed;

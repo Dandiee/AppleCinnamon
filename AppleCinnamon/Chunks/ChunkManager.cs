@@ -37,7 +37,6 @@ namespace AppleCinnamon
 
         public void Draw(Camera camera)
         {
-            var now = DateTime.Now;
             _chunkDrawer.Draw(_chunksToDraw, camera);
         }
 
@@ -68,6 +67,7 @@ namespace AppleCinnamon
         }
 
         public static readonly ConcurrentDictionary<Int2, Chunk> BagOfDeath = new();
+        public static readonly ConcurrentBag<Chunk> Graveyard = new();
 
         private void UpdateChunks(Camera camera, Device device)
         {
@@ -95,33 +95,37 @@ namespace AppleCinnamon
 
         public void CleanUp(Device device)
         {
-            if (!_isSuspended && Pipeline.State == PipelineState.Running)
+            if (Pipeline.State == PipelineState.Running && BagOfDeath.Count > Game.ViewDistance * 2)
             {
-                if (BagOfDeath.Count > Game.ViewDistance * 2)
-                {
-                    Pipeline.Suspend(() =>
-                    {
-                        _isSuspended = true;
-                    });
-                }
+                Pipeline.Suspend();
             }
 
-            if (_isSuspended)
+            if (Pipeline.State == PipelineState.Stopped)
             {
-                //Pipeline.Resume();
                 Massacre(device);
             }
         }
 
-        
 
+        public static ConcurrentDictionary<Int2, Chunk> DeadChunks = new();
         private void Massacre(Device device)
         {
             foreach (var chunk in BagOfDeath)
             {
                 Chunks.Remove(chunk.Key, out var _);
+                var isDispatched = chunk.Value.Buffers != null;
                 chunk.Value.Kill(_graphics.Device);
                 Pipeline.RemoveItem(chunk.Key);
+
+                if (false && isDispatched)
+                {
+                    DeadChunks.TryAdd(chunk.Key, chunk.Value);
+                }
+
+                if (!isDispatched)
+                {
+                    Graveyard.Add(chunk.Value);
+                }
             }
 
             BagOfDeath.Clear();
@@ -129,7 +133,22 @@ namespace AppleCinnamon
             _isSuspended = false;
         }
 
-        public Chunk CreateChunk(Int2 chunkIndex) => new(chunkIndex);
+        public static int ChunkCreated = 0;
+        public static int ChunkResurrected = 0;
+        private Chunk CreateChunk(Int2 chunkIndex)
+        {
+            if (Graveyard.Count > 0)
+            {
+                if (Graveyard.TryTake(out var chunk))
+                {
+                    ChunkResurrected++;
+                    return chunk.Resurrect(chunkIndex);
+                }
+            }
+
+            ChunkCreated++;
+            return new Chunk(chunkIndex);
+        }
 
         private void QueueChunksByIndex(Int2 currentChunkIndex)
         {
@@ -143,7 +162,7 @@ namespace AppleCinnamon
 
                         if (!Chunks.ContainsKey(chunkIndex))
                         {
-                            var newChunk = CreateChunk(chunkIndex); // new Chunk(chunkIndex);
+                            var newChunk = CreateChunk(chunkIndex);
                             Chunks.TryAdd(chunkIndex, newChunk);
                             Pipeline.Post(newChunk);
                         }

@@ -6,6 +6,8 @@ namespace AppleCinnamon
 {
     public sealed class ChunkBuffers
     {
+        public Chunk Owner { get; }
+
         public BufferDefinition<VertexSolidBlock> BufferSolid;
         public BufferDefinition<VertexWater> BufferWater;
         public BufferDefinition<VertexSprite> BufferSprite;
@@ -17,6 +19,11 @@ namespace AppleCinnamon
         //    BufferSprite = bufferSprite;
         //}
 
+        public ChunkBuffers(Chunk chunk)
+        {
+            Owner = chunk;
+        }
+
         public void Dispose(Device device)
         {
             BufferSolid?.Dispose(device);
@@ -26,6 +33,12 @@ namespace AppleCinnamon
             BufferWater = null;
             BufferSolid = null;
             BufferSprite = null;
+        }
+
+        ~ChunkBuffers()
+        {
+            //ChunkManager.Graveyard.Add(Owner);
+            //ChunkManager.DeadChunks.TryRemove(Owner.ChunkIndex, out _);
         }
     }
 }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Runtime;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -174,6 +175,12 @@ namespace AppleCinnamon
             if (!_currentKeyboardState.IsPressed(Key.F12) && _lastKeyboardState.IsPressed(Key.F12))
             {
                 Game.Debug = !Game.Debug;
+            }
+
+            if (!_currentKeyboardState.IsPressed(Key.P) && _lastKeyboardState.IsPressed(Key.P))
+            {
+                GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce;
+                GC.Collect(2, GCCollectionMode.Forced, true, true);
             }
 
             var delta = _currentMouseState.Z / 120;

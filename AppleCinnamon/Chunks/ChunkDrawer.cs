@@ -110,14 +110,12 @@ namespace AppleCinnamon.Chunks
 
                     if (boxVertices.Length > 0)
                     {
-                        using (var vertexBuffer = Buffer.Create(_device, BindFlags.VertexBuffer, boxVertices))
-                        {
-                            var binding = new VertexBufferBinding(vertexBuffer, default(VertexBox).Size, 0);
-                            _boxEffectDefinition.Use(_device);
-                            _device.ImmediateContext.InputAssembler.SetVertexBuffers(0, binding);
-                            _device.ImmediateContext.Draw(boxVertices.Length, 0);
-                            _device.ImmediateContext.GeometryShader.Set(null);
-                        }
+                        using var vertexBuffer = Buffer.Create(_device, BindFlags.VertexBuffer, boxVertices);
+                        var binding = new VertexBufferBinding(vertexBuffer, default(VertexBox).Size, 0);
+                        _boxEffectDefinition.Use(_device);
+                        _device.ImmediateContext.InputAssembler.SetVertexBuffers(0, binding);
+                        _device.ImmediateContext.Draw(boxVertices.Length, 0);
+                        _device.ImmediateContext.GeometryShader.Set(null);
                     }
                 }
             }

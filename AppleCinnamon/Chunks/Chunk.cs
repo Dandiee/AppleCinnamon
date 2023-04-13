@@ -14,11 +14,13 @@ namespace AppleCinnamon
     public enum ChunkState
     {
         New,
+        Killed,
         Finished,
     }
 
     public sealed partial class Chunk
     {
+        public List<string> History = new();
         public int Stage;
         public ChunkState State;
 
@@ -47,6 +49,24 @@ namespace AppleCinnamon
         public Vector2 Center2d { get; private set; }
         public bool IsRendered { get; set; }
 
+        public Chunk Resurrect(Int2 chunkIndex)
+        {
+            Neighbors = new Chunk[9];
+            SetNeighbor(0, 0, this);
+            Stage = 0;
+            State = ChunkState.New;
+            BuildingContext.Clear();
+            ChunkIndex = chunkIndex;
+            Offset = chunkIndex * new Int2(WorldSettings.ChunkSize, WorldSettings.ChunkSize);
+            OffsetVector = new Vector3(Offset.X, 0, Offset.Y);
+            IsMarkedForDelete = false;
+            IsTimeToDie = false;
+            State = 0;
+            IsRendered = false;
+            History.Add("Resurrected");
+            return this;
+        }
+
         public Chunk(Int2 chunkIndex)
         {
             Neighbors = new Chunk[9];
@@ -55,6 +75,7 @@ namespace AppleCinnamon
             ChunkIndex = chunkIndex;
             Offset = chunkIndex * new Int2(WorldSettings.ChunkSize, WorldSettings.ChunkSize);
             OffsetVector = new Vector3(Offset.X, 0, Offset.Y);
+            History.Add("Created");
         }
 
         public void ExtendUpward(int heightToFit)
@@ -135,6 +156,9 @@ namespace AppleCinnamon
                     }
                 }
             }
+
+            State = ChunkState.Killed;
+            History.Add("Killed");
         }
 
         public bool CheckForValidity(Camera camera, DateTime now)
@@ -151,7 +175,6 @@ namespace AppleCinnamon
                 {
                     if (now - MarkedForDeleteAt > Game.ChunkDespawnCooldown)
                     {
-                        //Kill();
                         return false;
                     }
                 }
@@ -168,5 +191,7 @@ namespace AppleCinnamon
 
             return true;
         }
+
+        
     }
 }
