@@ -51,7 +51,7 @@ namespace AppleCinnamon
                 StartPosition = FormStartPosition.CenterScreen
             };
 
-            Device.CreateWithSwapChain(DriverType.Hardware, DeviceCreationFlags.BgraSupport, new SwapChainDescription
+            Device.CreateWithSwapChain(DriverType.Hardware, DeviceCreationFlags.BgraSupport /*| DeviceCreationFlags.Debug*/, new SwapChainDescription
             {
                 BufferCount = 1,
                 ModeDescription = new ModeDescription(RenderForm.ClientSize.Width, RenderForm.ClientSize.Height, new Rational(60, 1), Format.R8G8B8A8_UNorm),

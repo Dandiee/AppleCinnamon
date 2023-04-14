@@ -48,6 +48,7 @@ namespace AppleCinnamon
         public Vector3 Center { get; private set; }
         public Vector2 Center2d { get; private set; }
         public bool IsRendered { get; set; }
+        public DateTime TimeOfDeath;
 
         public Chunk Resurrect(Int2 chunkIndex)
         {
@@ -137,8 +138,13 @@ namespace AppleCinnamon
 
         public void Kill(Device device)
         {
-            Buffers?.Dispose(device);
-            Buffers = null;
+            Neighbors = new Chunk[9];
+            Stage = 0;
+            BuildingContext.Clear();
+            IsRendered = false;
+            State = ChunkState.Killed;
+
+           
 
             if (Neighbors != null)
             {
@@ -157,7 +163,9 @@ namespace AppleCinnamon
                 }
             }
 
-            State = ChunkState.Killed;
+            Buffers?.Dispose();
+            Buffers = null;
+
             History.Add("Killed");
         }
 

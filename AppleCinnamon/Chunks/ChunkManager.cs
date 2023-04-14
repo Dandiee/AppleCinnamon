@@ -77,10 +77,13 @@ namespace AppleCinnamon
             {
                 chunk.IsRendered = false;
 
-                if (!chunk.CheckForValidity(camera, now))
+                if (chunk.State != ChunkState.Killed)
                 {
-                    chunk.IsTimeToDie = true;
-                    BagOfDeath.TryAdd(chunk.ChunkIndex, chunk);
+                    if (!chunk.CheckForValidity(camera, now))
+                    {
+                        chunk.IsTimeToDie = true;
+                        BagOfDeath.TryAdd(chunk.ChunkIndex, chunk);
+                    }
                 }
 
                 chunk.IsRendered = !chunk.IsTimeToDie && chunk.State == ChunkState.Finished && (!Game.IsViewFrustumCullingEnabled ||
@@ -113,19 +116,12 @@ namespace AppleCinnamon
             foreach (var chunk in BagOfDeath)
             {
                 Chunks.Remove(chunk.Key, out var _);
-                var isDispatched = chunk.Value.Buffers != null;
-                chunk.Value.Kill(_graphics.Device);
-                Pipeline.RemoveItem(chunk.Key);
-
-                if (false && isDispatched)
-                {
-                    DeadChunks.TryAdd(chunk.Key, chunk.Value);
-                }
-
-                if (!isDispatched)
+                if (chunk.Value.Buffers == null)
                 {
                     Graveyard.Add(chunk.Value);
                 }
+                chunk.Value.Kill(_graphics.Device);
+                Pipeline.RemoveItem(chunk.Key);
             }
 
             BagOfDeath.Clear();

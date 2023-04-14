@@ -4,7 +4,7 @@ using SharpDX.Direct3D11;
 
 namespace AppleCinnamon
 {
-    public sealed class ChunkBuffers
+    public sealed class ChunkBuffers : IDisposable
     {
         public Chunk Owner { get; }
 
@@ -12,33 +12,20 @@ namespace AppleCinnamon
         public BufferDefinition<VertexWater> BufferWater;
         public BufferDefinition<VertexSprite> BufferSprite;
 
-        //public ChunkBuffers(BufferDefinition<VertexSolidBlock> bufferSolid, BufferDefinition<VertexWater> bufferWater, BufferDefinition<VertexSprite> bufferSprite)
-        //{
-        //    BufferSolid = bufferSolid;
-        //    BufferWater = bufferWater;
-        //    BufferSprite = bufferSprite;
-        //}
-
         public ChunkBuffers(Chunk chunk)
         {
             Owner = chunk;
         }
 
-        public void Dispose(Device device)
+        public void Dispose()
         {
-            BufferSolid?.Dispose(device);
-            BufferWater?.Dispose(device);
-            BufferSprite?.Dispose(device);
+            BufferSolid?.Dispose();
+            BufferWater?.Dispose();
+            BufferSprite?.Dispose();
 
             BufferWater = null;
             BufferSolid = null;
             BufferSprite = null;
-        }
-
-        ~ChunkBuffers()
-        {
-            //ChunkManager.Graveyard.Add(Owner);
-            //ChunkManager.DeadChunks.TryRemove(Owner.ChunkIndex, out _);
         }
     }
 }
