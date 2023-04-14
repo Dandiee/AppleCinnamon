@@ -18,11 +18,18 @@ namespace AppleCinnamon
         Finished,
     }
 
+    public enum ChunkDeletionState
+    {
+        None,
+        MarkedForDeletion,
+        Deletion
+    }
+
     public sealed partial class Chunk
     {
-        public List<string> History = new();
         public int Stage;
         public ChunkState State;
+        public ChunkDeletionState Deletion;
 
         public const int SliceHeight = 16;
         public const int SliceArea = WorldSettings.ChunkSize * WorldSettings.ChunkSize * SliceHeight;
@@ -38,8 +45,6 @@ namespace AppleCinnamon
         public Chunk[] Neighbors;
         public Vector3 ChunkIndexVector;
 
-        public bool IsMarkedForDelete { get; set; }
-        public bool IsTimeToDie { get; set; }
         public DateTime MarkedForDeleteAt { get; set; }
 
 
@@ -60,11 +65,9 @@ namespace AppleCinnamon
             ChunkIndex = chunkIndex;
             Offset = chunkIndex * new Int2(WorldSettings.ChunkSize, WorldSettings.ChunkSize);
             OffsetVector = new Vector3(Offset.X, 0, Offset.Y);
-            IsMarkedForDelete = false;
-            IsTimeToDie = false;
+            Deletion = ChunkDeletionState.None;
             State = 0;
             IsRendered = false;
-            History.Add("Resurrected");
             return this;
         }
 
@@ -76,7 +79,6 @@ namespace AppleCinnamon
             ChunkIndex = chunkIndex;
             Offset = chunkIndex * new Int2(WorldSettings.ChunkSize, WorldSettings.ChunkSize);
             OffsetVector = new Vector3(Offset.X, 0, Offset.Y);
-            History.Add("Created");
         }
 
         public void ExtendUpward(int heightToFit)
@@ -144,8 +146,6 @@ namespace AppleCinnamon
             IsRendered = false;
             State = ChunkState.Killed;
 
-           
-
             if (Neighbors != null)
             {
                 foreach (var neighbor in Neighbors)
@@ -165,36 +165,35 @@ namespace AppleCinnamon
 
             Buffers?.Dispose();
             Buffers = null;
-
-            History.Add("Killed");
         }
 
-        public bool CheckForValidity(Camera camera, DateTime now)
+        public bool UpdateDeletion(Camera camera, DateTime now)
         {
-            if (IsTimeToDie) return false;
+            if (Deletion == ChunkDeletionState.Deletion) return true;
 
-            var distanceX = Math.Abs(camera.CurrentChunkIndex.X - ChunkIndex.X);
-            var distanceY = Math.Abs(camera.CurrentChunkIndex.Y - ChunkIndex.Y);
-            var maxDistance = Math.Max(distanceX, distanceY);
+            var maxDistance = Math.Max(
+                Math.Abs(camera.CurrentChunkIndex.X - ChunkIndex.X), 
+                Math.Abs(camera.CurrentChunkIndex.Y - ChunkIndex.Y));
 
             if (maxDistance > Game.ViewDistance + Game.NumberOfPools)
             {
-                if (IsMarkedForDelete)
+                if (Deletion == ChunkDeletionState.MarkedForDeletion)
                 {
                     if (now - MarkedForDeleteAt > Game.ChunkDespawnCooldown)
                     {
+                        Deletion = ChunkDeletionState.Deletion;
                         return false;
                     }
                 }
                 else
                 {
                     MarkedForDeleteAt = now;
-                    IsMarkedForDelete = true;
+                    Deletion = ChunkDeletionState.MarkedForDeletion;
                 }
             }
-            else if (IsMarkedForDelete)
+            else if (Deletion == ChunkDeletionState.MarkedForDeletion)
             {
-                IsMarkedForDelete = false;
+                Deletion = ChunkDeletionState.None;
             }
 
             return true;

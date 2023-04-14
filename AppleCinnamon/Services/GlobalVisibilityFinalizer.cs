@@ -1,17 +1,9 @@
-﻿using System;
-using System.Linq;
-
-namespace AppleCinnamon
+﻿namespace AppleCinnamon
 {
     public sealed class GlobalVisibilityFinalizer
     {
         public static void FinalizeGlobalVisibility(Chunk chunk)
         {
-            if (chunk.Neighbors.Any(a => a == null))
-            {
-                throw new Exception("nooooo waaaay");
-            }
-
             var leftChunk = chunk.GetNeighbor(-1, 0);
             var rightChunk = chunk.GetNeighbor(1, 0);
             var frontChunk = chunk.GetNeighbor(0, -1);

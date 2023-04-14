@@ -4,11 +4,10 @@ using SharpDX;
 
 namespace AppleCinnamon
 {
-    public sealed class LocalFinalizer
+    public sealed class LocalContextBuilder
     {
         public Chunk Transform(Chunk chunk)
         {
-            // if (Game.Debug) Thread.Sleep(100);
             InitializeSunlight(chunk);
             FullScanner.FullScan(chunk);
             LightingService.LocalPropagate(chunk, chunk.BuildingContext.LightPropagationVoxels);

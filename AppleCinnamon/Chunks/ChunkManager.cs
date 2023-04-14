@@ -13,23 +13,26 @@ namespace AppleCinnamon
     public sealed partial class ChunkManager
     {
         public readonly Graphics _graphics;
-        private int _finalizedChunks;
+        private int _finishedChunks;
         public bool IsInitialized { get; private set; }
 
+        public static readonly ConcurrentDictionary<Int2, Chunk> BagOfDeath = new();
+        public static readonly ConcurrentBag<Chunk> Graveyard = new();
         public static readonly ConcurrentDictionary<Int2, Chunk> Chunks = new();
         private readonly ChunkUpdater _chunkUpdater;
         private readonly ChunkDrawer _chunkDrawer;
         private Int2? _lastQueueIndex;
         public readonly Pipeline Pipeline;
         private List<Chunk> _chunksToDraw;
-        public bool _isSuspended;
+        public static int ChunkCreated = 0;
+        public static int ChunkResurrected = 0;
 
         public ChunkManager(Graphics graphics)
         {
             _graphics = graphics;
             _chunkDrawer = new ChunkDrawer(graphics.Device);
             _chunksToDraw = new List<Chunk>();
-            Pipeline = new Pipeline(this);
+            Pipeline = new Pipeline(FinishChunk, graphics);
             _chunkUpdater = new ChunkUpdater(graphics, this);
 
             QueueChunksByIndex(Int2.Zero);
@@ -40,12 +43,12 @@ namespace AppleCinnamon
             _chunkDrawer.Draw(_chunksToDraw, camera);
         }
 
-        public void Finalize(Chunk chunk)
+        public void FinishChunk(Chunk chunk)
         {
-            Interlocked.Increment(ref _finalizedChunks);
+            Interlocked.Increment(ref _finishedChunks);
             const int root = (Game.ViewDistance - 1) * 2;
 
-            if (!IsInitialized && _finalizedChunks == root)
+            if (!IsInitialized && _finishedChunks == root)
             {
                 IsInitialized = true;
             }
@@ -61,15 +64,14 @@ namespace AppleCinnamon
                 _chunkDrawer.Update(camera, world);
                 var currentChunkIndex = new Int2((int)camera.Position.X / WorldSettings.ChunkSize, (int)camera.Position.Z / WorldSettings.ChunkSize);
 
-                UpdateChunks(camera, device);
+                UpdateChunks(camera);
                 QueueChunksByIndex(currentChunkIndex);
             }
         }
 
-        public static readonly ConcurrentDictionary<Int2, Chunk> BagOfDeath = new();
-        public static readonly ConcurrentBag<Chunk> Graveyard = new();
+        
 
-        private void UpdateChunks(Camera camera, Device device)
+        private void UpdateChunks(Camera camera)
         {
             var now = DateTime.Now;
             _chunksToDraw.Clear();
@@ -77,18 +79,16 @@ namespace AppleCinnamon
             {
                 chunk.IsRendered = false;
 
-                if (chunk.State != ChunkState.Killed)
+                if (!chunk.UpdateDeletion(camera, now))
                 {
-                    if (!chunk.CheckForValidity(camera, now))
-                    {
-                        chunk.IsTimeToDie = true;
-                        BagOfDeath.TryAdd(chunk.ChunkIndex, chunk);
-                    }
+                    BagOfDeath.TryAdd(chunk.ChunkIndex, chunk);
                 }
 
-                chunk.IsRendered = !chunk.IsTimeToDie && chunk.State == ChunkState.Finished && (!Game.IsViewFrustumCullingEnabled ||
-                                                                               camera.BoundingFrustum.Contains(ref chunk.BoundingBox) !=
-                                                                               ContainmentType.Disjoint);
+                chunk.IsRendered = chunk.Deletion != ChunkDeletionState.Deletion &&
+                                   chunk.State == ChunkState.Finished && 
+                                   (!Game.IsViewFrustumCullingEnabled || 
+                                        camera.BoundingFrustum.Contains(ref chunk.BoundingBox) !=  ContainmentType.Disjoint);
+
                 if (chunk.IsRendered)
                 {
                     _chunksToDraw.Add(chunk);
@@ -96,7 +96,7 @@ namespace AppleCinnamon
             }
         }
 
-        public void CleanUp(Device device)
+        public void CleanUp()
         {
             if (Pipeline.State == PipelineState.Running && BagOfDeath.Count > Game.ViewDistance * 2)
             {
@@ -105,13 +105,12 @@ namespace AppleCinnamon
 
             if (Pipeline.State == PipelineState.Stopped)
             {
-                Massacre(device);
+                Massacre();
             }
         }
 
 
-        public static ConcurrentDictionary<Int2, Chunk> DeadChunks = new();
-        private void Massacre(Device device)
+        private void Massacre()
         {
             foreach (var chunk in BagOfDeath)
             {
@@ -126,11 +125,9 @@ namespace AppleCinnamon
 
             BagOfDeath.Clear();
             Pipeline.Resume();
-            _isSuspended = false;
         }
 
-        public static int ChunkCreated = 0;
-        public static int ChunkResurrected = 0;
+        
         private Chunk CreateChunk(Int2 chunkIndex)
         {
             if (Graveyard.Count > 0)

@@ -28,18 +28,18 @@ namespace AppleCinnamon
 
         public TimeSpan TimeSpentInTransform { get; private set; }
 
-        private readonly ChunkManager _chunkManager;
         private readonly ChunkDispatcher _chunkDispatcher;
+        private readonly Action<Chunk> _finishMove;
 
-        public Pipeline(ChunkManager chunkManager)
+        public Pipeline(Action<Chunk> finishMove, Graphics grfx)
         {
-            _chunkManager = chunkManager;
-            _chunkDispatcher = new ChunkDispatcher();
+            _finishMove = finishMove;
+            _chunkDispatcher = new ChunkDispatcher(grfx);
 
             var terrain = new TerrainGenerator(new DaniNoise(WorldSettings.HighMapNoiseOptions));
             var artifact = new ArtifactGenerator();
-            var local = new LocalFinalizer();
-            var global = new GlobalFinalizer();
+            var local = new LocalContextBuilder();
+            var global = new GlobalContextBuilder();
 
             TerrainStage = new PipelineStage("Terrain", terrain.Transform, NeighborAssigner, MDoP);
             ArtifactStage = new PipelineStage("Artifact", artifact.Transform, chk => Staging(1, chk));
@@ -88,7 +88,7 @@ namespace AppleCinnamon
         private void BuildPipeline()
         {
             Dispatcher = new TransformBlock<Chunk, Chunk>(BenchmarkedDispatcher, new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = MDoP });
-            FinishBlock = new ActionBlock<Chunk>(_chunkManager.Finalize);
+            FinishBlock = new ActionBlock<Chunk>(_finishMove);
 
             foreach (var stage in Stages)
             {

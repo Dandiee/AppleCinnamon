@@ -1,6 +1,6 @@
 ﻿namespace AppleCinnamon
 {
-    public sealed class GlobalFinalizer
+    public sealed class GlobalContextBuilder
     {
         public Chunk Transform(Chunk chunk)
         {

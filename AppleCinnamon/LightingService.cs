@@ -6,7 +6,7 @@ namespace AppleCinnamon
 {
     public static class LightingService
     {
-        public static void GlobalPropagate(VoxelChunkAddress address) => GlobalPropagate(new Queue<VoxelChunkAddress>(new[] {address}));
+        public static void GlobalPropagate(VoxelChunkAddress address) => GlobalPropagate(new Queue<VoxelChunkAddress>(new[] { address }));
 
         public static void GlobalPropagate(Queue<VoxelChunkAddress> queue)
         {
@@ -25,13 +25,7 @@ namespace AppleCinnamon
                     {
                         var targetDefinition = targetVoxel.GetDefinition();
 
-                        if (targetAddress.RelativeVoxelIndex == new Int3(0, 131, 1))
-                        {
-
-                        }
-
-
-                    var brightnessLoss = VoxelDefinition.GetBrightnessLoss(sourceDefinition, targetDefinition, direction.Direction);
+                        var brightnessLoss = VoxelDefinition.GetBrightnessLoss(sourceDefinition, targetDefinition, direction.Direction);
                         if (brightnessLoss != 0)
                         {
                             if (targetVoxel.Sunlight < sourceVoxel.Sunlight - brightnessLoss || targetVoxel.EmittedLight < sourceVoxel.EmittedLight - brightnessLoss)
@@ -218,6 +212,6 @@ namespace AppleCinnamon
             }
         }
 
-        
+
     }
 }

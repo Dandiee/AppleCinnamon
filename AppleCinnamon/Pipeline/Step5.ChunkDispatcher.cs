@@ -1,24 +1,17 @@
-﻿using SharpDX.Direct3D11;
-
-namespace AppleCinnamon
+﻿namespace AppleCinnamon
 {
     public sealed class ChunkDispatcher
     {
-        private readonly Device _device;
+        private readonly Graphics _grfx;
         
-        public ChunkDispatcher(Device device)
+        public ChunkDispatcher(Graphics grfx)
         {
-            _device = device;
+            _grfx = grfx;
         }
-
-        public ChunkDispatcher()
-        {
-        }
-
+        
         public Chunk Transform(Chunk chunk)
         {
-            // if (Game.Debug) Thread.Sleep(100);
-            ChunkBuilder.BuildChunk(chunk, _device ?? Game.Grfx.Device);
+            ChunkBuilder.BuildChunk(chunk, _grfx.Device);
             return chunk;
         }
     }

@@ -57,18 +57,6 @@ namespace AppleCinnamon
         public static readonly RawColor4 RenderedColor = new(0, 1, 0, 1);
         public static readonly RawRectangle SourceRect = new(0, 0, 16, 16);
 
-        //public static readonly RawColor4[] ColorsByStep = PipelineBlock.Blocks.Select(s =>
-        //{
-        //    if (s is DefaultChunkPoolPipelineBlock)
-        //    {
-        //        return s.DebugColor;
-        //    }
-        //    else
-        //    {
-        //        return new RawColor4((float) s.PipelineStepIndex / (PipelineBlock.Blocks.Count), 0, 0, 1);
-        //    }
-        //}).ToArray();
-
         public static readonly RawColor4[] ColorsBySteps = new[]
         {
             Color.White.ToRawColor4(), // terraing gen
@@ -108,7 +96,7 @@ namespace AppleCinnamon
                 color = ColorsBySteps[chunk.Stage];
             }
 
-            if (chunk.IsMarkedForDelete)
+            if (chunk.Deletion == ChunkDeletionState.MarkedForDeletion)
             {
                 color = Color.DarkRed.ToRawColor4();
             }

@@ -122,7 +122,7 @@ namespace AppleCinnamon
         private void Update(GameTime gameTime, Device device)
         {
             _camera.Update(gameTime, _chunkManager, World);
-            _chunkManager.CleanUp(device);
+            _chunkManager.CleanUp();
 
 
 

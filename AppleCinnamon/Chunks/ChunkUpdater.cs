@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using AppleCinnamon.Helper;
 using AppleCinnamon.Settings;
 using SharpDX;
@@ -10,8 +7,6 @@ namespace AppleCinnamon
 {
     public sealed class ChunkUpdater
     {
-        private bool _isUpdateInProgress;
-
         private readonly Graphics _graphics;
         private readonly ChunkManager _chunkManager;
 
@@ -26,15 +21,8 @@ namespace AppleCinnamon
 
         public void SetVoxel(Int3 absoluteIndex, byte voxel)
         {
-            if (_isUpdateInProgress)
-            {
-                return;
-            }
-
             if (_chunkManager.TryGetVoxelAddress(absoluteIndex, out var address))
             {
-                _isUpdateInProgress = true;
-
                 if (address.RelativeVoxelIndex.Y >= address.Chunk.CurrentHeight)
                 {
                     address.Chunk.ExtendUpward(address.RelativeVoxelIndex.Y);
@@ -62,17 +50,13 @@ namespace AppleCinnamon
                 UpdateLighting(address, oldVoxel, newVoxel);
                 ChunkBuilder.BuildChunk(address.Chunk, _graphics.Device);
 
-                Task.WaitAll(ChunkManager.GetSurroundingChunks(2).Select(chunkIndex =>
+                foreach (var chunkIndex in ChunkManager.GetSurroundingChunks(2))
                 {
                     if (chunkIndex != Int2.Zero && _chunkManager.TryGetChunk(chunkIndex + address.Chunk.ChunkIndex, out var chunkToReload))
                     {
-                        return Task.Run(() => ChunkBuilder.BuildChunk(chunkToReload, _graphics.Device));
+                        ChunkBuilder.BuildChunk(chunkToReload, _graphics.Device);
                     }
-                    return Task.CompletedTask;
-
-                }).ToArray());
-
-                _isUpdateInProgress = false;
+                }
             }
         }
 

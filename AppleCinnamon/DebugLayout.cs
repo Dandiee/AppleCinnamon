@@ -114,7 +114,6 @@ namespace AppleCinnamon
                 $"INTENSITY: {Hofman.SunlightFactor:F2}\r\n" +
                 $"Death queue: {ChunkManager.BagOfDeath.Count}\r\n" +
                 $"Chunks: {ChunkManager.Chunks.Count}\r\n"+
-                $"DeadChunks: {ChunkManager.DeadChunks.Count}\r\n" +
                 $"Graveyard: {ChunkManager.Graveyard.Count}\r\n"+
                 $"Created: {ChunkManager.ChunkCreated}\r\n"+
                 $"Resurrected: {ChunkManager.ChunkResurrected}\r\n";
