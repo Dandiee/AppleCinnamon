@@ -17,6 +17,13 @@ namespace AppleCinnamon.Chunks
         public readonly EffectPass Pass;
         public readonly InputLayout InputLayout;
 
+        private readonly EffectMatrixVariable _worldViewProjectionVar;
+        private readonly EffectVectorVariable _eyePositionVar;
+        private readonly EffectScalarVariable _lightFactorVar;
+        private readonly EffectScalarVariable _fogStartVar;
+        private readonly EffectScalarVariable _fogEndVar;
+        private readonly EffectVectorVariable _fogColorVar;
+
         public EffectDefinition(Device device, string shaderFilePath, PrimitiveTopology primitiveTopology, string textureFilePath = default)
         {
             PrimitiveTopology = primitiveTopology;
@@ -28,6 +35,13 @@ namespace AppleCinnamon.Chunks
             {
                 Effect.GetVariableByName("Textures").AsShaderResource().SetResource(new ShaderResourceView(device, device.CreateTexture2DFromBitmap(textureFilePath)));
             }
+
+            _worldViewProjectionVar = Effect.GetVariableByName("WorldViewProjection").AsMatrix();
+            _eyePositionVar = Effect.GetVariableByName("EyePosition").AsVector();
+            _lightFactorVar = Effect.GetVariableByName("lightFactor").AsScalar();
+            _fogStartVar = Effect.GetVariableByName("FogStart").AsScalar();
+            _fogEndVar = Effect.GetVariableByName("FogEnd").AsScalar();
+            _fogColorVar = Effect.GetVariableByName("FogColor").AsVector();
         }
 
 
@@ -44,21 +58,21 @@ namespace AppleCinnamon.Chunks
                 ? 0 
                 : MathUtil.PiOverTwo - (Math.Abs(world.Time - 0.5f) * MathUtil.PiOverTwo);
 
-            Effect.GetVariableByName("WorldViewProjection").AsMatrix().SetMatrix(camera.WorldViewProjection);
-            Effect.GetVariableByName("EyePosition").AsVector().Set(camera.Position);
-            Effect.GetVariableByName("lightFactor").AsScalar().Set((float)Math.Sin(lightFactor));
+            _worldViewProjectionVar.SetMatrix(camera.WorldViewProjection);
+            _eyePositionVar.Set(camera.Position);
+            _lightFactorVar.Set((float)Math.Sin(lightFactor));
 
             if (camera.IsInWater)
             {
-                Effect.GetVariableByName("FogStart").AsScalar().Set(8);
-                Effect.GetVariableByName("FogEnd").AsScalar().Set(64);
-                Effect.GetVariableByName("FogColor").AsVector().Set(new Vector4(0, 0.2f, 1, 0));
+                _fogStartVar.Set(8);
+                _fogEndVar.Set(64);
+                _fogColorVar.Set(new Vector4(0, 0.2f, 1, 0));
             }
             else
             {
-                Effect.GetVariableByName("FogStart").AsScalar().Set(64);
-                Effect.GetVariableByName("FogEnd").AsScalar().Set(Game.ViewDistance * WorldSettings.ChunkSize);
-                Effect.GetVariableByName("FogColor").AsVector().Set(new Vector4(0, 0, 0, 1));
+                _fogStartVar.Set(64);
+                _fogEndVar.Set(Game.ViewDistance * WorldSettings.ChunkSize);
+                _fogColorVar.Set(new Vector4(0, 0, 0, 1));
             }
         }
     }
