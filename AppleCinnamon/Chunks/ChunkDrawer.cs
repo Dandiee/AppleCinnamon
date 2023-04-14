@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using AppleCinnamon.Helper;
 using AppleCinnamon.Vertices;
 using SharpDX;
 using SharpDX.Direct3D;

@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using AppleCinnamon.Helper;
+using AppleCinnamon.Common;
 using AppleCinnamon.Settings;
 using SharpDX;
 using Device = SharpDX.Direct3D11.Device;
 
-namespace AppleCinnamon
+namespace AppleCinnamon.ChunkBuilders
 {
     public static partial class ChunkBuilder
     {

@@ -1,4 +1,4 @@
-﻿namespace AppleCinnamon.Helper
+﻿namespace AppleCinnamon.Common
 {
     public enum Face
     {

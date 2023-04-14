@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using SharpDX.Mathematics.Interop;
+﻿using SharpDX.Mathematics.Interop;
 
 namespace AppleCinnamon.Helper
 {

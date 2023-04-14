@@ -1,12 +1,10 @@
-﻿using AppleCinnamon.Helper;
-using AppleCinnamon.Settings;
-using AppleCinnamon.Vertices;
+﻿using AppleCinnamon.Vertices;
 using SharpDX;
 using Device = SharpDX.Direct3D11.Device;
 
-namespace AppleCinnamon
+namespace AppleCinnamon.ChunkBuilders
 {
-    public partial class ChunkBuilder
+    public static partial class ChunkBuilder
     {
         private static readonly Vector2[] WaterUvOffsets = { Vector2.Zero, new(1, 0), new(1, 1 / 32f), new(0, 1 / 32f) };
 

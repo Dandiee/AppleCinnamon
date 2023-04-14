@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using AppleCinnamon.Common;
 using AppleCinnamon.Helper;
 using AppleCinnamon.Settings;
 using SharpDX;

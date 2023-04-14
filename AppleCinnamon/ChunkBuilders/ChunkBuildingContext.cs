@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using AppleCinnamon;
+using AppleCinnamon.Common;
 using AppleCinnamon.Helper;
 using AppleCinnamon.Settings;
 using SharpDX;
 
-namespace AppleCinnamon
+namespace AppleCinnamon.ChunkBuilders
 {
     public sealed class ChunkBuildingContext
     {
@@ -46,7 +48,7 @@ namespace AppleCinnamon
             Front = new FaceBuildingContext(Face.Front);
             Back = new FaceBuildingContext(Face.Back);
 
-            Faces = new[] {Top, Bottom, Left, Right, Front, Back};
+            Faces = new[] { Top, Bottom, Left, Right, Front, Back };
         }
 
         public void Clear()
@@ -59,7 +61,7 @@ namespace AppleCinnamon
             // TopMostWaterVoxels.Clear();
             // TopMostLandVoxels.Clear();
 
-            SpriteBlocks = new ();
+            SpriteBlocks = new();
             SingleSidedSpriteBlocks = new();
             VisibilityFlags = new();
             LightPropagationVoxels = new(1024);
@@ -123,5 +125,5 @@ namespace AppleCinnamon
             PendingVoxels = new();
         }
     }
-    
+
 }

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Threading;
 using AppleCinnamon.Services;
 using AppleCinnamon.Settings;
 

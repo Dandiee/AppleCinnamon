@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace AppleCinnamon.Helper
+﻿namespace AppleCinnamon.Common
 {
     public sealed class Cube<T>
     {

@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Diagnostics;
 using AppleCinnamon.Vertices;
-using SharpDX;
 using SharpDX.Direct3D11;
 using SharpDX.DXGI;
 using Buffer = SharpDX.Direct3D11.Buffer;

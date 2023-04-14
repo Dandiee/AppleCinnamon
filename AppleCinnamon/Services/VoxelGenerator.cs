@@ -1,8 +1,4 @@
-﻿using AppleCinnamon.Helper;
-using AppleCinnamon.Settings;
-using SimplexNoise;
-
-namespace AppleCinnamon
+﻿namespace AppleCinnamon
 {
 
     // public sealed class VoxelGenerator

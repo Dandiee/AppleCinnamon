@@ -1,4 +1,4 @@
-﻿namespace AppleCinnamon
+﻿namespace AppleCinnamon.ChunkBuilders
 {
     public sealed class GlobalVisibilityFinalizer
     {
@@ -13,7 +13,7 @@
             ProcessSide(chunk, rightChunk, chunk.BuildingContext.Right);
             ProcessSide(chunk, frontChunk, chunk.BuildingContext.Front);
             ProcessSide(chunk, backChunk, chunk.BuildingContext.Back);
-            
+
             CleanUpMemory(chunk);
         }
 
@@ -33,7 +33,7 @@
                 if (voxelDefinition.IsBlock)
                 {
                     var neighborDefinition = neighbor.GetDefinition();
-                    if ((neighborDefinition.CoverFlags & context.OppositeDirection) == 0) 
+                    if ((neighborDefinition.CoverFlags & context.OppositeDirection) == 0)
                     {
                         chunk.BuildingContext.VisibilityFlags.TryGetValue(flatIndex, out var visibility);
                         chunk.BuildingContext.VisibilityFlags[flatIndex] = visibility | context.Direction;

@@ -1,4 +1,5 @@
 ﻿using System;
+using AppleCinnamon.Common;
 using AppleCinnamon.Extensions;
 using AppleCinnamon.Helper;
 using AppleCinnamon.Settings;

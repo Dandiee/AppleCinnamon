@@ -1,6 +1,4 @@
-﻿using AppleCinnamon.Helper;
-
-namespace AppleCinnamon.Extensions
+﻿namespace AppleCinnamon.Extensions
 {
     public static class VoxelAddressExtensions
     {

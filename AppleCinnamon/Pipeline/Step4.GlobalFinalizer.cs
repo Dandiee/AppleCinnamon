@@ -1,4 +1,6 @@
-﻿namespace AppleCinnamon
+﻿using AppleCinnamon.ChunkBuilders;
+
+namespace AppleCinnamon
 {
     public sealed class GlobalContextBuilder
     {

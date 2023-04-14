@@ -1,7 +1,8 @@
-﻿using AppleCinnamon.Helper;
+﻿using AppleCinnamon.Common;
+using AppleCinnamon.Helper;
 using AppleCinnamon.Settings;
 
-namespace AppleCinnamon
+namespace AppleCinnamon.ChunkBuilders
 {
     public static class FullScanner
     {
@@ -61,7 +62,7 @@ namespace AppleCinnamon
                         }
 
 
-                       
+
 
                         if (j > 0) // bottom
                         {
@@ -114,7 +115,7 @@ namespace AppleCinnamon
 
                 if (definition.IsBlock)
                 {
-                    if ((neighborDefinition.CoverFlags & context.OppositeDirection) == 0 || (definition.CoverFlags & context.Direction) == 0) 
+                    if ((neighborDefinition.CoverFlags & context.OppositeDirection) == 0 || (definition.CoverFlags & context.Direction) == 0)
                     {
                         visibilityFlag |= context.Direction;
                         context.VoxelCount++;
@@ -134,8 +135,6 @@ namespace AppleCinnamon
                 context.PendingVoxels.Add(flatIndex);
             }
         }
-
-        
     }
 
 

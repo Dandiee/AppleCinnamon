@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using AppleCinnamon.Common;
 using AppleCinnamon.Helper;
 using AppleCinnamon.Settings;
 using SharpDX;
 
-namespace AppleCinnamon
+namespace AppleCinnamon.ChunkBuilders
 {
     public static class GlobalLightFinalizer
     {

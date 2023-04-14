@@ -2,7 +2,9 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
+using AppleCinnamon.ChunkBuilders;
 using AppleCinnamon.Chunks;
+using AppleCinnamon.Common;
 using AppleCinnamon.Helper;
 using AppleCinnamon.Settings;
 using SharpDX;
@@ -119,7 +121,7 @@ namespace AppleCinnamon
                 {
                     Graveyard.Add(chunk.Value);
                 }
-                chunk.Value.Kill(_graphics.Device);
+                chunk.Value.Kill();
                 Pipeline.RemoveItem(chunk.Key);
             }
 

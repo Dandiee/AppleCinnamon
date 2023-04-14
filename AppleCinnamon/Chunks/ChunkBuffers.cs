@@ -1,6 +1,5 @@
 ﻿using System;
 using AppleCinnamon.Vertices;
-using SharpDX.Direct3D11;
 
 namespace AppleCinnamon
 {

@@ -1,9 +1,10 @@
 ﻿using System.Collections.Generic;
+using AppleCinnamon.Common;
 using AppleCinnamon.Helper;
 using AppleCinnamon.Settings;
 using SharpDX;
 
-namespace AppleCinnamon
+namespace AppleCinnamon.ChunkBuilders
 {
     public sealed class ChunkUpdater
     {
@@ -106,7 +107,7 @@ namespace AppleCinnamon
                     var hadNeighborVisibility =
                         neighborAddress.Chunk.BuildingContext.VisibilityFlags.TryGetValue(neighborIndex,
                             out var neighborOldVisibilityFlag);
-                    
+
                     // neighbor was visible
                     if (neighborDefinition.IsFaceVisible(oldDefinition, direction.Direction, direction.OppositeDirection))
                     {

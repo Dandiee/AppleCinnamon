@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Runtime.CompilerServices;
 using SharpDX;
 using Vector3 = SharpDX.Vector3;
 using Vector4 = SharpDX.Vector4;

@@ -1,4 +1,5 @@
-﻿using AppleCinnamon.Helper;
+﻿using AppleCinnamon.Common;
+using AppleCinnamon.Helper;
 using SharpDX;
 
 namespace AppleCinnamon

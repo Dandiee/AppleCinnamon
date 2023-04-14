@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Linq;
-using System.Threading;
 using System.Windows.Forms;
+using AppleCinnamon.Common;
 using AppleCinnamon.Helper;
-using AppleCinnamon.Vertices;
 using SharpDX;
 using SharpDX.Direct3D11;
 using Point = System.Drawing.Point;

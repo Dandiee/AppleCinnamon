@@ -1,13 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Threading;
+using AppleCinnamon.ChunkBuilders;
+using AppleCinnamon.Common;
 using AppleCinnamon.Helper;
 using AppleCinnamon.Settings;
 using SharpDX;
-using SharpDX.Direct3D11;
 
 namespace AppleCinnamon
 {
@@ -53,7 +50,6 @@ namespace AppleCinnamon
         public Vector3 Center { get; private set; }
         public Vector2 Center2d { get; private set; }
         public bool IsRendered { get; set; }
-        public DateTime TimeOfDeath;
 
         public Chunk Resurrect(Int2 chunkIndex)
         {
@@ -138,7 +134,7 @@ namespace AppleCinnamon
         }
 
 
-        public void Kill(Device device)
+        public void Kill()
         {
             Neighbors = new Chunk[9];
             Stage = 0;

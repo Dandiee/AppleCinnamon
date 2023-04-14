@@ -1,12 +1,12 @@
 ﻿using System.Linq;
 using System.Runtime.CompilerServices;
-using AppleCinnamon.Helper;
+using AppleCinnamon.Common;
 using AppleCinnamon.Settings;
 using AppleCinnamon.Vertices;
 using SharpDX;
 using SharpDX.Direct3D11;
 
-namespace AppleCinnamon
+namespace AppleCinnamon.ChunkBuilders
 {
     public static partial class ChunkBuilder
     {

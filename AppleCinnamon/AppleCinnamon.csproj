@@ -34,6 +34,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\AppleCinnamon.Common\AppleCinnamon.Common.csproj" />
     <ProjectReference Include="..\DaniDx.Desktop\DaniDx.Desktop.csproj" />
   </ItemGroup>
 
@@ -72,5 +73,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+
+
 
 </Project>
