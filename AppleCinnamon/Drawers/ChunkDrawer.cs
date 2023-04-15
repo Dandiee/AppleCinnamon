@@ -1,12 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using AppleCinnamon.Chunks;
 using AppleCinnamon.Vertices;
 using SharpDX;
 using SharpDX.Direct3D;
 using SharpDX.Direct3D11;
 using Buffer = SharpDX.Direct3D11.Buffer;
 
-namespace AppleCinnamon.Chunks
+namespace AppleCinnamon.Drawers
 {
     public sealed class ChunkDrawer
     {

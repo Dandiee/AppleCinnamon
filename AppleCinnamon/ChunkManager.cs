@@ -3,8 +3,8 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using AppleCinnamon.ChunkBuilders;
-using AppleCinnamon.Chunks;
 using AppleCinnamon.Common;
+using AppleCinnamon.Drawers;
 using AppleCinnamon.Helper;
 using AppleCinnamon.Settings;
 using SharpDX;
@@ -21,7 +21,6 @@ namespace AppleCinnamon
         public static readonly ConcurrentDictionary<Int2, Chunk> BagOfDeath = new();
         public static readonly ConcurrentBag<Chunk> Graveyard = new();
         public static readonly ConcurrentDictionary<Int2, Chunk> Chunks = new();
-        private readonly ChunkUpdater _chunkUpdater;
         private readonly ChunkDrawer _chunkDrawer;
         private Int2? _lastQueueIndex;
         public readonly Pipeline Pipeline;
@@ -34,8 +33,7 @@ namespace AppleCinnamon
             _graphics = graphics;
             _chunkDrawer = new ChunkDrawer(graphics.Device);
             _chunksToDraw = new List<Chunk>();
-            Pipeline = new Pipeline(FinishChunk, graphics);
-            _chunkUpdater = new ChunkUpdater(graphics, this);
+            Pipeline = new Pipeline(FinishChunk, _graphics.Device);
 
             QueueChunksByIndex(Int2.Zero);
         }

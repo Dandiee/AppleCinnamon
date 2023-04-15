@@ -1,4 +1,4 @@
-﻿namespace AppleCinnamon
+﻿namespace AppleCinnamon.ChunkGenerators
 {
 
     // public sealed class VoxelGenerator

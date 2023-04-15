@@ -1,12 +1,13 @@
-﻿using AppleCinnamon.Helper;
-using AppleCinnamon.Settings;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using AppleCinnamon.Common;
+using SharpDX.Direct3D11;
+using AppleCinnamon.ChunkBuilders;
+using AppleCinnamon.ChunkGenerators;
 
 namespace AppleCinnamon
 {
@@ -29,23 +30,18 @@ namespace AppleCinnamon
 
         public TimeSpan TimeSpentInTransform { get; private set; }
 
-        private readonly ChunkDispatcher _chunkDispatcher;
+        private readonly Device _device;
         private readonly Action<Chunk> _finishMove;
 
-        public Pipeline(Action<Chunk> finishMove, Graphics grfx)
+        public Pipeline(Action<Chunk> finishMove, Device device)
         {
             _finishMove = finishMove;
-            _chunkDispatcher = new ChunkDispatcher(grfx);
+            _device = device;
 
-            var terrain = new TerrainGenerator(new DaniNoise(WorldSettings.HighMapNoiseOptions));
-            var artifact = new ArtifactGenerator();
-            var local = new LocalContextBuilder();
-            var global = new GlobalContextBuilder();
-
-            TerrainStage = new PipelineStage("Terrain", terrain.Transform, NeighborAssigner, MDoP);
-            ArtifactStage = new PipelineStage("Artifact", artifact.Transform, chk => Staging(1, chk));
-            LocalStage = new PipelineStage("Local", local.Transform, chk => Staging(2, chk), MDoP);
-            GlobalStage = new PipelineStage("Global", global.Transform, chk => Staging(3, chk));
+            TerrainStage = new PipelineStage("Terrain", TerrainGenerator.Generate, NeighborAssigner, MDoP);
+            ArtifactStage = new PipelineStage("Artifact", ArtifactGenerator.Generate, chk => Staging(1, chk));
+            LocalStage = new PipelineStage("Local", LocalBuild, chk => Staging(2, chk), MDoP);
+            GlobalStage = new PipelineStage("Global", GlobalBuild, chk => Staging(3, chk));
 
             Stages = new[] { TerrainStage, ArtifactStage, LocalStage, GlobalStage };
 
@@ -152,13 +148,30 @@ namespace AppleCinnamon
             }
         }
 
+        private Chunk LocalBuild(Chunk chunk)
+        {
+            LightingService.InitializeSunlight(chunk);
+            FullScanner.FullScan(chunk);
+            LightingService.LocalPropagate(chunk, chunk.BuildingContext.LightPropagationVoxels);
+
+            return chunk;
+        }
+
+        private Chunk GlobalBuild(Chunk chunk)
+        {
+            GlobalVisibilityFinalizer.FinalizeGlobalVisibility(chunk);
+            GlobalLightFinalizer.FinalizeGlobalLighting(chunk);
+
+            return chunk;
+        }
+
         private Chunk BenchmarkedDispatcher(Chunk chunk)
         {
             var sw = Stopwatch.StartNew();
-            var result = _chunkDispatcher.Transform(chunk);
+            ChunkBuilders.ChunkDispatcher.BuildChunk(chunk, _device);
             sw.Stop();
             TimeSpentInTransform += sw.Elapsed;
-            return result;
+            return chunk;
         }
     }
 

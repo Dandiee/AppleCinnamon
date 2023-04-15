@@ -8,7 +8,6 @@ namespace AppleCinnamon.ChunkBuilders
     {
         public static void FullScan(Chunk chunk)
         {
-
             var height = chunk.CurrentHeight;
             var voxels = chunk.Voxels;
 

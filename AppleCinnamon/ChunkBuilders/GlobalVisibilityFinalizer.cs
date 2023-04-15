@@ -1,6 +1,6 @@
 ﻿namespace AppleCinnamon.ChunkBuilders
 {
-    public sealed class GlobalVisibilityFinalizer
+    public static class GlobalVisibilityFinalizer
     {
         public static void FinalizeGlobalVisibility(Chunk chunk)
         {

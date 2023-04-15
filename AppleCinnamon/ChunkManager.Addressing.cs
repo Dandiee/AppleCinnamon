@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using AppleCinnamon.ChunkBuilders;
 using AppleCinnamon.Common;
 using AppleCinnamon.Helper;
 using AppleCinnamon.Settings;
@@ -80,7 +81,7 @@ namespace AppleCinnamon
             {
                 var cursor = new Int2(i * -1);
 
-                foreach (var direction in AnnoyingMappings.ChunkManagerDirections)
+                foreach (var direction in Mappings.ChunkManagerDirections)
                 {
                     for (var j = 1; j < i * 2 + 1; j++)
                     {
@@ -91,6 +92,13 @@ namespace AppleCinnamon
             }
         }
 
-        public void SetBlock(Int3 absoluteIndex, byte voxel) => _chunkUpdater.SetVoxel(absoluteIndex, voxel);
+        public void SetBlock(Int3 absoluteIndex, byte voxel)
+        {
+
+            if (TryGetVoxelAddress(absoluteIndex, out var address))
+            {
+                ChunkUpdater.SetVoxel(address, voxel, _graphics.Device);
+            }
+        }
     }
 }

@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Windows.Forms;
 using AppleCinnamon.Common;
+using AppleCinnamon.Drawers;
 using AppleCinnamon.Helper;
 using SharpDX;
 using SharpDX.Direct3D11;
@@ -13,7 +14,7 @@ namespace AppleCinnamon
     {
         public static readonly Vector3 StartPosition = new(0, 140, 0);
 
-        public const int ViewDistance = 12;
+        public const int ViewDistance = 32;
         public const int NumberOfPools = 4;
         public static readonly TimeSpan ChunkDespawnCooldown = TimeSpan.FromMilliseconds(10);
         public static bool IsBackFaceCullingEnabled { get; set; }
@@ -21,7 +22,10 @@ namespace AppleCinnamon
         public static bool IsViewFrustumCullingEnabled { get; set; } = true;
         public static bool ShowChunkBoundingBoxes { get; set; } = false;
         public static bool RenderSky { get; set; } = true;
+        public static bool RenderDebugLayout { get; set; } = true;
+        public static bool RenderCrosshair { get; set; } = true;
         public static bool RenderWater { get; set; } = true;
+        public static bool IsPaused { get; set; } = false;
         public static bool RenderSolid { get; set; } = true;
         public static bool RenderSprites { get; set; } = true;
         public static bool RenderBoxes { get; set; } = true;
@@ -72,7 +76,7 @@ namespace AppleCinnamon
                 var elapsedTime = now - _lastTick;
                 _lastTick = now;
 
-                if (!_camera.IsPaused)
+                if (!Game.IsPaused)
                 {
                     Cursor.Position = _graphics.RenderForm.PointToScreen(new Point(_graphics.RenderForm.ClientSize.Width / 2,
                         _graphics.RenderForm.ClientSize.Height / 2));
@@ -93,10 +97,21 @@ namespace AppleCinnamon
                         _chunkManager.Draw(_camera);
                     }
 
-                    _skyDome.Draw();
+                    if (RenderSky)
+                    {
+                        _skyDome.Draw();
+                    }
 
-                    _crosshair.Draw(); // leaking
-                    _debugLayout.Draw(_chunkManager, _camera, this); // leaking
+
+                    if (RenderCrosshair)
+                    {
+                        _crosshair.Draw(); // leaking
+                    }
+
+                    if (RenderDebugLayout)
+                    {
+                        _debugLayout.Draw(_chunkManager, _camera, this); // leaking
+                    }
 
 
                     if (ShowPipelineVisualization)
@@ -114,6 +129,7 @@ namespace AppleCinnamon
                 AverageRenderTime = _lastRenderTimes.Average();
                 PeekRenderTime = _lastRenderTimes.Max();
                 AverageFps = 1000f / AverageRenderTime;
+                
             });
         }
 

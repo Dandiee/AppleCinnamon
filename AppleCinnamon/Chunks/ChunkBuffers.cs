@@ -5,16 +5,9 @@ namespace AppleCinnamon
 {
     public sealed class ChunkBuffers : IDisposable
     {
-        public Chunk Owner { get; }
-
         public BufferDefinition<VertexSolidBlock> BufferSolid;
         public BufferDefinition<VertexWater> BufferWater;
         public BufferDefinition<VertexSprite> BufferSprite;
-
-        public ChunkBuffers(Chunk chunk)
-        {
-            Owner = chunk;
-        }
 
         public void Dispose()
         {

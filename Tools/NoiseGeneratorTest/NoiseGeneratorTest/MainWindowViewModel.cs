@@ -5,6 +5,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
@@ -218,17 +219,24 @@ namespace NoiseGeneratorTest
             var fromI = Width / -2;
             var fromJ = Height / -2;
 
-            for (var i = 0; i < Width; i++)
+            Parallel.For(0, Width, i =>
             {
                 for (var j = 0; j < Height; j++)
                 {
                     var value = noise.Compute(i + fromI, j + fromJ);
 
-                    values[i, j] = (byte) (value * Factor);
+                    values[i, j] = (byte)(value * Factor);
 
                     listValues.Add(value);
                 }
-            }
+            });
+            //for (var i = 0; i < Width; i++)
+            //{
+            //    for (var j = 0; j < Height; j++)
+            //    {
+            //        
+            //    }
+            //}
 
             var min = listValues.Min();
             var max = listValues.Max();

@@ -10,9 +10,18 @@ namespace AppleCinnamon.ChunkBuilders
 {
     public static class GlobalLightFinalizer
     {
+        private static readonly IReadOnlyDictionary<int, Face[]> GlobalLightFinalizerCornerMapping =
+            new Dictionary<int, Face[]>
+            {
+                [Chunk.GetChunkFlatIndex(-1, -1)] = new[] { Face.Right, Face.Back },
+                [Chunk.GetChunkFlatIndex(1, -1)] = new[] { Face.Left, Face.Back },
+                [Chunk.GetChunkFlatIndex(1, 1)] = new[] { Face.Left, Face.Front },
+                [Chunk.GetChunkFlatIndex(-1, 1)] = new[] { Face.Right, Face.Front },
+            };
+
         public static void FinalizeGlobalLighting(Chunk chunk)
         {
-            foreach (var corner in AnnoyingMappings.GlobalLightFinalizerCornerMapping)
+            foreach (var corner in GlobalLightFinalizerCornerMapping)
             {
                 var cornerChunk = chunk.Neighbors[corner.Key];
                 EdgeSolver(cornerChunk, EdgePropogation.All[(byte)corner.Value[0]]);

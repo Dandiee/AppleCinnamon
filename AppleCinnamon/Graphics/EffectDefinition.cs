@@ -70,8 +70,8 @@ namespace AppleCinnamon.Chunks
             }
             else
             {
-                _fogStartVar.Set(64);
-                _fogEndVar.Set(Game.ViewDistance * WorldSettings.ChunkSize);
+                _fogStartVar.Set(Game.ViewDistance * WorldSettings.ChunkSize);
+                _fogEndVar.Set(10* Game.ViewDistance * WorldSettings.ChunkSize);
                 _fogColorVar.Set(new Vector4(0, 0, 0, 1));
             }
         }

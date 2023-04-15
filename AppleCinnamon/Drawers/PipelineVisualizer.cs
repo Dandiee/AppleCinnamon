@@ -5,7 +5,7 @@ using SharpDX;
 using SharpDX.Direct2D1;
 using SharpDX.Mathematics.Interop;
 
-namespace AppleCinnamon
+namespace AppleCinnamon.Drawers
 {
     public sealed class PipelineVisualizer
     {
@@ -17,7 +17,7 @@ namespace AppleCinnamon
             _graphics = graphics;
             _textures = _graphics.D2DeviceContext.CreateD2DBitmap("Content/Texture/terrain3.png");
         }
-        
+
         public void Draw(Camera camera, ChunkManager chunkManager)
         {
             const int size = sizeof(float) * 4;
@@ -88,8 +88,8 @@ namespace AppleCinnamon
         public static ChunkSprite Rect(this Chunk chunk, Int2 currentChunkIndex)
         {
             var center = chunk.Center2d / 2f + Offset;
-            var color =  RenderedColor;
-           
+            var color = RenderedColor;
+
             if (!chunk.IsRendered)
             {
                 color = ColorsBySteps[chunk.Stage];

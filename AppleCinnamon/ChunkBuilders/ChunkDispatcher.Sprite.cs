@@ -6,7 +6,7 @@ using Device = SharpDX.Direct3D11.Device;
 
 namespace AppleCinnamon.ChunkBuilders
 {
-    public static partial class ChunkBuilder
+    public static partial class ChunkDispatcher
     {
         public const float SingleSidedOffset = 0.1f;
 

@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Runtime;
-using AppleCinnamon.Chunks;
 using AppleCinnamon.Collision;
 using AppleCinnamon.Common;
+using AppleCinnamon.Drawers;
 using AppleCinnamon.Extensions;
 using AppleCinnamon.Helper;
 using AppleCinnamon.Settings;
@@ -11,10 +11,10 @@ using SharpDX.DirectInput;
 
 namespace AppleCinnamon
 {
-    public sealed class Camera
+    public sealed partial class Camera
     {
         private readonly Graphics _graphics;
-        private static readonly TimeSpan BuildCooldown = TimeSpan.FromMilliseconds(10);
+        private static readonly TimeSpan BuildCooldown = TimeSpan.FromMilliseconds(100);
         private DateTime _lastModification;
 
         public Vector2 Position2d { get; private set; }
@@ -42,7 +42,6 @@ namespace AppleCinnamon
 
         public float Yaw { get; private set; }
         public float Pitch { get; private set; }
-        public bool IsPaused { get; private set; }
 
         private KeyboardState _currentKeyboardState;
         private KeyboardState _lastKeyboardState;
@@ -73,6 +72,8 @@ namespace AppleCinnamon
             VoxelInHand = VoxelDefinition.Sand;
             _voxelDefinitionIndexInHand = VoxelDefinition.RegisteredDefinitions.IndexOf(VoxelInHand.Type);
 
+            SetupActions();
+
             IsInAir = true;
         }
 
@@ -101,7 +102,7 @@ namespace AppleCinnamon
             _currentKeyboardState = Keyboard.GetCurrentState();
             _currentMouseState = Mouse.GetCurrentState();
 
-            if (!IsPaused)
+            if (!Game.IsPaused)
             {
 
                 CollisionHelper.ApplyPlayerPhysics(this, chunkManager, (float)gameTime.ElapsedGameTime.TotalSeconds);
@@ -127,51 +128,14 @@ namespace AppleCinnamon
             const int leftClickIndex = 0;
             const int rightClickIndex = 1;
 
-            if (!_currentKeyboardState.IsPressed(Key.Escape) && _lastKeyboardState.IsPressed(Key.Escape))
+            foreach (var action in Actions)
             {
-                IsPaused = !IsPaused;
+                if (action.IsFired(_lastKeyboardState, _currentKeyboardState))
+                {
+                    action.Action();
+                }
             }
-
-            if (!_currentKeyboardState.IsPressed(Key.F1) && _lastKeyboardState.IsPressed(Key.F1))
-            {
-                Game.RenderSolid = !Game.RenderSolid;
-            }
-
-            if (!_currentKeyboardState.IsPressed(Key.F2) && _lastKeyboardState.IsPressed(Key.F2))
-            {
-                Game.RenderWater = !Game.RenderWater;
-            }
-
-            if (!_currentKeyboardState.IsPressed(Key.F3) && _lastKeyboardState.IsPressed(Key.F3))
-            {
-                Game.RenderSprites = !Game.RenderSprites;
-            }
-
-            if (!_currentKeyboardState.IsPressed(Key.F4) && _lastKeyboardState.IsPressed(Key.F4))
-            {
-                Game.RenderBoxes = !Game.RenderBoxes;
-            }
-
-            if (!_currentKeyboardState.IsPressed(Key.F5) && _lastKeyboardState.IsPressed(Key.F5))
-            {
-                Game.ShowChunkBoundingBoxes = !Game.ShowChunkBoundingBoxes;
-            }
-
-            if (!_currentKeyboardState.IsPressed(Key.F6) && _lastKeyboardState.IsPressed(Key.F6))
-            {
-                Game.RenderSky = !Game.RenderSky;
-            }
-
-            if (!_currentKeyboardState.IsPressed(Key.F7) && _lastKeyboardState.IsPressed(Key.F7))
-            {
-                Game.ShowPipelineVisualization = !Game.ShowPipelineVisualization;
-            }
-
-            if (!_currentKeyboardState.IsPressed(Key.F12) && _lastKeyboardState.IsPressed(Key.F12))
-            {
-                Game.Debug = !Game.Debug;
-            }
-
+            
             if (!_currentKeyboardState.IsPressed(Key.P) && _lastKeyboardState.IsPressed(Key.P))
             {
                 GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce;

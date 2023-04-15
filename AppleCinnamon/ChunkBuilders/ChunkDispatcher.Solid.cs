@@ -8,7 +8,7 @@ using SharpDX.Direct3D11;
 
 namespace AppleCinnamon.ChunkBuilders
 {
-    public static partial class ChunkBuilder
+    public static partial class ChunkDispatcher
     {
         private static BufferDefinition<VertexSolidBlock> BuildSolid(Chunk chunk, Device device)
         {

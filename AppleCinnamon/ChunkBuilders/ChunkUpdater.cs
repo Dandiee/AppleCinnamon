@@ -1,67 +1,48 @@
 ﻿using System.Collections.Generic;
 using AppleCinnamon.Common;
-using AppleCinnamon.Helper;
 using AppleCinnamon.Settings;
 using SharpDX;
+using SharpDX.Direct3D11;
 
 namespace AppleCinnamon.ChunkBuilders
 {
-    public sealed class ChunkUpdater
+    public static class ChunkUpdater
     {
-        private readonly Graphics _graphics;
-        private readonly ChunkManager _chunkManager;
-
-        public ChunkUpdater(
-            Graphics graphics,
-            ChunkManager chunkManager)
+        public static void SetVoxel(VoxelChunkAddress address, byte voxel, Device device)
         {
-            _graphics = graphics;
-            _chunkManager = chunkManager;
-        }
-
-
-        public void SetVoxel(Int3 absoluteIndex, byte voxel)
-        {
-            if (_chunkManager.TryGetVoxelAddress(absoluteIndex, out var address))
+            if (address.RelativeVoxelIndex.Y >= address.Chunk.CurrentHeight)
             {
-                if (address.RelativeVoxelIndex.Y >= address.Chunk.CurrentHeight)
+                address.Chunk.ExtendUpward(address.RelativeVoxelIndex.Y);
+            }
+
+            var oldVoxel = address.Chunk.GetVoxel(address.RelativeVoxelIndex);
+            var oldDefinition = oldVoxel.GetDefinition();
+            var newDefinition = VoxelDefinition.DefinitionByType[voxel];
+            var newVoxel = newDefinition.HueFaces != VisibilityFlag.None
+                ? newDefinition.Create(2)
+                : newDefinition.Create();
+
+            if (oldDefinition.IsBlock || newDefinition.IsBlock)
+            {
+                var affectedChunks = address.Chunk.GetNeighborChunkIndexes(address.RelativeVoxelIndex.X, address.RelativeVoxelIndex.Z);
+                foreach (var affectedChunk in affectedChunks)
                 {
-                    address.Chunk.ExtendUpward(address.RelativeVoxelIndex.Y);
+                    affectedChunk.BuildingContext.SetAllChanged();
                 }
+            }
 
-                var oldVoxel = address.Chunk.GetVoxel(address.RelativeVoxelIndex);
-                var oldDefinition = oldVoxel.GetDefinition();
-                var newDefinition = VoxelDefinition.DefinitionByType[voxel];
-                var newVoxel = newDefinition.HueFaces != VisibilityFlag.None
-                    ? newDefinition.Create(2)
-                    : newDefinition.Create();
+            address.Chunk.SetSafe(address.RelativeVoxelIndex, newVoxel);
 
-                if (oldDefinition.IsBlock || newDefinition.IsBlock)
-                {
-                    var affectedChunks = address.Chunk.GetNeighborChunkIndexes(address.RelativeVoxelIndex.X, address.RelativeVoxelIndex.Z);
-                    foreach (var affectedChunk in affectedChunks)
-                    {
-                        affectedChunk.BuildingContext.SetAllChanged();
-                    }
-                }
+            UpdateVisibilityFlags(address.Chunk, oldVoxel, newVoxel, address.RelativeVoxelIndex);
+            UpdateLighting(address, oldVoxel, newVoxel);
 
-                address.Chunk.SetSafe(address.RelativeVoxelIndex, newVoxel);
-
-                UpdateVisibilityFlags(address.Chunk, oldVoxel, newVoxel, address.RelativeVoxelIndex);
-                UpdateLighting(address, oldVoxel, newVoxel);
-                ChunkBuilder.BuildChunk(address.Chunk, _graphics.Device);
-
-                foreach (var chunkIndex in ChunkManager.GetSurroundingChunks(2))
-                {
-                    if (chunkIndex != Int2.Zero && _chunkManager.TryGetChunk(chunkIndex + address.Chunk.ChunkIndex, out var chunkToReload))
-                    {
-                        ChunkBuilder.BuildChunk(chunkToReload, _graphics.Device);
-                    }
-                }
+            foreach (var neighbor in address.Chunk.Neighbors)
+            {
+                ChunkDispatcher.BuildChunk(neighbor, device);
             }
         }
 
-        private void UpdateVisibilityFlags(Chunk chunk, Voxel oldVoxel, Voxel newVoxel, Int3 relativeIndex)
+        private static void UpdateVisibilityFlags(Chunk chunk, Voxel oldVoxel, Voxel newVoxel, Int3 relativeIndex)
         {
             var flatIndex = chunk.GetFlatIndex(relativeIndex);
             var newDefinition = newVoxel.GetDefinition();
@@ -163,7 +144,7 @@ namespace AppleCinnamon.ChunkBuilders
             }
         }
 
-        private void UpdateLighting(VoxelChunkAddress address, Voxel oldVoxel, Voxel newVoxel)
+        private static void UpdateLighting(VoxelChunkAddress address, Voxel oldVoxel, Voxel newVoxel)
         {
             // there are multiple steps which are generating dark spots
             var darknessSources = new Queue<DarknessSource>();
@@ -207,5 +188,42 @@ namespace AppleCinnamon.ChunkBuilders
                 LightingService.GlobalPropagate(lightSource);
             }
         }
+    }
+
+    public readonly struct BlockUpdateDirection
+    {
+        private static readonly IReadOnlyDictionary<VisibilityFlag, Face> Mapping = new Dictionary<VisibilityFlag, Face>
+        {
+            [VisibilityFlag.Top] = Face.Top,
+            [VisibilityFlag.Bottom] = Face.Bottom,
+            [VisibilityFlag.Left] = Face.Left,
+            [VisibilityFlag.Right] = Face.Right,
+            [VisibilityFlag.Front] = Face.Front,
+            [VisibilityFlag.Back] = Face.Back,
+        };
+
+        public readonly Int3 Step;
+        public readonly VisibilityFlag Direction;
+        public readonly VisibilityFlag OppositeDirection;
+        public readonly Face Face;
+        public readonly Face OppositeFace;
+
+        private BlockUpdateDirection(Int3 step, VisibilityFlag direction, VisibilityFlag oppositeDirection)
+        {
+            Step = step;
+            Direction = direction;
+            OppositeDirection = oppositeDirection;
+            Face = Mapping[direction];
+            OppositeFace = Mapping[oppositeDirection];
+        }
+
+        public static BlockUpdateDirection[] All = {
+            new (Int3.UnitY, VisibilityFlag.Top, VisibilityFlag.Bottom),
+            new ( -Int3.UnitY, VisibilityFlag.Bottom, VisibilityFlag.Top),
+            new (-Int3.UnitX, VisibilityFlag.Left, VisibilityFlag.Right),
+            new (Int3.UnitX, VisibilityFlag.Right, VisibilityFlag.Left),
+            new (-Int3.UnitZ, VisibilityFlag.Front, VisibilityFlag.Back),
+            new (Int3.UnitZ, VisibilityFlag.Back, VisibilityFlag.Front)
+        };
     }
 }

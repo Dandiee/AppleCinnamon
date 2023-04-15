@@ -4,7 +4,7 @@ using AppleCinnamon.Common;
 using AppleCinnamon.Helper;
 using SharpDX;
 
-namespace AppleCinnamon.Services
+namespace AppleCinnamon.ChunkGenerators
 {
     public static class ShapeGenerator
     {

@@ -1,21 +1,15 @@
 ﻿using System;
 using AppleCinnamon.Common;
-using AppleCinnamon.Helper;
 using AppleCinnamon.Settings;
 
-namespace AppleCinnamon
+namespace AppleCinnamon.ChunkGenerators
 {
-    public sealed class TerrainGenerator
+    public static class TerrainGenerator
     {
-        private readonly DaniNoise _noise;
-        private static readonly DaniNoise _waterNoise = new(WorldSettings.RiverNoiseOptions);
+        private static readonly DaniNoise Noise = new(WorldSettings.HighMapNoiseOptions);
+        private static readonly DaniNoise WaterNoise = new(WorldSettings.RiverNoiseOptions);
 
-        public TerrainGenerator(DaniNoise noise)
-        {
-            _noise = noise;
-        }
-
-        public Chunk Transform(Chunk chunk)
+        public static Chunk Generate(Chunk chunk)
         {
             // if (Game.Debug) Thread.Sleep(100);
 
@@ -27,7 +21,7 @@ namespace AppleCinnamon
                 for (var k = 0; k < WorldSettings.ChunkSize; k++)
                 {
                     var coordinates = chunk.ChunkIndex * chunkSizeXz + new Int2(i, k);
-                    var height = (byte)((_noise.Compute(coordinates.X, coordinates.Y)));
+                    var height = (byte)Noise.Compute(coordinates.X, coordinates.Y);
 
                     heatMap[i, k] = height;
                     if (maxHeight < height)
@@ -39,8 +33,8 @@ namespace AppleCinnamon
 
             maxHeight += 64;
             var initialSlicesCount = maxHeight / Chunk.SliceHeight + 1;
-            chunk.Voxels  = new Voxel[WorldSettings.ChunkSize * initialSlicesCount * Chunk.SliceHeight * WorldSettings.ChunkSize];
-            chunk.CurrentHeight = (chunk.Voxels.Length / Chunk.SliceArea) * Chunk.SliceHeight;
+            chunk.Voxels = new Voxel[WorldSettings.ChunkSize * initialSlicesCount * Chunk.SliceHeight * WorldSettings.ChunkSize];
+            chunk.CurrentHeight = chunk.Voxels.Length / Chunk.SliceArea * Chunk.SliceHeight;
             chunk.UpdateBoundingBox();
             chunk.ChunkIndexVector = chunk.BoundingBox.Center;
 
@@ -50,6 +44,11 @@ namespace AppleCinnamon
                 {
                     var height = heatMap[i, k];
 
+                    if (height <= 0)
+                    {
+                        height = 1;
+                    }
+
                     for (var j = 0; j <= height - 1; j++)
                     {
                         chunk.SetVoxel(i, j, k,
@@ -58,7 +57,7 @@ namespace AppleCinnamon
                                 : VoxelDefinition.Dirt.Create());
                     }
 
-                    var waterRandom = _waterNoise.Compute(i + chunk.ChunkIndex.X * WorldSettings.ChunkSize, k + chunk.ChunkIndex.Y * WorldSettings.ChunkSize);
+                    var waterRandom = WaterNoise.Compute(i + chunk.ChunkIndex.X * WorldSettings.ChunkSize, k + chunk.ChunkIndex.Y * WorldSettings.ChunkSize);
                     var isWater = false;
                     if (Math.Abs(waterRandom - 128) <= 2)
                     {

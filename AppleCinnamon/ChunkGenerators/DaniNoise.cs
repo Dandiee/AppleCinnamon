@@ -1,7 +1,7 @@
 ﻿using System;
 using AppleCinnamon.Settings;
 
-namespace AppleCinnamon
+namespace AppleCinnamon.ChunkGenerators
 {
     public sealed class ImprovedNoise
     {
@@ -56,17 +56,17 @@ namespace AppleCinnamon
 
 
             var hash = (_p[_p[A]] & 0xF) << 1;
-            var g22 = (((xFlags >> hash) & 3) - 1) * x + (((yFlags >> hash) & 3) - 1) * y;
+            var g22 = ((xFlags >> hash & 3) - 1) * x + ((yFlags >> hash & 3) - 1) * y;
 
             hash = (_p[_p[B]] & 0xF) << 1;
-            var g12 = (((xFlags >> hash) & 3) - 1) * (x - 1) + (((yFlags >> hash) & 3) - 1) * y;
+            var g12 = ((xFlags >> hash & 3) - 1) * (x - 1) + ((yFlags >> hash & 3) - 1) * y;
             var c1 = g22 + u * (g12 - g22);
 
             hash = (_p[_p[A + 1]] & 0xF) << 1;
-            var g21 = (((xFlags >> hash) & 3) - 1) * x + (((yFlags >> hash) & 3) - 1) * (y - 1);
+            var g21 = ((xFlags >> hash & 3) - 1) * x + ((yFlags >> hash & 3) - 1) * (y - 1);
 
             hash = (_p[_p[B + 1]] & 0xF) << 1;
-            var g11 = (((xFlags >> hash) & 3) - 1) * (x - 1) + (((yFlags >> hash) & 3) - 1) * (y - 1);
+            var g11 = ((xFlags >> hash & 3) - 1) * (x - 1) + ((yFlags >> hash & 3) - 1) * (y - 1);
             var c2 = g21 + u * (g11 - g21);
 
             return c1 + v * (c2 - c1);

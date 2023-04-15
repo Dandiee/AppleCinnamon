@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks.Dataflow;
-using AppleCinnamon.Chunks;
+using AppleCinnamon.Extensions;
 using AppleCinnamon.Helper;
 using AppleCinnamon.Settings;
 using SharpDX;
@@ -11,7 +11,7 @@ using SharpDX.DirectWrite;
 using SharpDX.Mathematics.Interop;
 using TextAlignment = SharpDX.DirectWrite.TextAlignment;
 
-namespace AppleCinnamon
+namespace AppleCinnamon.Drawers
 {
     public sealed class DebugLayout
     {
@@ -56,6 +56,9 @@ namespace AppleCinnamon
 
         private string BuildLeftText(ChunkManager chunkManager, Camera camera, Game game)
         {
+
+            return string.Join(Environment.NewLine, camera.Actions.Select(s => $"{s.Key:G}: {s.Name}"));
+
             var targetInfo = camera.CurrentCursor == null
                 ? "No target"
                 : $"{camera.CurrentCursor.AbsoluteVoxelIndex} (BlockType: {camera.CurrentCursor.Voxel.BlockType}, Light: {camera.CurrentCursor.Voxel.CompositeLight})";
@@ -113,9 +116,9 @@ namespace AppleCinnamon
                 $"SUN: {Hofman.SunDirection:F2}\r\n" +
                 $"INTENSITY: {Hofman.SunlightFactor:F2}\r\n" +
                 $"Death queue: {ChunkManager.BagOfDeath.Count}\r\n" +
-                $"Chunks: {ChunkManager.Chunks.Count}\r\n"+
-                $"Graveyard: {ChunkManager.Graveyard.Count}\r\n"+
-                $"Created: {ChunkManager.ChunkCreated}\r\n"+
+                $"Chunks: {ChunkManager.Chunks.Count}\r\n" +
+                $"Graveyard: {ChunkManager.Graveyard.Count}\r\n" +
+                $"Created: {ChunkManager.ChunkCreated}\r\n" +
                 $"Resurrected: {ChunkManager.ChunkResurrected}\r\n";
         }
 
@@ -132,7 +135,7 @@ namespace AppleCinnamon
             //    Clipboard.SetText(rightText);
             //}
 
-            using (var leftTextLayout = new TextLayout(_graphics.DirectWrite, leftText, _leftAlignedTextFormat ,_graphics.RenderForm.Width - 20, _graphics.RenderForm.Height))
+            using (var leftTextLayout = new TextLayout(_graphics.DirectWrite, leftText, _leftAlignedTextFormat, _graphics.RenderForm.Width - 20, _graphics.RenderForm.Height))
             {
                 _graphics.RenderTarget2D.DrawTextLayout(new RawVector2(10, 10), leftTextLayout, _brush);
             }

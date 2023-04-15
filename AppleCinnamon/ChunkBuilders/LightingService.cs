@@ -1,11 +1,23 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using AppleCinnamon.Settings;
 using SharpDX;
 
-namespace AppleCinnamon
+namespace AppleCinnamon.ChunkBuilders
 {
     public static class LightingService
     {
+        public static void InitializeSunlight(Chunk chunk)
+        {
+            for (var i = 0; i != WorldSettings.ChunkSize; i++)
+            {
+                for (var k = 0; k != WorldSettings.ChunkSize; k++)
+                {
+                    _ = Sunlight(chunk, new Int3(i, chunk.CurrentHeight, k), 15, false).ToList();
+                }
+            }
+        }
+
         public static void GlobalPropagate(VoxelChunkAddress address) => GlobalPropagate(new Queue<VoxelChunkAddress>(new[] { address }));
 
         public static void GlobalPropagate(Queue<VoxelChunkAddress> queue)
@@ -213,5 +225,17 @@ namespace AppleCinnamon
         }
 
 
+    }
+
+    public struct DarknessSource
+    {
+        public VoxelChunkAddress Address;
+        public Voxel OldVoxel;
+
+        public DarknessSource(VoxelChunkAddress address, Voxel oldVoxel)
+        {
+            Address = address;
+            OldVoxel = oldVoxel;
+        }
     }
 }

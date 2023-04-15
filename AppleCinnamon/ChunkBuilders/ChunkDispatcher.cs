@@ -7,7 +7,7 @@ using Device = SharpDX.Direct3D11.Device;
 
 namespace AppleCinnamon.ChunkBuilders
 {
-    public static partial class ChunkBuilder
+    public static partial class ChunkDispatcher
     {
         public static void BuildChunk(Chunk chunk, Device device)
         {
@@ -15,7 +15,7 @@ namespace AppleCinnamon.ChunkBuilders
             {
                 if (chunk.Buffers == null)
                 {
-                    chunk.Buffers = new ChunkBuffers(chunk);
+                    chunk.Buffers = new ChunkBuffers();
                 }
 
                 if (!WorldSettings.IsChangeTrackingEnabled || chunk.BuildingContext.IsSolidChanged)

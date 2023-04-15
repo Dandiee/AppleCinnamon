@@ -2,7 +2,7 @@
 using SharpDX.Direct2D1;
 using SharpDX.Mathematics.Interop;
 
-namespace AppleCinnamon
+namespace AppleCinnamon.Drawers
 {
     public sealed class Crosshair
     {

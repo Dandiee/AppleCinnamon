@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Linq;
-using AppleCinnamon.Helper;
+using AppleCinnamon.Extensions;
 using AppleCinnamon.Settings;
 using SharpDX;
 

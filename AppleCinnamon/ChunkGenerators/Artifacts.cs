@@ -5,7 +5,7 @@ using AppleCinnamon.Helper;
 using AppleCinnamon.Settings;
 using SharpDX;
 
-namespace AppleCinnamon.Services
+namespace AppleCinnamon.ChunkGenerators
 {
     public static class Artifacts
     {

@@ -1,17 +1,16 @@
 ﻿using System;
-using AppleCinnamon.Services;
 using AppleCinnamon.Settings;
 
-namespace AppleCinnamon
+namespace AppleCinnamon.ChunkGenerators
 {
-    public sealed class ArtifactGenerator
+    public static class ArtifactGenerator
     {
-        private static readonly VoxelDefinition[] FlowersAndSuch = 
+        private static readonly VoxelDefinition[] FlowersAndSuch =
         {
             VoxelDefinition.FlowerRed, VoxelDefinition.FlowerYellow, VoxelDefinition.MushroomBrown, VoxelDefinition.MushroomRed,
         };
 
-        public Chunk Transform(Chunk chunk)
+        public static Chunk Generate(Chunk chunk)
         {
             // if (Game.Debug) Thread.Sleep(100);
             var rnd = new Random(chunk.ChunkIndex.GetHashCode());
@@ -42,14 +41,10 @@ namespace AppleCinnamon
                 }
             }
 
-            CleanUp(chunk);
-            return chunk;
-        }
-        
-
-        private void CleanUp(Chunk chunk)
-        {
+            // cleanup
             chunk.BuildingContext.TopMostLandVoxels.Clear();
+
+            return chunk;
         }
     }
 }

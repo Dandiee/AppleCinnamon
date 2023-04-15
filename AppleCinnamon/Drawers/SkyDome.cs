@@ -5,7 +5,7 @@ using SharpDX;
 using SharpDX.Direct3D;
 using SharpDX.Direct3D11;
 
-namespace AppleCinnamon
+namespace AppleCinnamon.Drawers
 {
     public class SkyDome
     {
@@ -25,11 +25,10 @@ namespace AppleCinnamon
 
         public void Draw()
         {
-            if (Game.RenderSky)
-            {
-                _skyEffectDefinition.Use(_device);
-                _skyBuffer.Draw(_device);
-            }
+
+            _skyEffectDefinition.Use(_device);
+            _skyBuffer.Draw(_device);
+
         }
 
         public void Update(Camera camera, World world)

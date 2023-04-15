@@ -1,11 +1,12 @@
 ﻿using System;
+using AppleCinnamon.Chunks;
 using AppleCinnamon.Extensions;
 using AppleCinnamon.Vertices;
 using SharpDX;
 using Vector3 = SharpDX.Vector3;
 using Vector4 = SharpDX.Vector4;
 
-namespace AppleCinnamon.Chunks
+namespace AppleCinnamon.Drawers
 {
     static class Hofman
     {
@@ -16,7 +17,7 @@ namespace AppleCinnamon.Chunks
 
         public static float SunIntensity { get; set; } = 1.0f;
         public static float Turbitity { get; set; } = 1.0f;
-        private static Vector3 HGg { get; set; }= new(0.9f, 0.9f, 0.9f);
+        private static Vector3 HGg { get; set; } = new(0.9f, 0.9f, 0.9f);
         public static float InscatteringMultiplier { get; set; } = 1.0f;
         public static float BetaRayMultiplier { get; set; } = 8.0f;
         public static float BetaMieMultiplier { get; set; } = 0.00005f;
@@ -27,13 +28,13 @@ namespace AppleCinnamon.Chunks
         private static Vector3 _oneOverBetaRPlusBetaM;
         private static Vector4 _multipliers;
         private static Vector4 _sunColorAndIntensity;
-                
+
         private static Vector3 _betaRay;
         private static Vector3 _betaDashRay;
         private static Vector3 _betaMie;
         private static Vector3 _betaDashMie;
 
-       static  void init()
+        static void init()
         {
             const float n = 1.0003f;
             const float N = 2.545e25f;
@@ -83,9 +84,9 @@ namespace AppleCinnamon.Chunks
             _betaMie = temp3 * vBetaMieTemp;
         }
 
-        
 
-        public static  void UpdateEffect(EffectDefinition<VertexSkyBox> skyEffectDefinition, Camera camera, World world)
+
+        public static void UpdateEffect(EffectDefinition<VertexSkyBox> skyEffectDefinition, Camera camera, World world)
         {
             Position = Vector3.UnitZ.Rotate(-Vector3.UnitX, world.Time * MathUtil.Pi);
 
@@ -93,7 +94,7 @@ namespace AppleCinnamon.Chunks
             Vector3 vZenith = new Vector3(0.0f, 1.0f, 0.0f);
 
             float thetaS = Vector3.Dot(Position, vZenith);
-            thetaS = (float)(Math.Acos(thetaS));
+            thetaS = (float)Math.Acos(thetaS);
 
 
 
@@ -108,13 +109,13 @@ namespace AppleCinnamon.Chunks
             {
                 // Rayleigh Scattering
                 // lambda in um.
-                tauR = (float)(Math.Exp(-m * 0.008735f * Math.Pow(lambda[i], -4.08f)));
+                tauR = (float)Math.Exp(-m * 0.008735f * Math.Pow(lambda[i], -4.08f));
 
                 // Aerosal (water + dust) attenuation
                 // beta - amount of aerosols present
                 // alpha - ratio of small to large particle sizes. (0:4,usually 1.3)
                 const float alpha = 1.3f;
-                tauA = (float)(Math.Exp(-m * beta * Math.Pow(lambda[i], -alpha)));  // lambda should be in um
+                tauA = (float)Math.Exp(-m * beta * Math.Pow(lambda[i], -alpha));  // lambda should be in um
 
                 fTau[i] = tauR * tauA;
             }
