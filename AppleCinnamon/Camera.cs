@@ -14,6 +14,7 @@ namespace AppleCinnamon
     public sealed partial class Camera
     {
         private readonly Graphics _graphics;
+        private readonly SkyDome _skyDome;
         private static readonly TimeSpan BuildCooldown = TimeSpan.FromMilliseconds(100);
         private DateTime _lastModification;
 
@@ -43,8 +44,8 @@ namespace AppleCinnamon
         public float Yaw { get; private set; }
         public float Pitch { get; private set; }
 
-        private KeyboardState _currentKeyboardState;
-        private KeyboardState _lastKeyboardState;
+        public KeyboardState CurrentKeyboardState;
+        public KeyboardState LastKeyboardState;
         private MouseState _currentMouseState;
         private MouseState _lastMouseState;
         public VoxelRayCollisionResult CurrentCursor { get; private set; }
@@ -52,9 +53,10 @@ namespace AppleCinnamon
 
         private readonly Vector3 InitialLookAt;
 
-        public Camera(Graphics graphics)
+        public Camera(Graphics graphics, SkyDome skyDome)
         {
             _graphics = graphics;
+            _skyDome = skyDome;
             Position = new Vector3(Game.StartPosition.X, Game.StartPosition.Y, Game.StartPosition.Z);
             LookAt = Vector3.Normalize(new Vector3(1, 0, 0));
             InitialLookAt = LookAt;
@@ -63,6 +65,9 @@ namespace AppleCinnamon
             Keyboard = new Keyboard(directInput);
             Keyboard.Properties.BufferSize = 128;
             Keyboard.Acquire();
+
+            LastKeyboardState = Keyboard.GetCurrentState();
+            CurrentKeyboardState = Keyboard.GetCurrentState();
 
             Mouse = new Mouse(directInput);
             Mouse.Properties.AxisMode = DeviceAxisMode.Relative;
@@ -99,7 +104,7 @@ namespace AppleCinnamon
                 return;
             }
 
-            _currentKeyboardState = Keyboard.GetCurrentState();
+            CurrentKeyboardState = Keyboard.GetCurrentState();
             _currentMouseState = Mouse.GetCurrentState();
 
             if (!Game.IsPaused)
@@ -114,7 +119,7 @@ namespace AppleCinnamon
 
             HandleDefaultInputs(chunkManager);
 
-            _lastKeyboardState = _currentKeyboardState;
+            LastKeyboardState = CurrentKeyboardState;
             _lastMouseState = _currentMouseState;
         }
 
@@ -130,13 +135,13 @@ namespace AppleCinnamon
 
             foreach (var action in Actions)
             {
-                if (action.IsFired(_lastKeyboardState, _currentKeyboardState))
+                if (action.IsFired(LastKeyboardState, CurrentKeyboardState))
                 {
                     action.Action();
                 }
             }
             
-            if (!_currentKeyboardState.IsPressed(Key.P) && _lastKeyboardState.IsPressed(Key.P))
+            if (!CurrentKeyboardState.IsPressed(Key.P) && LastKeyboardState.IsPressed(Key.P))
             {
                 GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce;
                 GC.Collect(2, GCCollectionMode.Forced, true, true);
@@ -232,22 +237,22 @@ namespace AppleCinnamon
             var directionNormal = new Vector3(-direction.Z, 0, direction.X);
             var translationVector = Vector3.Zero;
 
-            if (_currentKeyboardState.IsPressed(Key.W))
+            if (CurrentKeyboardState.IsPressed(Key.W))
             {
                 translationVector += direction;
             }
 
-            if (_currentKeyboardState.IsPressed(Key.S))
+            if (CurrentKeyboardState.IsPressed(Key.S))
             {
                 translationVector -= direction;
             }
 
-            if (_currentKeyboardState.IsPressed(Key.A))
+            if (CurrentKeyboardState.IsPressed(Key.A))
             {
                 translationVector -= directionNormal;
             }
 
-            if (_currentKeyboardState.IsPressed(Key.D))
+            if (CurrentKeyboardState.IsPressed(Key.D))
             {
                 translationVector += directionNormal;
             }
@@ -255,40 +260,43 @@ namespace AppleCinnamon
             if (translationVector != Vector3.Zero)
             {
                 Velocity += Vector3.Normalize(translationVector) * MovementSensitivity *
-                            (_currentKeyboardState.IsPressed(Key.LeftShift) ? SprintSpeedFactor : 1);
+                            (CurrentKeyboardState.IsPressed(Key.LeftShift) ? SprintSpeedFactor : 1);
             }
 
             const float lilStep = 0.001f;
 
-            if (_currentKeyboardState.IsPressed(Key.NumberPad0)) Hofman.SunIntensity += lilStep;
-            if (_currentKeyboardState.IsPressed(Key.NumberPad1)) Hofman.SunIntensity -= lilStep;
+            if (CurrentKeyboardState.IsPressed(Key.NumberPad0)) SkyDomeOptions.SunIntensity += lilStep;
+            if (CurrentKeyboardState.IsPressed(Key.NumberPad1)) SkyDomeOptions.SunIntensity -= lilStep;
 
-            if (_currentKeyboardState.IsPressed(Key.NumberPad2)) Hofman.Turbitity += lilStep;
-            if (_currentKeyboardState.IsPressed(Key.NumberPad3)) Hofman.Turbitity -= lilStep;
+            if (CurrentKeyboardState.IsPressed(Key.NumberPad2)) SkyDomeOptions.Turbitity += lilStep;
+            if (CurrentKeyboardState.IsPressed(Key.NumberPad3)) SkyDomeOptions.Turbitity -= lilStep;
 
-            if (_currentKeyboardState.IsPressed(Key.NumberPad4)) Hofman.InscatteringMultiplier += lilStep;
-            if (_currentKeyboardState.IsPressed(Key.NumberPad5)) Hofman.InscatteringMultiplier -= lilStep;
+            if (CurrentKeyboardState.IsPressed(Key.NumberPad4)) SkyDomeOptions.InscatteringMultiplier += lilStep;
+            if (CurrentKeyboardState.IsPressed(Key.NumberPad5)) SkyDomeOptions.InscatteringMultiplier -= lilStep;
 
-            if (_currentKeyboardState.IsPressed(Key.NumberPad6)) Hofman.BetaRayMultiplier += lilStep;
-            if (_currentKeyboardState.IsPressed(Key.NumberPad7)) Hofman.BetaRayMultiplier -= lilStep;
+            if (CurrentKeyboardState.IsPressed(Key.NumberPad6)) SkyDomeOptions.BetaRayMultiplier += lilStep;
+            if (CurrentKeyboardState.IsPressed(Key.NumberPad7)) SkyDomeOptions.BetaRayMultiplier -= lilStep;
 
-            if (_currentKeyboardState.IsPressed(Key.NumberPad8)) Hofman.BetaMieMultiplier += lilStep / 100f;
-            if (_currentKeyboardState.IsPressed(Key.NumberPad9)) Hofman.BetaMieMultiplier -= lilStep / 100f;
+            if (CurrentKeyboardState.IsPressed(Key.NumberPad8)) SkyDomeOptions.BetaMieMultiplier += lilStep / 100f;
+            if (CurrentKeyboardState.IsPressed(Key.NumberPad9)) SkyDomeOptions.BetaMieMultiplier -= lilStep / 100f;
 
-            if (_currentKeyboardState.IsPressed(Key.Up)) Hofman.SunDirection += lilStep / 1;
-            if (_currentKeyboardState.IsPressed(Key.Down)) Hofman.SunDirection -= lilStep / 1;
+            if (CurrentKeyboardState.IsPressed(Key.Up))
+            {
+                world.IncreaseTime();
+            }
+
+            if (CurrentKeyboardState.IsPressed(Key.Down))
+            {
+                world.DecreaseTime();
+            }
 
 
-            if (_currentKeyboardState.IsPressed(Key.Up)) world.IncreaseTime();
-            if (_currentKeyboardState.IsPressed(Key.Down)) world.DecreaseTime();
 
-
-
-            if ((!IsInAir || IsInWater) && _currentKeyboardState.IsPressed(Key.Space))
+            if ((!IsInAir || IsInWater) && CurrentKeyboardState.IsPressed(Key.Space))
             {
                 IsInAir = true;
                 Velocity = new Vector3(Velocity.X,
-                    JumpVelocity * (_currentKeyboardState.IsPressed(Key.LeftShift) ? SprintSpeedFactor : 1), Velocity.Z);
+                    JumpVelocity * (CurrentKeyboardState.IsPressed(Key.LeftShift) ? SprintSpeedFactor : 1), Velocity.Z);
             }
 
 

@@ -11,5 +11,8 @@ namespace AppleCinnamon.Extensions
         public static Vector4 ToVector4(this Vector3 v, float w) => new(v, w);
         public static string ToNonRetardedString(this Vector3 vector) => $"{vector.X:F2}, {vector.Y:F2}, {vector.Z:F2}";
         public static Int3 Round(this Vector3 vector) => new((int)Math.Round(vector.X), (int)Math.Round(vector.Y), (int)Math.Round(vector.Z));
+
+        public static Vector3 Pow(this Vector3 v, float to) => new((float)Math.Pow(v.X, to), (float)Math.Pow(v.Y, to), (float)Math.Pow(v.Z, to));
+        public static Vector3 Exp(this Vector3 v) => new((float)Math.Exp(v.X), (float)Math.Exp(v.Y), (float)Math.Exp(v.Z));
     }
 }

@@ -39,7 +39,7 @@ namespace AppleCinnamon
 
         private readonly Graphics _graphics;
         private readonly Crosshair _crosshair;
-        private readonly SkyDome _skyDome;
+        public readonly SkyDome SkyDome;
         private readonly PipelineVisualizer _pipelineVisualizer;
         private readonly double[] _lastRenderTimes;
         private DateTime _lastTick;
@@ -55,12 +55,12 @@ namespace AppleCinnamon
         {
             _graphics = new Graphics();
             Grfx = _graphics;
-
+            SkyDome = new SkyDome(_graphics.Device);
             _crosshair = new Crosshair(_graphics);
-            _camera = new Camera(_graphics);
+            _camera = new Camera(_graphics, SkyDome);
             _chunkManager = new ChunkManager(_graphics);
             _debugLayout = new DebugLayout(_graphics);
-            _skyDome = new SkyDome(_graphics.Device);
+            
 
             _lastRenderTimes = new double[20];
             _pipelineVisualizer = new PipelineVisualizer(_graphics);
@@ -99,7 +99,7 @@ namespace AppleCinnamon
 
                     if (RenderSky)
                     {
-                        _skyDome.Draw();
+                        SkyDome.Draw();
                     }
 
 
@@ -143,7 +143,7 @@ namespace AppleCinnamon
 
             if (Game.Debug)
             {
-                _skyDome.Update(_camera, World);
+                SkyDome.Update(_camera);
                 _chunkManager.Update(_camera, World, device);
             }
         }

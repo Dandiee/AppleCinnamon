@@ -1,39 +1,43 @@
-﻿using AppleCinnamon.Chunks;
-using AppleCinnamon.Extensions;
+﻿using AppleCinnamon.Extensions;
 using AppleCinnamon.Vertices;
 using SharpDX;
-using SharpDX.Direct3D;
-using SharpDX.Direct3D11;
+using Device = SharpDX.Direct3D11.Device;
 
 namespace AppleCinnamon.Drawers
 {
-    public class SkyDome
+    public partial class SkyDome
     {
         private readonly Device _device;
         public const int Resolution = 64;
         public const float Radius = 100;
 
         private readonly BufferDefinition<VertexSkyBox> _skyBuffer;
-        private readonly EffectDefinition<VertexSkyBox> _skyEffectDefinition;
+        private readonly SkyDomeEffect _skyDomeEffectEffect;
 
         public SkyDome(Device device)
         {
             _device = device;
-            _skyEffectDefinition = new(_device, "Content/Effect/RayleightScatter.fx", PrimitiveTopology.TriangleList);
             _skyBuffer = GenerateSkyDome(device);
+            _skyDomeEffectEffect = new SkyDomeEffect(device);
+            SetupDebug();
+        }
+
+        public void UpdateOpts(ref float field, float step)
+        {
+            field += step;
+            _skyDomeEffectEffect.UpdateDetails();
         }
 
         public void Draw()
         {
-
-            _skyEffectDefinition.Use(_device);
+            _skyDomeEffectEffect.EffectDefinition.Use(_device);
             _skyBuffer.Draw(_device);
-
         }
 
-        public void Update(Camera camera, World world)
+        public void Update(Camera camera)
         {
-            Hofman.UpdateEffect(_skyEffectDefinition, camera, world);
+            _skyDomeEffectEffect.Update(camera);
+            Debug.Update(camera);
         }
 
         public static BufferDefinition<VertexSkyBox> GenerateSkyDome(Device device)

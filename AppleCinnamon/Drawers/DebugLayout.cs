@@ -113,8 +113,6 @@ namespace AppleCinnamon.Drawers
                 $"Average render time: {game.AverageRenderTime:F2}\r\n" +
                 $"Peek render time: {game.PeekRenderTime:F2}\r\n" +
                 $"Average FPS: {game.AverageFps:F2}\r\n" +
-                $"SUN: {Hofman.SunDirection:F2}\r\n" +
-                $"INTENSITY: {Hofman.SunlightFactor:F2}\r\n" +
                 $"Death queue: {ChunkManager.BagOfDeath.Count}\r\n" +
                 $"Chunks: {ChunkManager.Chunks.Count}\r\n" +
                 $"Graveyard: {ChunkManager.Graveyard.Count}\r\n" +
@@ -122,12 +120,14 @@ namespace AppleCinnamon.Drawers
                 $"Resurrected: {ChunkManager.ChunkResurrected}\r\n";
         }
 
+
+
         public void Draw(
             ChunkManager chunkManager,
             Camera camera,
             Game game)
         {
-            var leftText = BuildLeftText(chunkManager, camera, game);
+            var leftText = game.SkyDome.Debug.Lines; // BuildLeftText(chunkManager, camera, game);
             var rightText = BuildRightText(chunkManager, game);
 
             //if (_keyboard.GetCurrentState().IsPressed(Key.C) && _keyboard.GetCurrentState().IsPressed(Key.LeftControl))
@@ -135,20 +135,14 @@ namespace AppleCinnamon.Drawers
             //    Clipboard.SetText(rightText);
             //}
 
-            using (var leftTextLayout = new TextLayout(_graphics.DirectWrite, leftText, _leftAlignedTextFormat, _graphics.RenderForm.Width - 20, _graphics.RenderForm.Height))
-            {
-                _graphics.RenderTarget2D.DrawTextLayout(new RawVector2(10, 10), leftTextLayout, _brush);
-            }
+            using var leftTextLayout = new TextLayout(_graphics.DirectWrite, leftText, _leftAlignedTextFormat, _graphics.RenderForm.Width - 20, _graphics.RenderForm.Height);
+            _graphics.RenderTarget2D.DrawTextLayout(new RawVector2(10, 10), leftTextLayout, _brush);
 
-            using (var rightTextLayout = new TextLayout(_graphics.DirectWrite, rightText, _rightAlignedTextFormat, _graphics.RenderForm.Width - 30, _graphics.RenderForm.Height))
-            {
-                _graphics.RenderTarget2D.DrawTextLayout(new RawVector2(0, 10), rightTextLayout, _brush);
-            }
+            using var rightTextLayout = new TextLayout(_graphics.DirectWrite, rightText, _rightAlignedTextFormat, _graphics.RenderForm.Width - 30, _graphics.RenderForm.Height);
+            _graphics.RenderTarget2D.DrawTextLayout(new RawVector2(0, 10), rightTextLayout, _brush);
 
-            using (var bottomCenterTextLayout = new TextLayout(_graphics.DirectWrite, $"{camera.VoxelInHand.Name}: [{camera.VoxelInHand.Type}]", _bottomCenterAlignedTextFormat, _graphics.RenderForm.Width - 30, _graphics.RenderForm.Height))
-            {
-                _graphics.RenderTarget2D.DrawTextLayout(new RawVector2(0, _graphics.RenderForm.Height - 100), bottomCenterTextLayout, _brush);
-            }
+            using var bottomCenterTextLayout = new TextLayout(_graphics.DirectWrite, $"{camera.VoxelInHand.Name}: [{camera.VoxelInHand.Type}]", _bottomCenterAlignedTextFormat, _graphics.RenderForm.Width - 30, _graphics.RenderForm.Height);
+            _graphics.RenderTarget2D.DrawTextLayout(new RawVector2(0, _graphics.RenderForm.Height - 100), bottomCenterTextLayout, _brush);
         }
     }
 }
