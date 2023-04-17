@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using AppleCinnamon.Common;
 using AppleCinnamon.Drawers;
@@ -10,26 +12,14 @@ using Point = System.Drawing.Point;
 
 namespace AppleCinnamon
 {
-    public sealed class Game
+    public partial class Game
     {
         public static readonly Vector3 StartPosition = new(0, 140, 0);
 
-        public const int ViewDistance = 32;
+        public const int ViewDistance = 12;
         public const int NumberOfPools = 4;
         public static readonly TimeSpan ChunkDespawnCooldown = TimeSpan.FromMilliseconds(10);
-        public static bool IsBackFaceCullingEnabled { get; set; }
 
-        public static bool IsViewFrustumCullingEnabled { get; set; } = true;
-        public static bool ShowChunkBoundingBoxes { get; set; } = false;
-        public static bool RenderSky { get; set; } = true;
-        public static bool RenderDebugLayout { get; set; } = true;
-        public static bool RenderCrosshair { get; set; } = true;
-        public static bool RenderWater { get; set; } = true;
-        public static bool IsPaused { get; set; } = false;
-        public static bool RenderSolid { get; set; } = true;
-        public static bool RenderSprites { get; set; } = true;
-        public static bool RenderBoxes { get; set; } = true;
-        public static bool ShowPipelineVisualization { get; set; } = true;
         public static bool Debug { get; set; } = true;
         //public static bool Debug2 { get; set; } = true;
 
@@ -51,32 +41,52 @@ namespace AppleCinnamon
 
         public static Graphics Grfx;
 
+        public int RenderedFramesInTheLastSecond = 0;
+        public int WeirdFps = 0;
+
         public Game()
         {
             _graphics = new Graphics();
             Grfx = _graphics;
             SkyDome = new SkyDome(_graphics.Device);
             _crosshair = new Crosshair(_graphics);
-            _camera = new Camera(_graphics, SkyDome);
+            _camera = new Camera(_graphics);
             _chunkManager = new ChunkManager(_graphics);
-            _debugLayout = new DebugLayout(_graphics);
-            
+
+
 
             _lastRenderTimes = new double[20];
             _pipelineVisualizer = new PipelineVisualizer(_graphics);
 
+            SetupDebug();
+
+            _debugLayout = new DebugLayout(_graphics, DebugContext, _camera.DebugContext);
+
+
+            Task.Run(async () => await WeirdFpsCounter());
             StartLoop();
+        }
+
+        public async Task WeirdFpsCounter()
+        {
+            WeirdFps = RenderedFramesInTheLastSecond;
+            RenderedFramesInTheLastSecond = 0;
+            await Task.Delay(TimeSpan.FromMilliseconds(1000));
+            await WeirdFpsCounter();
+
         }
 
         private void StartLoop()
         {
             SharpDX.Windows.RenderLoop.Run(_graphics.RenderForm, () =>
             {
+                Interlocked.Increment(ref RenderedFramesInTheLastSecond);
+
                 var now = DateTime.Now;
                 var elapsedTime = now - _lastTick;
                 _lastTick = now;
 
-                if (!Game.IsPaused)
+                if (!GameOptions.IsPaused)
                 {
                     Cursor.Position = _graphics.RenderForm.PointToScreen(new Point(_graphics.RenderForm.ClientSize.Width / 2,
                         _graphics.RenderForm.ClientSize.Height / 2));
@@ -97,24 +107,24 @@ namespace AppleCinnamon
                         _chunkManager.Draw(_camera);
                     }
 
-                    if (RenderSky)
+                    if (GameOptions.RenderSky)
                     {
                         SkyDome.Draw();
                     }
 
 
-                    if (RenderCrosshair)
+                    if (GameOptions.RenderCrosshair)
                     {
                         _crosshair.Draw(); // leaking
                     }
 
-                    if (RenderDebugLayout)
+                    if (GameOptions.RenderDebugLayout)
                     {
                         _debugLayout.Draw(_chunkManager, _camera, this); // leaking
                     }
 
 
-                    if (ShowPipelineVisualization)
+                    if (GameOptions.RenderPipelineVisualization)
                     {
                         _pipelineVisualizer.Draw(_camera, _chunkManager);
                     }
@@ -129,7 +139,7 @@ namespace AppleCinnamon
                 AverageRenderTime = _lastRenderTimes.Average();
                 PeekRenderTime = _lastRenderTimes.Max();
                 AverageFps = 1000f / AverageRenderTime;
-                
+
             });
         }
 
@@ -147,6 +157,22 @@ namespace AppleCinnamon
                 _chunkManager.Update(_camera, World, device);
             }
         }
+
+    }
+
+    public static class GameOptions
+    {
+        public static bool RenderSolid { get; set; } = true;
+        public static bool RenderSprites { get; set; } = true;
+        public static bool RenderWater { get; set; } = true;
+        public static bool RenderSky { get; set; } = true;
+        public static bool RenderCrosshair { get; set; } = true;
+        public static bool RenderBoxes { get; set; } = true;
+        public static bool RenderPipelineVisualization { get; set; } = true;
+        public static bool IsViewFrustumCullingEnabled { get; set; } = true;
+        public static bool RenderChunkBoundingBoxes { get; set; } = false;
+        public static bool RenderDebugLayout { get; set; } = true;
+        public static bool IsPaused { get; set; } = false;
 
     }
 }

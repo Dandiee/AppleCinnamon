@@ -4,7 +4,7 @@
     {
         public float Time { get; private set; }
 
-        private const float TimeStep = 0.002f;
+        private const float TimeStep = 0.001f;
 
         public void IncreaseTime()
         {

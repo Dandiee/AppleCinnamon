@@ -86,7 +86,7 @@ namespace AppleCinnamon
 
                 chunk.IsRendered = chunk.Deletion != ChunkDeletionState.Deletion &&
                                    chunk.State == ChunkState.Finished && 
-                                   (!Game.IsViewFrustumCullingEnabled || 
+                                   (!GameOptions.IsViewFrustumCullingEnabled || 
                                         camera.BoundingFrustum.Contains(ref chunk.BoundingBox) !=  ContainmentType.Disjoint);
 
                 if (chunk.IsRendered)

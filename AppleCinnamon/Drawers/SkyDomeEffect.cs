@@ -37,11 +37,6 @@ namespace AppleCinnamon.Drawers
         private readonly EffectMatrixVariable _worldViewProjectVar;
         private readonly EffectMatrixVariable _worldViewVar;
 
-
-       
-
-        
-
         public SkyDomeEffect(Device device)
         {
             EffectDefinition = new(device, "Content/Effect/RayleightScatter.fx", PrimitiveTopology.TriangleList);
@@ -157,5 +152,7 @@ namespace AppleCinnamon.Drawers
         public static float BetaRayMultiplier = 8.0f;
         public static float BetaMieMultiplier = 0.00005f;
         public static float TimeOfDay = 2.11f;
+        public static int Resolution = 64;
+        public static float Radius = 100;
     }
 }

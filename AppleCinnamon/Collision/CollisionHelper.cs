@@ -18,13 +18,12 @@ namespace AppleCinnamon.Collision
             for (var i = 0; i < exitCounter; i++)
             {
                 var index = position.Round();
-                if (!chunkManager.TryGetVoxel(index, out var voxel))
+                if (!chunkManager.TryGetVoxelAddress(index, out var address))
                 {
                     return null;
                 }
 
-
-
+                var voxel = address.Chunk.GetVoxel(address.RelativeVoxelIndex);
                 if (voxel.BlockType > 0 && voxel.BlockType != VoxelDefinition.Water.Type)
                 {
                     var voxelDefinition = voxel.GetDefinition();
@@ -33,7 +32,7 @@ namespace AppleCinnamon.Collision
 
                     if (voxelDefinition.IsUnitSized)
                     {
-                        return new VoxelRayCollisionResult(index, -direction, voxelDefinition, voxel);
+                        return new VoxelRayCollisionResult(index, address, -direction, voxelDefinition, voxel);
                     }
                     else
                     {
@@ -42,7 +41,7 @@ namespace AppleCinnamon.Collision
                         var currentRay = new Ray(position, ray.Direction);
                         if (voxelBoundingBox.Intersects(ref currentRay))
                         {
-                            return new VoxelRayCollisionResult(index, -direction, voxelDefinition, voxel);
+                            return new VoxelRayCollisionResult(index, address, -direction, voxelDefinition, voxel);
                         }
                     }
                 }

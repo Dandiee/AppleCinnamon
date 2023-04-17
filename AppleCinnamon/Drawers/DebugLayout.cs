@@ -23,12 +23,12 @@ namespace AppleCinnamon.Drawers
         private readonly TextFormat _bottomCenterAlignedTextFormat;
         private readonly Keyboard _keyboard;
 
-
-
         private readonly SolidColorBrush _brush;
 
+        public DebugContext LeftContext { get; private set; }
+        public DebugContext RightContext { get; private set; }
 
-        public DebugLayout(Graphics graphics)
+        public DebugLayout(Graphics graphics, DebugContext leftContext, DebugContext rightContext)
         {
             _graphics = graphics;
             _leftAlignedTextFormat = new TextFormat(_graphics.DirectWrite,
@@ -51,13 +51,16 @@ namespace AppleCinnamon.Drawers
             _keyboard.Acquire();
 
             _brush = new SolidColorBrush(_graphics.RenderTarget2D, Color.White);
+
+            LeftContext = leftContext;
+            RightContext = rightContext;
         }
 
 
         private string BuildLeftText(ChunkManager chunkManager, Camera camera, Game game)
         {
 
-            return string.Join(Environment.NewLine, camera.Actions.Select(s => $"{s.Key:G}: {s.Name}"));
+            return "";// string.Join(Environment.NewLine, camera.Actions.Select(s => $"{s.Key:G}: {s.Name}"));
 
             var targetInfo = camera.CurrentCursor == null
                 ? "No target"
@@ -85,10 +88,7 @@ namespace AppleCinnamon.Drawers
                    $"Current position {camera.Position.ToNonRetardedString()}\r\n" +
                    $"Orientation {camera.LookAt.ToNonRetardedString()}\r\n" +
                    $"Current target {targetInfo}\r\n" +
-                   $"Target target: {targetTargetInfo}\r\n" +
-                   $"Back-face culling [F1]: {(Game.IsBackFaceCullingEnabled ? "On" : "Off")}\r\n" +
-                   $"View frustum culling [F2]: {(Game.IsViewFrustumCullingEnabled ? "On" : "Off")}\r\n" +
-                   $"Show chunk boxes [F3]: {(Game.ShowChunkBoundingBoxes ? "On" : "Off")}\r\n";
+                   $"Target target: {targetTargetInfo}\r\n";
         }
 
         private string GetPipelineMetrics(ChunkManager chunkManager)
@@ -102,16 +102,18 @@ namespace AppleCinnamon.Drawers
         }
 
         private string PipelineStageSummary(string name, TransformBlock<Chunk, Chunk> transform, TimeSpan elapsedTime, PipelineStage stage = null)
-            =>
-                $"{name} {elapsedTime.TotalMilliseconds:N0}ms\r\n";
+            => $"{name} {elapsedTime.TotalMilliseconds:N0}ms\r\n";
 
         private string BuildRightText(ChunkManager chunkManager, Game game)
         {
-            return
+            return RightContext.Lines;
+
+            return 
                 $"Chunk size {WorldSettings.ChunkSize}, View distance: {Game.ViewDistance}, Slice: {Chunk.SliceHeight}\r\n" +
                 GetPipelineMetrics(chunkManager) + "\r\n" +
                 $"Average render time: {game.AverageRenderTime:F2}\r\n" +
                 $"Peek render time: {game.PeekRenderTime:F2}\r\n" +
+                $"Weird FPS: {game.WeirdFps:F2}\r\n" +
                 $"Average FPS: {game.AverageFps:F2}\r\n" +
                 $"Death queue: {ChunkManager.BagOfDeath.Count}\r\n" +
                 $"Chunks: {ChunkManager.Chunks.Count}\r\n" +
@@ -120,14 +122,15 @@ namespace AppleCinnamon.Drawers
                 $"Resurrected: {ChunkManager.ChunkResurrected}\r\n";
         }
 
-
-
         public void Draw(
             ChunkManager chunkManager,
             Camera camera,
             Game game)
         {
-            var leftText = game.SkyDome.Debug.Lines; // BuildLeftText(chunkManager, camera, game);
+            LeftContext.Update(camera);
+            RightContext.Update(camera);
+
+            var leftText = LeftContext.Lines; // game.SkyDome.Debug.Lines; // BuildLeftText(chunkManager, camera, game);
             var rightText = BuildRightText(chunkManager, game);
 
             //if (_keyboard.GetCurrentState().IsPressed(Key.C) && _keyboard.GetCurrentState().IsPressed(Key.LeftControl))

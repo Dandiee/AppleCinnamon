@@ -54,7 +54,7 @@ namespace AppleCinnamon.Drawers
         {
             if (chunks.Count > 0)
             {
-                if (Game.RenderSolid)
+                if (GameOptions.RenderSolid)
                 {
                     _solidEffectDefinition.Use(_device);
                     foreach (var chunk in chunks)
@@ -64,7 +64,7 @@ namespace AppleCinnamon.Drawers
                 }
 
 
-                if (Game.RenderSprites)
+                if (GameOptions.RenderSprites)
                 {
                     _spriteEffectDefinition.Use(_device);
                     foreach (var chunk in chunks)
@@ -76,7 +76,7 @@ namespace AppleCinnamon.Drawers
                     }
                 }
 
-                if (Game.RenderWater)
+                if (GameOptions.RenderWater)
                 {
 
                     _device.ImmediateContext.OutputMerger.SetBlendState(_waterBlendState);
@@ -89,17 +89,17 @@ namespace AppleCinnamon.Drawers
                     _device.ImmediateContext.OutputMerger.SetBlendState(null);
                 }
 
-                if (Game.RenderBoxes)
+                if (GameOptions.RenderBoxes)
                 {
                     var boxVertices = new VertexBox[(camera.CurrentCursor != null ? 1 : 0) +
-                                                    (Game.ShowChunkBoundingBoxes ? chunks.Count : 0)];
+                                                    (GameOptions.RenderChunkBoundingBoxes ? chunks.Count : 0)];
                     if (camera.CurrentCursor != null)
                     {
                         boxVertices[^1] = new VertexBox(camera.CurrentCursor.BoundingBox,
                             new Color3(0.713f, 0.125f, 0.878f));
                     }
 
-                    if (Game.ShowChunkBoundingBoxes)
+                    if (GameOptions.RenderChunkBoundingBoxes)
                     {
                         for (var i = 0; i < chunks.Count; i++)
                         {

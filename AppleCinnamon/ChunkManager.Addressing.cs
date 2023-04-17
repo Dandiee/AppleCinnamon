@@ -94,7 +94,6 @@ namespace AppleCinnamon
 
         public void SetBlock(Int3 absoluteIndex, byte voxel)
         {
-
             if (TryGetVoxelAddress(absoluteIndex, out var address))
             {
                 ChunkUpdater.SetVoxel(address, voxel, _graphics.Device);
