@@ -53,8 +53,6 @@ namespace AppleCinnamon.Drawers
             UpdateDetails();
         }
 
-        
-
         public void Update(Camera camera)
         {
             _worldViewProjectVar.SetMatrix(camera.WorldViewProjection);

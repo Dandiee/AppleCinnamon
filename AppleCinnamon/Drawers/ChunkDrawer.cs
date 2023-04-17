@@ -14,12 +14,14 @@ namespace AppleCinnamon.Drawers
     {
         private readonly Device _device;
 
-        private readonly EffectDefinition<VertexSolidBlock> _solidEffectDefinition;
-        private readonly EffectDefinition<VertexWater> _waterEffectDefinition;
-        private readonly EffectDefinition<VertexSprite> _spriteEffectDefinition;
+        private readonly ChunkEffectDefinition<VertexSolidBlock> _solidEffectDefinition;
+        private readonly ChunkEffectDefinition<VertexWater> _waterEffectDefinition;
+        private readonly ChunkEffectDefinition<VertexSprite> _spriteEffectDefinition;
         private readonly EffectDefinition<VertexBox> _boxEffectDefinition;
         private readonly BlendState _waterBlendState;
+
         private readonly EffectVectorVariable _waterTextureOffsetVar;
+        private readonly EffectMatrixVariable _boxEffectWorldViewProjectionVar;
 
         private int _currentWaterTextureOffsetIndex;
 
@@ -27,12 +29,13 @@ namespace AppleCinnamon.Drawers
         {
             _device = device;
 
-            _solidEffectDefinition = new(_device, (string)"Content/Effect/SolidBlockEffect.fx", (PrimitiveTopology)PrimitiveTopology.TriangleList, (string)"Content/Texture/terrain3.png");
-            _waterEffectDefinition = new(_device, (string)"Content/Effect/WaterEffect.fx", (PrimitiveTopology)PrimitiveTopology.TriangleList, (string)"Content/Texture/custom_water_still.png");
-            _spriteEffectDefinition = new(_device, (string)"Content/Effect/SpriteEffetct.fx", (PrimitiveTopology)PrimitiveTopology.TriangleList, (string)"Content/Texture/terrain3.png");
+            _solidEffectDefinition = new(_device, "Content/Effect/SolidBlockEffect.fx", PrimitiveTopology.TriangleList, "Content/Texture/terrain3.png");
+            _waterEffectDefinition = new(_device, "Content/Effect/WaterEffect.fx", PrimitiveTopology.TriangleList, "Content/Texture/custom_water_still.png");
+            _spriteEffectDefinition = new(_device, "Content/Effect/SpriteEffetct.fx", PrimitiveTopology.TriangleList, "Content/Texture/terrain3.png");
             _boxEffectDefinition = new(_device, "Content/Effect/BoxDrawerEffect.fx", PrimitiveTopology.PointList);
 
             _waterTextureOffsetVar = _waterEffectDefinition.Effect.GetVariableByName("TextureOffset").AsVector();
+            _boxEffectWorldViewProjectionVar = _boxEffectDefinition.Effect.GetVariableByName("WorldViewProjection").AsMatrix();
 
             var blendStateDescription = new BlendStateDescription { AlphaToCoverageEnable = false };
 
@@ -136,7 +139,8 @@ namespace AppleCinnamon.Drawers
             _solidEffectDefinition.Update(camera);
             _waterEffectDefinition.Update(camera);
             _spriteEffectDefinition.Update(camera);
-            _boxEffectDefinition.Update(camera);
+
+            _boxEffectWorldViewProjectionVar.SetMatrix(camera.WorldViewProjection);
         }
     }
 }

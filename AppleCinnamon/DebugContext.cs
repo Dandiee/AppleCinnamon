@@ -122,8 +122,6 @@ namespace AppleCinnamon
         public string Name { get; }
         public T Value { get; private set; }
 
-        public string Format { get; init; }
-
         private readonly Func<T> _getter;
 
         public DebugInfoLine(Expression<Func<T>> fieldSelector, string name = default, string unit = default, Func<T, string> textFactory = default)

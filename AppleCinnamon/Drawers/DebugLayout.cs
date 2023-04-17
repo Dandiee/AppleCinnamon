@@ -4,6 +4,7 @@ using SharpDX;
 using SharpDX.DirectInput;
 using SharpDX.DirectWrite;
 using System.Collections.Generic;
+using AppleCinnamon.Extensions;
 using AppleCinnamon.Settings;
 using TextAlignment = SharpDX.DirectWrite.TextAlignment;
 using SharpDX.Mathematics.Interop;
@@ -67,8 +68,8 @@ namespace AppleCinnamon.Drawers
 
             var cameraContext = new DebugContext(rightAlignedTextFormat, graphics, rightOrigin,
                 
-                new DebugInfoLine<Vector3>(() => game.Camera.Position),
-                new DebugInfoLine<Vector3>(() => game.Camera.LookAt),
+                new DebugInfoLine<Vector3>(() => game.Camera.Position, textFactory: v => $"Position: {v.ToNonRetardedString()}"),
+                new DebugInfoLine<Vector3>(() => game.Camera.LookAt, textFactory: v => $"LookAt: {v.ToNonRetardedString()}"),
                 new DebugInfoLine<Int2>(() => game.Camera.CurrentChunkIndex),
                 new DebugInfoMultiLine<VoxelRayCollisionResult>(() => game.Camera.CurrentCursor, GetCurrentCursorLines));
 
