@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using AppleCinnamon.Common;
-using AppleCinnamon.Helper;
 using AppleCinnamon.Settings;
 
 namespace AppleCinnamon

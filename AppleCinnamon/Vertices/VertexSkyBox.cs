@@ -1,5 +1,4 @@
 ﻿using AppleCinnamon.Extensions;
-using AppleCinnamon.Helper;
 using SharpDX;
 using SharpDX.Direct3D11;
 using SharpDX.DXGI;

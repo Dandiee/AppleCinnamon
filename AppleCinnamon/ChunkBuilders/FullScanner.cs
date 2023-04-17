@@ -1,5 +1,4 @@
 ﻿using AppleCinnamon.Common;
-using AppleCinnamon.Helper;
 using AppleCinnamon.Settings;
 
 namespace AppleCinnamon.ChunkBuilders

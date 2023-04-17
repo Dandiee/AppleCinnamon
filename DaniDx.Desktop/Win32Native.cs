@@ -28,7 +28,7 @@ namespace SharpDX
     /// <summary>
     /// Internal class to interact with Native Message
     /// </summary>
-    partial class Win32Native
+    class Win32Native
     {
 
         [DllImport("kernel32.dll", EntryPoint = "CreateFile", SetLastError = true, CharSet = CharSet.Unicode)]

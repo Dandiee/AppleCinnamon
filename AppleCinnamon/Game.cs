@@ -5,18 +5,17 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using AppleCinnamon.Common;
 using AppleCinnamon.Drawers;
-using AppleCinnamon.Helper;
 using SharpDX;
 using SharpDX.Direct3D11;
 using Point = System.Drawing.Point;
 
 namespace AppleCinnamon
 {
-    public partial class Game
+    public class Game
     {
         public static readonly Vector3 StartPosition = new(0, 140, 0);
 
-        public const int ViewDistance = 12;
+        public const int ViewDistance = 32;
         public const int NumberOfPools = 4;
         public static readonly TimeSpan ChunkDespawnCooldown = TimeSpan.FromMilliseconds(10);
 

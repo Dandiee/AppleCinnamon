@@ -50,7 +50,7 @@ namespace AppleCinnamon.Drawers
                 new DebugIncDecAction<float>(Key.F6, () => SkyDomeOptions.TimeOfDay, 0.001f, game.SkyDome.UpdateEffect, increment: SkyDomeOptions.IncrementTime, decrement: SkyDomeOptions.DecrementTime),
                 new DebugIncDecAction<int>(Key.F7, () => SkyDomeOptions.Resolution, 1, game.SkyDome.UpdateSkyDome, false),
                 new DebugIncDecAction<float>(Key.F8, () => SkyDomeOptions.Radius, 0.1f, game.SkyDome.UpdateSkyDome),
-                new DebugIncDecAction<float>(Key.F9, () => CameraOptions.FoV, 0.001f));
+                new DebugIncDecAction<float>(Key.F9, () => CameraOptions.FieldOfView, 0.001f));
 
             var pipelineContext = new DebugContext(rightAlignedTextFormat, graphics, rightOrigin,
                 new DebugInfoLine<int>(() => ChunkManager.BagOfDeath.Count, "Bag of Death"),
@@ -85,6 +85,7 @@ namespace AppleCinnamon.Drawers
                 new DebugToggleAction(Key.F9, () => GameOptions.IsViewFrustumCullingEnabled));
 
             var performanceContext = new DebugContext(rightAlignedTextFormat, graphics, rightOrigin,
+                new DebugInfoLine<int>(() => Game.ViewDistance, "ViewDistance"),
                 new DebugInfoLine<int>(() => game.WeirdFps, default, " FPS"));
 
             _mainMenuContext = new DebugContext(leftAlignedTextFormat, graphics, leftOrigin,

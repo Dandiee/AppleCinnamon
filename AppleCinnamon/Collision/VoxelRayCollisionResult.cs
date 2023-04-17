@@ -1,5 +1,4 @@
 ﻿using AppleCinnamon.Extensions;
-using AppleCinnamon.Helper;
 using AppleCinnamon.Settings;
 using SharpDX;
 

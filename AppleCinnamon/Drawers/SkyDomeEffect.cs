@@ -1,13 +1,10 @@
 ﻿using System;
-using System.Reflection.Emit;
 using AppleCinnamon.Chunks;
 using AppleCinnamon.Extensions;
 using AppleCinnamon.Vertices;
 using SharpDX;
 using SharpDX.Direct3D;
 using SharpDX.Direct3D11;
-using SharpDX.DirectInput;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.TaskbarClock;
 using Device = SharpDX.Direct3D11.Device;
 using Vector3 = SharpDX.Vector3;
 using Vector4 = SharpDX.Vector4;

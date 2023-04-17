@@ -12,7 +12,7 @@ using AppleCinnamon.ChunkGenerators;
 namespace AppleCinnamon
 {
     // https://app.diagrams.net/#G1bx3H_GUN2TbOa55sV8_Cw-4TyGCXFWeh
-    public sealed partial class Pipeline
+    public sealed class Pipeline
     {
         public static readonly DataflowLinkOptions PropagateCompletionOptions = new() { PropagateCompletion = true };
         public static readonly int MDoP = Environment.ProcessorCount;

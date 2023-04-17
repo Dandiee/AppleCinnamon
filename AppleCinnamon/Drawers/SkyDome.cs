@@ -5,7 +5,7 @@ using Device = SharpDX.Direct3D11.Device;
 
 namespace AppleCinnamon.Drawers
 {
-    public partial class SkyDome
+    public class SkyDome
     {
         private readonly Device _device;
         private readonly SkyDomeEffect _skyDomeEffectEffect;

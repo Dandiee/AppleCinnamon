@@ -2,7 +2,6 @@
 using System.Linq;
 using AppleCinnamon.ChunkBuilders;
 using AppleCinnamon.Common;
-using AppleCinnamon.Helper;
 using AppleCinnamon.Settings;
 using SharpDX;
 

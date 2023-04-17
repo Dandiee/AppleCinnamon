@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks.Dataflow;
 using AppleCinnamon.Common;
-using AppleCinnamon.Helper;
 
 namespace AppleCinnamon
 {

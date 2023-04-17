@@ -2,10 +2,8 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
-using AppleCinnamon.ChunkBuilders;
 using AppleCinnamon.Common;
 using AppleCinnamon.Drawers;
-using AppleCinnamon.Helper;
 using AppleCinnamon.Settings;
 using SharpDX;
 using SharpDX.Direct3D11;
