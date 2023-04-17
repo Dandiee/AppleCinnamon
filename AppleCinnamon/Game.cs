@@ -83,8 +83,7 @@ namespace AppleCinnamon
 
                 if (!GameOptions.IsPaused)
                 {
-                    Cursor.Position = _graphics.RenderForm.PointToScreen(new Point(_graphics.RenderForm.ClientSize.Width / 2,
-                        _graphics.RenderForm.ClientSize.Height / 2));
+                    Cursor.Position = _graphics.RenderForm.PointToScreen(new Point(_graphics.RenderForm.ClientSize.Width / 2, _graphics.RenderForm.ClientSize.Height / 2));
                     Cursor.Hide();
                 }
                 else
@@ -107,7 +106,6 @@ namespace AppleCinnamon
                         SkyDome.Draw();
                     }
 
-
                     if (GameOptions.RenderCrosshair)
                     {
                         _crosshair.Draw(); // leaking
@@ -118,15 +116,10 @@ namespace AppleCinnamon
                         _debugLayout.Draw(_camera, this); // leaking
                     }
 
-
                     if (GameOptions.RenderPipelineVisualization)
                     {
                         _pipelineVisualizer.Draw(_camera, _chunkManager);
                     }
-
-
-
-
                 });
 
                 _lastRenderTimes[_lastRenderTimeIndex] = elapsedTime.TotalMilliseconds;
@@ -158,7 +151,7 @@ namespace AppleCinnamon
         public static bool RenderSky { get; set; } = true;
         public static bool RenderCrosshair { get; set; } = true;
         public static bool RenderBoxes { get; set; } = true;
-        public static bool RenderPipelineVisualization { get; set; } = true;
+        public static bool RenderPipelineVisualization { get; set; } = false;
         public static bool IsViewFrustumCullingEnabled { get; set; } = true;
         public static bool RenderChunkBoundingBoxes { get; set; } = false;
         public static bool RenderDebugLayout { get; set; } = true;

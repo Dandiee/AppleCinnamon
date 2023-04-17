@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Runtime;
 using AppleCinnamon.Collision;
 using AppleCinnamon.Common;
 using AppleCinnamon.Extensions;
@@ -9,7 +8,7 @@ using SharpDX.DirectInput;
 
 namespace AppleCinnamon
 {
-    public sealed partial class Camera
+    public sealed class Camera
     {
         private readonly Graphics _graphics;
         private static readonly TimeSpan BuildCooldown = TimeSpan.FromMilliseconds(100);
@@ -49,14 +48,14 @@ namespace AppleCinnamon
         public VoxelRayCollisionResult CurrentCursor { get; private set; }
         private int _voxelDefinitionIndexInHand;
 
-        private readonly Vector3 InitialLookAt;
+        private readonly Vector3 _initialLookAt;
 
         public Camera(Graphics graphics)
         {
             _graphics = graphics;
             Position = new Vector3(Game.StartPosition.X, Game.StartPosition.Y, Game.StartPosition.Z);
             LookAt = Vector3.Normalize(new Vector3(1, 0, 0));
-            InitialLookAt = LookAt;
+            _initialLookAt = LookAt;
 
             var directInput = new DirectInput();
             Keyboard = new Keyboard(directInput);
@@ -89,8 +88,8 @@ namespace AppleCinnamon
                 }
             }
             else CurrentCursor = result;
-            
-            
+
+
             if (chunkManager.TryGetVoxel(Position.Round(), out var voxel) && voxel.BlockType == VoxelDefinition.Water.Type)
             {
                 IsInWater = true;
@@ -111,14 +110,10 @@ namespace AppleCinnamon
             CurrentKeyboardState = Keyboard.GetCurrentState();
             _currentMouseState = Mouse.GetCurrentState();
 
-            if (!GameOptions.IsPaused)
-            {
-                CollisionHelper.ApplyPlayerPhysics(this, chunkManager, (float)gameTime.ElapsedGameTime.TotalSeconds);
-                UpdateMove(gameTime, chunkManager);
-                UpdateMatrices();
-                UpdateCurrentCursor(chunkManager);
-            }
-
+            CollisionHelper.ApplyPlayerPhysics(this, chunkManager, (float)gameTime.ElapsedGameTime.TotalSeconds);
+            UpdateMove(gameTime);
+            UpdateMatrices();
+            UpdateCurrentCursor(chunkManager);
             HandleDefaultInputs(chunkManager);
 
             LastKeyboardStateButForRealz = LastKeyboardState;
@@ -135,12 +130,6 @@ namespace AppleCinnamon
 
             const int leftClickIndex = 0;
             const int rightClickIndex = 1;
-            
-            if (!CurrentKeyboardState.IsPressed(Key.P) && LastKeyboardState.IsPressed(Key.P))
-            {
-                GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce;
-                GC.Collect(2, GCCollectionMode.Forced, true, true);
-            }
 
             var delta = _currentMouseState.Z / 120;
             if (delta != 0)
@@ -202,16 +191,14 @@ namespace AppleCinnamon
             }
         }
 
-
-
-        private void UpdateMove(GameTime gameTime, ChunkManager chunkManager)
+        private void UpdateMove(GameTime gameTime)
         {
-            const float MouseSensitivity = .01f;
-            const float MovementSensitivity = 2f;
-            const float JumpVelocity = 12;
-            const float MovmentFriction = 0.8f;
-            const float SprintSpeedFactor = 10f;
-            var prevPos = Position;
+            const float mouseSensitivity = .01f;
+            const float movementSensitivity = 2f;
+            const float jumpVelocity = 12;
+            const float movementFriction = 0.8f;
+            const float sprintSpeedFactor = 10f;
+
             var t = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
             Velocity += WorldSettings.Gravity * t;
@@ -221,45 +208,54 @@ namespace AppleCinnamon
                 Velocity += WorldSettings.Gravity * -t;
             }
 
-            Yaw = MathUtil.Mod2PI(Yaw + _currentMouseState.X * -MouseSensitivity); // MathUtil.Mod2PI(
-            Pitch = MathUtil.Clamp(Pitch + _currentMouseState.Y * -MouseSensitivity, -MathUtil.PiOverTwo, MathUtil.PiOverTwo);
-
-            var direction = Vector3.UnitX.Rotate(Vector3.UnitY, Yaw);
-            var directionNormal = new Vector3(-direction.Z, 0, direction.X);
-            var translationVector = Vector3.Zero;
-
-            if (CurrentKeyboardState.IsPressed(Key.W))
+            if (!CurrentKeyboardState.IsPressed(Key.Escape) && LastKeyboardState.IsPressed(Key.Escape))
             {
-                translationVector += direction;
+                GameOptions.IsPaused = !GameOptions.IsPaused;
             }
 
-            if (CurrentKeyboardState.IsPressed(Key.S))
+            if (!GameOptions.IsPaused)
             {
-                translationVector -= direction;
-            }
+                Yaw = MathUtil.Mod2PI(Yaw + _currentMouseState.X * -mouseSensitivity);
+                Pitch = MathUtil.Clamp(Pitch + _currentMouseState.Y * -mouseSensitivity, -MathUtil.PiOverTwo, MathUtil.PiOverTwo);
 
-            if (CurrentKeyboardState.IsPressed(Key.A))
-            {
-                translationVector -= directionNormal;
-            }
+                var direction = Vector3.UnitX.Rotate(Vector3.UnitY, Yaw);
+                var directionNormal = new Vector3(-direction.Z, 0, direction.X);
+                var translationVector = Vector3.Zero;
 
-            if (CurrentKeyboardState.IsPressed(Key.D))
-            {
-                translationVector += directionNormal;
-            }
+                if (CurrentKeyboardState.IsPressed(Key.W))
+                {
+                    translationVector += direction;
+                }
 
-            if (translationVector != Vector3.Zero)
-            {
-                Velocity += Vector3.Normalize(translationVector) * MovementSensitivity * (CurrentKeyboardState.IsPressed(Key.LeftShift) ? SprintSpeedFactor : 1);
+                if (CurrentKeyboardState.IsPressed(Key.S))
+                {
+                    translationVector -= direction;
+                }
+
+                if (CurrentKeyboardState.IsPressed(Key.A))
+                {
+                    translationVector -= directionNormal;
+                }
+
+                if (CurrentKeyboardState.IsPressed(Key.D))
+                {
+                    translationVector += directionNormal;
+                }
+
+                if (translationVector != Vector3.Zero)
+                {
+                    Velocity += Vector3.Normalize(translationVector) * movementSensitivity *
+                                (CurrentKeyboardState.IsPressed(Key.LeftShift) ? sprintSpeedFactor : 1);
+                }
             }
 
             if ((!IsInAir || IsInWater) && CurrentKeyboardState.IsPressed(Key.Space))
             {
                 IsInAir = true;
-                Velocity = new Vector3(Velocity.X, JumpVelocity * (CurrentKeyboardState.IsPressed(Key.LeftShift) ? SprintSpeedFactor : 1), Velocity.Z);
+                Velocity = new Vector3(Velocity.X, jumpVelocity * (CurrentKeyboardState.IsPressed(Key.LeftShift) ? sprintSpeedFactor : 1), Velocity.Z);
             }
 
-            Velocity = new Vector3(Velocity.X * MovmentFriction, IsInWater ? Velocity.Y * MovmentFriction : Velocity.Y, Velocity.Z * MovmentFriction);
+            Velocity = new Vector3(Velocity.X * movementFriction, IsInWater ? Velocity.Y * movementFriction : Velocity.Y, Velocity.Z * movementFriction);
             Position += Velocity * t;
 
             var currentBlock = new Int3((int)Math.Round(Position.X), (int)Math.Round(Position.Y), (int)Math.Round(Position.Z));
@@ -272,9 +268,9 @@ namespace AppleCinnamon
         public void UpdateMatrices()
         {
             var rotationMatrix = Matrix.RotationYawPitchRoll(Yaw, 0, Pitch);
-            LookAt = Vector3.Normalize(Vector3.Transform(InitialLookAt, rotationMatrix).ToVector3());
+            LookAt = Vector3.Normalize(Vector3.Transform(_initialLookAt, rotationMatrix).ToVector3());
             View = Matrix.LookAtRH(Position, Position + LookAt, Vector3.TransformCoordinate(Vector3.UnitY, rotationMatrix));
-            Projection = Matrix.PerspectiveFovRH(MathUtil.Pi / 2f, _graphics.RenderForm.Width / (float)_graphics.RenderForm.Height, 0.1f, 10000000000f);
+            Projection = Matrix.PerspectiveFovRH(CameraOptions.FieldOfView, _graphics.RenderForm.Width / (float)_graphics.RenderForm.Height, 0.1f, 10000000000f);
             WorldView = World * View;
             WorldViewProjection = World * View * Projection;
 
@@ -282,5 +278,10 @@ namespace AppleCinnamon
             LookAt2d = new Vector2(LookAt.X, LookAt.Z);
             Position2d = new Vector2(Position.X, Position.Z);
         }
+    }
+
+    public static class CameraOptions
+    {
+        public static float FieldOfView = MathUtil.Pi / 2f;
     }
 }

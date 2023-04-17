@@ -1,18 +1,15 @@
 ﻿using System;
-using AppleCinnamon.Collision;
-using AppleCinnamon.Common;
 using SharpDX;
 using SharpDX.Direct2D1;
 using SharpDX.DirectInput;
 using SharpDX.DirectWrite;
 using SharpDX.Mathematics.Interop;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Numerics;
-using static System.Windows.Forms.AxHost;
-using TextAlignment = SharpDX.DirectWrite.TextAlignment;
 
 namespace AppleCinnamon
 {
@@ -233,7 +230,7 @@ namespace AppleCinnamon
         private readonly Action<T> _increment;
         private readonly Action<T> _decrement;
 
-        public DebugIncDecAction(Key key, Expression<Func<T>> fieldSelector, T step, Action callback, bool isContinous = true, Action<T> increment = default, Action<T> decrement = default)
+        public DebugIncDecAction(Key key, Expression<Func<T>> fieldSelector, T step, Action callback = default, bool isContinous = true, Action<T> increment = default, Action<T> decrement = default)
         {
             _step = step;
             _callback = callback;

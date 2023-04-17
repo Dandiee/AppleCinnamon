@@ -36,21 +36,21 @@ namespace AppleCinnamon.Drawers
                 TextAlignment = TextAlignment.Center
             };
 
-
             var leftOrigin = new RawVector2(10, 10);
             var rightOrigin = new RawVector2(0, 10);
             var bottomOrigin = new RawVector2(0, _graphics.RenderForm.Height - 100);
 
             var skyDomeContext = new DebugContext(leftAlignedTextFormat, graphics, leftOrigin,
                 new DebugAction(Key.Back, "Back", () => LeftContext = _mainMenuContext),
-                new DebugIncDecAction<float>(Key.F1, () => SkyDomeOptions.SunIntensity, 0.01f, game.SkyDome.UpdateEffect),
+                new DebugIncDecAction<float>(Key.F1, () => SkyDomeOptions.SunIntensity, 0.001f, game.SkyDome.UpdateEffect),
                 new DebugIncDecAction<float>(Key.F2, () => SkyDomeOptions.Turbitity, 0.01f, game.SkyDome.UpdateEffect),
                 new DebugIncDecAction<float>(Key.F3, () => SkyDomeOptions.InscatteringMultiplier, 0.001f, game.SkyDome.UpdateEffect),
                 new DebugIncDecAction<float>(Key.F4, () => SkyDomeOptions.BetaRayMultiplier, 0.01f, game.SkyDome.UpdateEffect),
                 new DebugIncDecAction<float>(Key.F5, () => SkyDomeOptions.BetaMieMultiplier, 0.000001f, game.SkyDome.UpdateEffect),
-                new DebugIncDecAction<float>(Key.F6, () => SkyDomeOptions.TimeOfDay, 0.0001f, game.SkyDome.UpdateEffect, increment: SkyDomeOptions.IncrementTime, decrement: SkyDomeOptions.DecrementTime),
+                new DebugIncDecAction<float>(Key.F6, () => SkyDomeOptions.TimeOfDay, 0.001f, game.SkyDome.UpdateEffect, increment: SkyDomeOptions.IncrementTime, decrement: SkyDomeOptions.DecrementTime),
                 new DebugIncDecAction<int>(Key.F7, () => SkyDomeOptions.Resolution, 1, game.SkyDome.UpdateSkyDome, false),
-                new DebugIncDecAction<float>(Key.F8, () => SkyDomeOptions.Radius, 0.1f, game.SkyDome.UpdateSkyDome));
+                new DebugIncDecAction<float>(Key.F8, () => SkyDomeOptions.Radius, 0.1f, game.SkyDome.UpdateSkyDome),
+                new DebugIncDecAction<float>(Key.F9, () => CameraOptions.FoV, 0.001f));
 
             var pipelineContext = new DebugContext(rightAlignedTextFormat, graphics, rightOrigin,
                 new DebugInfoLine<int>(() => ChunkManager.BagOfDeath.Count, "Bag of Death"),
@@ -66,6 +66,7 @@ namespace AppleCinnamon.Drawers
                 new DebugInfoLine<double>(() => game._chunkManager.Pipeline.TimeSpentInTransform.TotalMilliseconds, "Dispatcher", " ms"));
 
             var cameraContext = new DebugContext(rightAlignedTextFormat, graphics, rightOrigin,
+                
                 new DebugInfoLine<Vector3>(() => game._camera.Position),
                 new DebugInfoLine<Vector3>(() => game._camera.LookAt),
                 new DebugInfoLine<Int2>(() => game._camera.CurrentChunkIndex),
