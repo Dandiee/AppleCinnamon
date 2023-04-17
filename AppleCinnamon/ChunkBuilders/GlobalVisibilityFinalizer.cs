@@ -1,4 +1,5 @@
 ﻿using AppleCinnamon.Chunks;
+using System.Runtime.CompilerServices;
 
 namespace AppleCinnamon.ChunkBuilders
 {
@@ -20,7 +21,7 @@ namespace AppleCinnamon.ChunkBuilders
         }
 
 
-        [InlineMethod.Inline]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void ProcessSide(Chunk chunk, Chunk neighborChunk, FaceBuildingContext context)
         {
             foreach (var flatIndex in context.PendingVoxels)

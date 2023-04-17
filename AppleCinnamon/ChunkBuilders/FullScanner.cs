@@ -1,6 +1,7 @@
 ﻿using AppleCinnamon.Chunks;
 using AppleCinnamon.Common;
 using AppleCinnamon.Settings;
+using System.Runtime.CompilerServices;
 
 namespace AppleCinnamon.ChunkBuilders
 {
@@ -103,7 +104,7 @@ namespace AppleCinnamon.ChunkBuilders
             }
         }
 
-        [InlineMethod.Inline]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void BuildHorizontalFace(bool isInChunk, int neighborFlatIndex, Chunk chunk, VoxelDefinition definition,
             int flatIndex, ref VisibilityFlag visibilityFlag, ref byte voxelLight, FaceBuildingContext context)
         {

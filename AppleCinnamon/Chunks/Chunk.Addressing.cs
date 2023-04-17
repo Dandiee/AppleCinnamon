@@ -102,7 +102,7 @@ namespace AppleCinnamon.Chunks
             return new VoxelChunkAddress(GetNeighbor(cx, cy), new Int3(i & (WorldSettings.ChunkSize - 1), j, k & (WorldSettings.ChunkSize - 1)));
         }
 
-        [InlineMethod.Inline]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Voxel GetLocalWithNeighbor(int i, int j, int k)
         {
             if (j < 0)
