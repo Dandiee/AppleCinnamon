@@ -20,7 +20,6 @@ namespace AppleCinnamon
         public const int NumberOfPools = 4;
         public static readonly TimeSpan ChunkDespawnCooldown = TimeSpan.FromMilliseconds(10);
 
-        public static bool Debug { get; set; } = true;
         //public static bool Debug2 { get; set; } = true;
 
         public readonly ChunkManager _chunkManager;
@@ -37,7 +36,6 @@ namespace AppleCinnamon
         public double AverageRenderTime { get; private set; }
         public double PeekRenderTime { get; private set; }
         public double AverageFps { get; private set; }
-        public World World = new();
 
         public static Graphics Grfx;
 
@@ -143,16 +141,11 @@ namespace AppleCinnamon
 
         private void Update(GameTime gameTime, Device device)
         {
-            _camera.Update(gameTime, _chunkManager, World);
+            _camera.Update(gameTime, _chunkManager);
+            _chunkManager.Update(_camera, device);
             _chunkManager.CleanUp();
-
-
-
-            if (Game.Debug)
-            {
-                SkyDome.Update(_camera);
-                _chunkManager.Update(_camera, World, device);
-            }
+            SkyDome.Update(_camera);
+            
         }
 
     }

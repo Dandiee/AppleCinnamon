@@ -57,11 +57,11 @@ namespace AppleCinnamon
         }
 
 
-        public void Update(Camera camera, World world, Device device)
+        public void Update(Camera camera, Device device)
         {
             if (IsInitialized)
             {
-                _chunkDrawer.Update(camera, world);
+                _chunkDrawer.Update(camera);
                 var currentChunkIndex = new Int2((int)camera.Position.X / WorldSettings.ChunkSize, (int)camera.Position.Z / WorldSettings.ChunkSize);
 
                 UpdateChunks(camera);

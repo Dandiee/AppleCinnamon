@@ -133,11 +133,11 @@ namespace AppleCinnamon.Drawers
         }
 
 
-        public void Update(Camera camera, World world)
+        public void Update(Camera camera)
         {
-            _solidEffectDefinition.Update(camera, world);
-            _waterEffectDefinition.Update(camera, world);
-            _spriteEffectDefinition.Update(camera, world);
+            _solidEffectDefinition.Update(camera);
+            _waterEffectDefinition.Update(camera);
+            _spriteEffectDefinition.Update(camera);
             _boxEffectDefinition.Effect.GetVariableByName("WorldViewProjection").AsMatrix().SetMatrix(camera.WorldViewProjection);
         }
     }

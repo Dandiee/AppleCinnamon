@@ -1,4 +1,5 @@
 ﻿using System;
+using AppleCinnamon.Drawers;
 using AppleCinnamon.Extensions;
 using AppleCinnamon.Settings;
 using AppleCinnamon.Vertices;
@@ -52,11 +53,11 @@ namespace AppleCinnamon.Chunks
             Pass.Apply(device.ImmediateContext);
         }
 
-        public void Update(Camera camera, World world)
+        public void Update(Camera camera)
         {
-            var lightFactor = world.Time < 0 
+            var lightFactor = SkyDomeOptions.TimeOfDay < 0 
                 ? 0 
-                : MathUtil.PiOverTwo - (Math.Abs(world.Time - 0.5f) * MathUtil.PiOverTwo);
+                : MathUtil.PiOverTwo - (Math.Abs(SkyDomeOptions.TimeOfDay - 0.5f) * MathUtil.PiOverTwo);
 
             _worldViewProjectionVar.SetMatrix(camera.WorldViewProjection);
             _eyePositionVar.Set(camera.Position);

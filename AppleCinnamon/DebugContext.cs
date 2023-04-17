@@ -20,6 +20,7 @@ namespace AppleCinnamon
     {
         private readonly TextFormat _format;
         private readonly Graphics _grfx;
+        private readonly RawVector2 _origin;
         private TextLayout _textLayout;
         private readonly SolidColorBrush _brush;
 
@@ -27,11 +28,12 @@ namespace AppleCinnamon
 
         public string Lines { get; private set; }
 
-        public DebugContext(TextFormat format, Graphics grfx, params DebugLine[] lines)
+        public DebugContext(TextFormat format, Graphics grfx, RawVector2 origin, params DebugLine[] lines)
         {
             _brush = new SolidColorBrush(grfx.RenderTarget2D, Color.White);
             _format = format;
             _grfx = grfx;
+            _origin = origin;
             Actions = lines;
             Lines = GetLines();
         }
@@ -49,7 +51,7 @@ namespace AppleCinnamon
                 Lines = GetLines();
 
                 _textLayout?.Dispose();
-                _textLayout = new TextLayout(_grfx.DirectWrite, Lines, _format, _grfx.RenderForm.Width - 20, _grfx.RenderForm.Height);
+                _textLayout = new TextLayout(_grfx.DirectWrite, Lines, _format, _grfx.RenderForm.Width - 30, _grfx.RenderForm.Height);
             }
             return hasChanged;
         }
@@ -59,7 +61,7 @@ namespace AppleCinnamon
             Update(camera);
             if (_textLayout != null)
             {
-                _grfx.RenderTarget2D.DrawTextLayout(new RawVector2(10, 10), _textLayout, _brush);
+                _grfx.RenderTarget2D.DrawTextLayout(_origin, _textLayout, _brush);
             }
 
         }
@@ -120,6 +122,7 @@ namespace AppleCinnamon
     public class DebugInfoLine<T> : DebugLine<T>
     {
         private readonly string _unit;
+        private readonly Func<T, string> _textFactory;
         public string Name { get; }
         public T Value { get; private set; }
 
@@ -127,11 +130,13 @@ namespace AppleCinnamon
 
         private readonly Func<T> _getter;
 
-        public DebugInfoLine(Expression<Func<T>> fieldSelector, string name = default, string unit = default)
+        public DebugInfoLine(Expression<Func<T>> fieldSelector, string name = default, string unit = default, Func<T, string> textFactory = default)
         {
             _unit = unit;
+            _textFactory = textFactory;
             Name = name ?? (fieldSelector.Body as MemberExpression).Member.Name;
             _getter = fieldSelector.Compile();
+            Value = _getter();
             SetLine();
         }
 
@@ -148,7 +153,7 @@ namespace AppleCinnamon
             return false;
         }
 
-        private void SetLine() => Line = $"{Name}: {Value}{(string.IsNullOrEmpty(_unit) ? string.Empty : _unit)}";
+        private void SetLine() => Line = _textFactory?.Invoke(Value) ?? $"{Name}: {Value}{(string.IsNullOrEmpty(_unit) ? string.Empty : _unit)}";
     }
 
     public class DebugToggleAction : DebugLine<bool>
@@ -225,13 +230,19 @@ namespace AppleCinnamon
         private readonly Func<T> _getter;
         private readonly Action<T> _setter;
 
-        public DebugIncDecAction(Key key, Expression<Func<T>> fieldSelector, T step, Action callback, bool isContinous = true)
+        private readonly Action<T> _increment;
+        private readonly Action<T> _decrement;
+
+        public DebugIncDecAction(Key key, Expression<Func<T>> fieldSelector, T step, Action callback, bool isContinous = true, Action<T> increment = default, Action<T> decrement = default)
         {
             _step = step;
             _callback = callback;
 
             _getter = fieldSelector.Compile();
             _setter = GetSetter(fieldSelector);
+
+            _increment = increment;
+            _decrement = decrement;
 
             Name = (fieldSelector.Body as MemberExpression).Member.Name;
 
@@ -248,18 +259,34 @@ namespace AppleCinnamon
             {
                 if ((IsContinous && current.IsPressed(Key.Add)) || (!IsContinous && !current.IsPressed(Key.Add) && prev.IsPressed(Key.Add)))
                 {
-                    var newValue = _getter() + _step;
-                    _setter(newValue);
-                    SetLine(newValue);
+                    if (_increment != null)
+                    {
+                        _increment(_step);
+                    }
+                    else
+                    {
+                        var newValue = _getter() + _step;
+                        _setter(newValue);
+                    }
+
+                    SetLine(_getter());
                     _callback?.Invoke();
                     return true;
                 }
 
                 if ((IsContinous && current.IsPressed(Key.Subtract)) || (!IsContinous && !current.IsPressed(Key.Subtract) && prev.IsPressed(Key.Subtract)))
                 {
-                    var newValue = _getter() - _step;
-                    _setter(newValue);
-                    SetLine(newValue);
+                    if (_decrement != null)
+                    {
+                        _decrement(_step);
+                    }
+                    else
+                    {
+                        var newValue = _getter() - _step;
+                        _setter(newValue);
+                    }
+
+                    SetLine(_getter());
                     _callback?.Invoke();
                     return true;
                 }

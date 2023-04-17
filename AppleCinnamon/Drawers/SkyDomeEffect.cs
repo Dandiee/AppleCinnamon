@@ -7,6 +7,7 @@ using SharpDX;
 using SharpDX.Direct3D;
 using SharpDX.Direct3D11;
 using SharpDX.DirectInput;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.TaskbarClock;
 using Device = SharpDX.Direct3D11.Device;
 using Vector3 = SharpDX.Vector3;
 using Vector4 = SharpDX.Vector4;
@@ -154,5 +155,31 @@ namespace AppleCinnamon.Drawers
         public static float TimeOfDay = 2.11f;
         public static int Resolution = 64;
         public static float Radius = 100;
+
+        public static void IncrementTime(float step)
+        {
+            var overflow = 1.0f - (TimeOfDay + step);
+            if (overflow < 0)
+            {
+                TimeOfDay = -1.0f - overflow;
+            }
+            else
+            {
+                TimeOfDay += step;
+            }
+        }
+
+        public static void DecrementTime(float step)
+        {
+            var overflow = 1.0f + (TimeOfDay + step);
+            if (overflow < 0)
+            {
+                TimeOfDay = 1.0f + overflow;
+            }
+            else
+            {
+                TimeOfDay -= step;
+            }
+        }
     }
 }

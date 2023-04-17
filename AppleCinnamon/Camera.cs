@@ -78,7 +78,7 @@ namespace AppleCinnamon
             IsInAir = true;
         }
 
-        public void UpdateCurrentCursor(ChunkManager chunkManager, World world)
+        public void UpdateCurrentCursor(ChunkManager chunkManager)
         {
             var result = CollisionHelper.GetCurrentSelection(new Ray(Position, LookAt), chunkManager);
             if (result != null && CurrentCursor != null)
@@ -101,7 +101,7 @@ namespace AppleCinnamon
             }
         }
 
-        public void Update(GameTime gameTime, ChunkManager chunkManager, World world)
+        public void Update(GameTime gameTime, ChunkManager chunkManager)
         {
             if (!chunkManager.IsInitialized)
             {
@@ -114,9 +114,9 @@ namespace AppleCinnamon
             if (!GameOptions.IsPaused)
             {
                 CollisionHelper.ApplyPlayerPhysics(this, chunkManager, (float)gameTime.ElapsedGameTime.TotalSeconds);
-                UpdateMove(gameTime, chunkManager, world);
+                UpdateMove(gameTime, chunkManager);
                 UpdateMatrices();
-                UpdateCurrentCursor(chunkManager, world);
+                UpdateCurrentCursor(chunkManager);
             }
 
             HandleDefaultInputs(chunkManager);
@@ -204,7 +204,7 @@ namespace AppleCinnamon
 
 
 
-        private void UpdateMove(GameTime gameTime, ChunkManager chunkManager, World world)
+        private void UpdateMove(GameTime gameTime, ChunkManager chunkManager)
         {
             const float MouseSensitivity = .01f;
             const float MovementSensitivity = 2f;
@@ -251,16 +251,6 @@ namespace AppleCinnamon
             if (translationVector != Vector3.Zero)
             {
                 Velocity += Vector3.Normalize(translationVector) * MovementSensitivity * (CurrentKeyboardState.IsPressed(Key.LeftShift) ? SprintSpeedFactor : 1);
-            }
-
-            if (CurrentKeyboardState.IsPressed(Key.Up))
-            {
-                world.IncreaseTime();
-            }
-
-            if (CurrentKeyboardState.IsPressed(Key.Down))
-            {
-                world.DecreaseTime();
             }
 
             if ((!IsInAir || IsInWater) && CurrentKeyboardState.IsPressed(Key.Space))
