@@ -17,7 +17,6 @@ namespace AppleCinnamon.Drawers
             _device = device;
             _skyDomeEffectEffect = new SkyDomeEffect(device);
             UpdateSkyDome();
-            SetupDebug();
         }
 
         public void Draw()
@@ -29,6 +28,11 @@ namespace AppleCinnamon.Drawers
         public void Update(Camera camera)
         {
             _skyDomeEffectEffect.Update(camera);
+        }
+
+        public void UpdateEffect()
+        {
+            _skyDomeEffectEffect.UpdateDetails();
         }
 
         public void UpdateSkyDome()

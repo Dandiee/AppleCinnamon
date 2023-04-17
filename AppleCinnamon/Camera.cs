@@ -76,8 +76,6 @@ namespace AppleCinnamon
             _voxelDefinitionIndexInHand = VoxelDefinition.RegisteredDefinitions.IndexOf(VoxelInHand.Type);
 
             IsInAir = true;
-
-            SetupContext();
         }
 
         public void UpdateCurrentCursor(ChunkManager chunkManager, World world)

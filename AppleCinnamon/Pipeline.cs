@@ -46,8 +46,6 @@ namespace AppleCinnamon
             Stages = new[] { TerrainStage, ArtifactStage, LocalStage, GlobalStage };
 
             BuildPipeline();
-
-            SetupDebugContext();
         }
 
         public void Post(Chunk chunk) => TerrainStage.Transform.Post(chunk);

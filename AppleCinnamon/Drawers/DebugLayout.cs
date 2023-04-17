@@ -1,14 +1,13 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks.Dataflow;
-using AppleCinnamon.Extensions;
-using AppleCinnamon.Helper;
-using AppleCinnamon.Settings;
+﻿using AppleCinnamon.Collision;
+using AppleCinnamon.Common;
 using SharpDX;
 using SharpDX.Direct2D1;
 using SharpDX.DirectInput;
 using SharpDX.DirectWrite;
 using SharpDX.Mathematics.Interop;
+using System.Collections.Generic;
+using System.Linq;
+using static System.Windows.Forms.AxHost;
 using TextAlignment = SharpDX.DirectWrite.TextAlignment;
 
 namespace AppleCinnamon.Drawers
@@ -21,131 +20,122 @@ namespace AppleCinnamon.Drawers
         private readonly TextFormat _leftAlignedTextFormat;
         private readonly TextFormat _rightAlignedTextFormat;
         private readonly TextFormat _bottomCenterAlignedTextFormat;
-        private readonly Keyboard _keyboard;
+
+        private TextLayout _leftLayout;
+        private TextLayout _rightLayout;
+        private TextLayout _bottomCenterLayout;
 
         private readonly SolidColorBrush _brush;
 
         public DebugContext LeftContext { get; private set; }
         public DebugContext RightContext { get; private set; }
 
-        public DebugLayout(Graphics graphics, DebugContext leftContext, DebugContext rightContext)
+        private readonly DebugContext _skyDomeContext;
+        private readonly DebugContext _cameraContext;
+        private readonly DebugContext _pipelineContext;
+        private readonly DebugContext _gameContext;
+        private readonly DebugContext _mainMenuContext;
+        private readonly DebugContext _performanceContext;
+
+        public DebugLayout(Game game, Graphics graphics)
         {
             _graphics = graphics;
-            _leftAlignedTextFormat = new TextFormat(_graphics.DirectWrite,
-                FontFamilyName, FontWeight.Black, FontStyle.Normal, 20);
-
-            _rightAlignedTextFormat = new TextFormat(_graphics.DirectWrite,
-                FontFamilyName, FontWeight.Black, FontStyle.Normal, 20)
+            _leftAlignedTextFormat = new TextFormat(_graphics.DirectWrite, FontFamilyName, FontWeight.Black, FontStyle.Normal, 20);
+            _rightAlignedTextFormat = new TextFormat(_graphics.DirectWrite, FontFamilyName, FontWeight.Black, FontStyle.Normal, 20)
             {
                 TextAlignment = TextAlignment.Trailing
             };
 
-            _bottomCenterAlignedTextFormat = new TextFormat(_graphics.DirectWrite,
-                FontFamilyName, FontWeight.Black, FontStyle.Normal, 20)
+            _bottomCenterAlignedTextFormat = new TextFormat(_graphics.DirectWrite, FontFamilyName, FontWeight.Black, FontStyle.Normal, 20)
             {
                 TextAlignment = TextAlignment.Center
             };
 
-            _keyboard = new Keyboard(new DirectInput());
-            _keyboard.Properties.BufferSize = 128;
-            _keyboard.Acquire();
-
             _brush = new SolidColorBrush(_graphics.RenderTarget2D, Color.White);
 
-            LeftContext = leftContext;
-            RightContext = rightContext;
+
+            _skyDomeContext = new DebugContext(_leftAlignedTextFormat, graphics,
+                new DebugAction(Key.Back, "Back", () => LeftContext = _mainMenuContext),
+                new DebugIncDecAction<float>(Key.F1, () => SkyDomeOptions.SunIntensity, 0.01f, game.SkyDome.UpdateEffect),
+                new DebugIncDecAction<float>(Key.F2, () => SkyDomeOptions.Turbitity, 0.01f, game.SkyDome.UpdateEffect),
+                new DebugIncDecAction<float>(Key.F3, () => SkyDomeOptions.InscatteringMultiplier, 0.001f, game.SkyDome.UpdateEffect),
+                new DebugIncDecAction<float>(Key.F4, () => SkyDomeOptions.BetaRayMultiplier, 0.01f, game.SkyDome.UpdateEffect),
+                new DebugIncDecAction<float>(Key.F5, () => SkyDomeOptions.BetaMieMultiplier, 0.000001f, game.SkyDome.UpdateEffect),
+                new DebugIncDecAction<float>(Key.F6, () => SkyDomeOptions.TimeOfDay, 0.0001f, game.SkyDome.UpdateEffect),
+                new DebugIncDecAction<int>(Key.F7, () => SkyDomeOptions.Resolution, 1, game.SkyDome.UpdateSkyDome, false),
+                new DebugIncDecAction<float>(Key.F8, () => SkyDomeOptions.Radius, 0.1f, game.SkyDome.UpdateSkyDome));
+
+            _pipelineContext = new DebugContext(_rightAlignedTextFormat, graphics,
+                new DebugInfoLine<int>(() => ChunkManager.BagOfDeath.Count, "Bag of Death"),
+                new DebugInfoLine<int>(() => ChunkManager.Chunks.Count, "All chunks"),
+                new DebugInfoLine<int>(() => ChunkManager.Graveyard.Count, "Graveyard"),
+                new DebugInfoLine<int>(() => ChunkManager.ChunkCreated),
+                new DebugInfoLine<int>(() => ChunkManager.ChunkResurrected),
+                new DebugInfoLine<PipelineState>(() => game._chunkManager.Pipeline.State),
+                new DebugInfoLine<double>(() => game._chunkManager.Pipeline.TerrainStage.TimeSpentInTransform.TotalMilliseconds, game._chunkManager.Pipeline.TerrainStage.Name, " ms"),
+                new DebugInfoLine<double>(() => game._chunkManager.Pipeline.ArtifactStage.TimeSpentInTransform.TotalMilliseconds, game._chunkManager.Pipeline.ArtifactStage.Name, " ms"),
+                new DebugInfoLine<double>(() => game._chunkManager.Pipeline.LocalStage.TimeSpentInTransform.TotalMilliseconds, game._chunkManager.Pipeline.LocalStage.Name, " ms"),
+                new DebugInfoLine<double>(() => game._chunkManager.Pipeline.GlobalStage.TimeSpentInTransform.TotalMilliseconds, game._chunkManager.Pipeline.GlobalStage.Name, " ms"),
+                new DebugInfoLine<double>(() => game._chunkManager.Pipeline.TimeSpentInTransform.TotalMilliseconds, "Dispatcher", " ms"));
+
+            _cameraContext = new DebugContext(_rightAlignedTextFormat, graphics,
+                new DebugInfoLine<Vector3>(() => game._camera.Position),
+                new DebugInfoLine<Vector3>(() => game._camera.LookAt),
+                new DebugInfoLine<Int2>(() => game._camera.CurrentChunkIndex),
+                new DebugInfoMultiLine<VoxelRayCollisionResult>(() => game._camera.CurrentCursor, GetCurrentCursorLines));
+
+            _gameContext = new DebugContext(_leftAlignedTextFormat, graphics,
+                new DebugAction(Key.Back, "Back", () => LeftContext = _mainMenuContext),
+                new DebugToggleAction(Key.F1, () => GameOptions.RenderSolid),
+                new DebugToggleAction(Key.F2, () => GameOptions.RenderSprites),
+                new DebugToggleAction(Key.F3, () => GameOptions.RenderWater),
+                new DebugToggleAction(Key.F4, () => GameOptions.RenderSky),
+                new DebugToggleAction(Key.F5, () => GameOptions.RenderCrosshair),
+                new DebugToggleAction(Key.F6, () => GameOptions.RenderBoxes),
+                new DebugToggleAction(Key.F7, () => GameOptions.RenderPipelineVisualization),
+                new DebugToggleAction(Key.F8, () => GameOptions.RenderChunkBoundingBoxes),
+                new DebugToggleAction(Key.F9, () => GameOptions.IsViewFrustumCullingEnabled));
+
+            _performanceContext = new DebugContext(_rightAlignedTextFormat, graphics,
+                new DebugInfoLine<int>(() => game.WeirdFps, default, " FPS"));
+
+            _mainMenuContext = new DebugContext(_leftAlignedTextFormat, graphics,
+                new DebugAction(Key.F1, "Sky", () => LeftContext = _skyDomeContext),
+                new DebugAction(Key.F2, "Game", () => LeftContext = _gameContext),
+                new DebugAction(Key.F3, "Perf", () => RightContext = _performanceContext),
+                new DebugAction(Key.F4, "Camera", () => RightContext = _cameraContext),
+                new DebugAction(Key.F5, "Pipeline", () => RightContext = _pipelineContext));
+
+            LeftContext = _mainMenuContext;
+            RightContext = _performanceContext;
         }
 
-
-        private string BuildLeftText(ChunkManager chunkManager, Camera camera, Game game)
+        private static IEnumerable<string> GetCurrentCursorLines(VoxelRayCollisionResult currentCursor)
         {
+            yield return "CurrentCursor";
 
-            return "";// string.Join(Environment.NewLine, camera.Actions.Select(s => $"{s.Key:G}: {s.Name}"));
-
-            var targetInfo = camera.CurrentCursor == null
-                ? "No target"
-                : $"{camera.CurrentCursor.AbsoluteVoxelIndex} (BlockType: {camera.CurrentCursor.Voxel.BlockType}, Light: {camera.CurrentCursor.Voxel.CompositeLight})";
-
-            var targetTargetInfo = "No target target";
-
-            if (camera.CurrentCursor != null)
+            if (currentCursor == null)
             {
-                if (chunkManager.TryGetVoxel(camera.CurrentCursor.AbsoluteVoxelIndex + camera.CurrentCursor.Direction, out var targetTarget))
-                {
-                    if (chunkManager.TryGetVoxelAddress(
-                        camera.CurrentCursor.AbsoluteVoxelIndex + camera.CurrentCursor.Direction, out var address))
-                    {
-                        targetTargetInfo =
-                            $"BlockType: {targetTarget.BlockType}, Sun: {targetTarget.Sunlight}, Light: {targetTarget.EmittedLight}" +
-                            $"Chunk: {address.Chunk.ChunkIndex.X}, {address.Chunk.ChunkIndex.Y}, " +
-                            $"Voxel: {address.RelativeVoxelIndex.X}, {address.RelativeVoxelIndex.Y}, {address.RelativeVoxelIndex.Z}";
-                    }
-                    else throw new Exception("that should not happen i guess");
-                }
+                yield return "[No target]";
+                yield break;
             }
 
-            return $"Time: {game.World.Time:N2}\r\n" +
-                   $"Current position {camera.Position.ToNonRetardedString()}\r\n" +
-                   $"Orientation {camera.LookAt.ToNonRetardedString()}\r\n" +
-                   $"Current target {targetInfo}\r\n" +
-                   $"Target target: {targetTargetInfo}\r\n";
+            yield return $"ChunkIndex: {currentCursor.Address.Chunk.ChunkIndex}";
+            yield return $"RelVoxelAddress: {currentCursor.Address.RelativeVoxelIndex}";
+            yield return $"AbsVoxelAddress: {currentCursor.AbsoluteVoxelIndex}";
+            yield return $"Voxel: {currentCursor.Definition.Name}";
+            yield return $"Face: {currentCursor.Direction}";
         }
 
-        private string GetPipelineMetrics(ChunkManager chunkManager)
+
+        public void Draw(Camera camera, Game game)
         {
-            var pipe = chunkManager.Pipeline;
-
-            var stages = string.Join("", pipe.Stages.Select(stage => PipelineStageSummary(stage.Name, stage.Transform, stage.TimeSpentInTransform, stage)));
-            return $"Pipeline ({pipe.State}) \r\n" +
-                   stages +
-                   PipelineStageSummary("Dispatcher", pipe.Dispatcher, pipe.TimeSpentInTransform);
-        }
-
-        private string PipelineStageSummary(string name, TransformBlock<Chunk, Chunk> transform, TimeSpan elapsedTime, PipelineStage stage = null)
-            => $"{name} {elapsedTime.TotalMilliseconds:N0}ms\r\n";
-
-        private string BuildRightText(ChunkManager chunkManager, Game game)
-        {
-            return RightContext.Lines;
-
-            return 
-                $"Chunk size {WorldSettings.ChunkSize}, View distance: {Game.ViewDistance}, Slice: {Chunk.SliceHeight}\r\n" +
-                GetPipelineMetrics(chunkManager) + "\r\n" +
-                $"Average render time: {game.AverageRenderTime:F2}\r\n" +
-                $"Peek render time: {game.PeekRenderTime:F2}\r\n" +
-                $"Weird FPS: {game.WeirdFps:F2}\r\n" +
-                $"Average FPS: {game.AverageFps:F2}\r\n" +
-                $"Death queue: {ChunkManager.BagOfDeath.Count}\r\n" +
-                $"Chunks: {ChunkManager.Chunks.Count}\r\n" +
-                $"Graveyard: {ChunkManager.Graveyard.Count}\r\n" +
-                $"Created: {ChunkManager.ChunkCreated}\r\n" +
-                $"Resurrected: {ChunkManager.ChunkResurrected}\r\n";
-        }
-
-        public void Draw(
-            ChunkManager chunkManager,
-            Camera camera,
-            Game game)
-        {
-            LeftContext.Update(camera);
-            RightContext.Update(camera);
-
-            var leftText = LeftContext.Lines; // game.SkyDome.Debug.Lines; // BuildLeftText(chunkManager, camera, game);
-            var rightText = BuildRightText(chunkManager, game);
-
-            //if (_keyboard.GetCurrentState().IsPressed(Key.C) && _keyboard.GetCurrentState().IsPressed(Key.LeftControl))
-            //{
-            //    Clipboard.SetText(rightText);
-            //}
-
-            using var leftTextLayout = new TextLayout(_graphics.DirectWrite, leftText, _leftAlignedTextFormat, _graphics.RenderForm.Width - 20, _graphics.RenderForm.Height);
-            _graphics.RenderTarget2D.DrawTextLayout(new RawVector2(10, 10), leftTextLayout, _brush);
-
-            using var rightTextLayout = new TextLayout(_graphics.DirectWrite, rightText, _rightAlignedTextFormat, _graphics.RenderForm.Width - 30, _graphics.RenderForm.Height);
-            _graphics.RenderTarget2D.DrawTextLayout(new RawVector2(0, 10), rightTextLayout, _brush);
-
-            using var bottomCenterTextLayout = new TextLayout(_graphics.DirectWrite, $"{camera.VoxelInHand.Name}: [{camera.VoxelInHand.Type}]", _bottomCenterAlignedTextFormat, _graphics.RenderForm.Width - 30, _graphics.RenderForm.Height);
-            _graphics.RenderTarget2D.DrawTextLayout(new RawVector2(0, _graphics.RenderForm.Height - 100), bottomCenterTextLayout, _brush);
+            LeftContext.Draw(camera);
+            RightContext.Draw(camera);
+            
+            _bottomCenterLayout?.Dispose();
+            _bottomCenterLayout = new TextLayout(_graphics.DirectWrite, $"{camera.VoxelInHand.Name}: [{camera.VoxelInHand.Type}]", _bottomCenterAlignedTextFormat, _graphics.RenderForm.Width - 30, _graphics.RenderForm.Height);
+            _graphics.RenderTarget2D.DrawTextLayout(new RawVector2(0, _graphics.RenderForm.Height - 100), _bottomCenterLayout, _brush);
         }
     }
 }

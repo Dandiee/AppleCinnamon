@@ -23,8 +23,8 @@ namespace AppleCinnamon
         public static bool Debug { get; set; } = true;
         //public static bool Debug2 { get; set; } = true;
 
-        private readonly ChunkManager _chunkManager;
-        private readonly Camera _camera;
+        public readonly ChunkManager _chunkManager;
+        public readonly Camera _camera;
         private readonly DebugLayout _debugLayout;
 
         private readonly Graphics _graphics;
@@ -57,10 +57,7 @@ namespace AppleCinnamon
 
             _lastRenderTimes = new double[20];
             _pipelineVisualizer = new PipelineVisualizer(_graphics);
-
-            SetupDebug();
-
-            _debugLayout = new DebugLayout(_graphics, DebugContext, _camera.DebugContext);
+            _debugLayout = new DebugLayout(this, _graphics);
 
 
             Task.Run(async () => await WeirdFpsCounter());
@@ -120,7 +117,7 @@ namespace AppleCinnamon
 
                     if (GameOptions.RenderDebugLayout)
                     {
-                        _debugLayout.Draw(_chunkManager, _camera, this); // leaking
+                        _debugLayout.Draw(_camera, this); // leaking
                     }
 
 
