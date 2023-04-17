@@ -59,20 +59,19 @@ namespace AppleCinnamon.Drawers
         public static readonly RawColor4[] ColorsBySteps = new[]
         {
             Color.White.ToRawColor4(), // terraing gen
-
             Color.LightGray.ToRawColor4(), // neighbor assigner
-            Color.Yellow.ToRawColor4(), // artifact gen
-            
-            Color.Gray.ToRawColor4(), // pool
-            Color.Red.ToRawColor4(), // localizer
-            
-            Color.DarkGray.ToRawColor4(), // pool
-            Color.Green.ToRawColor4(), // globalizer
-            
+            Color.Gray.ToRawColor4(), // artifact gen
             Color.Black.ToRawColor4(), // pool
-
-            Color.Blue.ToRawColor4(), // dispatcher
-            Color.Purple.ToRawColor4(), // finalized
+            Color.Blue.ToRawColor4(), // localizer
+            Color.Orange.ToRawColor4(), // localizer
+            //
+            //Color.DarkGray.ToRawColor4(), // pool
+            //Color.Green.ToRawColor4(), // globalizer
+            //
+            //Color.Black.ToRawColor4(), // pool
+            //
+            //Color.Blue.ToRawColor4(), // dispatcher
+            //Color.Purple.ToRawColor4(), // finalized
 
             //Color.Black.ToRawColor4(),
             //Color.Wheat.ToRawColor4(),
@@ -92,7 +91,9 @@ namespace AppleCinnamon.Drawers
 
             if (!chunk.IsRendered)
             {
-                color = ColorsBySteps[chunk.Stage];
+                color = chunk.State == ChunkState.Finished 
+                    ? Color.Purple
+                    : ColorsBySteps[chunk.Stage];
             }
 
             if (chunk.Deletion == ChunkDeletionState.MarkedForDeletion)
