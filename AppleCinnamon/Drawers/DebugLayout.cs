@@ -14,7 +14,7 @@ namespace AppleCinnamon.Drawers
     {
         public const string FONT_FAMILY_NAME = "Consolas";
 
-        private readonly Graphics _graphics;
+        private readonly Game _game;
 
         public DebugContext LeftContext { get; private set; }
         public DebugContext RightContext { get; private set; }
@@ -24,21 +24,21 @@ namespace AppleCinnamon.Drawers
 
         public DebugLayout(Game game, Graphics graphics)
         {
-            _graphics = graphics;
+            _game = game;
 
-            var leftAlignedTextFormat = new TextFormat(_graphics.DirectWrite, FONT_FAMILY_NAME, FontWeight.Black, FontStyle.Normal, 20);
-            var rightAlignedTextFormat = new TextFormat(_graphics.DirectWrite, FONT_FAMILY_NAME, FontWeight.Black, FontStyle.Normal, 20)
+            var leftAlignedTextFormat = new TextFormat(graphics.DirectWrite, FONT_FAMILY_NAME, FontWeight.Black, FontStyle.Normal, 20);
+            var rightAlignedTextFormat = new TextFormat(graphics.DirectWrite, FONT_FAMILY_NAME, FontWeight.Black, FontStyle.Normal, 20)
             {
                 TextAlignment = TextAlignment.Trailing
             };
-            var bottomCenterAlignedTextFormat = new TextFormat(_graphics.DirectWrite, FONT_FAMILY_NAME, FontWeight.Black, FontStyle.Normal, 20)
+            var bottomCenterAlignedTextFormat = new TextFormat(graphics.DirectWrite, FONT_FAMILY_NAME, FontWeight.Black, FontStyle.Normal, 20)
             {
                 TextAlignment = TextAlignment.Center
             };
 
             var leftOrigin = new RawVector2(10, 10);
             var rightOrigin = new RawVector2(0, 10);
-            var bottomOrigin = new RawVector2(0, _graphics.RenderForm.Height - 100);
+            var bottomOrigin = new RawVector2(0, graphics.RenderForm.Height - 100);
 
             var skyDomeContext = new DebugContext(leftAlignedTextFormat, graphics, leftOrigin,
                 new DebugAction(Key.Back, "Back", () => LeftContext = _mainMenuContext),
@@ -58,19 +58,19 @@ namespace AppleCinnamon.Drawers
                 new DebugInfoLine<int>(() => ChunkManager.Graveyard.Count, "Graveyard"),
                 new DebugInfoLine<int>(() => ChunkManager.ChunkCreated),
                 new DebugInfoLine<int>(() => ChunkManager.ChunkResurrected),
-                new DebugInfoLine<PipelineState>(() => game._chunkManager.Pipeline.State),
-                new DebugInfoLine<double>(() => game._chunkManager.Pipeline.TerrainStage.TimeSpentInTransform.TotalMilliseconds, game._chunkManager.Pipeline.TerrainStage.Name, " ms"),
-                new DebugInfoLine<double>(() => game._chunkManager.Pipeline.ArtifactStage.TimeSpentInTransform.TotalMilliseconds, game._chunkManager.Pipeline.ArtifactStage.Name, " ms"),
-                new DebugInfoLine<double>(() => game._chunkManager.Pipeline.LocalStage.TimeSpentInTransform.TotalMilliseconds, game._chunkManager.Pipeline.LocalStage.Name, " ms"),
-                new DebugInfoLine<double>(() => game._chunkManager.Pipeline.GlobalStage.TimeSpentInTransform.TotalMilliseconds, game._chunkManager.Pipeline.GlobalStage.Name, " ms"),
-                new DebugInfoLine<double>(() => game._chunkManager.Pipeline.TimeSpentInTransform.TotalMilliseconds, "Dispatcher", " ms"));
+                new DebugInfoLine<PipelineState>(() => game.ChunkManager.Pipeline.State),
+                new DebugInfoLine<double>(() => game.ChunkManager.Pipeline.TerrainStage.TimeSpentInTransform.TotalMilliseconds, game.ChunkManager.Pipeline.TerrainStage.Name, " ms"),
+                new DebugInfoLine<double>(() => game.ChunkManager.Pipeline.ArtifactStage.TimeSpentInTransform.TotalMilliseconds, game.ChunkManager.Pipeline.ArtifactStage.Name, " ms"),
+                new DebugInfoLine<double>(() => game.ChunkManager.Pipeline.LocalStage.TimeSpentInTransform.TotalMilliseconds, game.ChunkManager.Pipeline.LocalStage.Name, " ms"),
+                new DebugInfoLine<double>(() => game.ChunkManager.Pipeline.GlobalStage.TimeSpentInTransform.TotalMilliseconds, game.ChunkManager.Pipeline.GlobalStage.Name, " ms"),
+                new DebugInfoLine<double>(() => game.ChunkManager.Pipeline.TimeSpentInTransform.TotalMilliseconds, "Dispatcher", " ms"));
 
             var cameraContext = new DebugContext(rightAlignedTextFormat, graphics, rightOrigin,
                 
-                new DebugInfoLine<Vector3>(() => game._camera.Position),
-                new DebugInfoLine<Vector3>(() => game._camera.LookAt),
-                new DebugInfoLine<Int2>(() => game._camera.CurrentChunkIndex),
-                new DebugInfoMultiLine<VoxelRayCollisionResult>(() => game._camera.CurrentCursor, GetCurrentCursorLines));
+                new DebugInfoLine<Vector3>(() => game.Camera.Position),
+                new DebugInfoLine<Vector3>(() => game.Camera.LookAt),
+                new DebugInfoLine<Int2>(() => game.Camera.CurrentChunkIndex),
+                new DebugInfoMultiLine<VoxelRayCollisionResult>(() => game.Camera.CurrentCursor, GetCurrentCursorLines));
 
             var gameContext = new DebugContext(leftAlignedTextFormat, graphics, leftOrigin,
                 new DebugAction(Key.Back, "Back", () => LeftContext = _mainMenuContext),
@@ -96,7 +96,7 @@ namespace AppleCinnamon.Drawers
                 new DebugAction(Key.F5, "Pipeline", () => RightContext = pipelineContext));
 
             BottomCenterContext = new DebugContext(bottomCenterAlignedTextFormat, graphics, bottomOrigin,
-                new DebugInfoLine<VoxelDefinition>(() => game._camera.VoxelInHand, "", textFactory: vox => $"{vox.Name}: [{vox.Type}]"));
+                new DebugInfoLine<VoxelDefinition>(() => game.Camera.VoxelInHand, "", textFactory: vox => $"{vox.Name}: [{vox.Type}]"));
 
             LeftContext = _mainMenuContext;
             RightContext = performanceContext;
@@ -120,14 +120,11 @@ namespace AppleCinnamon.Drawers
         }
 
 
-        public void Draw(Camera camera, Game game)
+        public void Draw()
         {
-            LeftContext.Draw(camera);
-            RightContext.Draw(camera);
-            BottomCenterContext.Draw(camera);
-            //_bottomCenterLayout?.Dispose();
-            //_bottomCenterLayout = new TextLayout(_graphics.DirectWrite, $"{camera.VoxelInHand.Name}: [{camera.VoxelInHand.Type}]", _bottomCenterAlignedTextFormat, _graphics.RenderForm.Width - 30, _graphics.RenderForm.Height);
-            //_graphics.RenderTarget2D.DrawTextLayout(new RawVector2(0, _graphics.RenderForm.Height - 100), _bottomCenterLayout, _brush);
+            LeftContext.Draw(_game.Camera);
+            RightContext.Draw(_game.Camera);
+            BottomCenterContext.Draw(_game.Camera);
         }
     }
 }

@@ -13,26 +13,25 @@ namespace AppleCinnamon.Drawers
     {
         private readonly Device _device;
 
-        private EffectDefinition<VertexSolidBlock> _solidEffectDefinition;
-        private EffectDefinition<VertexWater> _waterEffectDefinition;
-        private EffectDefinition<VertexSprite> _spriteEffectDefinition;
-        private EffectDefinition<VertexBox> _boxEffectDefinition;
+        private readonly EffectDefinition<VertexSolidBlock> _solidEffectDefinition;
+        private readonly EffectDefinition<VertexWater> _waterEffectDefinition;
+        private readonly EffectDefinition<VertexSprite> _spriteEffectDefinition;
+        private readonly EffectDefinition<VertexBox> _boxEffectDefinition;
+        private readonly BlendState _waterBlendState;
+        private readonly EffectVectorVariable _waterTextureOffsetVar;
+
         private int _currentWaterTextureOffsetIndex;
-        private BlendState _waterBlendState;
 
         public ChunkDrawer(Device device)
         {
             _device = device;
 
-            LoadContent();
-        }
-
-        private void LoadContent()
-        {
             _solidEffectDefinition = new(_device, "Content/Effect/SolidBlockEffect.fx", PrimitiveTopology.TriangleList, "Content/Texture/terrain3.png");
             _waterEffectDefinition = new(_device, "Content/Effect/WaterEffect.fx", PrimitiveTopology.TriangleList, "Content/Texture/custom_water_still.png");
             _spriteEffectDefinition = new(_device, "Content/Effect/SpriteEffetct.fx", PrimitiveTopology.TriangleList, "Content/Texture/terrain3.png");
             _boxEffectDefinition = new(_device, "Content/Effect/BoxDrawerEffect.fx", PrimitiveTopology.PointList);
+
+            _waterTextureOffsetVar = _waterEffectDefinition.Effect.GetVariableByName("TextureOffset").AsVector();
 
             var blendStateDescription = new BlendStateDescription { AlphaToCoverageEnable = false };
 
@@ -62,7 +61,6 @@ namespace AppleCinnamon.Drawers
                         chunk.Buffers.BufferSolid?.Draw(_device);
                     }
                 }
-
 
                 if (GameOptions.RenderSprites)
                 {
@@ -127,18 +125,17 @@ namespace AppleCinnamon.Drawers
             while (true)
             {
                 _currentWaterTextureOffsetIndex = (_currentWaterTextureOffsetIndex + 1) % 32;
-                _waterEffectDefinition.Effect.GetVariableByName("TextureOffset").AsVector().Set(new Vector2(0, _currentWaterTextureOffsetIndex * 1 / 32f));
+                _waterTextureOffsetVar.Set(new Vector2(0, _currentWaterTextureOffsetIndex * 1 / 32f));
                 await Task.Delay(80);
             }
         }
-
 
         public void Update(Camera camera)
         {
             _solidEffectDefinition.Update(camera);
             _waterEffectDefinition.Update(camera);
             _spriteEffectDefinition.Update(camera);
-            _boxEffectDefinition.Effect.GetVariableByName("WorldViewProjection").AsMatrix().SetMatrix(camera.WorldViewProjection);
+            _boxEffectDefinition.Update(camera);
         }
     }
 }

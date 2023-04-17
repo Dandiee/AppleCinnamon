@@ -100,7 +100,7 @@ namespace AppleCinnamon
             }
         }
 
-        public void Update(GameTime gameTime, ChunkManager chunkManager)
+        public void Update(TimeSpan elapsedTime, ChunkManager chunkManager)
         {
             if (!chunkManager.IsInitialized)
             {
@@ -110,8 +110,8 @@ namespace AppleCinnamon
             CurrentKeyboardState = Keyboard.GetCurrentState();
             _currentMouseState = Mouse.GetCurrentState();
 
-            CollisionHelper.ApplyPlayerPhysics(this, chunkManager, (float)gameTime.ElapsedGameTime.TotalSeconds);
-            UpdateMove(gameTime);
+            CollisionHelper.ApplyPlayerPhysics(this, chunkManager, (float)elapsedTime.TotalSeconds);
+            UpdateMove(elapsedTime);
             UpdateMatrices();
             UpdateCurrentCursor(chunkManager);
             HandleDefaultInputs(chunkManager);
@@ -191,7 +191,7 @@ namespace AppleCinnamon
             }
         }
 
-        private void UpdateMove(GameTime gameTime)
+        private void UpdateMove(TimeSpan elapsedTime)
         {
             const float mouseSensitivity = .01f;
             const float movementSensitivity = 2f;
@@ -199,7 +199,7 @@ namespace AppleCinnamon
             const float movementFriction = 0.8f;
             const float sprintSpeedFactor = 10f;
 
-            var t = (float)gameTime.ElapsedGameTime.TotalSeconds;
+            var t = (float)elapsedTime.TotalSeconds;
 
             Velocity += WorldSettings.Gravity * t;
 

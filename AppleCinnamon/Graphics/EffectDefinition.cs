@@ -60,20 +60,20 @@ namespace AppleCinnamon.Chunks
                 : MathUtil.PiOverTwo - (Math.Abs(SkyDomeOptions.TimeOfDay - 0.5f) * MathUtil.PiOverTwo);
 
             _worldViewProjectionVar.SetMatrix(camera.WorldViewProjection);
-            _eyePositionVar.Set(camera.Position);
-            _lightFactorVar.Set((float)Math.Sin(lightFactor));
+            _eyePositionVar?.Set(camera.Position);
+            _lightFactorVar?.Set((float)Math.Sin(lightFactor));
 
             if (camera.IsInWater)
             {
-                _fogStartVar.Set(8);
-                _fogEndVar.Set(64);
-                _fogColorVar.Set(new Vector4(0, 0.2f, 1, 0));
+                _fogStartVar?.Set(8);
+                _fogEndVar?.Set(64);
+                _fogColorVar?.Set(new Vector4(0, 0.2f, 1, 0));
             }
             else
             {
-                _fogStartVar.Set(Game.ViewDistance * WorldSettings.ChunkSize);
-                _fogEndVar.Set(10* Game.ViewDistance * WorldSettings.ChunkSize);
-                _fogColorVar.Set(new Vector4(0, 0, 0, 1));
+                _fogStartVar?.Set(Game.ViewDistance * WorldSettings.ChunkSize);
+                _fogEndVar?.Set(10* Game.ViewDistance * WorldSettings.ChunkSize);
+                _fogColorVar?.Set(new Vector4(0, 0, 0, 1));
             }
         }
     }

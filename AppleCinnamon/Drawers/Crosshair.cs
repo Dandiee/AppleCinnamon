@@ -27,9 +27,6 @@ namespace AppleCinnamon.Drawers
         }
 
 
-        public void Draw()
-        {
-            _graphics.RenderTarget2D.FillGeometry(_geometry, _brush, null);
-        }
+        public void Draw() => _graphics.RenderTarget2D.FillGeometry(_geometry, _brush, null);
     }
 }
