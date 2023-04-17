@@ -58,30 +58,11 @@ namespace AppleCinnamon.Drawers
 
         public static readonly RawColor4[] ColorsBySteps = new[]
         {
-            Color.White.ToRawColor4(), // terraing gen
-            Color.LightGray.ToRawColor4(), // neighbor assigner
-            Color.Gray.ToRawColor4(), // artifact gen
-            Color.Black.ToRawColor4(), // pool
-            Color.Blue.ToRawColor4(), // localizer
-            Color.Orange.ToRawColor4(), // localizer
-            //
-            //Color.DarkGray.ToRawColor4(), // pool
-            //Color.Green.ToRawColor4(), // globalizer
-            //
-            //Color.Black.ToRawColor4(), // pool
-            //
-            //Color.Blue.ToRawColor4(), // dispatcher
-            //Color.Purple.ToRawColor4(), // finalized
-
-            //Color.Black.ToRawColor4(),
-            //Color.Wheat.ToRawColor4(),
-            //Color.Wheat.ToRawColor4(),
-            //Color.Wheat.ToRawColor4(),
-            //Color.Wheat.ToRawColor4(),
-            //Color.Wheat.ToRawColor4(),
-            //Color.Wheat.ToRawColor4(),
-            //Color.Wheat.ToRawColor4(),
-            //Color.Wheat.ToRawColor4(),
+            Color.White.ToRawColor4(),      // Terrain
+            Color.LightGray.ToRawColor4(),  // Artifact
+            Color.Gray.ToRawColor4(),       // Local
+            Color.Black.ToRawColor4(),      // Global
+            Color.Blue.ToRawColor4(),       // Dispatcher
         };
 
         public static ChunkSprite Rect(this Chunk chunk, Int2 currentChunkIndex)

@@ -15,19 +15,13 @@ namespace AppleCinnamon
 
         private DateTime _lastModification;
 
-        public Vector2 Position2d { get; private set; }
-        public Vector2 LookAt2d { get; private set; }
-
         public Vector3 Position { get; set; }
         public Vector3 LookAt { get; private set; }
         public Vector3 Velocity { get; set; }
         public Int2 CurrentChunkIndex { get; private set; }
         public Matrix View { get; private set; }
         public Matrix WorldViewProjection { get; private set; }
-        public Matrix WorldView { get; private set; }
-        public Matrix Projection { get; private set; }
 
-        public Matrix World => Matrix.Identity * 2;
         public BoundingFrustum BoundingFrustum;
         public VoxelDefinition VoxelInHand { get; private set; }
 
@@ -270,13 +264,10 @@ namespace AppleCinnamon
             var rotationMatrix = Matrix.RotationYawPitchRoll(Yaw, 0, Pitch);
             LookAt = Vector3.Normalize(Vector3.Transform(_initialLookAt, rotationMatrix).ToVector3());
             View = Matrix.LookAtRH(Position, Position + LookAt, Vector3.TransformCoordinate(Vector3.UnitY, rotationMatrix));
-            Projection = Matrix.PerspectiveFovRH(CameraOptions.FieldOfView, _graphics.RenderForm.Width / (float)_graphics.RenderForm.Height, 0.1f, 10000000000f);
-            WorldView = World * View;
-            WorldViewProjection = World * View * Projection;
+            var projection = Matrix.PerspectiveFovRH(CameraOptions.FieldOfView, _graphics.RenderForm.Width / (float)_graphics.RenderForm.Height, 0.1f, 10000000000f);
+            WorldViewProjection = View * projection;
 
-            BoundingFrustum = new BoundingFrustum(View * Projection);
-            LookAt2d = new Vector2(LookAt.X, LookAt.Z);
-            Position2d = new Vector2(Position.X, Position.Z);
+            BoundingFrustum = new BoundingFrustum(View * projection);
         }
     }
 
