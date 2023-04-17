@@ -1,6 +1,6 @@
-﻿using AppleCinnamon.Common;
+﻿using AppleCinnamon.Chunks;
+using AppleCinnamon.Common;
 using AppleCinnamon.Extensions;
-using AppleCinnamon.Helper;
 using SharpDX;
 using SharpDX.Direct2D1;
 using SharpDX.Mathematics.Interop;

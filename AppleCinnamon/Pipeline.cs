@@ -8,6 +8,7 @@ using AppleCinnamon.Common;
 using SharpDX.Direct3D11;
 using AppleCinnamon.ChunkBuilders;
 using AppleCinnamon.ChunkGenerators;
+using AppleCinnamon.Chunks;
 
 namespace AppleCinnamon
 {

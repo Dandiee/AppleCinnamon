@@ -78,7 +78,7 @@ namespace AppleCinnamon
                 }
 
 
-                Update(TimeSpan.FromMilliseconds(Math.Min(elapsedTime.TotalMilliseconds, 3)), _graphics.Device);
+                Update(TimeSpan.FromMilliseconds(Math.Min(elapsedTime.TotalMilliseconds, 1)), _graphics.Device);
                 _graphics.Draw(() =>
                 {
                     if (ChunkManager.IsInitialized)

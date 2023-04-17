@@ -1,5 +1,4 @@
 ﻿using System;
-using AppleCinnamon.Chunks;
 using AppleCinnamon.Extensions;
 using AppleCinnamon.Vertices;
 using SharpDX;

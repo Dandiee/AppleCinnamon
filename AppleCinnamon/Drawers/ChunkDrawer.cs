@@ -26,9 +26,9 @@ namespace AppleCinnamon.Drawers
         {
             _device = device;
 
-            _solidEffectDefinition = new(_device, "Content/Effect/SolidBlockEffect.fx", PrimitiveTopology.TriangleList, "Content/Texture/terrain3.png");
-            _waterEffectDefinition = new(_device, "Content/Effect/WaterEffect.fx", PrimitiveTopology.TriangleList, "Content/Texture/custom_water_still.png");
-            _spriteEffectDefinition = new(_device, "Content/Effect/SpriteEffetct.fx", PrimitiveTopology.TriangleList, "Content/Texture/terrain3.png");
+            _solidEffectDefinition = new(_device, (string)"Content/Effect/SolidBlockEffect.fx", (PrimitiveTopology)PrimitiveTopology.TriangleList, (string)"Content/Texture/terrain3.png");
+            _waterEffectDefinition = new(_device, (string)"Content/Effect/WaterEffect.fx", (PrimitiveTopology)PrimitiveTopology.TriangleList, (string)"Content/Texture/custom_water_still.png");
+            _spriteEffectDefinition = new(_device, (string)"Content/Effect/SpriteEffetct.fx", (PrimitiveTopology)PrimitiveTopology.TriangleList, (string)"Content/Texture/terrain3.png");
             _boxEffectDefinition = new(_device, "Content/Effect/BoxDrawerEffect.fx", PrimitiveTopology.PointList);
 
             _waterTextureOffsetVar = _waterEffectDefinition.Effect.GetVariableByName("TextureOffset").AsVector();

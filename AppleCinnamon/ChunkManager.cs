@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
+using AppleCinnamon.Chunks;
 using AppleCinnamon.Common;
 using AppleCinnamon.Drawers;
 using AppleCinnamon.Settings;
@@ -12,7 +13,7 @@ namespace AppleCinnamon
 {
     public sealed partial class ChunkManager
     {
-        public readonly Graphics _graphics;
+        private readonly Graphics _graphics;
         private int _finishedChunks;
         public bool IsInitialized { get; private set; }
 
@@ -72,7 +73,7 @@ namespace AppleCinnamon
         private void UpdateChunks(Camera camera)
         {
             var now = DateTime.Now;
-            _chunksToDraw.Clear();
+            _chunksToDraw = new();
             foreach (var chunk in Chunks.Values)
             {
                 chunk.IsRendered = false;

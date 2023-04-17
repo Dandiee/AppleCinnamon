@@ -1,7 +1,7 @@
 ﻿using System;
 using AppleCinnamon.Vertices;
 
-namespace AppleCinnamon
+namespace AppleCinnamon.Chunks
 {
     public sealed class ChunkBuffers : IDisposable
     {

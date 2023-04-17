@@ -1,6 +1,6 @@
 ﻿using SharpDX.Mathematics.Interop;
 
-namespace AppleCinnamon.Helper
+namespace AppleCinnamon.Extensions
 {
     public static class ColorExtensions
     {

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace AppleCinnamon
+﻿namespace AppleCinnamon.Common
 {
     [Flags]
     public enum TransmittanceFlags : byte

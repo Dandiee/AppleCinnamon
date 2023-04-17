@@ -1,4 +1,6 @@
-﻿namespace AppleCinnamon.ChunkBuilders
+﻿using AppleCinnamon.Chunks;
+
+namespace AppleCinnamon.ChunkBuilders
 {
     public static class GlobalVisibilityFinalizer
     {
