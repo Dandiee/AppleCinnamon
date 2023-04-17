@@ -8,7 +8,7 @@ using SharpDX.D3DCompiler;
 using SharpDX.Direct3D;
 using SharpDX.Direct3D11;
 
-namespace AppleCinnamon.Graphics
+namespace AppleCinnamon.Grfx
 {
     public sealed class EffectDefinition<TVertex>
         where TVertex : struct, IVertex

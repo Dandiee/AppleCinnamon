@@ -13,7 +13,7 @@ namespace AppleCinnamon
     {
         public static readonly Vector3 StartPosition = new(0, 140, 0);
 
-        public const int ViewDistance = 12;
+        public const int ViewDistance = 16;
         public const int NumberOfPools = 4;
         public static readonly TimeSpan ChunkDespawnCooldown = TimeSpan.FromMilliseconds(10);
 
@@ -28,10 +28,15 @@ namespace AppleCinnamon
         public readonly SkyDome SkyDome;
         private readonly PipelineVisualizer _pipelineVisualizer;
 
+        private readonly double[] _lastRenderTimes;
         private DateTime _lastTick;
+        private int _lastRenderTimeIndex;
+        private double _totalRenderTime;
+        private double _avgRenderTime;
 
         public int RenderedFramesInTheLastSecond;
         public int WeirdFps;
+        public int ArrayFps;
 
         public Game()
         {
@@ -42,6 +47,8 @@ namespace AppleCinnamon
             ChunkManager = new ChunkManager(_graphics);
             _pipelineVisualizer = new PipelineVisualizer(_graphics);
             _debugLayout = new DebugLayout(this, _graphics);
+
+            _lastRenderTimes = new double[50];
 
             Task.Run(WeirdFpsCounter);
             StartLoop();
@@ -78,7 +85,7 @@ namespace AppleCinnamon
                 }
 
 
-                Update(TimeSpan.FromMilliseconds(Math.Min(elapsedTime.TotalMilliseconds, 1)), _graphics.Device);
+                Update(TimeSpan.FromMilliseconds(_avgRenderTime), _graphics.Device);
                 _graphics.Draw(() =>
                 {
                     if (ChunkManager.IsInitialized)
@@ -106,6 +113,13 @@ namespace AppleCinnamon
                         _pipelineVisualizer.Draw(Camera, ChunkManager);
                     }
                 });
+
+                _totalRenderTime += elapsedTime.TotalMilliseconds - _lastRenderTimes[_lastRenderTimeIndex];
+                _avgRenderTime = _totalRenderTime / _lastRenderTimes.Length;
+                _lastRenderTimes[_lastRenderTimeIndex] = elapsedTime.TotalMilliseconds;
+                _lastRenderTimeIndex = _lastRenderTimeIndex == _lastRenderTimes.Length - 1 ? 0 : _lastRenderTimeIndex + 1;
+
+                ArrayFps = (int)(1000 / _avgRenderTime);
             });
         }
 

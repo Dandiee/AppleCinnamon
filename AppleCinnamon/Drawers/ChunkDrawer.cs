@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using AppleCinnamon.Chunks;
+using AppleCinnamon.Grfx;
 using AppleCinnamon.Vertices;
 using SharpDX;
 using SharpDX.Direct3D;
@@ -126,7 +127,7 @@ namespace AppleCinnamon.Drawers
             {
                 _currentWaterTextureOffsetIndex = (_currentWaterTextureOffsetIndex + 1) % 32;
                 _waterTextureOffsetVar.Set(new Vector2(0, _currentWaterTextureOffsetIndex * 1 / 32f));
-                await Task.Delay(80);
+                await Task.Delay(40);
             }
         }
 

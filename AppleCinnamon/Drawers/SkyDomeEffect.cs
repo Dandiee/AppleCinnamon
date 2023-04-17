@@ -1,5 +1,6 @@
 ﻿using System;
 using AppleCinnamon.Extensions;
+using AppleCinnamon.Grfx;
 using AppleCinnamon.Vertices;
 using SharpDX;
 using SharpDX.Direct3D;

@@ -90,8 +90,5 @@ namespace AppleCinnamon.ChunkGenerators
                 }
             }
         }
-
-
-
     }
 }

@@ -16,7 +16,7 @@ namespace AppleCinnamon
     public sealed class Pipeline
     {
         public static readonly DataflowLinkOptions PropagateCompletionOptions = new() { PropagateCompletion = true };
-        public static readonly int MDoP = Environment.ProcessorCount;
+        public static readonly int MDoP = Environment.ProcessorCount / 2;
 
         public PipelineState State { get; private set; } = PipelineState.Running;
         public TransformBlock<Chunk, Chunk> Dispatcher { get; private set; }
@@ -85,7 +85,7 @@ namespace AppleCinnamon
 
         private void BuildPipeline()
         {
-            Dispatcher = new TransformBlock<Chunk, Chunk>(BenchmarkedDispatcher, new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = MDoP });
+            Dispatcher = new TransformBlock<Chunk, Chunk>(BenchmarkedDispatcher);//, new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = MDoP });
             FinishBlock = new ActionBlock<Chunk>(_finishMove);
 
             foreach (var stage in Stages)

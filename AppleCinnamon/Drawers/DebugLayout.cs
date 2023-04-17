@@ -86,7 +86,8 @@ namespace AppleCinnamon.Drawers
 
             var performanceContext = new DebugContext(rightAlignedTextFormat, graphics, rightOrigin,
                 new DebugInfoLine<int>(() => Game.ViewDistance, "ViewDistance"),
-                new DebugInfoLine<int>(() => game.WeirdFps, default, " FPS"));
+                new DebugInfoLine<int>(() => game.WeirdFps, default, " FPS"),
+                new DebugInfoLine<int>(() => game.ArrayFps, default, " FPS"));
 
             _mainMenuContext = new DebugContext(leftAlignedTextFormat, graphics, leftOrigin,
                 new DebugAction(Key.F1, "Sky", () => LeftContext = skyDomeContext),

@@ -5,7 +5,7 @@ using SharpDX.DXGI;
 using Buffer = SharpDX.Direct3D11.Buffer;
 using Device = SharpDX.Direct3D11.Device;
 
-namespace AppleCinnamon.Graphics
+namespace AppleCinnamon.Grfx
 {
     public sealed class BufferDefinition<TVertex> : IDisposable
         where TVertex : struct, IVertex
