@@ -1,10 +1,9 @@
-﻿namespace AppleCinnamon.Extensions
+﻿namespace AppleCinnamon.Extensions;
+
+public static class VoxelAddressExtensions
 {
-    public static class VoxelAddressExtensions
+    public static void SetVoxel(this VoxelChunkAddress address, Voxel voxel)
     {
-        public static void SetVoxel(this VoxelChunkAddress address, Voxel voxel)
-        {
-            address.Chunk.SetSafe(address.RelativeVoxelIndex, voxel);
-        }
+        address.Chunk.SetSafe(address.RelativeVoxelIndex, voxel);
     }
 }

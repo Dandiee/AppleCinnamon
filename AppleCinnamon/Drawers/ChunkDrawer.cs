@@ -94,12 +94,10 @@ public sealed class ChunkDrawer
 
             if (GameOptions.RenderBoxes)
             {
-                var boxVertices = new VertexBox[(camera.CurrentCursor != null ? 1 : 0) +
-                                                (GameOptions.RenderChunkBoundingBoxes ? chunks.Count : 0)];
+                var boxVertices = new VertexBox[(camera.CurrentCursor != null ? 1 : 0) + (GameOptions.RenderChunkBoundingBoxes ? chunks.Count : 0)];
                 if (camera.CurrentCursor != null)
                 {
-                    boxVertices[^1] = new VertexBox(camera.CurrentCursor.BoundingBox,
-                        new Color3(0.713f, 0.125f, 0.878f));
+                    boxVertices[^1] = new VertexBox(camera.CurrentCursor.BoundingBox, new Color3(0.713f, 0.125f, 0.878f));
                 }
 
                 if (GameOptions.RenderChunkBoundingBoxes)

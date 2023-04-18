@@ -60,9 +60,6 @@ public static class FullScanner
                         chunk.BuildingContext.Top.VoxelCount++;
                     }
 
-
-
-
                     if (j > 0) // bottom
                     {
                         var neighbor = chunk.GetVoxel(i, j - 1, k);

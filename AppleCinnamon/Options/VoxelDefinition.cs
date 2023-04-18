@@ -94,7 +94,7 @@ public sealed class VoxelDefinition
     public readonly Vector3 Size;
     public readonly string Name;
 
-    public static readonly VoxelDefinition[] DefinitionByType = new VoxelDefinition[255];
+    public static readonly VoxelDefinition[] DefinitionByType = new VoxelDefinition[256];
 
     public static readonly VoxelDefinition Air =
         new(0, null, null, 0, true, false, false,
