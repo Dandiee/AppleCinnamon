@@ -1,7 +1,11 @@
 ﻿using System;
+using System.Numerics;
 using System.Runtime.InteropServices;
+using AppleCinnamon.ChunkBuilder;
 using AppleCinnamon.Common;
 using AppleCinnamon.Options;
+using SharpDX;
+using Vector3 = SharpDX.Vector3;
 
 namespace AppleCinnamon;
 
@@ -20,7 +24,7 @@ public struct Voxel
     public readonly byte EmittedLight => (byte)(CompositeLight >> 4);
     public Face Orientation => (Face)(MetaData >> 4);
 
-    private Voxel(ref Voxel original, byte light) 
+    private Voxel(ref Voxel original, byte light)
     {
         BlockType = original.BlockType;
         CompositeLight = light;

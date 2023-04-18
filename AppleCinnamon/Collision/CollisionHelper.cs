@@ -27,7 +27,6 @@ public static class CollisionHelper
             if (voxel.BlockType > 0 && voxel.BlockType != VoxelDefinition.Water.Type)
             {
                 var voxelDefinition = voxel.GetDefinition();
-
                 if (voxelDefinition.IsUnitSized)
                 {
                     return new VoxelRayCollisionResult(index, address, -direction, voxelDefinition, voxel);
@@ -35,11 +34,12 @@ public static class CollisionHelper
                 else
                 {
                     var voxelPosition = index.ToVector3();
-                    var voxelBoundingBox = new BoundingBox(voxelPosition - voxelDefinition.Size / 2f + voxelDefinition.Offset, voxelPosition + voxelDefinition.Size / 2f + voxelDefinition.Offset);
+                    var voxelBoundingBox = voxelDefinition.GetBoundingBox(ref voxelPosition, ref voxel);
                     var currentRay = new Ray(position, ray.Direction);
+
                     if (voxelBoundingBox.Intersects(ref currentRay))
                     {
-                        return new VoxelRayCollisionResult(index, address, -direction, voxelDefinition, voxel);
+                        return new VoxelRayCollisionResult(index, address, -direction, voxelDefinition, voxel, voxelBoundingBox);
                     }
                 }
             }

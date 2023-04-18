@@ -219,7 +219,7 @@ public class DebugIncDecAction<T> : DebugLine<T>
     private readonly Action _callback;
     public string Name { get; }
     public Key Key { get; }
-    public bool IsContinous { get; }
+    public bool IsContinuous { get; }
     public string Format { get; }
 
     private readonly Func<T> _getter;
@@ -228,7 +228,7 @@ public class DebugIncDecAction<T> : DebugLine<T>
     private readonly Action<T> _increment;
     private readonly Action<T> _decrement;
 
-    public DebugIncDecAction(Key key, Expression<Func<T>> fieldSelector, T step, Action callback = default, bool isContinous = true, Action<T> increment = default, Action<T> decrement = default)
+    public DebugIncDecAction(Key key, Expression<Func<T>> fieldSelector, T step, Action callback = default, bool isContinuous = true, Action<T> increment = default, Action<T> decrement = default)
     {
         _step = step;
         _callback = callback;
@@ -242,17 +242,16 @@ public class DebugIncDecAction<T> : DebugLine<T>
         Name = (fieldSelector.Body as MemberExpression).Member.Name;
 
         Key = key;
-        IsContinous = isContinous;
+        IsContinuous = isContinuous;
         Format = $"N{(1.0 / double.Parse(step.ToString())).ToString().Length - 1}";
         SetLine(_getter());
     }
-
         
     public override bool Update(KeyboardState prev, KeyboardState current)
     {
         if (current.IsPressed(Key))
         {
-            if ((IsContinous && current.IsPressed(Key.Add)) || (!IsContinous && !current.IsPressed(Key.Add) && prev.IsPressed(Key.Add)))
+            if ((IsContinuous && current.IsPressed(Key.Add)) || (!IsContinuous && !current.IsPressed(Key.Add) && prev.IsPressed(Key.Add)))
             {
                 if (_increment != null)
                 {
@@ -260,8 +259,7 @@ public class DebugIncDecAction<T> : DebugLine<T>
                 }
                 else
                 {
-                    var newValue = _getter() + _step;
-                    _setter(newValue);
+                    _setter(_getter() + _step);
                 }
 
                 SetLine(_getter());
@@ -269,7 +267,7 @@ public class DebugIncDecAction<T> : DebugLine<T>
                 return true;
             }
 
-            if ((IsContinous && current.IsPressed(Key.Subtract)) || (!IsContinous && !current.IsPressed(Key.Subtract) && prev.IsPressed(Key.Subtract)))
+            if ((IsContinuous && current.IsPressed(Key.Subtract)) || (!IsContinuous && !current.IsPressed(Key.Subtract) && prev.IsPressed(Key.Subtract)))
             {
                 if (_decrement != null)
                 {

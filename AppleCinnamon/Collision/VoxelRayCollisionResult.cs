@@ -14,7 +14,7 @@ public sealed class VoxelRayCollisionResult
     public BoundingBox BoundingBox { get; }
 
 
-    public VoxelRayCollisionResult(Int3 absoluteVoxelIndex, VoxelChunkAddress address, Int3 direction, VoxelDefinition definition, Voxel voxel)
+    public VoxelRayCollisionResult(Int3 absoluteVoxelIndex, VoxelChunkAddress address, Int3 direction, VoxelDefinition definition, Voxel voxel, BoundingBox? boundingBox = default)
     {
         AbsoluteVoxelIndex = absoluteVoxelIndex;
         Address = address;
@@ -24,6 +24,6 @@ public sealed class VoxelRayCollisionResult
         var position = absoluteVoxelIndex.ToVector3() + definition.Offset;
             
         var size = definition.Size/2 + new Vector3(.005f);
-        BoundingBox = new BoundingBox(position - size, position + size);
+        BoundingBox = boundingBox ?? new BoundingBox(position - size, position + size);
     }
 }

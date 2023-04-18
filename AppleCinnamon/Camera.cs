@@ -195,11 +195,14 @@ public sealed class Camera
 
         var t = (float)elapsedTime.TotalSeconds;
 
-        Velocity += CameraOptions.Gravity * t;
-
-        if (IsInWater)
+        if (!GameOptions.IsPaused)
         {
-            Velocity += CameraOptions.Gravity * -t;
+            Velocity += CameraOptions.Gravity * t;
+
+            if (IsInWater)
+            {
+                Velocity += CameraOptions.Gravity * -t;
+            }
         }
 
         if (!CurrentKeyboardState.IsPressed(Key.Escape) && LastKeyboardState.IsPressed(Key.Escape))

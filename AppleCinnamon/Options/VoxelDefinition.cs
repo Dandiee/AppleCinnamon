@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using AppleCinnamon.ChunkBuilder;
 using AppleCinnamon.Common;
 using SharpDX;
 
@@ -201,7 +202,7 @@ public sealed class VoxelDefinition
         HueFaces = hueFaces;
         Offset = offset;
         Size = size;
-        IsUnitSized = Offset == Vector3.Zero && Size == Vector3.One;
+        IsUnitSized = Offset == Vector3.Zero && Size == Vector3.One && !isOriented;
         Name = name;
         IsOriented = isOriented;
     }
@@ -429,4 +430,42 @@ public static class VoxelDefinitionExtensions
     //[InlineMethod.Inline]
     public static bool IsFaceVisible(this VoxelDefinition current, VoxelDefinition neighbor, VisibilityFlag neighborFace, VisibilityFlag currentFace)
         => current.IsBlock && ((neighbor.CoverFlags & neighborFace) == 0 || (current.CoverFlags & currentFace) == 0);
+
+
+    public static BoundingBox GetBoundingBox(this VoxelDefinition definition, ref Vector3 position, ref Voxel voxel)
+    {
+        if (definition.IsOriented)
+        {
+            var min = position - 0.5f;
+            var max = position + 0.5f;
+
+            return voxel.Orientation switch
+            {
+                Face.Back => new BoundingBox(
+                    new Vector3(min.X, min.Y, max.Z),
+                    new Vector3(max.X, max.Y, max.Z - ChunkDispatcher.SINGLE_SIDED_OFFSET)),
+
+                Face.Front => new BoundingBox(
+                    new Vector3(min.X, min.Y, min.Z + ChunkDispatcher.SINGLE_SIDED_OFFSET),
+                    new Vector3(max.X, max.Y, min.Z)),
+
+                Face.Left => new BoundingBox(
+                    new Vector3(min.X, min.Y, min.Z),
+                    new Vector3(min.X + ChunkDispatcher.SINGLE_SIDED_OFFSET, max.Y, max.Z)),
+
+                Face.Right => new BoundingBox(
+                    new Vector3(max.X - ChunkDispatcher.SINGLE_SIDED_OFFSET, min.Y, min.Z),
+                    new Vector3(max.X, max.Y, max.Z)),
+
+                _ => new BoundingBox(
+                    position - definition.Size / 2f + definition.Offset,
+                    position + definition.Size / 2f + definition.Offset)
+            };
+        }
+
+        return new BoundingBox(
+            position - definition.Size / 2f + definition.Offset,
+            position + definition.Size / 2f + definition.Offset);
+    }
+       
 }
