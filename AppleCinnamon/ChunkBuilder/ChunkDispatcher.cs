@@ -11,26 +11,23 @@ namespace AppleCinnamon.ChunkBuilder
     {
         public static void BuildChunk(Chunk chunk, Device device)
         {
-            if (!GameOptions.IsChangeTrackingEnabled || chunk.BuildingContext.IsChanged)
+            if (!GameOptions.IS_CHANGE_TRACKING_ENABLED || chunk.BuildingContext.IsChanged)
             {
-                if (chunk.Buffers == null)
-                {
-                    chunk.Buffers = new ChunkBuffers();
-                }
+                chunk.Buffers ??= new ChunkBuffers();
 
-                if (!GameOptions.IsChangeTrackingEnabled || chunk.BuildingContext.IsSolidChanged)
+                if (!GameOptions.IS_CHANGE_TRACKING_ENABLED || chunk.BuildingContext.IsSolidChanged)
                 {
                     chunk.Buffers.BufferSolid?.Dispose();
                     chunk.Buffers.BufferSolid = BuildSolid(chunk, device);
                 }
 
-                if (!GameOptions.IsChangeTrackingEnabled || chunk.BuildingContext.IsWaterChanged)
+                if (!GameOptions.IS_CHANGE_TRACKING_ENABLED || chunk.BuildingContext.IsWaterChanged)
                 {
                     chunk.Buffers.BufferWater?.Dispose();
                     chunk.Buffers.BufferWater = BuildWater(chunk, device);
                 }
 
-                if (!GameOptions.IsChangeTrackingEnabled || chunk.BuildingContext.IsSpriteChanged)
+                if (!GameOptions.IS_CHANGE_TRACKING_ENABLED || chunk.BuildingContext.IsSpriteChanged)
                 {
                     chunk.Buffers.BufferSprite?.Dispose();
                     chunk.Buffers.BufferSprite = BuildSprite(chunk, device);

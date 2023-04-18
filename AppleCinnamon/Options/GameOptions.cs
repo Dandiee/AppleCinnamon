@@ -5,13 +5,13 @@ namespace AppleCinnamon.Options;
 
 public static class GameOptions
 {
-    public const int ViewDistance = 16;
-    public const int NumberOfPools = 4;
-    public const int ChunkSize = 16;
-    public const int SliceHeight = 16;
-    public const int SliceArea = ChunkSize * ChunkSize * SliceHeight;
+    public const int VIEW_DISTANCE = 32;
+    public const int NUMBER_OF_POOLS = 4;
+    public const int CHUNK_SIZE = 16;
+    public const int SLICE_HEIGHT = 16;
+    public const int SLICE_AREA = CHUNK_SIZE * CHUNK_SIZE * SLICE_HEIGHT;
 
-    public const bool IsChangeTrackingEnabled = true;
+    public const bool IS_CHANGE_TRACKING_ENABLED = true;
 
     public static readonly Vector3 StartPosition = new(0, 140, 0);
     public static readonly TimeSpan ChunkDespawnCooldown = TimeSpan.FromMilliseconds(10);

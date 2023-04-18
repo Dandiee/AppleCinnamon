@@ -13,12 +13,12 @@ namespace AppleCinnamon.ChunkBuilder.WorldGenerator
         {
             // if (Game.Debug) Thread.Sleep(100);
 
-            var chunkSizeXz = new Int2(GameOptions.ChunkSize, GameOptions.ChunkSize);
-            var heatMap = new int[GameOptions.ChunkSize, GameOptions.ChunkSize];
-            var maxHeight = WorldGeneratorOptions.WaterLevel + 1;
-            for (var i = 0; i < GameOptions.ChunkSize; i++)
+            var chunkSizeXz = new Int2(GameOptions.CHUNK_SIZE, GameOptions.CHUNK_SIZE);
+            var heatMap = new int[GameOptions.CHUNK_SIZE, GameOptions.CHUNK_SIZE];
+            var maxHeight = WorldGeneratorOptions.WATER_LEVEL + 1;
+            for (var i = 0; i < GameOptions.CHUNK_SIZE; i++)
             {
-                for (var k = 0; k < GameOptions.ChunkSize; k++)
+                for (var k = 0; k < GameOptions.CHUNK_SIZE; k++)
                 {
                     var coordinates = chunk.ChunkIndex * chunkSizeXz + new Int2(i, k);
                     var height = (byte)Noise.Compute(coordinates.X, coordinates.Y);
@@ -32,15 +32,15 @@ namespace AppleCinnamon.ChunkBuilder.WorldGenerator
             }
 
             maxHeight += 64;
-            var initialSlicesCount = maxHeight / GameOptions.SliceHeight + 1;
-            chunk.Voxels = new Voxel[GameOptions.ChunkSize * initialSlicesCount * GameOptions.SliceHeight * GameOptions.ChunkSize];
-            chunk.CurrentHeight = chunk.Voxels.Length / GameOptions.SliceArea * GameOptions.SliceHeight;
+            var initialSlicesCount = maxHeight / GameOptions.SLICE_HEIGHT + 1;
+            chunk.Voxels = new Voxel[GameOptions.CHUNK_SIZE * initialSlicesCount * GameOptions.SLICE_HEIGHT * GameOptions.CHUNK_SIZE];
+            chunk.CurrentHeight = chunk.Voxels.Length / GameOptions.SLICE_AREA * GameOptions.SLICE_HEIGHT;
             chunk.UpdateBoundingBox();
             chunk.ChunkIndexVector = chunk.BoundingBox.Center;
 
-            for (var i = 0; i < GameOptions.ChunkSize; i++)
+            for (var i = 0; i < GameOptions.CHUNK_SIZE; i++)
             {
-                for (var k = 0; k < GameOptions.ChunkSize; k++)
+                for (var k = 0; k < GameOptions.CHUNK_SIZE; k++)
                 {
                     var height = heatMap[i, k];
 
@@ -57,35 +57,35 @@ namespace AppleCinnamon.ChunkBuilder.WorldGenerator
                                 : VoxelDefinition.Dirt.Create());
                     }
 
-                    var waterRandom = WaterNoise.Compute(i + chunk.ChunkIndex.X * GameOptions.ChunkSize, k + chunk.ChunkIndex.Y * GameOptions.ChunkSize);
+                    var waterRandom = WaterNoise.Compute(i + chunk.ChunkIndex.X * GameOptions.CHUNK_SIZE, k + chunk.ChunkIndex.Y * GameOptions.CHUNK_SIZE);
                     var isWater = false;
                     if (Math.Abs(waterRandom - 128) <= 2)
                     {
                         isWater = true;
-                        var min = Math.Min(height, WorldGeneratorOptions.WaterLevel);
-                        var max = Math.Max(height, WorldGeneratorOptions.WaterLevel) - 1;
+                        var min = Math.Min(height, WorldGeneratorOptions.WATER_LEVEL);
+                        var max = Math.Max(height, WorldGeneratorOptions.WATER_LEVEL) - 1;
 
                         for (var j = min; j <= max; j++)
                         {
                             chunk.SetVoxel(i, j, k,
-                                j <= WorldGeneratorOptions.WaterLevel
+                                j <= WorldGeneratorOptions.WATER_LEVEL
                                     ? VoxelDefinition.Water.Create()
                                     : VoxelDefinition.Air.Create());
                         }
 
                         chunk.SetVoxel(i, min - 1, k, VoxelDefinition.Sand.Create());
-                        chunk.BuildingContext.TopMostWaterVoxels.Add(chunk.GetFlatIndex(i, WorldGeneratorOptions.WaterLevel, k));
+                        chunk.BuildingContext.TopMostWaterVoxels.Add(chunk.GetFlatIndex(i, WorldGeneratorOptions.WATER_LEVEL, k));
                     }
 
-                    if (height < WorldGeneratorOptions.WaterLevel)
+                    if (height < WorldGeneratorOptions.WATER_LEVEL)
                     {
                         isWater = true;
-                        for (var j = height; j < WorldGeneratorOptions.WaterLevel; j++)
+                        for (var j = height; j < WorldGeneratorOptions.WATER_LEVEL; j++)
                         {
                             chunk.SetVoxel(i, j, k, VoxelDefinition.Water.Create());
                         }
 
-                        chunk.BuildingContext.TopMostWaterVoxels.Add(chunk.GetFlatIndex(i, WorldGeneratorOptions.WaterLevel - 1, k));
+                        chunk.BuildingContext.TopMostWaterVoxels.Add(chunk.GetFlatIndex(i, WorldGeneratorOptions.WATER_LEVEL - 1, k));
                     }
                     if (!isWater)
                     {

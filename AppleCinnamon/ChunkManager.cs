@@ -49,7 +49,7 @@ namespace AppleCinnamon
         public void FinishChunk(Chunk chunk)
         {
             Interlocked.Increment(ref _finishedChunks);
-            const int root = (GameOptions.ViewDistance - 1) * 2;
+            const int root = (GameOptions.VIEW_DISTANCE - 1) * 2;
 
             if (!IsInitialized && _finishedChunks == root)
             {
@@ -60,12 +60,12 @@ namespace AppleCinnamon
         }
 
 
-        public void Update(Camera camera, Device device)
+        public void Update(Camera camera)
         {
             if (IsInitialized)
             {
                 _chunkDrawer.Update(camera);
-                var currentChunkIndex = new Int2((int)camera.Position.X / GameOptions.ChunkSize, (int)camera.Position.Z / GameOptions.ChunkSize);
+                var currentChunkIndex = new Int2((int)camera.Position.X / GameOptions.CHUNK_SIZE, (int)camera.Position.Z / GameOptions.CHUNK_SIZE);
 
                 UpdateChunks(camera);
                 QueueChunksByIndex(currentChunkIndex);
@@ -101,7 +101,7 @@ namespace AppleCinnamon
 
         public void CleanUp()
         {
-            if (Pipeline.State == PipelineState.Running && BagOfDeath.Count > GameOptions.ViewDistance * 2)
+            if (Pipeline.State == PipelineState.Running && BagOfDeath.Count > GameOptions.VIEW_DISTANCE * 2)
             {
                 Pipeline.Suspend();
             }
@@ -133,7 +133,7 @@ namespace AppleCinnamon
         
         private Chunk CreateChunk(Int2 chunkIndex)
         {
-            if (Graveyard.Count > 0)
+            if (!Graveyard.IsEmpty)
             {
                 if (Graveyard.TryTake(out var chunk))
                 {
@@ -152,7 +152,7 @@ namespace AppleCinnamon
             {
                 if (Pipeline.State == PipelineState.Running)
                 {
-                    foreach (var relativeChunkIndex in GetSurroundingChunks(GameOptions.ViewDistance + GameOptions.NumberOfPools - 1))
+                    foreach (var relativeChunkIndex in GetSurroundingChunks(GameOptions.VIEW_DISTANCE + GameOptions.NUMBER_OF_POOLS - 1))
                     {
                         var chunkIndex = currentChunkIndex + relativeChunkIndex;
 

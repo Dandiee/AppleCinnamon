@@ -38,10 +38,10 @@ namespace AppleCinnamon.ChunkBuilder
             public static readonly EdgePropogation[] All =
             {
                 new(), new(),
-                new(Face.Left, Chunk.GetChunkFlatIndex(-1, 0), new Int3(0, 1, 1), new Int3(GameOptions.ChunkSize - 1,0,0), new Int3(0, 0, 0)),
-                new(Face.Right, Chunk.GetChunkFlatIndex(1, 0), new Int3(0, 1, 1), new Int3(0, 0, 0), new Int3(GameOptions.ChunkSize - 1, 0, 0)),
-                new(Face.Front, Chunk.GetChunkFlatIndex(0, -1), new Int3(1, 1, 0), new Int3(0, 0, GameOptions.ChunkSize - 1), new Int3(0, 0, 0)),
-                new(Face.Back, Chunk.GetChunkFlatIndex(0, 1), new Int3(1, 1, 0), new Int3(0, 0, 0), new Int3(0, 0, GameOptions.ChunkSize - 1)),
+                new(Face.Left, Chunk.GetChunkFlatIndex(-1, 0), new Int3(0, 1, 1), new Int3(GameOptions.CHUNK_SIZE - 1,0,0), new Int3(0, 0, 0)),
+                new(Face.Right, Chunk.GetChunkFlatIndex(1, 0), new Int3(0, 1, 1), new Int3(0, 0, 0), new Int3(GameOptions.CHUNK_SIZE - 1, 0, 0)),
+                new(Face.Front, Chunk.GetChunkFlatIndex(0, -1), new Int3(1, 1, 0), new Int3(0, 0, GameOptions.CHUNK_SIZE - 1), new Int3(0, 0, 0)),
+                new(Face.Back, Chunk.GetChunkFlatIndex(0, 1), new Int3(1, 1, 0), new Int3(0, 0, 0), new Int3(0, 0, GameOptions.CHUNK_SIZE - 1)),
             };
 
             public readonly Face TargetToSourceDirection;
@@ -70,7 +70,7 @@ namespace AppleCinnamon.ChunkBuilder
 
             for (var j = height - 1; j > 0; j--)
             {
-                for (var h = 0; h < GameOptions.ChunkSize; h++)
+                for (var h = 0; h < GameOptions.CHUNK_SIZE; h++)
                 {
                     var indexMask = new Int3(h * context.DirectionMask.X, j, h * context.DirectionMask.Z);
 

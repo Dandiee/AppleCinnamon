@@ -46,8 +46,8 @@ namespace AppleCinnamon.Graphics
             }
             else
             {
-                _fogStartVar.Set(GameOptions.ViewDistance * GameOptions.ChunkSize);
-                _fogEndVar.Set(10* GameOptions.ViewDistance * GameOptions.ChunkSize);
+                _fogStartVar.Set(GameOptions.VIEW_DISTANCE * GameOptions.CHUNK_SIZE);
+                _fogEndVar.Set(10* GameOptions.VIEW_DISTANCE * GameOptions.CHUNK_SIZE);
                 _fogColorVar.Set(new Vector4(0, 0, 0, 1));
             }
         }

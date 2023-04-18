@@ -12,11 +12,11 @@ namespace AppleCinnamon.ChunkBuilder
             var voxels = chunk.Voxels;
 
             int i, j, k;
-            for (k = 0; k < GameOptions.ChunkSize; k++)
+            for (k = 0; k < GameOptions.CHUNK_SIZE; k++)
             {
                 for (j = 0; j < height; j++)
                 {
-                    for (i = 0; i < GameOptions.ChunkSize; i++)
+                    for (i = 0; i < GameOptions.CHUNK_SIZE; i++)
                     {
                         var flatIndex = chunk.GetFlatIndex(i, j, k);
                         var voxel = voxels[flatIndex];
@@ -84,9 +84,9 @@ namespace AppleCinnamon.ChunkBuilder
                         }
 
                         BuildHorizontalFace(i > 0, chunk.GetFlatIndex(i - 1, j, k), chunk, definition, flatIndex, ref visibilityFlag, ref voxelLight, chunk.BuildingContext.Left);
-                        BuildHorizontalFace(i < GameOptions.ChunkSize - 1, chunk.GetFlatIndex(i + 1, j, k), chunk, definition, flatIndex, ref visibilityFlag, ref voxelLight, chunk.BuildingContext.Right);
+                        BuildHorizontalFace(i < GameOptions.CHUNK_SIZE - 1, chunk.GetFlatIndex(i + 1, j, k), chunk, definition, flatIndex, ref visibilityFlag, ref voxelLight, chunk.BuildingContext.Right);
                         BuildHorizontalFace(k > 0, chunk.GetFlatIndex(i, j, k - 1), chunk, definition, flatIndex, ref visibilityFlag, ref voxelLight, chunk.BuildingContext.Front);
-                        BuildHorizontalFace(k < GameOptions.ChunkSize - 1, chunk.GetFlatIndex(i, j, k + 1), chunk, definition, flatIndex, ref visibilityFlag, ref voxelLight, chunk.BuildingContext.Back);
+                        BuildHorizontalFace(k < GameOptions.CHUNK_SIZE - 1, chunk.GetFlatIndex(i, j, k + 1), chunk, definition, flatIndex, ref visibilityFlag, ref voxelLight, chunk.BuildingContext.Back);
 
                         if (visibilityFlag != VisibilityFlag.None)
                         {

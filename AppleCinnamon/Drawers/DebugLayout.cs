@@ -87,7 +87,7 @@ namespace AppleCinnamon.Drawers
                 new DebugToggleAction(Key.F9, () => GameOptions.IsViewFrustumCullingEnabled));
 
             var performanceContext = new DebugContext(rightAlignedTextFormat, graphicsContext, rightOrigin,
-                new DebugInfoLine<int>(() => GameOptions.ViewDistance, "ViewDistance"),
+                new DebugInfoLine<int>(() => GameOptions.VIEW_DISTANCE, "ViewDistance"),
                 new DebugInfoLine<int>(() => game.WeirdFps, default, " FPS"),
                 new DebugInfoLine<int>(() => game.ArrayFps, default, " FPS"));
 

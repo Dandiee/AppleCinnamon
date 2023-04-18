@@ -17,21 +17,21 @@ namespace AppleCinnamon
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)] public int GetFlatIndex(int i, int j, int k) => GetFlatIndex(i, j, k, CurrentHeight);
         [MethodImpl(MethodImplOptions.AggressiveInlining)] public int GetFlatIndex(Int3 ijk) => GetFlatIndex(ijk.X, ijk.Y, ijk.Z, CurrentHeight);
-        [MethodImpl(MethodImplOptions.AggressiveInlining)] public static int GetFlatIndex(int i, int j, int k, int height) => i + GameOptions.ChunkSize * (j + height * k);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] public static int GetFlatIndex(int i, int j, int k, int height) => i + GameOptions.CHUNK_SIZE * (j + height * k);
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Int3 FromFlatIndex(int flatIndex, int height)
         {
-            var k = flatIndex / (GameOptions.ChunkSize * height);
-            var j = (flatIndex - k * GameOptions.ChunkSize * height) / GameOptions.ChunkSize;
-            var i = flatIndex - (k * GameOptions.ChunkSize * height + j * GameOptions.ChunkSize);
+            var k = flatIndex / (GameOptions.CHUNK_SIZE * height);
+            var j = (flatIndex - k * GameOptions.CHUNK_SIZE * height) / GameOptions.CHUNK_SIZE;
+            var i = flatIndex - (k * GameOptions.CHUNK_SIZE * height + j * GameOptions.CHUNK_SIZE);
 
             return new Int3(i, j, k);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)] public Int3 FromFlatIndex(int flatIndex) => FromFlatIndex(flatIndex, CurrentHeight);
-        [MethodImpl(MethodImplOptions.AggressiveInlining)] public void UpdateVoxelLighting(Int3 ijk, Voxel voxel, VoxelDefinition definition) => UpdateVoxelLighting(ijk.X, ijk.Y, ijk.Z, voxel, definition);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] public void UpdateVoxelLighting(Int3 ijk, Voxel voxel) => UpdateVoxelLighting(ijk.X, ijk.Y, ijk.Z, voxel);
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void UpdateVoxelLighting(int i, int j, int k, Voxel voxel, VoxelDefinition definition)
+        public void UpdateVoxelLighting(int i, int j, int k, Voxel voxel)
         {
             BuildingContext.SetAllChanged();
 
@@ -46,20 +46,20 @@ namespace AppleCinnamon
         {
             if (i == 0)
                 yield return GetNeighbor(-1, 0);
-            if (i == GameOptions.ChunkSize - 1)
+            if (i == GameOptions.CHUNK_SIZE - 1)
                 yield return GetNeighbor(1, 0);
             if (j == 0)
                 yield return GetNeighbor(0, -1);
-            if (j == GameOptions.ChunkSize - 1)
+            if (j == GameOptions.CHUNK_SIZE - 1)
                 yield return GetNeighbor(0, 1);
 
             if (i == 0 && j == 0)
                 yield return GetNeighbor(-1, -1);
-            if (i == GameOptions.ChunkSize - 1 && j == GameOptions.ChunkSize - 1)
+            if (i == GameOptions.CHUNK_SIZE - 1 && j == GameOptions.CHUNK_SIZE - 1)
                 yield return GetNeighbor(1, 1);
-            if (i == 0 && j == GameOptions.ChunkSize - 1)
+            if (i == 0 && j == GameOptions.CHUNK_SIZE - 1)
                 yield return GetNeighbor(-1, 1);
-            if (i == GameOptions.ChunkSize - 1 && j == 0)
+            if (i == GameOptions.CHUNK_SIZE - 1 && j == 0)
                 yield return GetNeighbor(1, -1);
         }
 
@@ -74,8 +74,8 @@ namespace AppleCinnamon
                 return false;
             }
 
-            var cx = (int)(-((i & 0b10000000_00000000_00000000_00000000) >> 31) + ((i / GameOptions.ChunkSize)));
-            var cy = (int)(-((k & 0b10000000_00000000_00000000_00000000) >> 31) + ((k / GameOptions.ChunkSize)));
+            var cx = (int)(-((i & 0b10000000_00000000_00000000_00000000) >> 31) + ((i / GameOptions.CHUNK_SIZE)));
+            var cy = (int)(-((k & 0b10000000_00000000_00000000_00000000) >> 31) + ((k / GameOptions.CHUNK_SIZE)));
 
             var chunk = GetNeighbor(cx, cy);
             if (chunk.CurrentHeight <= j)
@@ -87,7 +87,7 @@ namespace AppleCinnamon
             }
             else
             {
-                address = new VoxelChunkAddress(chunk, new Int3(i & (GameOptions.ChunkSize - 1), j, k & (GameOptions.ChunkSize - 1)));
+                address = new VoxelChunkAddress(chunk, new Int3(i & (GameOptions.CHUNK_SIZE - 1), j, k & (GameOptions.CHUNK_SIZE - 1)));
                 voxel = chunk.GetVoxel(address.RelativeVoxelIndex.X, j, address.RelativeVoxelIndex.Z);
 
                 return true;
@@ -97,9 +97,9 @@ namespace AppleCinnamon
         public VoxelChunkAddress GetAddressChunk(Int3 ijk) => GetAddressChunk(ijk.X, ijk.Y, ijk.Z);
         public VoxelChunkAddress GetAddressChunk(int i, int j, int k)
         {
-            var cx = (int)(-((i & 0b10000000_00000000_00000000_00000000) >> 31) + ((i / GameOptions.ChunkSize)));
-            var cy = (int)(-((k & 0b10000000_00000000_00000000_00000000) >> 31) + ((k / GameOptions.ChunkSize)));
-            return new VoxelChunkAddress(GetNeighbor(cx, cy), new Int3(i & (GameOptions.ChunkSize - 1), j, k & (GameOptions.ChunkSize - 1)));
+            var cx = (int)(-((i & 0b10000000_00000000_00000000_00000000) >> 31) + ((i / GameOptions.CHUNK_SIZE)));
+            var cy = (int)(-((k & 0b10000000_00000000_00000000_00000000) >> 31) + ((k / GameOptions.CHUNK_SIZE)));
+            return new VoxelChunkAddress(GetNeighbor(cx, cy), new Int3(i & (GameOptions.CHUNK_SIZE - 1), j, k & (GameOptions.CHUNK_SIZE - 1)));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -111,12 +111,12 @@ namespace AppleCinnamon
             }
 
             var chunk = GetNeighbor(
-                (int)(-((i & 0b10000000_00000000_00000000_00000000) >> 31) + ((i / GameOptions.ChunkSize))),
-                (int)(-((k & 0b10000000_00000000_00000000_00000000) >> 31) + ((k / GameOptions.ChunkSize))));
+                (int)(-((i & 0b10000000_00000000_00000000_00000000) >> 31) + ((i / GameOptions.CHUNK_SIZE))),
+                (int)(-((k & 0b10000000_00000000_00000000_00000000) >> 31) + ((k / GameOptions.CHUNK_SIZE))));
 
             return chunk.CurrentHeight <= j
                 ? Voxel.SunBlock
-                : chunk.GetVoxel(i & (GameOptions.ChunkSize - 1), j, k & (GameOptions.ChunkSize - 1));
+                : chunk.GetVoxel(i & (GameOptions.CHUNK_SIZE - 1), j, k & (GameOptions.CHUNK_SIZE - 1));
         }
 
         public static int GetChunkFlatIndex(int i, int j) => 3 * i + j + 4;

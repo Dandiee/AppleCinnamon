@@ -25,7 +25,8 @@ namespace AppleCinnamon.Options
 
         public static byte[] BrightnessLosses;
 
-        public Voxel Create(byte hueIndex = 0, Face face = Face.Top) => new(Type, 0, LightEmitting, hueIndex, face);
+        public Voxel Create(byte hueIndex = 0, Face face = Face.Top) 
+            => new(Type, 0, LightEmitting, hueIndex, face);
 
 
         private static byte[] BuildTransmitterPairs()
@@ -225,17 +226,14 @@ namespace AppleCinnamon.Options
         private readonly byte _type;
         private byte _lightEmitting;
         private bool _isBlock = true;
-        private bool _isFluid = false;
-        private bool _isOpaque = true;
         private bool _isOriented = false;
         private bool _isPermeable;
-        private byte _transmittance;
         private bool _isSprite;
         private Vector3 _size = Vector3.One;
         
         private Vector3 _offset = Vector3.Zero;
         private VisibilityFlag _hueFaces;
-        private string _name;
+        private readonly string _name;
 
         private VisibilityFlag _coverFlags = VisibilityFlag.All;
         private byte[] _dimFactors = { 0, 0, 0, 0, 0, 0 };
@@ -248,8 +246,6 @@ namespace AppleCinnamon.Options
 
         private readonly Cube<Vector2> _textures;
         private readonly Cube<Int2> _textureIndexes;
-
-        private float _height = 1;
 
         public BlockDefinitionBuilder(byte type, [CallerMemberName]string name = default)
         {
@@ -383,7 +379,6 @@ namespace AppleCinnamon.Options
 
         public BlockDefinitionBuilder WithHeight(float f)
         {
-            _height = f;
             _size = new Vector3(_size.X, f, _size.Z);
             return this;
         }
@@ -391,7 +386,6 @@ namespace AppleCinnamon.Options
         public BlockDefinitionBuilder AsFluid()
         {
             _isBlock = false;
-            _isFluid = true;
             return this;
         }
 

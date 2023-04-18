@@ -6,7 +6,6 @@ using AppleCinnamon.Drawers;
 using AppleCinnamon.Graphics;
 using AppleCinnamon.Options;
 using DaniDx.Desktop;
-using SharpDX.Direct3D11;
 
 namespace AppleCinnamon
 {
@@ -78,7 +77,7 @@ namespace AppleCinnamon
                 }
 
 
-                Update(TimeSpan.FromMilliseconds(_avgRenderTime), _graphicsContext.Device);
+                Update(TimeSpan.FromMilliseconds(_avgRenderTime));
                 _graphicsContext.Draw(() =>
                 {
                     if (ChunkManager.IsInitialized)
@@ -117,10 +116,10 @@ namespace AppleCinnamon
         }
 
 
-        private void Update(TimeSpan elapsedTime, Device device)
+        private void Update(TimeSpan elapsedTime)
         {
             Camera.Update(elapsedTime, ChunkManager);
-            ChunkManager.Update(Camera, device);
+            ChunkManager.Update(Camera);
             ChunkManager.CleanUp();
             SkyDome.Update(Camera);
             

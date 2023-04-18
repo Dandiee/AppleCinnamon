@@ -19,7 +19,9 @@ namespace AppleCinnamon.ChunkBuilder.WorldGenerator
             for (int i = 0; i < 256; i++)
             {
                 int j = random.Next(i, 256);
-                byte temp = _p[i]; _p[i] = _p[j]; _p[j] = temp;
+                byte temp = _p[i]; 
+                _p[i] = _p[j]; 
+                _p[j] = temp;
             }
 
             for (int i = 0; i < 256; i++)

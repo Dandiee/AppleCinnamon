@@ -9,21 +9,21 @@ namespace AppleCinnamon.ChunkBuilder
 {
     public static partial class ChunkDispatcher
     {
-        public const float SingleSidedOffset = 0.1f;
+        public const float SINGLE_SIDED_OFFSET = 0.1f;
 
         private static readonly Vector3[] SingleSidedOffsets =
         {
-            Vector3.UnitY * SingleSidedOffset,
-            Vector3.UnitY * -SingleSidedOffset,
-            Vector3.UnitX * SingleSidedOffset,
-            Vector3.UnitX * -SingleSidedOffset,
-            Vector3.UnitZ * SingleSidedOffset,
-            Vector3.UnitZ * -SingleSidedOffset,
+            Vector3.UnitY * +SINGLE_SIDED_OFFSET,
+            Vector3.UnitY * -SINGLE_SIDED_OFFSET,
+            Vector3.UnitX * +SINGLE_SIDED_OFFSET,
+            Vector3.UnitX * -SINGLE_SIDED_OFFSET,
+            Vector3.UnitZ * +SINGLE_SIDED_OFFSET,
+            Vector3.UnitZ * -SINGLE_SIDED_OFFSET,
         };
 
         private static BufferDefinition<VertexSprite> BuildSprite(Chunk chunk, Device device)
         {
-            if (GameOptions.IsChangeTrackingEnabled && !chunk.BuildingContext.IsSpriteChanged)
+            if (GameOptions.IS_CHANGE_TRACKING_ENABLED && !chunk.BuildingContext.IsSpriteChanged)
             {
                 return chunk.Buffers.BufferSprite;
             }

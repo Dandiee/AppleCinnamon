@@ -55,7 +55,7 @@ namespace AppleCinnamon
             State = ChunkState.New;
             BuildingContext.Clear();
             ChunkIndex = chunkIndex;
-            Offset = chunkIndex * new Int2(GameOptions.ChunkSize, GameOptions.ChunkSize);
+            Offset = chunkIndex * new Int2(GameOptions.CHUNK_SIZE, GameOptions.CHUNK_SIZE);
             OffsetVector = new Vector3(Offset.X, 0, Offset.Y);
             Deletion = ChunkDeletionState.None;
             State = 0;
@@ -69,23 +69,23 @@ namespace AppleCinnamon
             SetNeighbor(0, 0, this);
             BuildingContext = new ChunkBuildingContext();
             ChunkIndex = chunkIndex;
-            Offset = chunkIndex * new Int2(GameOptions.ChunkSize, GameOptions.ChunkSize);
+            Offset = chunkIndex * new Int2(GameOptions.CHUNK_SIZE, GameOptions.CHUNK_SIZE);
             OffsetVector = new Vector3(Offset.X, 0, Offset.Y);
         }
 
         public void ExtendUpward(int heightToFit)
         {
-            var expectedSlices = heightToFit / GameOptions.SliceHeight + 1;
-            var expectedHeight = expectedSlices * GameOptions.SliceHeight;
+            var expectedSlices = heightToFit / GameOptions.SLICE_HEIGHT + 1;
+            var expectedHeight = expectedSlices * GameOptions.SLICE_HEIGHT;
 
-            var newVoxels = new Voxel[GameOptions.ChunkSize * expectedHeight * GameOptions.ChunkSize];
+            var newVoxels = new Voxel[GameOptions.CHUNK_SIZE * expectedHeight * GameOptions.CHUNK_SIZE];
 
             // In case of local sliced array addressing, a simple copy does the trick - Array.Copy(Voxels, newVoxels, Voxels.Length);
-            for (var i = 0; i < GameOptions.ChunkSize; i++)
+            for (var i = 0; i < GameOptions.CHUNK_SIZE; i++)
             {
                 for (var j = 0; j < CurrentHeight; j++)
                 {
-                    for (var k = 0; k < GameOptions.ChunkSize; k++)
+                    for (var k = 0; k < GameOptions.CHUNK_SIZE; k++)
                     {
                         var oldFlatIndex = GetFlatIndex(i, j, k, CurrentHeight);
                         var newFlatIndex = GetFlatIndex(i, j, k, expectedHeight);
@@ -103,9 +103,9 @@ namespace AppleCinnamon
             var originalHeight = CurrentHeight;
             CurrentHeight = expectedHeight;
 
-            for (var i = 0; i < GameOptions.ChunkSize; i++)
+            for (var i = 0; i < GameOptions.CHUNK_SIZE; i++)
             {
-                for (var k = 0; k < GameOptions.ChunkSize; k++)
+                for (var k = 0; k < GameOptions.CHUNK_SIZE; k++)
                 {
                     for (var j = expectedHeight - 1; j >= originalHeight; j--)
                     {
@@ -121,8 +121,8 @@ namespace AppleCinnamon
 
         public void UpdateBoundingBox()
         {
-            var size = new Vector3(GameOptions.ChunkSize, CurrentHeight, GameOptions.ChunkSize) / 2f;
-            var position = new Vector3(GameOptions.ChunkSize / 2f - .5f + GameOptions.ChunkSize * ChunkIndex.X, CurrentHeight / 2f - .5f, GameOptions.ChunkSize / 2f - .5f + GameOptions.ChunkSize * ChunkIndex.Y);
+            var size = new Vector3(GameOptions.CHUNK_SIZE, CurrentHeight, GameOptions.CHUNK_SIZE) / 2f;
+            var position = new Vector3(GameOptions.CHUNK_SIZE / 2f - .5f + GameOptions.CHUNK_SIZE * ChunkIndex.X, CurrentHeight / 2f - .5f, GameOptions.CHUNK_SIZE / 2f - .5f + GameOptions.CHUNK_SIZE * ChunkIndex.Y);
 
             BoundingBox = new BoundingBox(position - size, position + size);
             Center = position;
@@ -167,7 +167,7 @@ namespace AppleCinnamon
                 Math.Abs(camera.CurrentChunkIndex.X - ChunkIndex.X), 
                 Math.Abs(camera.CurrentChunkIndex.Y - ChunkIndex.Y));
 
-            if (maxDistance > GameOptions.ViewDistance + GameOptions.NumberOfPools)
+            if (maxDistance > GameOptions.VIEW_DISTANCE + GameOptions.NUMBER_OF_POOLS)
             {
                 if (Deletion == ChunkDeletionState.MarkedForDeletion)
                 {

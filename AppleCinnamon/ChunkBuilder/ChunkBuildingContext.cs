@@ -92,9 +92,9 @@ namespace AppleCinnamon.ChunkBuilder
         private static readonly IReadOnlyDictionary<Face, Func<Int3, int, int>> NeighborIndexFuncs =
             new Dictionary<Face, Func<Int3, int, int>>
             {
-                [Face.Left] = (ijk, height) => Chunk.GetFlatIndex(GameOptions.ChunkSize - 1, ijk.Y, ijk.Z, height),
+                [Face.Left] = (ijk, height) => Chunk.GetFlatIndex(GameOptions.CHUNK_SIZE - 1, ijk.Y, ijk.Z, height),
                 [Face.Right] = (ijk, height) => Chunk.GetFlatIndex(0, ijk.Y, ijk.Z, height),
-                [Face.Front] = (ijk, height) => Chunk.GetFlatIndex(ijk.X, ijk.Y, GameOptions.ChunkSize - 1, height),
+                [Face.Front] = (ijk, height) => Chunk.GetFlatIndex(ijk.X, ijk.Y, GameOptions.CHUNK_SIZE - 1, height),
                 [Face.Back] = (ijk, height) => Chunk.GetFlatIndex(ijk.X, ijk.Y, 0, height)
             };
 

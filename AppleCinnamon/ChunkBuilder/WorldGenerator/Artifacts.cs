@@ -8,7 +8,7 @@ namespace AppleCinnamon.ChunkBuilder.WorldGenerator
 {
     public static class Artifacts
     {
-        public const int LeavesDespawnRate = 100;
+        public const int LEAVES_DESPAWN_RATE = 100;
 
         public static Action<Random, Chunk, int, Int3>[] CanopyFunctions =
         {
@@ -40,7 +40,7 @@ namespace AppleCinnamon.ChunkBuilder.WorldGenerator
 
                 if (rnd.Next() % 2 == 0)
                 {
-                    if (relativeIndex.X < GameOptions.ChunkSize - 1)
+                    if (relativeIndex.X < GameOptions.CHUNK_SIZE - 1)
                     {
                         var fifi = chunk.GetFlatIndex(relativeIndex.X + 1, relativeIndex.Y + j, relativeIndex.Z);
                         if (chunk.Voxels[fifi].BlockType == 0)
@@ -58,7 +58,7 @@ namespace AppleCinnamon.ChunkBuilder.WorldGenerator
                         }
                     }
 
-                    if (relativeIndex.Z < GameOptions.ChunkSize - 1)
+                    if (relativeIndex.Z < GameOptions.CHUNK_SIZE - 1)
                     {
                         var fifi = chunk.GetFlatIndex(relativeIndex.X, relativeIndex.Y + j, relativeIndex.Z + 1);
                         if (chunk.Voxels[fifi].BlockType == 0)
@@ -105,7 +105,7 @@ namespace AppleCinnamon.ChunkBuilder.WorldGenerator
         {
             foreach (var relativeVoxelIndex in ShapeGenerator.Rectangle(trunkTop, 3, 2, true))
             {
-                if (rnd.Next() % LeavesDespawnRate == 0) continue;
+                if (rnd.Next() % LEAVES_DESPAWN_RATE == 0) continue;
 
                 var address = chunk.GetAddressChunk(relativeVoxelIndex);
                 address.SetVoxel(VoxelDefinition.Leaves.Create(2));
@@ -149,7 +149,7 @@ namespace AppleCinnamon.ChunkBuilder.WorldGenerator
 
             foreach (var relativeVoxelIndex in ShapeGenerator.Rectangle(trunkTop + new Int3(0, 2, 0), 1, 2, true))
             {
-                if (rnd.Next() % LeavesDespawnRate == 0) continue;
+                if (rnd.Next() % LEAVES_DESPAWN_RATE == 0) continue;
 
                 var address = chunk.GetAddressChunk(relativeVoxelIndex);
                 address.SetVoxel(VoxelDefinition.Leaves.Create(2));
@@ -160,7 +160,7 @@ namespace AppleCinnamon.ChunkBuilder.WorldGenerator
         {
             foreach (var relativeVoxelIndex in ShapeGenerator.Pyramid(trunkTop, 3, 4))
             {
-                if (rnd.Next() % LeavesDespawnRate == 0) continue;
+                if (rnd.Next() % LEAVES_DESPAWN_RATE == 0) continue;
 
                 var address = chunk.GetAddressChunk(relativeVoxelIndex);
                 address.SetVoxel(VoxelDefinition.Leaves.Create(2));
@@ -171,7 +171,7 @@ namespace AppleCinnamon.ChunkBuilder.WorldGenerator
         {
             foreach (var relativeVoxelIndex in ShapeGenerator.Sphere(trunkTop, 4))
             {
-                if (rnd.Next() % LeavesDespawnRate == 0) continue;
+                if (rnd.Next() % LEAVES_DESPAWN_RATE == 0) continue;
 
                 var address = chunk.GetAddressChunk(relativeVoxelIndex);
                 address.SetVoxel(VoxelDefinition.Leaves.Create(2));
@@ -186,7 +186,7 @@ namespace AppleCinnamon.ChunkBuilder.WorldGenerator
 
             foreach (var relativeVoxelIndex in ShapeGenerator.RectangleWithBevel(minCorner, size))
             {
-                if (rnd.Next() % LeavesDespawnRate == 0) continue;
+                if (rnd.Next() % LEAVES_DESPAWN_RATE == 0) continue;
 
                 var address = chunk.GetAddressChunk(relativeVoxelIndex);
                 address.SetVoxel(VoxelDefinition.Leaves.Create(2));

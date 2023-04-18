@@ -10,9 +10,9 @@ namespace AppleCinnamon.ChunkBuilder
     {
         public static void InitializeSunlight(Chunk chunk)
         {
-            for (var i = 0; i != GameOptions.ChunkSize; i++)
+            for (var i = 0; i != GameOptions.CHUNK_SIZE; i++)
             {
-                for (var k = 0; k != GameOptions.ChunkSize; k++)
+                for (var k = 0; k != GameOptions.CHUNK_SIZE; k++)
                 {
                     _ = Sunlight(chunk, new Int3(i, chunk.CurrentHeight, k), 15).ToList();
                 }
@@ -46,12 +46,12 @@ namespace AppleCinnamon.ChunkBuilder
                                 // todo: talán ha nem írnánk és olvasnánk ugyanazt a memóriát hétezerszer észnélkül az segítene... csak talán...
                                 if (targetVoxel.Sunlight < sourceVoxel.Sunlight - brightnessLoss)
                                 {
-                                    targetAddress.Chunk.UpdateVoxelLighting(targetAddress.RelativeVoxelIndex, targetVoxel.SetSunlight((byte)(sourceVoxel.Sunlight - brightnessLoss)), targetDefinition);
+                                    targetAddress.Chunk.UpdateVoxelLighting(targetAddress.RelativeVoxelIndex, targetVoxel.SetSunlight((byte)(sourceVoxel.Sunlight - brightnessLoss)));
                                 }
 
                                 if (targetVoxel.EmittedLight < sourceVoxel.EmittedLight - brightnessLoss)
                                 {
-                                    targetAddress.Chunk.UpdateVoxelLighting(targetAddress.RelativeVoxelIndex, targetVoxel.SetCustomLight((byte)(sourceVoxel.EmittedLight - brightnessLoss)), targetDefinition);
+                                    targetAddress.Chunk.UpdateVoxelLighting(targetAddress.RelativeVoxelIndex, targetVoxel.SetCustomLight((byte)(sourceVoxel.EmittedLight - brightnessLoss)));
                                 }
 
                                 queue.Enqueue(new VoxelChunkAddress(targetAddress.Chunk, targetAddress.RelativeVoxelIndex));
@@ -74,13 +74,13 @@ namespace AppleCinnamon.ChunkBuilder
                 foreach (var direction in LightDirections.All)
                 {
                     var neighborX = index.X + direction.Step.X;
-                    if ((neighborX & GameOptions.ChunkSize) == 0)
+                    if ((neighborX & GameOptions.CHUNK_SIZE) == 0)
                     {
                         var neighborY = index.Y + direction.Step.Y;
                         if (neighborY > 0 && neighborY < chunk.CurrentHeight)
                         {
                             var neighborZ = index.Z + direction.Step.Z;
-                            if ((neighborZ & GameOptions.ChunkSize) == 0)
+                            if ((neighborZ & GameOptions.CHUNK_SIZE) == 0)
                             {
                                 var neighborFlatIndex = chunk.GetFlatIndex(neighborX, neighborY, neighborZ);
                                 var neighborVoxel = chunk.GetVoxel(neighborFlatIndex);
@@ -166,7 +166,7 @@ namespace AppleCinnamon.ChunkBuilder
 
                             if (newTargetCompositeLight != targetVoxel.CompositeLight)
                             {
-                                targetAddress.Chunk.UpdateVoxelLighting(targetAddress.RelativeVoxelIndex, targetVoxel.SetCompositeLight(newTargetCompositeLight), targetVoxel.GetDefinition());
+                                targetAddress.Chunk.UpdateVoxelLighting(targetAddress.RelativeVoxelIndex, targetVoxel.SetCompositeLight(newTargetCompositeLight));
                                 queue.Enqueue(new DarknessSource(targetAddress, targetVoxel));
                             }
                         }
@@ -194,7 +194,7 @@ namespace AppleCinnamon.ChunkBuilder
                 {
                     if (isChangeTracking)
                     {
-                        chunk.UpdateVoxelLighting(relativeIndex.X, j, relativeIndex.Z, voxel.SetSunlight(toLightness), definition);
+                        chunk.UpdateVoxelLighting(relativeIndex.X, j, relativeIndex.Z, voxel.SetSunlight(toLightness));
                     }
                     else
                     {

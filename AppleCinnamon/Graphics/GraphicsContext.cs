@@ -32,7 +32,7 @@ namespace AppleCinnamon.Graphics
         public readonly Factory D2dFactory;
         public readonly SharpDX.DirectWrite.Factory DirectWrite;
 
-        public const float ScreenSizeScale = 0.9f;
+
 
         public readonly _d2d.DeviceContext3 D2DeviceContext;
         public readonly SpriteBatch SpriteBatch;
@@ -41,10 +41,12 @@ namespace AppleCinnamon.Graphics
         {
             Configuration.EnableReleaseOnFinalizer = true;
 
+            const float screenSizeScale = 0.8f;
+
             RenderForm = new RenderForm("Apple & Cinnamon")
             {
-                Width = (int)(Screen.PrimaryScreen.Bounds.Width * ScreenSizeScale),
-                Height = (int)(Screen.PrimaryScreen.Bounds.Height * ScreenSizeScale),
+                Width = (int)(Screen.PrimaryScreen.Bounds.Width * screenSizeScale),
+                Height = (int)(Screen.PrimaryScreen.Bounds.Height * screenSizeScale),
                 StartPosition = FormStartPosition.CenterScreen
             };
 
@@ -54,13 +56,13 @@ namespace AppleCinnamon.Graphics
                 ModeDescription = new ModeDescription(RenderForm.ClientSize.Width, RenderForm.ClientSize.Height, new Rational(60, 1), Format.R8G8B8A8_UNorm),
                 IsWindowed = true,
                 OutputHandle = RenderForm.Handle,
-                SampleDescription = new SampleDescription(1, 0) ,
+                SampleDescription = new SampleDescription(1, 0),
                 SwapEffect = SwapEffect.Discard,
                 Usage = Usage.RenderTargetOutput
             }, out var device, out var swapChain);
 
             Device = device;
-            
+
             SwapChain = swapChain;
 
             D2dFactory = new Factory();
@@ -93,14 +95,14 @@ namespace AppleCinnamon.Graphics
 
             DirectWrite = new SharpDX.DirectWrite.Factory();
             Device.ImmediateContext.Rasterizer.SetViewport(new Viewport(0, 0, RenderForm.ClientSize.Width, RenderForm.ClientSize.Height, 0.0f, 1.0f));
-            
+
         }
 
         public void Draw(Action drawActions)
         {
             //Device.ImmediateContext.ClearState();
             //Device.ImmediateContext.Flush();
-            
+
             Device.ImmediateContext.OutputMerger.SetTargets(DepthStencilView, RenderTargetView);
             Device.ImmediateContext.ClearDepthStencilView(DepthStencilView, DepthStencilClearFlags.Depth, 1.0f, 0);
             Device.ImmediateContext.ClearRenderTargetView(RenderTargetView, Color.CornflowerBlue);
@@ -108,7 +110,7 @@ namespace AppleCinnamon.Graphics
             drawActions();
             RenderTarget2D.EndDraw();
             SwapChain.Present(0, PresentFlags.None);
-            
+
         }
     }
 }

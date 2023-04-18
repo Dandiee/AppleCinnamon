@@ -7,7 +7,7 @@ namespace AppleCinnamon.Graphics.Verticies
 {
     public struct VertexSkyBox : IVertex
     {
-        private const int _size = 36;
+        public const int SIZE = 36;
 
         private static readonly InputElement[] _inputElements =
         {
@@ -16,7 +16,7 @@ namespace AppleCinnamon.Graphics.Verticies
             new("TEXCOORD", 0, Format.R32G32_Float, 28, 0)
         };
 
-        public int Size => _size;
+        public int Size => SIZE;
         public InputElement[] InputElements => _inputElements;
 
         public VertexSkyBox(Vector4 position, Vector3 normal, Vector2 texCoord)

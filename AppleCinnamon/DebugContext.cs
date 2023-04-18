@@ -77,7 +77,7 @@ namespace AppleCinnamon
 
     public abstract class DebugLine<T> : DebugLine
     {
-        protected static Action<T> GetSetter<T>(Expression<Func<T>> expression)
+        protected static Action<T> GetSetter(Expression<Func<T>> expression)
         {
             var parameter = Expression.Parameter(typeof(T), "value");
             var body = Expression.Assign(expression.Body, parameter);

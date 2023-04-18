@@ -22,7 +22,7 @@ namespace AppleCinnamon
                 return false;
             }
 
-            var voxelIndex = new Int3(absoluteVoxelIndex.X & GameOptions.ChunkSize - 1, absoluteVoxelIndex.Y, absoluteVoxelIndex.Z & GameOptions.ChunkSize - 1);
+            var voxelIndex = new Int3(absoluteVoxelIndex.X & GameOptions.CHUNK_SIZE - 1, absoluteVoxelIndex.Y, absoluteVoxelIndex.Z & GameOptions.CHUNK_SIZE - 1);
             address = new VoxelChunkAddress(chunk, voxelIndex);
             return true;
         }
@@ -37,11 +37,11 @@ namespace AppleCinnamon
 
             chunkIndex = new Int2(
                 absoluteVoxelIndex.X < 0
-                    ? ((absoluteVoxelIndex.X + 1) / GameOptions.ChunkSize) - 1
-                    : absoluteVoxelIndex.X / GameOptions.ChunkSize,
+                    ? ((absoluteVoxelIndex.X + 1) / GameOptions.CHUNK_SIZE) - 1
+                    : absoluteVoxelIndex.X / GameOptions.CHUNK_SIZE,
                 absoluteVoxelIndex.Z < 0
-                    ? ((absoluteVoxelIndex.Z + 1) / GameOptions.ChunkSize) - 1
-                    : absoluteVoxelIndex.Z / GameOptions.ChunkSize);
+                    ? ((absoluteVoxelIndex.Z + 1) / GameOptions.CHUNK_SIZE) - 1
+                    : absoluteVoxelIndex.Z / GameOptions.CHUNK_SIZE);
             return true;
         }
 
