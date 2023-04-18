@@ -97,7 +97,7 @@ namespace AppleCinnamon.Drawers
             const float temp2 = (float)(0.434f * c * (2.0f * Math.PI) * (2.0f * Math.PI) * 0.5f);
 
             BetaDashMie = temp2 * vLambda2;
-            var K = new float[3] { 0.685f, 0.679f, 0.670f };
+            var K = new [] { 0.685f, 0.679f, 0.670f };
             const float temp3 = (float)(0.434f * c * Math.PI * (2.0f * Math.PI) * (2.0f * Math.PI));
 
             var vBetaMieTemp = new Vector3(K[0] * lambda2[0], K[1] * lambda2[1], K[2] * lambda2[2]);

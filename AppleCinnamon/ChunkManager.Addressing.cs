@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using AppleCinnamon.ChunkBuilder;
-using AppleCinnamon.Chunks;
 using AppleCinnamon.Common;
 using AppleCinnamon.Options;
 using SharpDX;

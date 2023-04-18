@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using AppleCinnamon.Chunks;
 using AppleCinnamon.Graphics;
 using AppleCinnamon.Graphics.Verticies;
 using AppleCinnamon.Options;

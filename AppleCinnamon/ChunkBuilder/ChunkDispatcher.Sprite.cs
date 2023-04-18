@@ -1,5 +1,4 @@
-﻿using AppleCinnamon.Chunks;
-using AppleCinnamon.Common;
+﻿using AppleCinnamon.Common;
 using AppleCinnamon.Graphics;
 using AppleCinnamon.Graphics.Verticies;
 using AppleCinnamon.Options;

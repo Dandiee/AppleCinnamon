@@ -1,6 +1,5 @@
 ﻿using System.Linq;
 using System.Runtime.CompilerServices;
-using AppleCinnamon.Chunks;
 using AppleCinnamon.Common;
 using AppleCinnamon.Graphics;
 using AppleCinnamon.Graphics.Verticies;

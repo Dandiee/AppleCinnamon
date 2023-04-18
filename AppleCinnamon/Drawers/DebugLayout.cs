@@ -55,11 +55,11 @@ namespace AppleCinnamon.Drawers
                 new DebugIncDecAction<float>(Key.F9, () => CameraOptions.FieldOfView, 0.001f));
 
             var pipelineContext = new DebugContext(rightAlignedTextFormat, graphicsContext, rightOrigin,
-                new DebugInfoLine<int>(() => ChunkManager.BagOfDeath.Count, "Bag of Death"),
-                new DebugInfoLine<int>(() => ChunkManager.Chunks.Count, "All chunks"),
-                new DebugInfoLine<int>(() => ChunkManager.Graveyard.Count, "Graveyard"),
-                new DebugInfoLine<int>(() => ChunkManager.ChunkCreated),
-                new DebugInfoLine<int>(() => ChunkManager.ChunkResurrected),
+                new DebugInfoLine<int>(() => game.ChunkManager.BagOfDeath.Count, "Bag of Death"),
+                new DebugInfoLine<int>(() => game.ChunkManager.Chunks.Count, "All chunks"),
+                new DebugInfoLine<int>(() => game.ChunkManager.Graveyard.Count, "Graveyard"),
+                new DebugInfoLine<int>(() => game.ChunkManager.ChunkCreated),
+                new DebugInfoLine<int>(() => game.ChunkManager.ChunkResurrected),
                 new DebugInfoLine<PipelineState>(() => game.ChunkManager.Pipeline.State),
                 new DebugInfoLine<double>(() => game.ChunkManager.Pipeline.TerrainStage.TimeSpentInTransform.TotalMilliseconds, game.ChunkManager.Pipeline.TerrainStage.Name, " ms"),
                 new DebugInfoLine<double>(() => game.ChunkManager.Pipeline.ArtifactStage.TimeSpentInTransform.TotalMilliseconds, game.ChunkManager.Pipeline.ArtifactStage.Name, " ms"),

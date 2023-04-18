@@ -1,11 +1,10 @@
 ﻿using System;
-using AppleCinnamon.Chunks;
 using AppleCinnamon.Common;
 using AppleCinnamon.Extensions;
 using AppleCinnamon.Options;
 using SharpDX;
 
-namespace AppleCinnamon.WorldGenerator
+namespace AppleCinnamon.ChunkBuilder.WorldGenerator
 {
     public static class Artifacts
     {

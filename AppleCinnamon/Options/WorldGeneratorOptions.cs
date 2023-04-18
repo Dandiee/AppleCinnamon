@@ -1,6 +1,4 @@
-﻿using SharpDX;
-
-namespace AppleCinnamon.Options
+﻿namespace AppleCinnamon.Options
 {
     public static class WorldGeneratorOptions
     {

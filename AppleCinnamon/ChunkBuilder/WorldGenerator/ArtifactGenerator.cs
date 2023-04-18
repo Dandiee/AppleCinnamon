@@ -1,8 +1,7 @@
 ﻿using System;
-using AppleCinnamon.Chunks;
 using AppleCinnamon.Options;
 
-namespace AppleCinnamon.WorldGenerator
+namespace AppleCinnamon.ChunkBuilder.WorldGenerator
 {
     public static class ArtifactGenerator
     {

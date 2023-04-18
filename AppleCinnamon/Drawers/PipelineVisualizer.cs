@@ -1,5 +1,4 @@
-﻿using AppleCinnamon.Chunks;
-using AppleCinnamon.Common;
+﻿using AppleCinnamon.Common;
 using AppleCinnamon.Extensions;
 using AppleCinnamon.Graphics;
 using SharpDX;
@@ -23,13 +22,13 @@ namespace AppleCinnamon.Drawers
         {
             const int size = sizeof(float) * 4;
 
-            var destinationRects = new RawRectangleF[ChunkManager.Chunks.Count];
-            var sourceRects = new RawRectangle[ChunkManager.Chunks.Count];
-            var colors = new RawColor4[ChunkManager.Chunks.Count];
+            var destinationRects = new RawRectangleF[chunkManager.Chunks.Count];
+            var sourceRects = new RawRectangle[chunkManager.Chunks.Count];
+            var colors = new RawColor4[chunkManager.Chunks.Count];
 
             var i = 0;
 
-            foreach (var chunk in ChunkManager.Chunks.Values)
+            foreach (var chunk in chunkManager.Chunks.Values)
             {
                 var result = chunk.Rect(camera.CurrentChunkIndex);
                 destinationRects[i] = result.Dest;
@@ -42,8 +41,8 @@ namespace AppleCinnamon.Drawers
             _graphicsContext.D2DeviceContext.AntialiasMode = AntialiasMode.Aliased;
             _graphicsContext.D2DeviceContext.BeginDraw();
             _graphicsContext.SpriteBatch.Clear();
-            _graphicsContext.SpriteBatch.AddSprites(ChunkManager.Chunks.Count, destinationRects, sourceRects, colors, null, size, size, size, 0);
-            _graphicsContext.D2DeviceContext.DrawSpriteBatch(_graphicsContext.SpriteBatch, 0, ChunkManager.Chunks.Count, _textures, BitmapInterpolationMode.Linear, SpriteOptions.ClampToSourceRectangle);
+            _graphicsContext.SpriteBatch.AddSprites(chunkManager.Chunks.Count, destinationRects, sourceRects, colors, null, size, size, size, 0);
+            _graphicsContext.D2DeviceContext.DrawSpriteBatch(_graphicsContext.SpriteBatch, 0, chunkManager.Chunks.Count, _textures, BitmapInterpolationMode.Linear, SpriteOptions.ClampToSourceRectangle);
             _graphicsContext.D2DeviceContext.EndDraw();
         }
     }

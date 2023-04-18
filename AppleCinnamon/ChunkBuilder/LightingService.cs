@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using AppleCinnamon.Chunks;
 using AppleCinnamon.Common;
 using AppleCinnamon.Options;
 using SharpDX;
@@ -15,7 +14,7 @@ namespace AppleCinnamon.ChunkBuilder
             {
                 for (var k = 0; k != GameOptions.ChunkSize; k++)
                 {
-                    _ = Sunlight(chunk, new Int3(i, chunk.CurrentHeight, k), 15, false).ToList();
+                    _ = Sunlight(chunk, new Int3(i, chunk.CurrentHeight, k), 15).ToList();
                 }
             }
         }

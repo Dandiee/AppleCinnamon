@@ -5,10 +5,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using AppleCinnamon.ChunkBuilder;
+using AppleCinnamon.ChunkBuilder.WorldGenerator;
 using AppleCinnamon.Common;
 using SharpDX.Direct3D11;
-using AppleCinnamon.Chunks;
-using AppleCinnamon.WorldGenerator;
 
 namespace AppleCinnamon
 {
@@ -32,12 +31,14 @@ namespace AppleCinnamon
         public TimeSpan TimeSpentInTransform { get; private set; }
 
         private readonly Device _device;
+        private readonly ChunkManager _chunkManager;
         private readonly Action<Chunk> _finishMove;
 
-        public Pipeline(Action<Chunk> finishMove, Device device)
+        public Pipeline(Action<Chunk> finishMove, Device device, ChunkManager chunkManager)
         {
             _finishMove = finishMove;
             _device = device;
+            _chunkManager = chunkManager;
 
             TerrainStage = new PipelineStage("Terrain", TerrainGenerator.Generate, NeighborAssigner, MDoP);
             ArtifactStage = new PipelineStage("Artifact", ArtifactGenerator.Generate, chk => Staging(1, chk));
@@ -130,7 +131,7 @@ namespace AppleCinnamon
 
                     var absoluteNeighborIndex = new Int2(i + chunk.ChunkIndex.X, j + chunk.ChunkIndex.Y);
 
-                    if (ChunkManager.Chunks.TryGetValue(absoluteNeighborIndex, out var neighborChunk))
+                    if (_chunkManager.Chunks.TryGetValue(absoluteNeighborIndex, out var neighborChunk))
                     {
                         neighborChunk.SetNeighbor(i * -1, j * -1, chunk);
                         chunk.SetNeighbor(i, j, neighborChunk);

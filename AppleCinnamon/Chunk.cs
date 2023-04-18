@@ -5,7 +5,7 @@ using AppleCinnamon.Common;
 using AppleCinnamon.Options;
 using SharpDX;
 
-namespace AppleCinnamon.Chunks
+namespace AppleCinnamon
 {
     public enum ChunkState
     {

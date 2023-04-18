@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks.Dataflow;
-using AppleCinnamon.Chunks;
 using AppleCinnamon.Common;
 
 namespace AppleCinnamon

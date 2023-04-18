@@ -2,7 +2,6 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
-using AppleCinnamon.Chunks;
 using AppleCinnamon.Common;
 using AppleCinnamon.Drawers;
 using AppleCinnamon.Graphics;
@@ -15,25 +14,29 @@ namespace AppleCinnamon
     public sealed partial class ChunkManager
     {
         private readonly GraphicsContext _graphicsContext;
-        private int _finishedChunks;
+        
         public bool IsInitialized { get; private set; }
 
-        public static readonly ConcurrentDictionary<Int2, Chunk> BagOfDeath = new();
-        public static readonly ConcurrentBag<Chunk> Graveyard = new();
-        public static readonly ConcurrentDictionary<Int2, Chunk> Chunks = new();
-        private readonly ChunkDrawer _chunkDrawer;
-        private Int2? _lastQueueIndex;
+        public readonly ConcurrentDictionary<Int2, Chunk> BagOfDeath = new();
+        public readonly ConcurrentBag<Chunk> Graveyard = new();
+        public readonly ConcurrentDictionary<Int2, Chunk> Chunks = new();
         public readonly Pipeline Pipeline;
+
+        private readonly ChunkDrawer _chunkDrawer;
+
+        private Int2? _lastQueueIndex;
         private List<Chunk> _chunksToDraw;
-        public static int ChunkCreated = 0;
-        public static int ChunkResurrected = 0;
+        private int _finishedChunks;
+
+        public int ChunkCreated;
+        public int ChunkResurrected;
 
         public ChunkManager(GraphicsContext graphicsContext)
         {
             _graphicsContext = graphicsContext;
             _chunkDrawer = new ChunkDrawer(graphicsContext.Device);
             _chunksToDraw = new List<Chunk>();
-            Pipeline = new Pipeline(FinishChunk, _graphicsContext.Device);
+            Pipeline = new Pipeline(FinishChunk, _graphicsContext.Device, this);
 
             QueueChunksByIndex(Int2.Zero);
         }
@@ -165,6 +168,5 @@ namespace AppleCinnamon
                 }
             }
         }
-
     }
 }

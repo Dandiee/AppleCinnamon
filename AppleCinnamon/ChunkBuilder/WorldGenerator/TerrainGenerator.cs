@@ -1,9 +1,8 @@
 ﻿using System;
-using AppleCinnamon.Chunks;
 using AppleCinnamon.Common;
 using AppleCinnamon.Options;
 
-namespace AppleCinnamon.WorldGenerator
+namespace AppleCinnamon.ChunkBuilder.WorldGenerator
 {
     public static class TerrainGenerator
     {

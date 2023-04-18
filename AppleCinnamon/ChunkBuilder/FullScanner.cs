@@ -1,5 +1,4 @@
 ﻿using System.Runtime.CompilerServices;
-using AppleCinnamon.Chunks;
 using AppleCinnamon.Common;
 using AppleCinnamon.Options;
 

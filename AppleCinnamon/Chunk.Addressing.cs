@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 using AppleCinnamon.Options;
 using SharpDX;
 
-namespace AppleCinnamon.Chunks
+namespace AppleCinnamon
 {
     public partial class Chunk
     {

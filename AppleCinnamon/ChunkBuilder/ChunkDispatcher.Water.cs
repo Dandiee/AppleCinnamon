@@ -1,5 +1,4 @@
-﻿using AppleCinnamon.Chunks;
-using AppleCinnamon.Graphics;
+﻿using AppleCinnamon.Graphics;
 using AppleCinnamon.Graphics.Verticies;
 using SharpDX;
 using Device = SharpDX.Direct3D11.Device;

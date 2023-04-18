@@ -57,7 +57,7 @@ namespace AppleCinnamon.Extensions
             var frame = bitmapDecoder.GetFrame(0);
 
             var converter = new FormatConverter(imagingFactory);
-            converter.Initialize(frame, SharpDX.WIC.PixelFormat.Format32bppPRGBA);
+            converter.Initialize(frame, PixelFormat.Format32bppPRGBA);
 
             var newBitmap = Bitmap1.FromWicBitmap(deviceContext, converter);
 
