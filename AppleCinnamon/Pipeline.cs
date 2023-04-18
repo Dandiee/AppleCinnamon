@@ -9,178 +9,177 @@ using AppleCinnamon.ChunkBuilder.WorldGenerator;
 using AppleCinnamon.Common;
 using SharpDX.Direct3D11;
 
-namespace AppleCinnamon
+namespace AppleCinnamon;
+
+// https://app.diagrams.net/#G1bx3H_GUN2TbOa55sV8_Cw-4TyGCXFWeh
+public sealed class Pipeline
 {
-    // https://app.diagrams.net/#G1bx3H_GUN2TbOa55sV8_Cw-4TyGCXFWeh
-    public sealed class Pipeline
+    public static readonly DataflowLinkOptions PropagateCompletionOptions = new() { PropagateCompletion = true };
+    public static readonly int MDoP = Environment.ProcessorCount / 2;
+
+    public PipelineState State { get; private set; } = PipelineState.Running;
+    public TransformBlock<Chunk, Chunk> Dispatcher { get; private set; }
+    public ActionBlock<Chunk> FinishBlock { get; private set; }
+
+    public PipelineStage TerrainStage { get; }
+    public PipelineStage ArtifactStage { get; }
+    public PipelineStage LocalStage { get; }
+    public PipelineStage GlobalStage { get; }
+
+    public PipelineStage[] Stages { get; }
+
+    public TimeSpan TimeSpentInTransform { get; private set; }
+
+    private readonly Device _device;
+    private readonly ChunkManager _chunkManager;
+    private readonly Action<Chunk> _finishMove;
+
+    public Pipeline(Action<Chunk> finishMove, Device device, ChunkManager chunkManager)
     {
-        public static readonly DataflowLinkOptions PropagateCompletionOptions = new() { PropagateCompletion = true };
-        public static readonly int MDoP = Environment.ProcessorCount / 2;
+        _finishMove = finishMove;
+        _device = device;
+        _chunkManager = chunkManager;
 
-        public PipelineState State { get; private set; } = PipelineState.Running;
-        public TransformBlock<Chunk, Chunk> Dispatcher { get; private set; }
-        public ActionBlock<Chunk> FinishBlock { get; private set; }
+        TerrainStage = new PipelineStage("Terrain", TerrainGenerator.Generate, NeighborAssigner, MDoP);
+        ArtifactStage = new PipelineStage("Artifact", ArtifactGenerator.Generate, chk => Staging(1, chk));
+        LocalStage = new PipelineStage("Local", LocalBuild, chk => Staging(2, chk), MDoP);
+        GlobalStage = new PipelineStage("Global", GlobalBuild, chk => Staging(3, chk));
 
-        public PipelineStage TerrainStage { get; }
-        public PipelineStage ArtifactStage { get; }
-        public PipelineStage LocalStage { get; }
-        public PipelineStage GlobalStage { get; }
+        Stages = new[] { TerrainStage, ArtifactStage, LocalStage, GlobalStage };
 
-        public PipelineStage[] Stages { get; }
+        BuildPipeline();
+    }
 
-        public TimeSpan TimeSpentInTransform { get; private set; }
+    public void Post(Chunk chunk) => TerrainStage.Transform.Post(chunk);
 
-        private readonly Device _device;
-        private readonly ChunkManager _chunkManager;
-        private readonly Action<Chunk> _finishMove;
+    public void Suspend()
+    {
+        State = PipelineState.Stopping;
 
-        public Pipeline(Action<Chunk> finishMove, Device device, ChunkManager chunkManager)
+        TerrainStage.Transform.Complete();
+        foreach (var stage in Stages)
         {
-            _finishMove = finishMove;
-            _device = device;
-            _chunkManager = chunkManager;
-
-            TerrainStage = new PipelineStage("Terrain", TerrainGenerator.Generate, NeighborAssigner, MDoP);
-            ArtifactStage = new PipelineStage("Artifact", ArtifactGenerator.Generate, chk => Staging(1, chk));
-            LocalStage = new PipelineStage("Local", LocalBuild, chk => Staging(2, chk), MDoP);
-            GlobalStage = new PipelineStage("Global", GlobalBuild, chk => Staging(3, chk));
-
-            Stages = new[] { TerrainStage, ArtifactStage, LocalStage, GlobalStage };
-
-            BuildPipeline();
+            stage.RequestSuspend();
         }
 
-        public void Post(Chunk chunk) => TerrainStage.Transform.Post(chunk);
+        var completionTasks = Stages
+            .Select(s => s.Transform.Completion)
+            .Concat(new[] { FinishBlock.Completion });
 
-        public void Suspend()
-        {
-            State = PipelineState.Stopping;
-
-            TerrainStage.Transform.Complete();
-            foreach (var stage in Stages)
+        Task.WhenAll(completionTasks)
+            .ContinueWith(_ =>
             {
-                stage.RequestSuspend();
-            }
+                State = PipelineState.Stopped;
+            });
+    }
 
-            var completionTasks = Stages
-                .Select(s => s.Transform.Completion)
-                .Concat(new[] { FinishBlock.Completion });
+    public void Resume()
+    {
+        BuildPipeline();
+        foreach (var stage in Stages)
+        {
+            stage.FlushBuffer();
+        }
 
-            Task.WhenAll(completionTasks)
-                .ContinueWith(_ =>
+        State = PipelineState.Running;
+    }
+
+    private void BuildPipeline()
+    {
+        Dispatcher = new TransformBlock<Chunk, Chunk>(BenchmarkedDispatcher);//, new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = MDoP });
+        FinishBlock = new ActionBlock<Chunk>(_finishMove);
+
+        foreach (var stage in Stages)
+        {
+            stage.CreateBlocks();
+        }
+
+        TerrainStage
+            .LinkTo(ArtifactStage)
+            .LinkTo(LocalStage)
+            .LinkTo(GlobalStage);
+
+        GlobalStage.Staging.LinkTo(Dispatcher, PropagateCompletionOptions);
+        Dispatcher.LinkTo(FinishBlock, PropagateCompletionOptions);
+    }
+
+    public IEnumerable<Chunk> Staging(int stageIndex, Chunk chunk)
+    {
+        chunk.Stage++;
+
+        foreach (var neighbor in chunk.Neighbors)
+        {
+            if (neighbor != null
+                && neighbor.Stage == stageIndex + 1
+                && neighbor.Neighbors.All(s => s != null && s.Stage >= stageIndex + 1))
+            {
+                if (Stages[stageIndex].ReturnedIndexes.Add(neighbor.ChunkIndex))
                 {
-                    State = PipelineState.Stopped;
-                });
-        }
-
-        public void Resume()
-        {
-            BuildPipeline();
-            foreach (var stage in Stages)
-            {
-                stage.FlushBuffer();
+                    yield return neighbor;
+                }
             }
-
-            State = PipelineState.Running;
         }
+    }
 
-        private void BuildPipeline()
+    public IEnumerable<Chunk> NeighborAssigner(Chunk chunk)
+    {
+        for (var i = -1; i <= 1; i++)
         {
-            Dispatcher = new TransformBlock<Chunk, Chunk>(BenchmarkedDispatcher);//, new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = MDoP });
-            FinishBlock = new ActionBlock<Chunk>(_finishMove);
-
-            foreach (var stage in Stages)
+            for (var j = -1; j <= 1; j++)
             {
-                stage.CreateBlocks();
-            }
+                if (i == 0 && j == 0) continue;
 
-            TerrainStage
-                .LinkTo(ArtifactStage)
-                .LinkTo(LocalStage)
-                .LinkTo(GlobalStage);
+                var absoluteNeighborIndex = new Int2(i + chunk.ChunkIndex.X, j + chunk.ChunkIndex.Y);
 
-            GlobalStage.Staging.LinkTo(Dispatcher, PropagateCompletionOptions);
-            Dispatcher.LinkTo(FinishBlock, PropagateCompletionOptions);
-        }
-
-        public IEnumerable<Chunk> Staging(int stageIndex, Chunk chunk)
-        {
-            chunk.Stage++;
-
-            foreach (var neighbor in chunk.Neighbors)
-            {
-                if (neighbor != null
-                    && neighbor.Stage == stageIndex + 1
-                    && neighbor.Neighbors.All(s => s != null && s.Stage >= stageIndex + 1))
+                if (_chunkManager.Chunks.TryGetValue(absoluteNeighborIndex, out var neighborChunk))
                 {
-                    if (Stages[stageIndex].ReturnedIndexes.Add(neighbor.ChunkIndex))
-                    {
-                        yield return neighbor;
-                    }
+                    neighborChunk.SetNeighbor(i * -1, j * -1, chunk);
+                    chunk.SetNeighbor(i, j, neighborChunk);
                 }
             }
         }
 
-        public IEnumerable<Chunk> NeighborAssigner(Chunk chunk)
-        {
-            for (var i = -1; i <= 1; i++)
-            {
-                for (var j = -1; j <= 1; j++)
-                {
-                    if (i == 0 && j == 0) continue;
-
-                    var absoluteNeighborIndex = new Int2(i + chunk.ChunkIndex.X, j + chunk.ChunkIndex.Y);
-
-                    if (_chunkManager.Chunks.TryGetValue(absoluteNeighborIndex, out var neighborChunk))
-                    {
-                        neighborChunk.SetNeighbor(i * -1, j * -1, chunk);
-                        chunk.SetNeighbor(i, j, neighborChunk);
-                    }
-                }
-            }
-
-            return Staging(0, chunk);
-        }
-
-        public void RemoveItem(Int2 chunkIndex)
-        {
-            foreach (var stage in Stages)
-            {
-                stage.ReturnedIndexes.Remove(chunkIndex);
-            }
-        }
-
-        private Chunk LocalBuild(Chunk chunk)
-        {
-            LightingService.InitializeSunlight(chunk);
-            FullScanner.FullScan(chunk);
-            LightingService.LocalPropagate(chunk, chunk.BuildingContext.LightPropagationVoxels);
-
-            return chunk;
-        }
-
-        private Chunk GlobalBuild(Chunk chunk)
-        {
-            GlobalVisibilityFinalizer.FinalizeGlobalVisibility(chunk);
-            GlobalLightFinalizer.FinalizeGlobalLighting(chunk);
-
-            return chunk;
-        }
-
-        private Chunk BenchmarkedDispatcher(Chunk chunk)
-        {
-            var sw = Stopwatch.StartNew();
-            ChunkDispatcher.BuildChunk(chunk, _device);
-            sw.Stop();
-            TimeSpentInTransform += sw.Elapsed;
-            return chunk;
-        }
+        return Staging(0, chunk);
     }
 
-    public enum PipelineState
+    public void RemoveItem(Int2 chunkIndex)
     {
-        Running,
-        Stopping,
-        Stopped,
+        foreach (var stage in Stages)
+        {
+            stage.ReturnedIndexes.Remove(chunkIndex);
+        }
     }
+
+    private Chunk LocalBuild(Chunk chunk)
+    {
+        LightingService.InitializeSunlight(chunk);
+        FullScanner.FullScan(chunk);
+        LightingService.LocalPropagate(chunk, chunk.BuildingContext.LightPropagationVoxels);
+
+        return chunk;
+    }
+
+    private Chunk GlobalBuild(Chunk chunk)
+    {
+        GlobalVisibilityFinalizer.FinalizeGlobalVisibility(chunk);
+        GlobalLightFinalizer.FinalizeGlobalLighting(chunk);
+
+        return chunk;
+    }
+
+    private Chunk BenchmarkedDispatcher(Chunk chunk)
+    {
+        var sw = Stopwatch.StartNew();
+        ChunkDispatcher.BuildChunk(chunk, _device);
+        sw.Stop();
+        TimeSpentInTransform += sw.Elapsed;
+        return chunk;
+    }
+}
+
+public enum PipelineState
+{
+    Running,
+    Stopping,
+    Stopped,
 }

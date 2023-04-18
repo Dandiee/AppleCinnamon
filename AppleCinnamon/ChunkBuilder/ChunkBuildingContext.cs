@@ -5,124 +5,122 @@ using AppleCinnamon.Extensions;
 using AppleCinnamon.Options;
 using SharpDX;
 
-namespace AppleCinnamon.ChunkBuilder
+namespace AppleCinnamon.ChunkBuilder;
+
+public sealed class ChunkBuildingContext
 {
-    public sealed class ChunkBuildingContext
+    public readonly FaceBuildingContext Top;
+    public readonly FaceBuildingContext Bottom;
+    public readonly FaceBuildingContext Left;
+    public readonly FaceBuildingContext Right;
+    public readonly FaceBuildingContext Front;
+    public readonly FaceBuildingContext Back;
+
+    public readonly FaceBuildingContext[] Faces;
+
+    public List<int> SpriteBlocks = new();
+    public List<int> SingleSidedSpriteBlocks = new();
+
+    public Dictionary<int, VisibilityFlag> VisibilityFlags = new();
+    public Queue<int> LightPropagationVoxels = new(1024);
+    public List<int> TopMostWaterVoxels = new();
+    public List<int> TopMostLandVoxels = new();
+
+    public bool IsChanged => IsSpriteChanged || IsWaterChanged || IsSolidChanged;
+    public bool IsSpriteChanged { get; set; } = true;
+    public bool IsWaterChanged { get; set; } = true;
+    public bool IsSolidChanged { get; set; } = true;
+
+    public void SetAllChanged()
     {
-        public readonly FaceBuildingContext Top;
-        public readonly FaceBuildingContext Bottom;
-        public readonly FaceBuildingContext Left;
-        public readonly FaceBuildingContext Right;
-        public readonly FaceBuildingContext Front;
-        public readonly FaceBuildingContext Back;
+        IsSpriteChanged = true;
+        IsWaterChanged = true;
+        IsSolidChanged = true;
+    }
 
-        public readonly FaceBuildingContext[] Faces;
+    public ChunkBuildingContext()
+    {
+        Top = new FaceBuildingContext(Face.Top);
+        Bottom = new FaceBuildingContext(Face.Bottom);
+        Left = new FaceBuildingContext(Face.Left);
+        Right = new FaceBuildingContext(Face.Right);
+        Front = new FaceBuildingContext(Face.Front);
+        Back = new FaceBuildingContext(Face.Back);
 
-        public List<int> SpriteBlocks = new();
-        public List<int> SingleSidedSpriteBlocks = new();
+        Faces = new[] { Top, Bottom, Left, Right, Front, Back };
+    }
 
-        public Dictionary<int, VisibilityFlag> VisibilityFlags = new();
-        public Queue<int> LightPropagationVoxels = new(1024);
-        public List<int> TopMostWaterVoxels = new();
-        public List<int> TopMostLandVoxels = new();
+    public void Clear()
+    {
+        // O(n) clearing
+        // SpriteBlocks.Clear();
+        // SingleSidedSpriteBlocks.Clear();
+        // VisibilityFlags.Clear();
+        // LightPropagationVoxels.Clear();
+        // TopMostWaterVoxels.Clear();
+        // TopMostLandVoxels.Clear();
 
-        public bool IsChanged => IsSpriteChanged || IsWaterChanged || IsSolidChanged;
-        public bool IsSpriteChanged { get; set; } = true;
-        public bool IsWaterChanged { get; set; } = true;
-        public bool IsSolidChanged { get; set; } = true;
+        SpriteBlocks = new();
+        SingleSidedSpriteBlocks = new();
+        VisibilityFlags = new();
+        LightPropagationVoxels = new(1024);
+        TopMostWaterVoxels = new();
+        TopMostLandVoxels = new();
 
-        public void SetAllChanged()
+        SetAllChanged();
+
+        foreach (var face in Faces)
         {
-            IsSpriteChanged = true;
-            IsWaterChanged = true;
-            IsSolidChanged = true;
+            face.Clear();
         }
+    }
+}
 
-        public ChunkBuildingContext()
+public sealed class FaceBuildingContext
+{
+    private static readonly IReadOnlyDictionary<Face, VisibilityFlag> FaceMapping =
+        new Dictionary<Face, VisibilityFlag>
         {
-            Top = new FaceBuildingContext(Face.Top);
-            Bottom = new FaceBuildingContext(Face.Bottom);
-            Left = new FaceBuildingContext(Face.Left);
-            Right = new FaceBuildingContext(Face.Right);
-            Front = new FaceBuildingContext(Face.Front);
-            Back = new FaceBuildingContext(Face.Back);
+            [Face.Top] = VisibilityFlag.Top,
+            [Face.Bottom] = VisibilityFlag.Bottom,
+            [Face.Left] = VisibilityFlag.Left,
+            [Face.Right] = VisibilityFlag.Right,
+            [Face.Front] = VisibilityFlag.Front,
+            [Face.Back] = VisibilityFlag.Back,
+        };
 
-            Faces = new[] { Top, Bottom, Left, Right, Front, Back };
-        }
-
-        public void Clear()
+    private static readonly IReadOnlyDictionary<Face, Func<Int3, int, int>> NeighborIndexFuncs =
+        new Dictionary<Face, Func<Int3, int, int>>
         {
-            // O(n) clearing
-            // SpriteBlocks.Clear();
-            // SingleSidedSpriteBlocks.Clear();
-            // VisibilityFlags.Clear();
-            // LightPropagationVoxels.Clear();
-            // TopMostWaterVoxels.Clear();
-            // TopMostLandVoxels.Clear();
+            [Face.Left] = (ijk, height) => Chunk.GetFlatIndex(GameOptions.CHUNK_SIZE - 1, ijk.Y, ijk.Z, height),
+            [Face.Right] = (ijk, height) => Chunk.GetFlatIndex(0, ijk.Y, ijk.Z, height),
+            [Face.Front] = (ijk, height) => Chunk.GetFlatIndex(ijk.X, ijk.Y, GameOptions.CHUNK_SIZE - 1, height),
+            [Face.Back] = (ijk, height) => Chunk.GetFlatIndex(ijk.X, ijk.Y, 0, height)
+        };
 
-            SpriteBlocks = new();
-            SingleSidedSpriteBlocks = new();
-            VisibilityFlags = new();
-            LightPropagationVoxels = new(1024);
-            TopMostWaterVoxels = new();
-            TopMostLandVoxels = new();
-
-            SetAllChanged();
-
-            foreach (var face in Faces)
-            {
-                face.Clear();
-            }
+    public FaceBuildingContext(Face face)
+    {
+        Face = face;
+        OppositeFace = face.GetOpposite();
+        Direction = FaceMapping[face];
+        OppositeDirection = Direction.GetOpposite();
+        if (NeighborIndexFuncs.TryGetValue(face, out var getNeighborIndex))
+        {
+            GetNeighborIndex = getNeighborIndex;
         }
     }
 
-    public sealed class FaceBuildingContext
+    public readonly Face Face;
+    public readonly Face OppositeFace;
+    public readonly VisibilityFlag Direction;
+    public readonly VisibilityFlag OppositeDirection;
+    public List<int> PendingVoxels = new();
+    public readonly Func<Int3, int, int> GetNeighborIndex;
+    public int VoxelCount;
+
+    public void Clear()
     {
-        private static readonly IReadOnlyDictionary<Face, VisibilityFlag> FaceMapping =
-            new Dictionary<Face, VisibilityFlag>
-            {
-                [Face.Top] = VisibilityFlag.Top,
-                [Face.Bottom] = VisibilityFlag.Bottom,
-                [Face.Left] = VisibilityFlag.Left,
-                [Face.Right] = VisibilityFlag.Right,
-                [Face.Front] = VisibilityFlag.Front,
-                [Face.Back] = VisibilityFlag.Back,
-            };
-
-        private static readonly IReadOnlyDictionary<Face, Func<Int3, int, int>> NeighborIndexFuncs =
-            new Dictionary<Face, Func<Int3, int, int>>
-            {
-                [Face.Left] = (ijk, height) => Chunk.GetFlatIndex(GameOptions.CHUNK_SIZE - 1, ijk.Y, ijk.Z, height),
-                [Face.Right] = (ijk, height) => Chunk.GetFlatIndex(0, ijk.Y, ijk.Z, height),
-                [Face.Front] = (ijk, height) => Chunk.GetFlatIndex(ijk.X, ijk.Y, GameOptions.CHUNK_SIZE - 1, height),
-                [Face.Back] = (ijk, height) => Chunk.GetFlatIndex(ijk.X, ijk.Y, 0, height)
-            };
-
-        public FaceBuildingContext(Face face)
-        {
-            Face = face;
-            OppositeFace = face.GetOpposite();
-            Direction = FaceMapping[face];
-            OppositeDirection = Direction.GetOpposite();
-            if (NeighborIndexFuncs.TryGetValue(face, out var getNeighborIndex))
-            {
-                GetNeighborIndex = getNeighborIndex;
-            }
-        }
-
-        public readonly Face Face;
-        public readonly Face OppositeFace;
-        public readonly VisibilityFlag Direction;
-        public readonly VisibilityFlag OppositeDirection;
-        public List<int> PendingVoxels = new();
-        public readonly Func<Int3, int, int> GetNeighborIndex;
-        public int VoxelCount;
-
-        public void Clear()
-        {
-            //PendingVoxels.Clear();
-            PendingVoxels = new();
-        }
+        //PendingVoxels.Clear();
+        PendingVoxels = new();
     }
-
 }

@@ -1,14 +1,12 @@
 ﻿using System;
 
-namespace AppleCinnamon
+namespace AppleCinnamon;
+
+class Program
 {
-    
-    class Program
+    [STAThread]
+    static void Main() 
     {
-        [STAThread]
-        static void Main() 
-        {
-            Game g = new Game();
-        }
+        Game g = new Game();
     }
 }

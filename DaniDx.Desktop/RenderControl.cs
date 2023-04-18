@@ -21,52 +21,51 @@
 using System.Drawing;
 using System.Windows.Forms;
 
-namespace DaniDx.Desktop
+namespace DaniDx.Desktop;
+
+/// <summary>
+/// A Renderable UserControl.
+/// </summary>
+public class RenderControl : UserControl
 {
+    private Font fontForDesignMode;
+
     /// <summary>
-    /// A Renderable UserControl.
+    /// Initializes a new instance of the <see cref="RenderForm"/> class.
     /// </summary>
-    public class RenderControl : UserControl
+    public RenderControl()
     {
-        private Font fontForDesignMode;
+        SetStyle( ControlStyles.AllPaintingInWmPaint | ControlStyles.Opaque | ControlStyles.UserPaint, true );
+        UpdateStyles();
+    }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="RenderForm"/> class.
-        /// </summary>
-        public RenderControl()
+    /// <summary>
+    /// Paints the background of the control.
+    /// </summary>
+    /// <param name="e">A <see cref="T:System.Windows.Forms.PaintEventArgs"/> that contains the event data.</param>
+    protected override void OnPaintBackground(PaintEventArgs e)
+    {
+        if (DesignMode)
+            base.OnPaintBackground(e);
+    }
+
+    /// <summary>
+    /// Raises the <see cref="E:System.Windows.Forms.Control.Paint"/> event.
+    /// </summary>
+    /// <param name="e">A <see cref="T:System.Windows.Forms.PaintEventArgs"/> that contains the event data.</param>
+    protected override void OnPaint(PaintEventArgs e)
+    {
+        base.OnPaint(e);
+        if (DesignMode)
         {
-            SetStyle( ControlStyles.AllPaintingInWmPaint | ControlStyles.Opaque | ControlStyles.UserPaint, true );
-            UpdateStyles();
-        }
+            if (fontForDesignMode == null)
+                fontForDesignMode = new Font("Calibri", 24, FontStyle.Regular);
 
-        /// <summary>
-        /// Paints the background of the control.
-        /// </summary>
-        /// <param name="e">A <see cref="T:System.Windows.Forms.PaintEventArgs"/> that contains the event data.</param>
-        protected override void OnPaintBackground(PaintEventArgs e)
-        {
-            if (DesignMode)
-                base.OnPaintBackground(e);
-        }
+            e.Graphics.Clear(System.Drawing.Color.WhiteSmoke);
+            string text = "SharpDX RenderControl";
+            var sizeText = e.Graphics.MeasureString(text, fontForDesignMode);
 
-        /// <summary>
-        /// Raises the <see cref="E:System.Windows.Forms.Control.Paint"/> event.
-        /// </summary>
-        /// <param name="e">A <see cref="T:System.Windows.Forms.PaintEventArgs"/> that contains the event data.</param>
-        protected override void OnPaint(PaintEventArgs e)
-        {
-            base.OnPaint(e);
-            if (DesignMode)
-            {
-                if (fontForDesignMode == null)
-                    fontForDesignMode = new Font("Calibri", 24, FontStyle.Regular);
-
-                e.Graphics.Clear(System.Drawing.Color.WhiteSmoke);
-                string text = "SharpDX RenderControl";
-                var sizeText = e.Graphics.MeasureString(text, fontForDesignMode);
-
-                e.Graphics.DrawString(text, fontForDesignMode, new SolidBrush(System.Drawing.Color.Black), (Width - sizeText.Width) / 2, (Height - sizeText.Height) / 2);
-            }
+            e.Graphics.DrawString(text, fontForDesignMode, new SolidBrush(System.Drawing.Color.Black), (Width - sizeText.Width) / 2, (Height - sizeText.Height) / 2);
         }
     }
 }

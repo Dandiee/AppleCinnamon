@@ -1,56 +1,55 @@
 ﻿using System.Runtime.CompilerServices;
 
-namespace AppleCinnamon.ChunkBuilder
+namespace AppleCinnamon.ChunkBuilder;
+
+public static class GlobalVisibilityFinalizer
 {
-    public static class GlobalVisibilityFinalizer
+    public static void FinalizeGlobalVisibility(Chunk chunk)
     {
-        public static void FinalizeGlobalVisibility(Chunk chunk)
+        var leftChunk = chunk.GetNeighbor(-1, 0);
+        var rightChunk = chunk.GetNeighbor(1, 0);
+        var frontChunk = chunk.GetNeighbor(0, -1);
+        var backChunk = chunk.GetNeighbor(0, 1);
+
+        ProcessSide(chunk, leftChunk, chunk.BuildingContext.Left);
+        ProcessSide(chunk, rightChunk, chunk.BuildingContext.Right);
+        ProcessSide(chunk, frontChunk, chunk.BuildingContext.Front);
+        ProcessSide(chunk, backChunk, chunk.BuildingContext.Back);
+
+        CleanUpMemory(chunk);
+    }
+
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void ProcessSide(Chunk chunk, Chunk neighborChunk, FaceBuildingContext context)
+    {
+        foreach (var flatIndex in context.PendingVoxels)
         {
-            var leftChunk = chunk.GetNeighbor(-1, 0);
-            var rightChunk = chunk.GetNeighbor(1, 0);
-            var frontChunk = chunk.GetNeighbor(0, -1);
-            var backChunk = chunk.GetNeighbor(0, 1);
+            var index = chunk.FromFlatIndex(flatIndex);
+            var voxel = chunk.Voxels[flatIndex];
+            var neighbor = neighborChunk.CurrentHeight <= index.Y
+                ? Voxel.SunBlock
+                : neighborChunk.GetVoxel(context.GetNeighborIndex(index, neighborChunk.CurrentHeight));
 
-            ProcessSide(chunk, leftChunk, chunk.BuildingContext.Left);
-            ProcessSide(chunk, rightChunk, chunk.BuildingContext.Right);
-            ProcessSide(chunk, frontChunk, chunk.BuildingContext.Front);
-            ProcessSide(chunk, backChunk, chunk.BuildingContext.Back);
-
-            CleanUpMemory(chunk);
-        }
-
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void ProcessSide(Chunk chunk, Chunk neighborChunk, FaceBuildingContext context)
-        {
-            foreach (var flatIndex in context.PendingVoxels)
+            var voxelDefinition = voxel.GetDefinition();
+            if (voxelDefinition.IsBlock)
             {
-                var index = chunk.FromFlatIndex(flatIndex);
-                var voxel = chunk.Voxels[flatIndex];
-                var neighbor = neighborChunk.CurrentHeight <= index.Y
-                    ? Voxel.SunBlock
-                    : neighborChunk.GetVoxel(context.GetNeighborIndex(index, neighborChunk.CurrentHeight));
-
-                var voxelDefinition = voxel.GetDefinition();
-                if (voxelDefinition.IsBlock)
+                var neighborDefinition = neighbor.GetDefinition();
+                if ((neighborDefinition.CoverFlags & context.OppositeDirection) == 0)
                 {
-                    var neighborDefinition = neighbor.GetDefinition();
-                    if ((neighborDefinition.CoverFlags & context.OppositeDirection) == 0)
-                    {
-                        chunk.BuildingContext.VisibilityFlags.TryGetValue(flatIndex, out var visibility);
-                        chunk.BuildingContext.VisibilityFlags[flatIndex] = visibility | context.Direction;
-                        context.VoxelCount++;
-                    }
+                    chunk.BuildingContext.VisibilityFlags.TryGetValue(flatIndex, out var visibility);
+                    chunk.BuildingContext.VisibilityFlags[flatIndex] = visibility | context.Direction;
+                    context.VoxelCount++;
                 }
             }
         }
+    }
 
-        private static void CleanUpMemory(Chunk chunk)
+    private static void CleanUpMemory(Chunk chunk)
+    {
+        foreach (var face in chunk.BuildingContext.Faces)
         {
-            foreach (var face in chunk.BuildingContext.Faces)
-            {
-                face.PendingVoxels.Clear();
-            }
+            face.PendingVoxels.Clear();
         }
     }
 }

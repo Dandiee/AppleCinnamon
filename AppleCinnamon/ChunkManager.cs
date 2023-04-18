@@ -9,163 +9,162 @@ using AppleCinnamon.Options;
 using SharpDX;
 using SharpDX.Direct3D11;
 
-namespace AppleCinnamon
+namespace AppleCinnamon;
+
+public sealed partial class ChunkManager
 {
-    public sealed partial class ChunkManager
+    private readonly GraphicsContext _graphicsContext;
+        
+    public bool IsInitialized { get; private set; }
+
+    public readonly ConcurrentDictionary<Int2, Chunk> BagOfDeath = new();
+    public readonly ConcurrentBag<Chunk> Graveyard = new();
+    public readonly ConcurrentDictionary<Int2, Chunk> Chunks = new();
+    public readonly Pipeline Pipeline;
+
+    private readonly ChunkDrawer _chunkDrawer;
+
+    private Int2? _lastQueueIndex;
+    private List<Chunk> _chunksToDraw;
+    private int _finishedChunks;
+
+    public int ChunkCreated;
+    public int ChunkResurrected;
+
+    public ChunkManager(GraphicsContext graphicsContext)
     {
-        private readonly GraphicsContext _graphicsContext;
-        
-        public bool IsInitialized { get; private set; }
+        _graphicsContext = graphicsContext;
+        _chunkDrawer = new ChunkDrawer(graphicsContext.Device);
+        _chunksToDraw = new List<Chunk>();
+        Pipeline = new Pipeline(FinishChunk, _graphicsContext.Device, this);
 
-        public readonly ConcurrentDictionary<Int2, Chunk> BagOfDeath = new();
-        public readonly ConcurrentBag<Chunk> Graveyard = new();
-        public readonly ConcurrentDictionary<Int2, Chunk> Chunks = new();
-        public readonly Pipeline Pipeline;
+        QueueChunksByIndex(Int2.Zero);
+    }
 
-        private readonly ChunkDrawer _chunkDrawer;
+    public void Draw(Camera camera)
+    {
+        _chunkDrawer.Draw(_chunksToDraw, camera);
+    }
 
-        private Int2? _lastQueueIndex;
-        private List<Chunk> _chunksToDraw;
-        private int _finishedChunks;
+    public void FinishChunk(Chunk chunk)
+    {
+        Interlocked.Increment(ref _finishedChunks);
+        const int root = (GameOptions.VIEW_DISTANCE - 1) * 2;
 
-        public int ChunkCreated;
-        public int ChunkResurrected;
-
-        public ChunkManager(GraphicsContext graphicsContext)
+        if (!IsInitialized && _finishedChunks == root)
         {
-            _graphicsContext = graphicsContext;
-            _chunkDrawer = new ChunkDrawer(graphicsContext.Device);
-            _chunksToDraw = new List<Chunk>();
-            Pipeline = new Pipeline(FinishChunk, _graphicsContext.Device, this);
-
-            QueueChunksByIndex(Int2.Zero);
+            IsInitialized = true;
         }
 
-        public void Draw(Camera camera)
+        chunk.State = ChunkState.Finished;
+    }
+
+
+    public void Update(Camera camera)
+    {
+        if (IsInitialized)
         {
-            _chunkDrawer.Draw(_chunksToDraw, camera);
+            _chunkDrawer.Update(camera);
+            var currentChunkIndex = new Int2((int)camera.Position.X / GameOptions.CHUNK_SIZE, (int)camera.Position.Z / GameOptions.CHUNK_SIZE);
+
+            UpdateChunks(camera);
+            QueueChunksByIndex(currentChunkIndex);
         }
-
-        public void FinishChunk(Chunk chunk)
-        {
-            Interlocked.Increment(ref _finishedChunks);
-            const int root = (GameOptions.VIEW_DISTANCE - 1) * 2;
-
-            if (!IsInitialized && _finishedChunks == root)
-            {
-                IsInitialized = true;
-            }
-
-            chunk.State = ChunkState.Finished;
-        }
-
-
-        public void Update(Camera camera)
-        {
-            if (IsInitialized)
-            {
-                _chunkDrawer.Update(camera);
-                var currentChunkIndex = new Int2((int)camera.Position.X / GameOptions.CHUNK_SIZE, (int)camera.Position.Z / GameOptions.CHUNK_SIZE);
-
-                UpdateChunks(camera);
-                QueueChunksByIndex(currentChunkIndex);
-            }
-        }
+    }
 
         
 
-        private void UpdateChunks(Camera camera)
+    private void UpdateChunks(Camera camera)
+    {
+        var now = DateTime.Now;
+        _chunksToDraw = new();
+        foreach (var chunk in Chunks.Values)
         {
-            var now = DateTime.Now;
-            _chunksToDraw = new();
-            foreach (var chunk in Chunks.Values)
+            chunk.IsRendered = false;
+
+            if (!chunk.UpdateDeletion(camera, now))
             {
-                chunk.IsRendered = false;
+                BagOfDeath.TryAdd(chunk.ChunkIndex, chunk);
+            }
 
-                if (!chunk.UpdateDeletion(camera, now))
-                {
-                    BagOfDeath.TryAdd(chunk.ChunkIndex, chunk);
-                }
+            chunk.IsRendered = chunk.Deletion != ChunkDeletionState.Deletion &&
+                               chunk.State == ChunkState.Finished && 
+                               (!GameOptions.IsViewFrustumCullingEnabled || 
+                                camera.BoundingFrustum.Contains(ref chunk.BoundingBox) !=  ContainmentType.Disjoint);
 
-                chunk.IsRendered = chunk.Deletion != ChunkDeletionState.Deletion &&
-                                   chunk.State == ChunkState.Finished && 
-                                   (!GameOptions.IsViewFrustumCullingEnabled || 
-                                        camera.BoundingFrustum.Contains(ref chunk.BoundingBox) !=  ContainmentType.Disjoint);
-
-                if (chunk.IsRendered)
-                {
-                    _chunksToDraw.Add(chunk);
-                }
+            if (chunk.IsRendered)
+            {
+                _chunksToDraw.Add(chunk);
             }
         }
+    }
 
-        public void CleanUp()
+    public void CleanUp()
+    {
+        if (Pipeline.State == PipelineState.Running && BagOfDeath.Count > GameOptions.VIEW_DISTANCE * 2)
         {
-            if (Pipeline.State == PipelineState.Running && BagOfDeath.Count > GameOptions.VIEW_DISTANCE * 2)
-            {
-                Pipeline.Suspend();
-            }
-
-            if (Pipeline.State == PipelineState.Stopped)
-            {
-                Massacre();
-            }
+            Pipeline.Suspend();
         }
 
-
-        private void Massacre()
+        if (Pipeline.State == PipelineState.Stopped)
         {
-            foreach (var chunk in BagOfDeath)
-            {
-                Chunks.Remove(chunk.Key, out var _);
-                if (chunk.Value.Buffers == null)
-                {
-                    Graveyard.Add(chunk.Value);
-                }
-                chunk.Value.Kill();
-                Pipeline.RemoveItem(chunk.Key);
-            }
-
-            BagOfDeath.Clear();
-            Pipeline.Resume();
+            Massacre();
         }
+    }
+
+
+    private void Massacre()
+    {
+        foreach (var chunk in BagOfDeath)
+        {
+            Chunks.Remove(chunk.Key, out var _);
+            if (chunk.Value.Buffers == null)
+            {
+                Graveyard.Add(chunk.Value);
+            }
+            chunk.Value.Kill();
+            Pipeline.RemoveItem(chunk.Key);
+        }
+
+        BagOfDeath.Clear();
+        Pipeline.Resume();
+    }
 
         
-        private Chunk CreateChunk(Int2 chunkIndex)
+    private Chunk CreateChunk(Int2 chunkIndex)
+    {
+        if (!Graveyard.IsEmpty)
         {
-            if (!Graveyard.IsEmpty)
+            if (Graveyard.TryTake(out var chunk))
             {
-                if (Graveyard.TryTake(out var chunk))
-                {
-                    ChunkResurrected++;
-                    return chunk.Resurrect(chunkIndex);
-                }
+                ChunkResurrected++;
+                return chunk.Resurrect(chunkIndex);
             }
-
-            ChunkCreated++;
-            return new Chunk(chunkIndex);
         }
 
-        private void QueueChunksByIndex(Int2 currentChunkIndex)
+        ChunkCreated++;
+        return new Chunk(chunkIndex);
+    }
+
+    private void QueueChunksByIndex(Int2 currentChunkIndex)
+    {
+        if (!_lastQueueIndex.HasValue || _lastQueueIndex != currentChunkIndex)
         {
-            if (!_lastQueueIndex.HasValue || _lastQueueIndex != currentChunkIndex)
+            if (Pipeline.State == PipelineState.Running)
             {
-                if (Pipeline.State == PipelineState.Running)
+                foreach (var relativeChunkIndex in GetSurroundingChunks(GameOptions.VIEW_DISTANCE + GameOptions.NUMBER_OF_POOLS - 1))
                 {
-                    foreach (var relativeChunkIndex in GetSurroundingChunks(GameOptions.VIEW_DISTANCE + GameOptions.NUMBER_OF_POOLS - 1))
+                    var chunkIndex = currentChunkIndex + relativeChunkIndex;
+
+                    if (!Chunks.ContainsKey(chunkIndex))
                     {
-                        var chunkIndex = currentChunkIndex + relativeChunkIndex;
-
-                        if (!Chunks.ContainsKey(chunkIndex))
-                        {
-                            var newChunk = CreateChunk(chunkIndex);
-                            Chunks.TryAdd(chunkIndex, newChunk);
-                            Pipeline.Post(newChunk);
-                        }
+                        var newChunk = CreateChunk(chunkIndex);
+                        Chunks.TryAdd(chunkIndex, newChunk);
+                        Pipeline.Post(newChunk);
                     }
-
-                    _lastQueueIndex = currentChunkIndex;
                 }
+
+                _lastQueueIndex = currentChunkIndex;
             }
         }
     }

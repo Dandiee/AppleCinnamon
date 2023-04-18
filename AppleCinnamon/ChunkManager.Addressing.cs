@@ -4,99 +4,98 @@ using AppleCinnamon.Common;
 using AppleCinnamon.Options;
 using SharpDX;
 
-namespace AppleCinnamon
+namespace AppleCinnamon;
+
+public partial class ChunkManager
 {
-    public partial class ChunkManager
+    public bool TryGetVoxelAddress(Int3 absoluteVoxelIndex, out VoxelChunkAddress address)
     {
-        public bool TryGetVoxelAddress(Int3 absoluteVoxelIndex, out VoxelChunkAddress address)
+        if (!TryGetChunkIndexByAbsoluteVoxelIndex(absoluteVoxelIndex, out var chunkIndex))
         {
-            if (!TryGetChunkIndexByAbsoluteVoxelIndex(absoluteVoxelIndex, out var chunkIndex))
-            {
-                address = VoxelChunkAddress.Zero;
-                return false;
-            }
-
-            if (!TryGetChunk(chunkIndex, out var chunk))
-            {
-                address = VoxelChunkAddress.Zero;
-                return false;
-            }
-
-            var voxelIndex = new Int3(absoluteVoxelIndex.X & GameOptions.CHUNK_SIZE - 1, absoluteVoxelIndex.Y, absoluteVoxelIndex.Z & GameOptions.CHUNK_SIZE - 1);
-            address = new VoxelChunkAddress(chunk, voxelIndex);
-            return true;
-        }
-
-        public static bool TryGetChunkIndexByAbsoluteVoxelIndex(Int3 absoluteVoxelIndex, out Int2 chunkIndex)
-        {
-            if (absoluteVoxelIndex.Y < 0)
-            {
-                chunkIndex = Int2.Zero;
-                return false;
-            }
-
-            chunkIndex = new Int2(
-                absoluteVoxelIndex.X < 0
-                    ? ((absoluteVoxelIndex.X + 1) / GameOptions.CHUNK_SIZE) - 1
-                    : absoluteVoxelIndex.X / GameOptions.CHUNK_SIZE,
-                absoluteVoxelIndex.Z < 0
-                    ? ((absoluteVoxelIndex.Z + 1) / GameOptions.CHUNK_SIZE) - 1
-                    : absoluteVoxelIndex.Z / GameOptions.CHUNK_SIZE);
-            return true;
-        }
-
-        public bool TryGetVoxel(Int3 absoluteIndex, out Voxel voxel)
-        {
-            if (!TryGetVoxelAddress(absoluteIndex, out var address))
-            {
-                voxel = Voxel.Bedrock;
-                return false;
-            }
-
-            voxel = address.Chunk.CurrentHeight <= address.RelativeVoxelIndex.Y
-                ? Voxel.SunBlock
-                : address.Chunk.GetVoxel(address.RelativeVoxelIndex);
-            return true;
-        }
-
-        public bool TryGetChunk(Int2 chunkIndex, out Chunk chunk)
-        {
-            if (Chunks.TryGetValue(chunkIndex, out var currentChunk))
-            {
-                chunk = currentChunk;
-                return true;
-            }
-
-
-            chunk = null;
+            address = VoxelChunkAddress.Zero;
             return false;
         }
 
-        public static IEnumerable<Int2> GetSurroundingChunks(int size)
+        if (!TryGetChunk(chunkIndex, out var chunk))
         {
-            yield return new Int2();
+            address = VoxelChunkAddress.Zero;
+            return false;
+        }
 
-            for (var i = 1; i < size + 2; i++)
+        var voxelIndex = new Int3(absoluteVoxelIndex.X & GameOptions.CHUNK_SIZE - 1, absoluteVoxelIndex.Y, absoluteVoxelIndex.Z & GameOptions.CHUNK_SIZE - 1);
+        address = new VoxelChunkAddress(chunk, voxelIndex);
+        return true;
+    }
+
+    public static bool TryGetChunkIndexByAbsoluteVoxelIndex(Int3 absoluteVoxelIndex, out Int2 chunkIndex)
+    {
+        if (absoluteVoxelIndex.Y < 0)
+        {
+            chunkIndex = Int2.Zero;
+            return false;
+        }
+
+        chunkIndex = new Int2(
+            absoluteVoxelIndex.X < 0
+                ? (absoluteVoxelIndex.X + 1) / GameOptions.CHUNK_SIZE - 1
+                : absoluteVoxelIndex.X / GameOptions.CHUNK_SIZE,
+            absoluteVoxelIndex.Z < 0
+                ? (absoluteVoxelIndex.Z + 1) / GameOptions.CHUNK_SIZE - 1
+                : absoluteVoxelIndex.Z / GameOptions.CHUNK_SIZE);
+        return true;
+    }
+
+    public bool TryGetVoxel(Int3 absoluteIndex, out Voxel voxel)
+    {
+        if (!TryGetVoxelAddress(absoluteIndex, out var address))
+        {
+            voxel = Voxel.Bedrock;
+            return false;
+        }
+
+        voxel = address.Chunk.CurrentHeight <= address.RelativeVoxelIndex.Y
+            ? Voxel.SunBlock
+            : address.Chunk.GetVoxel(address.RelativeVoxelIndex);
+        return true;
+    }
+
+    public bool TryGetChunk(Int2 chunkIndex, out Chunk chunk)
+    {
+        if (Chunks.TryGetValue(chunkIndex, out var currentChunk))
+        {
+            chunk = currentChunk;
+            return true;
+        }
+
+
+        chunk = null;
+        return false;
+    }
+
+    public static IEnumerable<Int2> GetSurroundingChunks(int size)
+    {
+        yield return new Int2();
+
+        for (var i = 1; i < size + 2; i++)
+        {
+            var cursor = new Int2(i * -1);
+
+            foreach (var direction in Mappings.ChunkManagerDirections)
             {
-                var cursor = new Int2(i * -1);
-
-                foreach (var direction in Mappings.ChunkManagerDirections)
+                for (var j = 1; j < i * 2 + 1; j++)
                 {
-                    for (var j = 1; j < i * 2 + 1; j++)
-                    {
-                        cursor = cursor + direction;
-                        yield return cursor;
-                    }
+                    cursor += direction;
+                    yield return cursor;
                 }
             }
         }
+    }
 
-        public void SetBlock(Int3 absoluteIndex, byte voxel)
+    public void SetBlock(Int3 absoluteIndex, byte voxel)
+    {
+        if (TryGetVoxelAddress(absoluteIndex, out var address))
         {
-            if (TryGetVoxelAddress(absoluteIndex, out var address))
-            {
-                ChunkUpdater.SetVoxel(address, voxel, _graphicsContext.Device);
-            }
+            ChunkUpdater.SetVoxel(address, voxel, _graphicsContext.Device);
         }
     }
 }

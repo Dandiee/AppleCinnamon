@@ -1,10 +1,9 @@
 ﻿using SharpDX.Direct3D11;
 
-namespace AppleCinnamon.Graphics.Verticies
+namespace AppleCinnamon.Graphics.Verticies;
+
+public interface IVertex
 {
-    public interface IVertex
-    {
-        int Size { get; }
-        InputElement[] InputElements { get; }
-    }
+    int Size { get; }
+    InputElement[] InputElements { get; }
 }

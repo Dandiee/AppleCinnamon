@@ -1,49 +1,48 @@
 ﻿using System;
 using AppleCinnamon.Options;
 
-namespace AppleCinnamon.ChunkBuilder.WorldGenerator
+namespace AppleCinnamon.ChunkBuilder.WorldGenerator;
+
+public static class ArtifactGenerator
 {
-    public static class ArtifactGenerator
+    private static readonly VoxelDefinition[] FlowersAndSuch =
     {
-        private static readonly VoxelDefinition[] FlowersAndSuch =
-        {
-            VoxelDefinition.FlowerRed, VoxelDefinition.FlowerYellow, VoxelDefinition.MushroomBrown, VoxelDefinition.MushroomRed,
-        };
+        VoxelDefinition.FlowerRed, VoxelDefinition.FlowerYellow, VoxelDefinition.MushroomBrown, VoxelDefinition.MushroomRed,
+    };
 
-        public static Chunk Generate(Chunk chunk)
-        {
-            var rnd = new Random(chunk.ChunkIndex.GetHashCode());
+    public static Chunk Generate(Chunk chunk)
+    {
+        var rnd = new Random(chunk.ChunkIndex.GetHashCode());
 
-            foreach (var flatIndex in chunk.BuildingContext.TopMostLandVoxels)
+        foreach (var flatIndex in chunk.BuildingContext.TopMostLandVoxels)
+        {
+            var index = chunk.FromFlatIndex(flatIndex);
+
+            if (rnd.Next() % 30 == 0)
             {
-                var index = chunk.FromFlatIndex(flatIndex);
-
-                if (rnd.Next() % 30 == 0)
+                Artifacts.Tree(rnd, chunk, index);
+            }
+            else
+            {
+                var voxel = chunk.Voxels[flatIndex];
+                if (voxel.BlockType == 0)
                 {
-                    Artifacts.Tree(rnd, chunk, index);
-                }
-                else
-                {
-                    var voxel = chunk.Voxels[flatIndex];
-                    if (voxel.BlockType == 0)
+                    if (rnd.Next() % 3 == 0)
                     {
-                        if (rnd.Next() % 3 == 0)
-                        {
-                            chunk.SetSafe(flatIndex, VoxelDefinition.Weed.Create(2));
-                        }
-                        else if (rnd.Next() % 50 == 0)
-                        {
-                            var flowerType = FlowersAndSuch[rnd.Next(0, FlowersAndSuch.Length)];
-                            chunk.SetSafe(flatIndex, flowerType.Create());
-                        }
+                        chunk.SetSafe(flatIndex, VoxelDefinition.Weed.Create(2));
+                    }
+                    else if (rnd.Next() % 50 == 0)
+                    {
+                        var flowerType = FlowersAndSuch[rnd.Next(0, FlowersAndSuch.Length)];
+                        chunk.SetSafe(flatIndex, flowerType.Create());
                     }
                 }
             }
-
-            // cleanup
-            chunk.BuildingContext.TopMostLandVoxels.Clear();
-
-            return chunk;
         }
+
+        // cleanup
+        chunk.BuildingContext.TopMostLandVoxels.Clear();
+
+        return chunk;
     }
 }
