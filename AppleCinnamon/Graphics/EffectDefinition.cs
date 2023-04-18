@@ -1,10 +1,10 @@
 ﻿using AppleCinnamon.Extensions;
-using AppleCinnamon.Vertices;
+using AppleCinnamon.Graphics.Verticies;
 using SharpDX.D3DCompiler;
 using SharpDX.Direct3D;
 using SharpDX.Direct3D11;
 
-namespace AppleCinnamon.Grfx
+namespace AppleCinnamon.Graphics
 {
     public class EffectDefinition<TVertex>
         where TVertex : struct, IVertex

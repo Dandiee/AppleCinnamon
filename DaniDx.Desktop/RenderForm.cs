@@ -43,13 +43,13 @@
 * THE SOFTWARE.
 */
 
-using SharpDX.Mathematics.Interop;
 using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
+using SharpDX.Mathematics.Interop;
 
-namespace SharpDX.Windows
+namespace DaniDx.Desktop
 {
     /// <summary>
     /// Default Rendering Form.

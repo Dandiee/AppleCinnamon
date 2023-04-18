@@ -4,11 +4,11 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
+using AppleCinnamon.ChunkBuilder;
 using AppleCinnamon.Common;
 using SharpDX.Direct3D11;
-using AppleCinnamon.ChunkBuilders;
-using AppleCinnamon.ChunkGenerators;
 using AppleCinnamon.Chunks;
+using AppleCinnamon.WorldGenerator;
 
 namespace AppleCinnamon
 {
@@ -169,7 +169,7 @@ namespace AppleCinnamon
         private Chunk BenchmarkedDispatcher(Chunk chunk)
         {
             var sw = Stopwatch.StartNew();
-            ChunkBuilders.ChunkDispatcher.BuildChunk(chunk, _device);
+            ChunkDispatcher.BuildChunk(chunk, _device);
             sw.Stop();
             TimeSpentInTransform += sw.Elapsed;
             return chunk;

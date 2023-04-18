@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using AppleCinnamon.Chunks;
 using SharpDX;
 
 namespace AppleCinnamon

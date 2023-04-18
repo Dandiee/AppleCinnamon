@@ -1,12 +1,11 @@
 ﻿using System;
-using AppleCinnamon.Drawers;
-using AppleCinnamon.Settings;
-using AppleCinnamon.Vertices;
+using AppleCinnamon.Graphics.Verticies;
+using AppleCinnamon.Options;
 using SharpDX;
 using SharpDX.Direct3D;
 using SharpDX.Direct3D11;
 
-namespace AppleCinnamon.Grfx
+namespace AppleCinnamon.Graphics
 {
     public sealed class ChunkEffectDefinition<TVertex> : EffectDefinition<TVertex>
         where TVertex : struct, IVertex
@@ -47,8 +46,8 @@ namespace AppleCinnamon.Grfx
             }
             else
             {
-                _fogStartVar.Set(Game.ViewDistance * WorldSettings.ChunkSize);
-                _fogEndVar.Set(10* Game.ViewDistance * WorldSettings.ChunkSize);
+                _fogStartVar.Set(GameOptions.ViewDistance * GameOptions.ChunkSize);
+                _fogEndVar.Set(10* GameOptions.ViewDistance * GameOptions.ChunkSize);
                 _fogColorVar.Set(new Vector4(0, 0, 0, 1));
             }
         }

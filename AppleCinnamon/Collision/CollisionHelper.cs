@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 using AppleCinnamon.Extensions;
-using AppleCinnamon.Settings;
+using AppleCinnamon.Options;
 using SharpDX;
 
 namespace AppleCinnamon.Collision
@@ -74,8 +74,8 @@ namespace AppleCinnamon.Collision
             var velocity = camera.Velocity;
 
 
-            var min = WorldSettings.PlayerMin + position; // + Vector3.UnitY * 0.05f;
-            var max = WorldSettings.PlayerMax + position;
+            var min = CameraOptions.PlayerMin + position; // + Vector3.UnitY * 0.05f;
+            var max = CameraOptions.PlayerMax + position;
 
             var playerBoundingBox = new BoundingBox(min, max);
 
@@ -113,7 +113,7 @@ namespace AppleCinnamon.Collision
 
                             var voxelBoundingBox = new BoundingBox(voxelPosition - voxelHalfSize, voxelPosition + voxelHalfSize);
 
-                            var penetration = GetFirstPenetration(absoluteIndex, playerBoundingBox, voxelBoundingBox, velocity, chunkManager, realElapsedTime * 5);
+                            var penetration = GetFirstPenetration(ref absoluteIndex, ref playerBoundingBox, ref voxelBoundingBox, ref velocity, chunkManager, realElapsedTime * 5);
                             if (penetration != null)
                             {
 
@@ -149,8 +149,9 @@ namespace AppleCinnamon.Collision
             camera.Velocity = resultVelocity;
         }
 
-        public static Vector3? GetFirstPenetration(Int3 absoluteIndex, BoundingBox playerBoundingBox, BoundingBox voxelBoundingBox,
-            Vector3 velocity, ChunkManager chunkManager, float realElapsedTime)
+        private static Vector3? GetFirstPenetration(
+            ref Int3 absoluteIndex, ref BoundingBox playerBoundingBox, ref BoundingBox voxelBoundingBox,
+            ref Vector3 velocity, ChunkManager chunkManager, float realElapsedTime)
         {
             var earliestTimeOfImpact = float.MaxValue;
             Vector3? result = null;
@@ -188,7 +189,6 @@ namespace AppleCinnamon.Collision
                        && neighbor.GetDefinition().IsPermeable)
                     {
                         result = Vector3.UnitX * penetrationDepth;
-                        earliestTimeOfImpact = timeOfImpact;
                     }
                 }
             }
@@ -206,7 +206,6 @@ namespace AppleCinnamon.Collision
                         && neighbor.GetDefinition().IsPermeable)
                     {
                         result = -Vector3.UnitZ * penetrationDepth;
-                        earliestTimeOfImpact = timeOfImpact;
                     }
                 }
             }
@@ -225,7 +224,6 @@ namespace AppleCinnamon.Collision
                         && neighbor.GetDefinition().IsPermeable)
                     {
                         result = Vector3.UnitZ * penetrationDepth;
-                        earliestTimeOfImpact = timeOfImpact;
                     }
                 }
             }
@@ -244,7 +242,6 @@ namespace AppleCinnamon.Collision
                        && neighbor.GetDefinition().IsPermeable)
                     {
                         result = -Vector3.UnitY * penetrationDepth;
-                        earliestTimeOfImpact = timeOfImpact;
                     }
                 }
             }
@@ -263,7 +260,6 @@ namespace AppleCinnamon.Collision
                        && neighbor.GetDefinition().IsPermeable)
                     {
                         result = Vector3.UnitY * penetrationDepth;
-                        earliestTimeOfImpact = timeOfImpact;
                     }
                 }
             }

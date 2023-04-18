@@ -22,8 +22,9 @@
 
 using System;
 using System.Runtime.InteropServices;
+using SharpDX;
 
-namespace SharpDX.Diagnostics
+namespace DaniDx.Desktop.Diagnostics
 {
     /// <summary>
     /// Helper class to allow programmatic capturing of graphics information that can be loaded later in Visual Studio.

@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using AppleCinnamon.Chunks;
-using AppleCinnamon.Grfx;
-using AppleCinnamon.Vertices;
+using AppleCinnamon.Graphics;
+using AppleCinnamon.Graphics.Verticies;
+using AppleCinnamon.Options;
 using SharpDX;
 using SharpDX.Direct3D;
 using SharpDX.Direct3D11;

@@ -1,7 +1,6 @@
-﻿using AppleCinnamon.Common;
-using SharpDX;
+﻿using SharpDX;
 
-namespace AppleCinnamon
+namespace AppleCinnamon.Common
 {
     public readonly struct LightDirections
     {

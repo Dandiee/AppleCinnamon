@@ -5,7 +5,8 @@ using System.Threading;
 using AppleCinnamon.Chunks;
 using AppleCinnamon.Common;
 using AppleCinnamon.Drawers;
-using AppleCinnamon.Settings;
+using AppleCinnamon.Graphics;
+using AppleCinnamon.Options;
 using SharpDX;
 using SharpDX.Direct3D11;
 
@@ -13,7 +14,7 @@ namespace AppleCinnamon
 {
     public sealed partial class ChunkManager
     {
-        private readonly Graphics _graphics;
+        private readonly GraphicsContext _graphicsContext;
         private int _finishedChunks;
         public bool IsInitialized { get; private set; }
 
@@ -27,12 +28,12 @@ namespace AppleCinnamon
         public static int ChunkCreated = 0;
         public static int ChunkResurrected = 0;
 
-        public ChunkManager(Graphics graphics)
+        public ChunkManager(GraphicsContext graphicsContext)
         {
-            _graphics = graphics;
-            _chunkDrawer = new ChunkDrawer(graphics.Device);
+            _graphicsContext = graphicsContext;
+            _chunkDrawer = new ChunkDrawer(graphicsContext.Device);
             _chunksToDraw = new List<Chunk>();
-            Pipeline = new Pipeline(FinishChunk, _graphics.Device);
+            Pipeline = new Pipeline(FinishChunk, _graphicsContext.Device);
 
             QueueChunksByIndex(Int2.Zero);
         }
@@ -45,7 +46,7 @@ namespace AppleCinnamon
         public void FinishChunk(Chunk chunk)
         {
             Interlocked.Increment(ref _finishedChunks);
-            const int root = (Game.ViewDistance - 1) * 2;
+            const int root = (GameOptions.ViewDistance - 1) * 2;
 
             if (!IsInitialized && _finishedChunks == root)
             {
@@ -61,7 +62,7 @@ namespace AppleCinnamon
             if (IsInitialized)
             {
                 _chunkDrawer.Update(camera);
-                var currentChunkIndex = new Int2((int)camera.Position.X / WorldSettings.ChunkSize, (int)camera.Position.Z / WorldSettings.ChunkSize);
+                var currentChunkIndex = new Int2((int)camera.Position.X / GameOptions.ChunkSize, (int)camera.Position.Z / GameOptions.ChunkSize);
 
                 UpdateChunks(camera);
                 QueueChunksByIndex(currentChunkIndex);
@@ -97,7 +98,7 @@ namespace AppleCinnamon
 
         public void CleanUp()
         {
-            if (Pipeline.State == PipelineState.Running && BagOfDeath.Count > Game.ViewDistance * 2)
+            if (Pipeline.State == PipelineState.Running && BagOfDeath.Count > GameOptions.ViewDistance * 2)
             {
                 Pipeline.Suspend();
             }
@@ -148,7 +149,7 @@ namespace AppleCinnamon
             {
                 if (Pipeline.State == PipelineState.Running)
                 {
-                    foreach (var relativeChunkIndex in GetSurroundingChunks(Game.ViewDistance + Game.NumberOfPools - 1))
+                    foreach (var relativeChunkIndex in GetSurroundingChunks(GameOptions.ViewDistance + GameOptions.NumberOfPools - 1))
                     {
                         var chunkIndex = currentChunkIndex + relativeChunkIndex;
 

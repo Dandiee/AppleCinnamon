@@ -3,25 +3,20 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using AppleCinnamon.Drawers;
-using SharpDX;
+using AppleCinnamon.Graphics;
+using AppleCinnamon.Options;
+using DaniDx.Desktop;
 using SharpDX.Direct3D11;
-using Point = System.Drawing.Point;
 
 namespace AppleCinnamon
 {
     public class Game
     {
-        public static readonly Vector3 StartPosition = new(0, 140, 0);
-
-        public const int ViewDistance = 16;
-        public const int NumberOfPools = 4;
-        public static readonly TimeSpan ChunkDespawnCooldown = TimeSpan.FromMilliseconds(10);
-
         public readonly ChunkManager ChunkManager;
         public readonly Camera Camera;
         private readonly DebugLayout _debugLayout;
 
-        private readonly Graphics _graphics;
+        private readonly GraphicsContext _graphicsContext;
         private readonly Crosshair _crosshair;
         public readonly SkyDome SkyDome;
         private readonly PipelineVisualizer _pipelineVisualizer;
@@ -38,13 +33,13 @@ namespace AppleCinnamon
 
         public Game()
         {
-            _graphics = new Graphics();
-            SkyDome = new SkyDome(_graphics.Device);
-            _crosshair = new Crosshair(_graphics);
-            Camera = new Camera(_graphics);
-            ChunkManager = new ChunkManager(_graphics);
-            _pipelineVisualizer = new PipelineVisualizer(_graphics);
-            _debugLayout = new DebugLayout(this, _graphics);
+            _graphicsContext = new GraphicsContext();
+            SkyDome = new SkyDome(_graphicsContext.Device);
+            _crosshair = new Crosshair(_graphicsContext);
+            Camera = new Camera(_graphicsContext);
+            ChunkManager = new ChunkManager(_graphicsContext);
+            _pipelineVisualizer = new PipelineVisualizer(_graphicsContext);
+            _debugLayout = new DebugLayout(this, _graphicsContext);
 
             _lastRenderTimes = new double[50];
 
@@ -64,7 +59,7 @@ namespace AppleCinnamon
 
         private void StartLoop()
         {
-            SharpDX.Windows.RenderLoop.Run(_graphics.RenderForm, () =>
+            RenderLoop.Run(_graphicsContext.RenderForm, () =>
             {
                 Interlocked.Increment(ref RenderedFramesInTheLastSecond);
 
@@ -74,7 +69,7 @@ namespace AppleCinnamon
 
                 if (!GameOptions.IsPaused)
                 {
-                    Cursor.Position = _graphics.RenderForm.PointToScreen(new Point(_graphics.RenderForm.ClientSize.Width / 2, _graphics.RenderForm.ClientSize.Height / 2));
+                    Cursor.Position = _graphicsContext.RenderForm.PointToScreen(new System.Drawing.Point(_graphicsContext.RenderForm.ClientSize.Width / 2, _graphicsContext.RenderForm.ClientSize.Height / 2));
                     Cursor.Hide();
                 }
                 else
@@ -83,8 +78,8 @@ namespace AppleCinnamon
                 }
 
 
-                Update(TimeSpan.FromMilliseconds(_avgRenderTime), _graphics.Device);
-                _graphics.Draw(() =>
+                Update(TimeSpan.FromMilliseconds(_avgRenderTime), _graphicsContext.Device);
+                _graphicsContext.Draw(() =>
                 {
                     if (ChunkManager.IsInitialized)
                     {
@@ -130,22 +125,6 @@ namespace AppleCinnamon
             SkyDome.Update(Camera);
             
         }
-
-    }
-
-    public static class GameOptions
-    {
-        public static bool RenderSolid { get; set; } = true;
-        public static bool RenderSprites { get; set; } = true;
-        public static bool RenderWater { get; set; } = true;
-        public static bool RenderSky { get; set; } = true;
-        public static bool RenderCrosshair { get; set; } = true;
-        public static bool RenderBoxes { get; set; } = true;
-        public static bool RenderPipelineVisualization { get; set; } = false;
-        public static bool IsViewFrustumCullingEnabled { get; set; } = true;
-        public static bool RenderChunkBoundingBoxes { get; set; } = false;
-        public static bool RenderDebugLayout { get; set; } = true;
-        public static bool IsPaused { get; set; } = false;
 
     }
 }

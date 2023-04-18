@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
-using AppleCinnamon.ChunkBuilders;
+using AppleCinnamon.ChunkBuilder;
 using AppleCinnamon.Chunks;
 using AppleCinnamon.Common;
-using AppleCinnamon.Settings;
+using AppleCinnamon.Options;
 using SharpDX;
 
 namespace AppleCinnamon
@@ -23,7 +23,7 @@ namespace AppleCinnamon
                 return false;
             }
 
-            var voxelIndex = new Int3(absoluteVoxelIndex.X & WorldSettings.ChunkSize - 1, absoluteVoxelIndex.Y, absoluteVoxelIndex.Z & WorldSettings.ChunkSize - 1);
+            var voxelIndex = new Int3(absoluteVoxelIndex.X & GameOptions.ChunkSize - 1, absoluteVoxelIndex.Y, absoluteVoxelIndex.Z & GameOptions.ChunkSize - 1);
             address = new VoxelChunkAddress(chunk, voxelIndex);
             return true;
         }
@@ -38,11 +38,11 @@ namespace AppleCinnamon
 
             chunkIndex = new Int2(
                 absoluteVoxelIndex.X < 0
-                    ? ((absoluteVoxelIndex.X + 1) / WorldSettings.ChunkSize) - 1
-                    : absoluteVoxelIndex.X / WorldSettings.ChunkSize,
+                    ? ((absoluteVoxelIndex.X + 1) / GameOptions.ChunkSize) - 1
+                    : absoluteVoxelIndex.X / GameOptions.ChunkSize,
                 absoluteVoxelIndex.Z < 0
-                    ? ((absoluteVoxelIndex.Z + 1) / WorldSettings.ChunkSize) - 1
-                    : absoluteVoxelIndex.Z / WorldSettings.ChunkSize);
+                    ? ((absoluteVoxelIndex.Z + 1) / GameOptions.ChunkSize) - 1
+                    : absoluteVoxelIndex.Z / GameOptions.ChunkSize);
             return true;
         }
 
@@ -96,7 +96,7 @@ namespace AppleCinnamon
         {
             if (TryGetVoxelAddress(absoluteIndex, out var address))
             {
-                ChunkUpdater.SetVoxel(address, voxel, _graphics.Device);
+                ChunkUpdater.SetVoxel(address, voxel, _graphicsContext.Device);
             }
         }
     }

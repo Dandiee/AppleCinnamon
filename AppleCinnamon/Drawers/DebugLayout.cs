@@ -5,7 +5,8 @@ using SharpDX.DirectInput;
 using SharpDX.DirectWrite;
 using System.Collections.Generic;
 using AppleCinnamon.Extensions;
-using AppleCinnamon.Settings;
+using AppleCinnamon.Graphics;
+using AppleCinnamon.Options;
 using TextAlignment = SharpDX.DirectWrite.TextAlignment;
 using SharpDX.Mathematics.Interop;
 
@@ -23,25 +24,25 @@ namespace AppleCinnamon.Drawers
 
         private readonly DebugContext _mainMenuContext;
 
-        public DebugLayout(Game game, Graphics graphics)
+        public DebugLayout(Game game, GraphicsContext graphicsContext)
         {
             _game = game;
 
-            var leftAlignedTextFormat = new TextFormat(graphics.DirectWrite, FONT_FAMILY_NAME, FontWeight.Black, FontStyle.Normal, 20);
-            var rightAlignedTextFormat = new TextFormat(graphics.DirectWrite, FONT_FAMILY_NAME, FontWeight.Black, FontStyle.Normal, 20)
+            var leftAlignedTextFormat = new TextFormat(graphicsContext.DirectWrite, FONT_FAMILY_NAME, FontWeight.Black, FontStyle.Normal, 20);
+            var rightAlignedTextFormat = new TextFormat(graphicsContext.DirectWrite, FONT_FAMILY_NAME, FontWeight.Black, FontStyle.Normal, 20)
             {
                 TextAlignment = TextAlignment.Trailing
             };
-            var bottomCenterAlignedTextFormat = new TextFormat(graphics.DirectWrite, FONT_FAMILY_NAME, FontWeight.Black, FontStyle.Normal, 20)
+            var bottomCenterAlignedTextFormat = new TextFormat(graphicsContext.DirectWrite, FONT_FAMILY_NAME, FontWeight.Black, FontStyle.Normal, 20)
             {
                 TextAlignment = TextAlignment.Center
             };
 
             var leftOrigin = new RawVector2(10, 10);
             var rightOrigin = new RawVector2(0, 10);
-            var bottomOrigin = new RawVector2(0, graphics.RenderForm.Height - 100);
+            var bottomOrigin = new RawVector2(0, graphicsContext.RenderForm.Height - 100);
 
-            var skyDomeContext = new DebugContext(leftAlignedTextFormat, graphics, leftOrigin,
+            var skyDomeContext = new DebugContext(leftAlignedTextFormat, graphicsContext, leftOrigin,
                 new DebugAction(Key.Back, "Back", () => LeftContext = _mainMenuContext),
                 new DebugIncDecAction<float>(Key.F1, () => SkyDomeOptions.SunIntensity, 0.001f, game.SkyDome.UpdateEffect),
                 new DebugIncDecAction<float>(Key.F2, () => SkyDomeOptions.Turbitity, 0.01f, game.SkyDome.UpdateEffect),
@@ -53,7 +54,7 @@ namespace AppleCinnamon.Drawers
                 new DebugIncDecAction<float>(Key.F8, () => SkyDomeOptions.Radius, 0.1f, game.SkyDome.UpdateSkyDome),
                 new DebugIncDecAction<float>(Key.F9, () => CameraOptions.FieldOfView, 0.001f));
 
-            var pipelineContext = new DebugContext(rightAlignedTextFormat, graphics, rightOrigin,
+            var pipelineContext = new DebugContext(rightAlignedTextFormat, graphicsContext, rightOrigin,
                 new DebugInfoLine<int>(() => ChunkManager.BagOfDeath.Count, "Bag of Death"),
                 new DebugInfoLine<int>(() => ChunkManager.Chunks.Count, "All chunks"),
                 new DebugInfoLine<int>(() => ChunkManager.Graveyard.Count, "Graveyard"),
@@ -66,14 +67,14 @@ namespace AppleCinnamon.Drawers
                 new DebugInfoLine<double>(() => game.ChunkManager.Pipeline.GlobalStage.TimeSpentInTransform.TotalMilliseconds, game.ChunkManager.Pipeline.GlobalStage.Name, " ms"),
                 new DebugInfoLine<double>(() => game.ChunkManager.Pipeline.TimeSpentInTransform.TotalMilliseconds, "Dispatcher", " ms"));
 
-            var cameraContext = new DebugContext(rightAlignedTextFormat, graphics, rightOrigin,
+            var cameraContext = new DebugContext(rightAlignedTextFormat, graphicsContext, rightOrigin,
                 
                 new DebugInfoLine<Vector3>(() => game.Camera.Position, textFactory: v => $"Position: {v.ToNonRetardedString()}"),
                 new DebugInfoLine<Vector3>(() => game.Camera.LookAt, textFactory: v => $"LookAt: {v.ToNonRetardedString()}"),
                 new DebugInfoLine<Int2>(() => game.Camera.CurrentChunkIndex),
                 new DebugInfoMultiLine<VoxelRayCollisionResult>(() => game.Camera.CurrentCursor, GetCurrentCursorLines));
 
-            var gameContext = new DebugContext(leftAlignedTextFormat, graphics, leftOrigin,
+            var gameContext = new DebugContext(leftAlignedTextFormat, graphicsContext, leftOrigin,
                 new DebugAction(Key.Back, "Back", () => LeftContext = _mainMenuContext),
                 new DebugToggleAction(Key.F1, () => GameOptions.RenderSolid),
                 new DebugToggleAction(Key.F2, () => GameOptions.RenderSprites),
@@ -85,19 +86,19 @@ namespace AppleCinnamon.Drawers
                 new DebugToggleAction(Key.F8, () => GameOptions.RenderChunkBoundingBoxes),
                 new DebugToggleAction(Key.F9, () => GameOptions.IsViewFrustumCullingEnabled));
 
-            var performanceContext = new DebugContext(rightAlignedTextFormat, graphics, rightOrigin,
-                new DebugInfoLine<int>(() => Game.ViewDistance, "ViewDistance"),
+            var performanceContext = new DebugContext(rightAlignedTextFormat, graphicsContext, rightOrigin,
+                new DebugInfoLine<int>(() => GameOptions.ViewDistance, "ViewDistance"),
                 new DebugInfoLine<int>(() => game.WeirdFps, default, " FPS"),
                 new DebugInfoLine<int>(() => game.ArrayFps, default, " FPS"));
 
-            _mainMenuContext = new DebugContext(leftAlignedTextFormat, graphics, leftOrigin,
+            _mainMenuContext = new DebugContext(leftAlignedTextFormat, graphicsContext, leftOrigin,
                 new DebugAction(Key.F1, "Sky", () => LeftContext = skyDomeContext),
                 new DebugAction(Key.F2, "Game", () => LeftContext = gameContext),
                 new DebugAction(Key.F3, "Perf", () => RightContext = performanceContext),
                 new DebugAction(Key.F4, "Camera", () => RightContext = cameraContext),
                 new DebugAction(Key.F5, "Pipeline", () => RightContext = pipelineContext));
 
-            BottomCenterContext = new DebugContext(bottomCenterAlignedTextFormat, graphics, bottomOrigin,
+            BottomCenterContext = new DebugContext(bottomCenterAlignedTextFormat, graphicsContext, bottomOrigin,
                 new DebugInfoLine<VoxelDefinition>(() => game.Camera.VoxelInHand, "", textFactory: vox => $"{vox.Name}: [{vox.Type}]"));
 
             LeftContext = _mainMenuContext;

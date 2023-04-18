@@ -1,6 +1,7 @@
 ﻿using AppleCinnamon.Chunks;
 using AppleCinnamon.Common;
 using AppleCinnamon.Extensions;
+using AppleCinnamon.Graphics;
 using SharpDX;
 using SharpDX.Direct2D1;
 using SharpDX.Mathematics.Interop;
@@ -9,13 +10,13 @@ namespace AppleCinnamon.Drawers
 {
     public sealed class PipelineVisualizer
     {
-        private readonly Graphics _graphics;
+        private readonly GraphicsContext _graphicsContext;
         private readonly Bitmap1 _textures;
 
-        public PipelineVisualizer(Graphics graphics)
+        public PipelineVisualizer(GraphicsContext graphicsContext)
         {
-            _graphics = graphics;
-            _textures = _graphics.D2DeviceContext.CreateD2DBitmap("Content/Texture/terrain3.png");
+            _graphicsContext = graphicsContext;
+            _textures = _graphicsContext.D2DeviceContext.CreateD2DBitmap("Content/Texture/terrain3.png");
         }
 
         public void Draw(Camera camera, ChunkManager chunkManager)
@@ -38,12 +39,12 @@ namespace AppleCinnamon.Drawers
                 i++;
             }
 
-            _graphics.D2DeviceContext.AntialiasMode = AntialiasMode.Aliased;
-            _graphics.D2DeviceContext.BeginDraw();
-            _graphics.SpriteBatch.Clear();
-            _graphics.SpriteBatch.AddSprites(ChunkManager.Chunks.Count, destinationRects, sourceRects, colors, null, size, size, size, 0);
-            _graphics.D2DeviceContext.DrawSpriteBatch(_graphics.SpriteBatch, 0, ChunkManager.Chunks.Count, _textures, BitmapInterpolationMode.Linear, SpriteOptions.ClampToSourceRectangle);
-            _graphics.D2DeviceContext.EndDraw();
+            _graphicsContext.D2DeviceContext.AntialiasMode = AntialiasMode.Aliased;
+            _graphicsContext.D2DeviceContext.BeginDraw();
+            _graphicsContext.SpriteBatch.Clear();
+            _graphicsContext.SpriteBatch.AddSprites(ChunkManager.Chunks.Count, destinationRects, sourceRects, colors, null, size, size, size, 0);
+            _graphicsContext.D2DeviceContext.DrawSpriteBatch(_graphicsContext.SpriteBatch, 0, ChunkManager.Chunks.Count, _textures, BitmapInterpolationMode.Linear, SpriteOptions.ClampToSourceRectangle);
+            _graphicsContext.D2DeviceContext.EndDraw();
         }
     }
 

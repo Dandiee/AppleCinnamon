@@ -9,13 +9,14 @@ using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Numerics;
+using AppleCinnamon.Graphics;
 
 namespace AppleCinnamon
 {
     public class DebugContext
     {
         private readonly TextFormat _format;
-        private readonly Graphics _grfx;
+        private readonly GraphicsContext _grfx;
         private readonly RawVector2 _origin;
         private TextLayout _textLayout;
         private readonly SolidColorBrush _brush;
@@ -24,7 +25,7 @@ namespace AppleCinnamon
 
         public string Lines { get; private set; }
 
-        public DebugContext(TextFormat format, Graphics grfx, RawVector2 origin, params DebugLine[] lines)
+        public DebugContext(TextFormat format, GraphicsContext grfx, RawVector2 origin, params DebugLine[] lines)
         {
             _brush = new SolidColorBrush(grfx.RenderTarget2D, Color.White);
             _format = format;

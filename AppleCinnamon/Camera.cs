@@ -2,7 +2,8 @@
 using AppleCinnamon.Collision;
 using AppleCinnamon.Common;
 using AppleCinnamon.Extensions;
-using AppleCinnamon.Settings;
+using AppleCinnamon.Graphics;
+using AppleCinnamon.Options;
 using SharpDX;
 using SharpDX.DirectInput;
 
@@ -10,9 +11,8 @@ namespace AppleCinnamon
 {
     public sealed class Camera
     {
-        private readonly Graphics _graphics;
-        private static readonly TimeSpan BuildCooldown = TimeSpan.FromMilliseconds(100);
-
+        private readonly GraphicsContext _graphicsContext;
+        
         private DateTime _lastModification;
 
         public Vector3 Position { get; set; }
@@ -44,10 +44,10 @@ namespace AppleCinnamon
 
         private readonly Vector3 _initialLookAt;
 
-        public Camera(Graphics graphics)
+        public Camera(GraphicsContext graphicsContext)
         {
-            _graphics = graphics;
-            Position = new Vector3(Game.StartPosition.X, Game.StartPosition.Y, Game.StartPosition.Z);
+            _graphicsContext = graphicsContext;
+            Position = new Vector3(GameOptions.StartPosition.X, GameOptions.StartPosition.Y, GameOptions.StartPosition.Z);
             LookAt = Vector3.Normalize(new Vector3(1, 0, 0));
             _initialLookAt = LookAt;
 
@@ -141,7 +141,7 @@ namespace AppleCinnamon
                 VoxelInHand = VoxelDefinition.DefinitionByType[VoxelDefinition.RegisteredDefinitions[_voxelDefinitionIndexInHand]];
             }
 
-            if (DateTime.Now - _lastModification > BuildCooldown)
+            if (DateTime.Now - _lastModification > CameraOptions.BuildCooldown)
             {
                 if (_currentMouseState.Buttons[leftClickIndex])
                 {
@@ -162,8 +162,8 @@ namespace AppleCinnamon
                             : CurrentCursor.AbsoluteVoxelIndex + CurrentCursor.Direction;
 
                         var hasPositionConflict = false;
-                        var min = (WorldSettings.PlayerMin + Position).Round();
-                        var max = (WorldSettings.PlayerMax + Position).Round();
+                        var min = (CameraOptions.PlayerMin + Position).Round();
+                        var max = (CameraOptions.PlayerMax + Position).Round();
                         for (var i = min.X; i <= max.X && !hasPositionConflict; i++)
                         {
                             for (var j = min.Y; j <= max.Y && !hasPositionConflict; j++)
@@ -195,11 +195,11 @@ namespace AppleCinnamon
 
             var t = (float)elapsedTime.TotalSeconds;
 
-            Velocity += WorldSettings.Gravity * t;
+            Velocity += CameraOptions.Gravity * t;
 
             if (IsInWater)
             {
-                Velocity += WorldSettings.Gravity * -t;
+                Velocity += CameraOptions.Gravity * -t;
             }
 
             if (!CurrentKeyboardState.IsPressed(Key.Escape) && LastKeyboardState.IsPressed(Key.Escape))
@@ -264,15 +264,10 @@ namespace AppleCinnamon
             var rotationMatrix = Matrix.RotationYawPitchRoll(Yaw, 0, Pitch);
             LookAt = Vector3.Normalize(Vector3.Transform(_initialLookAt, rotationMatrix).ToVector3());
             View = Matrix.LookAtRH(Position, Position + LookAt, Vector3.TransformCoordinate(Vector3.UnitY, rotationMatrix));
-            var projection = Matrix.PerspectiveFovRH(CameraOptions.FieldOfView, _graphics.RenderForm.Width / (float)_graphics.RenderForm.Height, 0.1f, 10000000000f);
+            var projection = Matrix.PerspectiveFovRH(CameraOptions.FieldOfView, _graphicsContext.RenderForm.Width / (float)_graphicsContext.RenderForm.Height, 0.1f, 10000000000f);
             WorldViewProjection = View * projection;
 
             BoundingFrustum = new BoundingFrustum(View * projection);
         }
-    }
-
-    public static class CameraOptions
-    {
-        public static float FieldOfView = MathUtil.Pi / 2f;
     }
 }

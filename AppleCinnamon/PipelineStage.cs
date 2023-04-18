@@ -9,7 +9,6 @@ namespace AppleCinnamon
 {
     public sealed class PipelineStage
     {
-        
         public string Name { get; }
 
         public BufferBlock<Chunk> Buffer { get; }
@@ -18,7 +17,6 @@ namespace AppleCinnamon
         public TransformManyBlock<Chunk, Chunk> Staging { get; private set; }
 
         public PipelineStage Next { get; private set; }
-
 
         private readonly Func<Chunk, Chunk> _transformCallback;
         private readonly Func<Chunk, IEnumerable<Chunk>> _stagingCallback;

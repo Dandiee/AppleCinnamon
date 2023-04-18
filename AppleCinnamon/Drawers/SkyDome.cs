@@ -1,6 +1,7 @@
 ﻿using AppleCinnamon.Extensions;
-using AppleCinnamon.Grfx;
-using AppleCinnamon.Vertices;
+using AppleCinnamon.Graphics;
+using AppleCinnamon.Graphics.Verticies;
+using AppleCinnamon.Options;
 using SharpDX;
 using Device = SharpDX.Direct3D11.Device;
 

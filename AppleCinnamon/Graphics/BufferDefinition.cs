@@ -1,11 +1,11 @@
 ﻿using System;
-using AppleCinnamon.Vertices;
+using AppleCinnamon.Graphics.Verticies;
 using SharpDX.Direct3D11;
 using SharpDX.DXGI;
 using Buffer = SharpDX.Direct3D11.Buffer;
 using Device = SharpDX.Direct3D11.Device;
 
-namespace AppleCinnamon.Grfx
+namespace AppleCinnamon.Graphics
 {
     public sealed class BufferDefinition<TVertex> : IDisposable
         where TVertex : struct, IVertex
