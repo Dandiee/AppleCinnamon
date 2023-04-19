@@ -1,6 +1,6 @@
 ﻿namespace AppleCinnamon.Common;
 
-public struct Int2
+public readonly struct Int2
 {
     public static readonly Int2 UniX = new(1, 0);
     public static readonly Int2 UniY = new(0, 1);

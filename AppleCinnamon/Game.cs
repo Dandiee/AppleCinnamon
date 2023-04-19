@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -18,14 +19,26 @@ public class Game
     private readonly DebugLayout _debugLayout;
     private readonly Crosshair _crosshair;
     private readonly PipelineVisualizer _pipelineVisualizer;
-
     private readonly GraphicsContext _graphicsContext;
+
+    private readonly Stopwatch _swComponents;
+    private readonly Stopwatch _swTotal;
+    public double TotalLoopTime;
+    public double TotalCameraUpdateTime;
+    public double TotalChunkUpdateTime;
+    public double TotalDrawTime;
+
+    public double DrawTimeRatio;
+    public double CameraUpdateTimeRatio;
+    public double ChunkUpdateTimeRatio;
+    public double MissingTimeRatio;
 
     private readonly double[] _lastRenderTimes;
     private DateTime _lastTick;
     private int _lastRenderTimeIndex;
     private double _totalRenderTime;
     private double _avgRenderTime;
+    
 
     public int RenderedFramesInTheLastSecond;
     public int WeirdFps;
@@ -42,6 +55,8 @@ public class Game
         _debugLayout = new DebugLayout(this, _graphicsContext);
 
         _lastRenderTimes = new double[50];
+        _swComponents = new Stopwatch();
+        _swTotal = new Stopwatch();
 
         Task.Run(WeirdFpsCounter);
         StartLoop();
@@ -61,7 +76,10 @@ public class Game
     {
         RenderLoop.Run(_graphicsContext.RenderForm, () =>
         {
+            _swTotal.Reset();
             Interlocked.Increment(ref RenderedFramesInTheLastSecond);
+
+
 
             var now = DateTime.Now;
             var elapsedTime = now - _lastTick;
@@ -78,8 +96,20 @@ public class Game
             }
 
 
-            Update(TimeSpan.FromMilliseconds(_avgRenderTime));
+            var averageElapsedTime = TimeSpan.FromMilliseconds(_avgRenderTime);
 
+            _swComponents.Restart();
+            Camera.Update(averageElapsedTime, ChunkManager);
+            TotalCameraUpdateTime += _swComponents.ElapsedMilliseconds;
+
+            _swTotal.Restart();
+            ChunkManager.Update(Camera);
+            ChunkManager.CleanUp();
+            TotalChunkUpdateTime += _swComponents.ElapsedMilliseconds;
+
+            SkyDome.Update(Camera);
+
+            _swComponents.Restart();
             _graphicsContext.Draw(() =>
             {
                 if (ChunkManager.IsInitialized)
@@ -107,6 +137,7 @@ public class Game
                     _pipelineVisualizer.Draw(Camera, ChunkManager);
                 }
             });
+            TotalDrawTime += _swComponents.ElapsedMilliseconds;
 
             _totalRenderTime += elapsedTime.TotalMilliseconds - _lastRenderTimes[_lastRenderTimeIndex];
             _avgRenderTime = _totalRenderTime / _lastRenderTimes.Length;
@@ -114,17 +145,14 @@ public class Game
             _lastRenderTimeIndex = _lastRenderTimeIndex == _lastRenderTimes.Length - 1 ? 0 : _lastRenderTimeIndex + 1;
 
             ArrayFps = (int)(1000 / _avgRenderTime);
+
+            TotalLoopTime += _swTotal.ElapsedMilliseconds;
+
+            var missing = TotalLoopTime - (TotalCameraUpdateTime + TotalChunkUpdateTime + TotalDrawTime);
+            CameraUpdateTimeRatio = TotalCameraUpdateTime / TotalLoopTime;
+            ChunkUpdateTimeRatio = TotalChunkUpdateTime / TotalLoopTime;
+            DrawTimeRatio = TotalDrawTime / TotalLoopTime;
+            MissingTimeRatio = missing / TotalLoopTime;
         });
     }
-
-
-    private void Update(TimeSpan elapsedTime)
-    {
-        Camera.Update(elapsedTime, ChunkManager);
-        ChunkManager.Update(Camera);
-        ChunkManager.CleanUp();
-        SkyDome.Update(Camera);
-            
-    }
-
 }

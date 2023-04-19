@@ -26,8 +26,7 @@ public sealed class VoxelDefinition
 
     public static byte[] BrightnessLosses;
 
-    public Voxel Create(byte hueIndex = 0, Face face = Face.Top) 
-        => new(Type, 0, LightEmitting, hueIndex, face);
+    public Voxel Create(byte hueIndex = 0, Face face = Face.Top) => new(Type, 0, LightEmitting, hueIndex, face);
 
 
     private static byte[] BuildTransmitterPairs()

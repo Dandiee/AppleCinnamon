@@ -89,7 +89,11 @@ public sealed class DebugLayout
         var performanceContext = new DebugContext(rightAlignedTextFormat, graphicsContext, rightOrigin,
             new DebugInfoLine<int>(() => GameOptions.VIEW_DISTANCE, "ViewDistance"),
             new DebugInfoLine<int>(() => game.WeirdFps, default, " FPS"),
-            new DebugInfoLine<int>(() => game.ArrayFps, default, " FPS"));
+            new DebugInfoLine<double>(() => game.CameraUpdateTimeRatio, textFactory: n => $"Camera Updt {n:F3}"),
+            new DebugInfoLine<double>(() => game.ChunkUpdateTimeRatio, textFactory: n => $"Chunk Updt {n:F3}"),
+            new DebugInfoLine<double>(() => game.DrawTimeRatio, textFactory: n => $"Draw {n:F3}"),
+            new DebugInfoLine<double>(() => game.MissingTimeRatio, textFactory: n => $"Missing {n:F3}"));
+
 
         _mainMenuContext = new DebugContext(leftAlignedTextFormat, graphicsContext, leftOrigin,
             new DebugAction(Key.F1, "Sky", () => LeftContext = skyDomeContext),
