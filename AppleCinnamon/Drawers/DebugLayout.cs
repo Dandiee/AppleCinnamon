@@ -93,8 +93,6 @@ public sealed class DebugLayout
             new DebugInfoLine<double>(() => game.CameraUpdateTimeRatio, textFactory: n => $"Camera Updt {n:F3}"),
             new DebugInfoLine<double>(() => game.ChunkUpdateTimeRatio, textFactory: n => $"Chunk Updt {n:F3}"),
             new DebugInfoLine<double>(() => game.DrawTimeRatio, textFactory: n => $"Draw {n:F3}"),
-            new DebugInfoLine<double>(() => game.PreMiscTimeRatio, textFactory: n => $"Pre {n:F5}"),
-            new DebugInfoLine<double>(() => game.PostMiscTimeRatio, textFactory: n => $"Post {n:F5}"),
             new DebugInfoLine<double>(() => game.MissingTimeRatio, textFactory: n => $"Missing {n:F2}"));
 
 

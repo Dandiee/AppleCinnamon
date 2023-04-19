@@ -31,9 +31,7 @@ public static partial class ChunkDispatcher
 
             var voxel = chunk.GetVoxel(flatIndex);
             var definition = voxel.GetDefinition();
-
             var voxelPositionOffset = definition.Offset + chunk.OffsetVector + new Vector3(index.X, index.Y, index.Z);
-
 
             foreach (var faceInfo in faces.Faces)
             {

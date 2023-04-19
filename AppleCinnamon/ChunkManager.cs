@@ -7,7 +7,6 @@ using AppleCinnamon.Drawers;
 using AppleCinnamon.Graphics;
 using AppleCinnamon.Options;
 using SharpDX;
-using SharpDX.Direct3D11;
 
 namespace AppleCinnamon;
 

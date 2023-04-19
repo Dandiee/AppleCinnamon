@@ -27,14 +27,10 @@ public class Game
     public double TotalCameraUpdateTime;
     public double TotalChunkUpdateTime;
     public double TotalDrawTime;
-    public double TotalPreMiscTime;
-    public double TotalPostMiscTime;
 
     public double DrawTimeRatio;
     public double CameraUpdateTimeRatio;
     public double ChunkUpdateTimeRatio;
-    public double PreMiscTimeRatio;
-    public double PostMiscTimeRatio;
     public double MissingTimeRatio;
 
     private readonly double[] _lastRenderTimes;
@@ -80,12 +76,10 @@ public class Game
     {
         RenderLoop.Run(_graphicsContext.RenderForm, () =>
         {
-            _swTotal.Reset();
-            _swComponents.Reset();
+            _swTotal.Restart();
+            _swComponents.Restart();
             Interlocked.Increment(ref RenderedFramesInTheLastSecond);
-
-
-
+            
             var now = DateTime.Now;
             var elapsedTime = now - _lastTick;
             _lastTick = now;
@@ -101,13 +95,11 @@ public class Game
             }
 
             var averageElapsedTime = TimeSpan.FromMilliseconds(Math.Min(_avgRenderTime, 20));
-            TotalPreMiscTime += _swComponents.ElapsedMilliseconds;
 
-            _swComponents.Restart();
             Camera.Update(averageElapsedTime, ChunkManager);
             TotalCameraUpdateTime += _swComponents.ElapsedMilliseconds;
 
-            _swTotal.Restart();
+            _swComponents.Restart();
             ChunkManager.Update(Camera);
             ChunkManager.CleanUp();
             SkyDome.Update(Camera);
@@ -141,25 +133,19 @@ public class Game
                     _pipelineVisualizer.Draw(Camera, ChunkManager);
                 }
             });
-            TotalDrawTime += _swComponents.ElapsedMilliseconds;
 
-            _swComponents.Reset();
+            // Performance counters
+            TotalDrawTime += _swComponents.ElapsedMilliseconds;
             _totalRenderTime += elapsedTime.TotalMilliseconds - _lastRenderTimes[_lastRenderTimeIndex];
             _avgRenderTime = _totalRenderTime / _lastRenderTimes.Length;
             _lastRenderTimes[_lastRenderTimeIndex] = elapsedTime.TotalMilliseconds;
             _lastRenderTimeIndex = _lastRenderTimeIndex == _lastRenderTimes.Length - 1 ? 0 : _lastRenderTimeIndex + 1;
-
             ArrayFps = (int)(1000 / _avgRenderTime);
-
-            TotalPostMiscTime += _swComponents.ElapsedMilliseconds;
             TotalLoopTime += _swTotal.ElapsedMilliseconds;
-
-            var missing = TotalLoopTime - (TotalCameraUpdateTime + TotalChunkUpdateTime + TotalDrawTime + TotalPreMiscTime + TotalPostMiscTime);
+            var missing = TotalLoopTime - (TotalCameraUpdateTime + TotalChunkUpdateTime + TotalDrawTime);
             CameraUpdateTimeRatio = TotalCameraUpdateTime / TotalLoopTime;
             ChunkUpdateTimeRatio = TotalChunkUpdateTime / TotalLoopTime;
             DrawTimeRatio = TotalDrawTime / TotalLoopTime;
-            PreMiscTimeRatio = TotalPreMiscTime / TotalLoopTime;
-            PostMiscTimeRatio = TotalPostMiscTime / TotalLoopTime;
             MissingTimeRatio = missing / TotalLoopTime;
         });
     }

@@ -76,7 +76,7 @@ public sealed class Camera
         var result = CollisionHelper.GetCurrentSelection(new Ray(Position, LookAt), chunkManager);
         if (result != null && CurrentCursor != null)
         {
-            if (result.AbsoluteVoxelIndex != CurrentCursor.AbsoluteVoxelIndex)
+            if (result.AbsoluteVoxelIndex != CurrentCursor.AbsoluteVoxelIndex || result.Direction != CurrentCursor.Direction)
             {
                 CurrentCursor = result;
             }

@@ -14,7 +14,7 @@ public static class LightingService
         {
             for (var k = 0; k != GameOptions.CHUNK_SIZE; k++)
             {
-                _ = Sunlight(chunk, new Int3(i, chunk.CurrentHeight, k), 15).ToList();
+                SunlightItsTheSameAsTheOtherWithoutYield(chunk, new Int3(i, chunk.CurrentHeight, k), 15);
             }
         }
     }
@@ -43,7 +43,6 @@ public static class LightingService
                     {
                         if (targetVoxel.Sunlight < sourceVoxel.Sunlight - brightnessLoss || targetVoxel.EmittedLight < sourceVoxel.EmittedLight - brightnessLoss)
                         {
-                            // todo: talán ha nem írnánk és olvasnánk ugyanazt a memóriát hétezerszer észnélkül az segítene... csak talán...
                             if (targetVoxel.Sunlight < sourceVoxel.Sunlight - brightnessLoss)
                             {
                                 targetAddress.Chunk.UpdateVoxelLighting(targetAddress.RelativeVoxelIndex, targetVoxel.SetSunlight((byte)(sourceVoxel.Sunlight - brightnessLoss)));
@@ -180,6 +179,10 @@ public static class LightingService
     public static IEnumerable<Int3> Sunlight(VoxelChunkAddress address, byte toLightness, bool isChangeTracking = false)
         => Sunlight(address.Chunk, address.RelativeVoxelIndex, toLightness, isChangeTracking);
 
+
+
+    // Beware: It's the SAME method as SunlightItsTheSameAsTheOtherWithoutYield and must be maintained together with that
+    // This implementation does yield the light sources!
     public static IEnumerable<Int3> Sunlight(Chunk chunk, Int3 relativeIndex, byte toLightness, bool isChangeTracking = false)
     {
         for (var j = relativeIndex.Y - 1; j > 0; j--)
@@ -187,9 +190,6 @@ public static class LightingService
             var flatIndex = chunk.GetFlatIndex(relativeIndex.X, j, relativeIndex.Z);
             var voxel = chunk.Voxels[flatIndex];
             var definition = voxel.GetDefinition();
-
-            // TODO: ez nem jó, nem elég csak azt mondani hogy > 0
-            //if (definition.TransmittanceQuarters[(byte)Face.Bottom] > 0)
             if (definition.Type == 0)
             {
                 if (isChangeTracking)
@@ -202,6 +202,31 @@ public static class LightingService
                 }
 
                 yield return new Int3(relativeIndex.X, j, relativeIndex.Z);
+            }
+            else break;
+        }
+    }
+
+    // Beware: It's the SAME method as Sunlight and must be maintained together with that
+    // but this implementation does not yield the light sources
+    // which is a special case for initial local sunlight propagation
+    public static void SunlightItsTheSameAsTheOtherWithoutYield(Chunk chunk, Int3 relativeIndex, byte toLightness, bool isChangeTracking = false)
+    {
+        for (var j = relativeIndex.Y - 1; j > 0; j--)
+        {
+            var flatIndex = chunk.GetFlatIndex(relativeIndex.X, j, relativeIndex.Z);
+            var voxel = chunk.Voxels[flatIndex];
+            var definition = voxel.GetDefinition();
+            if (definition.Type == 0)
+            {
+                if (isChangeTracking)
+                {
+                    chunk.UpdateVoxelLighting(relativeIndex.X, j, relativeIndex.Z, voxel.SetSunlight(toLightness));
+                }
+                else
+                {
+                    chunk.SetVoxel(flatIndex, voxel.SetSunlight(toLightness));
+                }
             }
             else break;
         }

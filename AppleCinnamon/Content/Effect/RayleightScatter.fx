@@ -40,7 +40,8 @@ PS_INPUT HoffmanShader(VS_INPUT Input)
 
 	// 
 	// Phase1 and Phase2
-	//
+	//i
+
 
 	float phase1 = 1.0 + theta * theta;
 	float phase2 = pow(rsqrt(hGg.y - hGg.z * theta), 3) * hGg.x;

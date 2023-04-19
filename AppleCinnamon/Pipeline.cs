@@ -86,7 +86,7 @@ public sealed class Pipeline
 
     private void BuildPipeline()
     {
-        Dispatcher = new TransformBlock<Chunk, Chunk>(BenchmarkedDispatcher);//, new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = MDoP });
+        Dispatcher = new TransformBlock<Chunk, Chunk>(BenchmarkedDispatcher); //, new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = MDoP });
         FinishBlock = new ActionBlock<Chunk>(_finishMove);
 
         foreach (var stage in Stages)

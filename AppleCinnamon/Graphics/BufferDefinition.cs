@@ -44,5 +44,4 @@ public sealed class BufferDefinition<TVertex> : IDisposable
         IndexBuffer = null;
         VertexBuffer = null;
     }
-
 }
