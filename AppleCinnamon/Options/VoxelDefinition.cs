@@ -94,6 +94,10 @@ public sealed class VoxelDefinition
     public readonly Vector3 Size;
     public readonly string Name;
 
+
+    public readonly bool HasExtraSprites;
+    
+
     public static readonly VoxelDefinition[] DefinitionByType = new VoxelDefinition[256];
 
     public static readonly VoxelDefinition Air =
@@ -142,7 +146,10 @@ public sealed class VoxelDefinition
         .WithOffset(0, -3f/16f, 0)
         .WithTransmittanceQuarters(TransmittanceFlags.All)
         .WithCoverFlags(VisibilityFlag.None)
-        .WithSize(2f / 16f, 10f/16f, 2f/16f).Build();
+        .WithSize(2f / 16f, 10f/16f, 2f/16f)
+        .Build();
+
+
     public static readonly VoxelDefinition Sand = new BlockDefinitionBuilder(26).WithAllSideTexture(2, 1).Build();
     public static readonly VoxelDefinition Wood1 = new BlockDefinitionBuilder(27).WithSideTexture(4, 1).WithTopTexture(5, 1).WithTopTexture(5, 1).Build();
     public static readonly VoxelDefinition Wood2 = new BlockDefinitionBuilder(28).WithSideTexture(4, 7).WithTopTexture(5, 1).WithTopTexture(5, 1).Build();
@@ -150,7 +157,14 @@ public sealed class VoxelDefinition
     public static readonly VoxelDefinition Wood4 = new BlockDefinitionBuilder(30).WithSideTexture(7, 5).WithTopTexture(5, 1).WithTopTexture(5, 1).Build();
     public static readonly VoxelDefinition Wood5 = new BlockDefinitionBuilder(31).WithSideTexture(5, 7).WithTopTexture(5, 1).WithTopTexture(5, 1).Build();
     public static readonly VoxelDefinition Weed = new BlockDefinitionBuilder(32).WithAllSideTexture(7, 2).WithSize(1, .8f, 1).AsSprite().WithHue(VisibilityFlag.All).Build();
-    public static readonly VoxelDefinition FlowerRed = new BlockDefinitionBuilder(33).WithAllSideTexture(12, 0)    .WithSize(6/16f, 11/16f, 6/16f).OffsetToBottom().AsSprite().Build();
+    
+    public static readonly VoxelDefinition FlowerRed = new BlockDefinitionBuilder(33)
+        .WithAllSideTexture(12, 0)    
+        .WithSize(6/16f, 11/16f, 6/16f)
+        .OffsetToBottom()
+        .AsSprite()
+        .Build();
+
     public static readonly VoxelDefinition FlowerYellow = new BlockDefinitionBuilder(36).WithAllSideTexture(13, 0) .WithSize(6/16f, 8/16f, 6/16f).OffsetToBottom().AsSprite().Build();
     public static readonly VoxelDefinition MushroomRed = new BlockDefinitionBuilder(37).WithAllSideTexture(12, 1)  .WithSize(8/16f, 6/16f, 8/16f).OffsetToBottom().AsSprite().Build();
     public static readonly VoxelDefinition MushroomBrown = new BlockDefinitionBuilder(38).WithAllSideTexture(13, 1).WithSize(6/16f, 6/16f, 6/16f).OffsetToBottom().AsSprite().Build();
@@ -168,6 +182,19 @@ public sealed class VoxelDefinition
         .WithSize(1, 0.5f, 1)
         .WithOffset(0, -.25f, 0)
         .WithCoverFlags(VisibilityFlag.Bottom)
+        .Build();
+
+
+    public static readonly VoxelDefinition SunflowerBottom = new BlockDefinitionBuilder(38)
+        .WithAllSideTexture(1, 12)
+        .WithSize(1, 1, 1)
+        .AsSprite()
+        .Build();
+
+    public static readonly VoxelDefinition SunflowerTop = new BlockDefinitionBuilder(39)
+        .WithAllSideTexture(1, 14)
+        .WithSize(1, 1, 1)
+        .AsSprite()
         .Build();
 
 

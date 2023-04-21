@@ -1,5 +1,6 @@
 ﻿using System;
 using AppleCinnamon.Options;
+using SharpDX;
 
 namespace AppleCinnamon.ChunkBuilder.WorldGenerator;
 
@@ -35,6 +36,12 @@ public static class ArtifactGenerator
                     {
                         var flowerType = FlowersAndSuch[rnd.Next(0, FlowersAndSuch.Length)];
                         chunk.SetSafe(flatIndex, flowerType.Create());
+                    }
+                    else if (rnd.Next() % 30 == 0)
+                    {
+                        var top = chunk.GetFlatIndex(index.X, index.Y + 1, index.Z);
+                        chunk.SetSafe(flatIndex, VoxelDefinition.SunflowerBottom.Create());
+                        chunk.SetSafe(top, VoxelDefinition.SunflowerTop.Create());
                     }
                 }
             }
