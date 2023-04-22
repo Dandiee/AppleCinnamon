@@ -209,21 +209,22 @@ namespace NoiseGeneratorTest
             var fromI = Width / -2;
             var fromJ = Height / -2;
 
-            var c = 0;
-
-            for (var j = 0; j < Height; j++)
+            Parallel.For(0, Width * Height, ij =>
+            //for (var ij = 0; ij < Width * Height; ij++)
             {
-                for (var i = 0; i < Width; i++)
-                {
-                    var value = _octaveNoise.Compute(i + fromI, j + fromJ, Amplitude, Frequency);
-                    var factoredByteValue = (byte)(value * Factor + Offset);
+                var i = ij % Width;
+                var j = ij / Width;
 
-                    _bytes[c++] = factoredByteValue; // BLUE
-                    _bytes[c++] = factoredByteValue; // GREEN
-                    _bytes[c++] = factoredByteValue; // RED
-                    _bytes[c++] = 255; // ALPHA
-                }
-            }
+                var value = _octaveNoise.Compute(i + fromI, j + fromJ, Amplitude, Frequency);
+                var factoredByteValue = (byte)(value * Factor + Offset);
+
+                var offset = ij * 4;
+
+                _bytes[offset + 0] = factoredByteValue; // BLUE
+                _bytes[offset + 1] = factoredByteValue; // GREEN
+                _bytes[offset + 2] = factoredByteValue; // RED
+                _bytes[offset + 3] = 255; // ALPHA
+            });
 
             var imageSurface = Surface.CreateOffscreenPlain(_device, Width, Height, Format.A8R8G8B8, Pool.SystemMemory);
             Surface.FromMemory(imageSurface, _bytes, Filter.None, 0, Format.A8R8G8B8, 4 * Width, new RawRectangle(0, 0, Width, Height));
@@ -237,7 +238,7 @@ namespace NoiseGeneratorTest
             sw.Stop();
             RenderTime = (int)sw.ElapsedMilliseconds;
         }
-        
+
 
 
         private static readonly Color WaterColor = Color.Aqua;
