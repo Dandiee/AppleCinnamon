@@ -28,7 +28,7 @@ namespace NoiseGeneratorTest
             }
         }
 
-        public double Compute(double x, double y)
+        public float Compute(float x, float y)
         {
             const int xFlags = 0x46552222;
             const int yFlags = 0x2222550A;
@@ -77,12 +77,14 @@ namespace NoiseGeneratorTest
 
     public sealed class OctaveNoise
     {
-        private readonly double _baseAmplitude;
-        private readonly double _baseFrequency;
+        private readonly Random _random;
+        private readonly float _baseAmplitude;
+        private readonly float _baseFrequency;
         private readonly ImprovedNoise[] _baseNoise;
 
-        public OctaveNoise(int octaves, Random random, double baseAmplitude, double baseFrequency)
+        public OctaveNoise(int octaves, Random random, float baseAmplitude, float baseFrequency)
         {
+            _random = random;
             _baseAmplitude = baseAmplitude;
             _baseFrequency = baseFrequency;
             _baseNoise = new ImprovedNoise[octaves];
@@ -92,17 +94,17 @@ namespace NoiseGeneratorTest
             }
         }
 
-        public double Compute(double x, double y)
+        public float Compute(float x, float y)
         {
             var amplitude = _baseAmplitude; // 1.0; //_baseAmplitude;
             var frequency = _baseFrequency;// 1.0; //baseFrequency;
 
-            double sum = 0;
+            float sum = 0;
             for (var i = 0; i < _baseNoise.Length; i++)
             {
                 sum += _baseNoise[i].Compute(x * frequency, y * frequency) * amplitude;
                 amplitude *= 2;
-                frequency *= .5;
+                frequency *= .5f;
             }
             return sum;
         }

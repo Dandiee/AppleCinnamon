@@ -1,23 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Drawing;
-using System.Drawing.Imaging;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Windows.Documents;
+using System.Windows;
 using System.Windows.Input;
+using System.Windows.Interop;
 using System.Windows.Media.Imaging;
 using Prism.Commands;
 using Prism.Mvvm;
-using Color = System.Drawing.Color;
+using SharpDX.Direct3D9;
+using SharpDX.Mathematics.Interop;
 
 namespace NoiseGeneratorTest
 {
     public class MainWindowViewModel : BindableBase
     {
-
+        private readonly MainWindow _window;
+        private readonly D3DImage _d3DImage;
+        private readonly Device _device;
 
         private BitmapImage _image;
         public BitmapImage Image
@@ -26,14 +24,14 @@ namespace NoiseGeneratorTest
             set => SetProperty(ref _image, value);
         }
 
-        private int _width ;
+        private int _width = 256;
         public int Width
         {
             get => _width;
             set => SetProperty(ref _width, value);
         }
 
-        private int _height;
+        private int _height = 256;
         public int Height
         {
             get => _height;
@@ -55,15 +53,15 @@ namespace NoiseGeneratorTest
             set => SetProperty(ref _factor, value);
         }
 
-        private double _amplitude = 1;
-        public double Amplitude
+        private float _amplitude = 1;
+        public float Amplitude
         {
             get => _amplitude;
             set => SetProperty(ref _amplitude, value);
         }
 
-        private double _frequency = 1;
-        public double Frequency
+        private float _frequency = 1;
+        public float Frequency
         {
             get => _frequency;
             set => SetProperty(ref _frequency, value);
@@ -136,29 +134,29 @@ namespace NoiseGeneratorTest
         }
 
 
-        private double _recordedMin;
-        public double RecordedMin
+        private float _recordedMin;
+        public float RecordedMin
         {
             get => _recordedMin;
             set => SetProperty(ref _recordedMin, value);
         }
 
-        private double _recordedMax;
-        public double RecordedMax
+        private float _recordedMax;
+        public float RecordedMax
         {
             get => _recordedMax;
             set => SetProperty(ref _recordedMax, value);
         }
 
-        private double _recordedRange;
-        public double RecordedRange
+        private float _recordedRange;
+        public float RecordedRange
         {
             get => _recordedRange;
             set => SetProperty(ref _recordedRange, value);
         }
 
-        private double _factoredRange;
-        public double FactoredRange
+        private float _factoredRange;
+        public float FactoredRange
         {
             get => _factoredRange;
             set => SetProperty(ref _factoredRange, value);
@@ -184,14 +182,15 @@ namespace NoiseGeneratorTest
         private readonly Random _random = new Random();
 
 
-        public MainWindowViewModel()
+        public MainWindowViewModel(MainWindow window, D3DImage d3DImage, Device device)
         {
-            Width = 128;
-            Height = 128;
+            _window = window;
+            _d3DImage = d3DImage;
+            _device = device;
             Octaves = 8;
             Factor = 0.47f;
-            Amplitude = 1.1;
-            Frequency = 0.4;
+            Amplitude = 1.1f;
+            Frequency = 0.4f;
             Offset = 134;
 
             WaterLevel = 119;
@@ -211,8 +210,8 @@ namespace NoiseGeneratorTest
         private byte[,] GenerateNoise(int seed)
         {
             var result = new byte[Width, Height];
-            var values = new double[Width, Height];
-            var listValues = new List<double>(Width * Height);
+            var values = new float[Width, Height];
+            var listValues = new List<float>(Width * Height);
 
             var noise = new OctaveNoise(Octaves, new Random(seed), Amplitude, Frequency);
 
@@ -251,7 +250,7 @@ namespace NoiseGeneratorTest
             {
                 for (var j = 0; j < Height; j++)
                 {
-                    result[i, j] = (byte) ((values[i, j] + Offset));
+                    result[i, j] = (byte)((values[i, j] + Offset));
                 }
             }
 
@@ -261,12 +260,33 @@ namespace NoiseGeneratorTest
         private void Render()
         {
             var sw = Stopwatch.StartNew();
-            var noise = GenerateNoise(Seed);
+            var bytes = GenerateNoise(Seed);
+            DoSomething(bytes);
             sw.Stop();
             RenderTime = (int)sw.ElapsedMilliseconds;
+        }
 
-            var bitmap = GetBitmap(noise);
-            Image = GetBitmapImage(bitmap);
+        private void DoSomething(byte[,] heatMap)
+        {
+            var bytes = new List<byte>();
+
+            for (var j = 0; j < Height; j++)
+            {
+                for (var i = 0; i < Width; i++)
+                {
+                    var b = (byte)heatMap[i, j];
+
+                    bytes.Add(b); // BLUE
+                    bytes.Add(b); // GREEN
+                    bytes.Add(b); // RED
+                    bytes.Add(255); // ALPHA
+                }
+            }
+
+            var imageSurface = Surface.CreateOffscreenPlain(_device, Width, Height, Format.A8R8G8B8, Pool.SystemMemory);
+            Surface.FromMemory(imageSurface, bytes.ToArray(), Filter.None, 0, Format.A8R8G8B8, 4 * Width,
+                new RawRectangle(0, 0, Width, Height));
+            _window.Draw(imageSurface, Width, Height);
         }
 
 
@@ -274,79 +294,81 @@ namespace NoiseGeneratorTest
         private static readonly Color SnowColor = Color.Snow;
         private static readonly Color GrassColor = Color.Green;
 
-        private Bitmap GetBitmap(byte[,] heightMap)
-        {
-            var bitmap = new Bitmap(Width, Height, PixelFormat.Format32bppArgb);
 
-            for (var i = 0; i < Width; i++)
-            {
-                for (var j = 0; j < Height; j++)
-                {
-                    var height = heightMap[i, j];
-                    var color = Color.Empty;
-                    var refHeight = 0;
 
-                    if (UseGrayScale)
-                    {
-                        refHeight = height;
-                        color = Color.FromArgb(height, height, height);
-                    }
-                    else
-                    {
-                        if (height < WaterLevel)
-                        {
-                            color = WaterColor;
-                            refHeight = WaterLevel - height;
-                        }
-                        else if (height < SnowLevel)
-                        {
-                            color = GrassColor;
-                            refHeight = height - WaterLevel;
-                        }
-                        else
-                        {
-                            color = SnowColor;
-                            refHeight = 255 - height;
-                        }
-                    }
+        //private Bitmap GetBitmap(byte[,] heightMap)
+        //{
+        //    var bitmap = new Bitmap(Width, Height, PixelFormat.Format32bppArgb);
 
-                    if (ShowWater)
-                    {
-                        if (height <= WaterLevel)
-                        {
-                            color = WaterColor;
-                        }
-                    }
+        //    for (var i = 0; i < Width; i++)
+        //    {
+        //        for (var j = 0; j < Height; j++)
+        //        {
+        //            var height = heightMap[i, j];
+        //            var color = Color.Empty;
+        //            var refHeight = 0;
 
-                    if (IsHighlightValueEnabled)
-                    {
-                        if (Math.Abs(height - HighlightedValue) <= HighlightedRange)
-                        {
-                            color = Color.Red;
-                        }
-                    }
+        //            if (UseGrayScale)
+        //            {
+        //                refHeight = height;
+        //                color = Color.FromArgb(height, height, height);
+        //            }
+        //            else
+        //            {
+        //                if (height < WaterLevel)
+        //                {
+        //                    color = WaterColor;
+        //                    refHeight = WaterLevel - height;
+        //                }
+        //                else if (height < SnowLevel)
+        //                {
+        //                    color = GrassColor;
+        //                    refHeight = height - WaterLevel;
+        //                }
+        //                else
+        //                {
+        //                    color = SnowColor;
+        //                    refHeight = 255 - height;
+        //                }
+        //            }
 
-                    bitmap.SetPixel(i, j, Color.FromArgb(refHeight, color));
-                }
-            }
+        //            if (ShowWater)
+        //            {
+        //                if (height <= WaterLevel)
+        //                {
+        //                    color = WaterColor;
+        //                }
+        //            }
 
-            return bitmap;
-        }
+        //            if (IsHighlightValueEnabled)
+        //            {
+        //                if (Math.Abs(height - HighlightedValue) <= HighlightedRange)
+        //                {
+        //                    color = Color.Red;
+        //                }
+        //            }
 
-        private BitmapImage GetBitmapImage(Bitmap bitmap)
-        {
-            using (var memory = new MemoryStream())
-            {
-                bitmap.Save(memory, System.Drawing.Imaging.ImageFormat.Bmp);
-                memory.Position = 0;
-                var bitmapImage = new BitmapImage();
-                bitmapImage.BeginInit();
-                bitmapImage.StreamSource = memory;
-                bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-                bitmapImage.EndInit();
+        //            bitmap.SetPixel(i, j, Color.FromArgb(refHeight, color));
+        //        }
+        //    }
 
-                return bitmapImage;
-            }
-        }
+        //    return bitmap;
+        //}
+
+        //private BitmapImage GetBitmapImage(Bitmap bitmap)
+        //{
+        //    using (var memory = new MemoryStream())
+        //    {
+        //        bitmap.Save(memory, System.Drawing.Imaging.ImageFormat.Bmp);
+        //        memory.Position = 0;
+        //        var bitmapImage = new BitmapImage();
+        //        bitmapImage.BeginInit();
+        //        bitmapImage.StreamSource = memory;
+        //        bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+        //        bitmapImage.EndInit();
+
+        //        return bitmapImage;
+        //    }
+        //}
     }
 }

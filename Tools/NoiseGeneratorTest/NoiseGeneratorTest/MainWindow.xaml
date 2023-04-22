@@ -4,6 +4,8 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+        xmlns:noiseGeneratorTest="clr-namespace:NoiseGeneratorTest"
+        xmlns:interop="clr-namespace:System.Windows.Interop;assembly=PresentationCore"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
     <Grid Margin="10">
@@ -12,7 +14,13 @@
             <ColumnDefinition Width="200"/>
         </Grid.ColumnDefinitions>
 
-        <Image Source="{Binding Image}" Margin="10"></Image>
+        <Image x:Name="imgelt">
+            <Image.Source>
+                <interop:D3DImage x:Name="d3dimg" />
+            </Image.Source>
+        </Image>
+
+        <!--<Image Source="{Binding Image}" Margin="10"></Image>-->
 
         <StackPanel Grid.Column="1">
             <TabControl>
@@ -234,6 +242,8 @@
             <TextBlock Text="{Binding RecordedRange, StringFormat={}Range: {0:N2}}"/>
             <TextBlock Text="{Binding FactoredRange, StringFormat={}Factored Range: {0:N2}}"/>
             <TextBlock Text="{Binding Seed, StringFormat={}Seed: {0}}"/>
+            <TextBlock Text="{Binding RenderTime, StringFormat={}Render time: {0}}"/>
+            
 
             <Button Content="Render" Command="{Binding RenderCommand}"/>
             <Button Content="Reseed" Command="{Binding ReseedCommand}"/>
