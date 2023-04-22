@@ -28,14 +28,26 @@ namespace NoiseGeneratorTest
         public int Width
         {
             get => _width;
-            set => SetProperty(ref _width, value);
+            set
+            {
+                if (SetProperty(ref _width, value))
+                {
+                    _bytes = new byte[Width * Height * 4];
+                }
+            }
         }
 
         private int _height = 256;
         public int Height
         {
             get => _height;
-            set => SetProperty(ref _height, value);
+            set
+            {
+                if (SetProperty(ref _height, value))
+                {
+                    _bytes = new byte[Width * Height * 4];
+                }
+            }
         }
 
 
@@ -43,7 +55,13 @@ namespace NoiseGeneratorTest
         public int Octaves
         {
             get => _octaves;
-            set => SetProperty(ref _octaves, value);
+            set
+            {
+                if (SetProperty(ref _octaves, value))
+                {
+                    _octaveNoise = new OctaveNoise(Octaves, new Random(Seed));
+                }
+            }
         }
 
         private float _factor;
@@ -134,34 +152,6 @@ namespace NoiseGeneratorTest
         }
 
 
-        private float _recordedMin;
-        public float RecordedMin
-        {
-            get => _recordedMin;
-            set => SetProperty(ref _recordedMin, value);
-        }
-
-        private float _recordedMax;
-        public float RecordedMax
-        {
-            get => _recordedMax;
-            set => SetProperty(ref _recordedMax, value);
-        }
-
-        private float _recordedRange;
-        public float RecordedRange
-        {
-            get => _recordedRange;
-            set => SetProperty(ref _recordedRange, value);
-        }
-
-        private float _factoredRange;
-        public float FactoredRange
-        {
-            get => _factoredRange;
-            set => SetProperty(ref _factoredRange, value);
-        }
-
         private int _offset;
         public int Offset
         {
@@ -199,95 +189,55 @@ namespace NoiseGeneratorTest
             Seed = 1513;// _random.Next(0, 9999);
             RenderCommand = new DelegateCommand(Render);
             ReseedCommand = new DelegateCommand(Reseed);
+
+            _bytes = new byte[Width * Height * 4];
+            _octaveNoise = new OctaveNoise(Octaves, new Random(Seed));
         }
 
         private void Reseed()
         {
             Seed = _random.Next(0, 9999);
+            _octaveNoise = new OctaveNoise(Octaves, new Random(Seed));
             Render();
         }
 
-        private byte[,] GenerateNoise(int seed)
+        private byte[] _bytes;
+        private OctaveNoise _octaveNoise;
+
+        private void GenerateNoise()
         {
-            var result = new byte[Width, Height];
-            var values = new float[Width, Height];
-            var listValues = new List<float>(Width * Height);
-
-            var noise = new OctaveNoise(Octaves, new Random(seed), Amplitude, Frequency);
-
             var fromI = Width / -2;
             var fromJ = Height / -2;
 
-            Parallel.For(0, Width, i =>
-            {
-                for (var j = 0; j < Height; j++)
-                {
-                    var value = noise.Compute(i + fromI, j + fromJ);
-
-                    values[i, j] = (byte)(value * Factor);
-
-                    listValues.Add(value);
-                }
-            });
-            //for (var i = 0; i < Width; i++)
-            //{
-            //    for (var j = 0; j < Height; j++)
-            //    {
-            //        
-            //    }
-            //}
-
-            var min = listValues.Min();
-            var max = listValues.Max();
-
-            RecordedMin = min;
-            RecordedMax = max;
-
-            RecordedRange = max - min;
-            FactoredRange = RecordedRange * Factor;
-
-            for (var i = 0; i < Width; i++)
-            {
-                for (var j = 0; j < Height; j++)
-                {
-                    result[i, j] = (byte)((values[i, j] + Offset));
-                }
-            }
-
-            return result;
-        }
-
-        private void Render()
-        {
-            var sw = Stopwatch.StartNew();
-            var bytes = GenerateNoise(Seed);
-            DoSomething(bytes);
-            sw.Stop();
-            RenderTime = (int)sw.ElapsedMilliseconds;
-        }
-
-        private void DoSomething(byte[,] heatMap)
-        {
-            var bytes = new List<byte>();
+            var c = 0;
 
             for (var j = 0; j < Height; j++)
             {
                 for (var i = 0; i < Width; i++)
                 {
-                    var b = (byte)heatMap[i, j];
+                    var value = _octaveNoise.Compute(i + fromI, j + fromJ, Amplitude, Frequency);
+                    var factoredByteValue = (byte)(value * Factor + Offset);
 
-                    bytes.Add(b); // BLUE
-                    bytes.Add(b); // GREEN
-                    bytes.Add(b); // RED
-                    bytes.Add(255); // ALPHA
+                    _bytes[c++] = factoredByteValue; // BLUE
+                    _bytes[c++] = factoredByteValue; // GREEN
+                    _bytes[c++] = factoredByteValue; // RED
+                    _bytes[c++] = 255; // ALPHA
                 }
             }
 
             var imageSurface = Surface.CreateOffscreenPlain(_device, Width, Height, Format.A8R8G8B8, Pool.SystemMemory);
-            Surface.FromMemory(imageSurface, bytes.ToArray(), Filter.None, 0, Format.A8R8G8B8, 4 * Width,
-                new RawRectangle(0, 0, Width, Height));
+            Surface.FromMemory(imageSurface, _bytes, Filter.None, 0, Format.A8R8G8B8, 4 * Width, new RawRectangle(0, 0, Width, Height));
             _window.Draw(imageSurface, Width, Height);
         }
+
+        private void Render()
+        {
+            var sw = Stopwatch.StartNew();
+            GenerateNoise();
+            sw.Stop();
+            RenderTime = (int)sw.ElapsedMilliseconds;
+        }
+        
 
 
         private static readonly Color WaterColor = Color.Aqua;
@@ -353,22 +303,6 @@ namespace NoiseGeneratorTest
         //    }
 
         //    return bitmap;
-        //}
-
-        //private BitmapImage GetBitmapImage(Bitmap bitmap)
-        //{
-        //    using (var memory = new MemoryStream())
-        //    {
-        //        bitmap.Save(memory, System.Drawing.Imaging.ImageFormat.Bmp);
-        //        memory.Position = 0;
-        //        var bitmapImage = new BitmapImage();
-        //        bitmapImage.BeginInit();
-        //        bitmapImage.StreamSource = memory;
-        //        bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-        //        bitmapImage.EndInit();
-
-        //        return bitmapImage;
-        //    }
         //}
     }
 }

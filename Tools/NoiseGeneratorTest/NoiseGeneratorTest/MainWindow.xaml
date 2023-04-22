@@ -237,10 +237,7 @@
                 </TabItem>
             </TabControl>
 
-            <TextBlock Text="{Binding RecordedMin, StringFormat={}Min: {0:N2}}"/>
-            <TextBlock Text="{Binding RecordedMax, StringFormat={}Max: {0:N2}}"/>
-            <TextBlock Text="{Binding RecordedRange, StringFormat={}Range: {0:N2}}"/>
-            <TextBlock Text="{Binding FactoredRange, StringFormat={}Factored Range: {0:N2}}"/>
+            
             <TextBlock Text="{Binding Seed, StringFormat={}Seed: {0}}"/>
             <TextBlock Text="{Binding RenderTime, StringFormat={}Render time: {0}}"/>
             

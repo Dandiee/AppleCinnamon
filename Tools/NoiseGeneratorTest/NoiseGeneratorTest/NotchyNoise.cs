@@ -77,35 +77,29 @@ namespace NoiseGeneratorTest
 
     public sealed class OctaveNoise
     {
-        private readonly Random _random;
-        private readonly float _baseAmplitude;
-        private readonly float _baseFrequency;
         private readonly ImprovedNoise[] _baseNoise;
 
-        public OctaveNoise(int octaves, Random random, float baseAmplitude, float baseFrequency)
+        public OctaveNoise(int octaves, Random random)
         {
-            _random = random;
-            _baseAmplitude = baseAmplitude;
-            _baseFrequency = baseFrequency;
             _baseNoise = new ImprovedNoise[octaves];
+
             for (int i = 0; i < octaves; i++)
             {
                 _baseNoise[i] = new ImprovedNoise(random);
             }
         }
 
-        public float Compute(float x, float y)
+        public float Compute(float x, float y, float amplitude, float frequency)
         {
-            var amplitude = _baseAmplitude; // 1.0; //_baseAmplitude;
-            var frequency = _baseFrequency;// 1.0; //baseFrequency;
-
             float sum = 0;
+            
             for (var i = 0; i < _baseNoise.Length; i++)
             {
                 sum += _baseNoise[i].Compute(x * frequency, y * frequency) * amplitude;
                 amplitude *= 2;
                 frequency *= .5f;
             }
+
             return sum;
         }
     }
