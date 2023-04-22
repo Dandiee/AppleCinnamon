@@ -4,6 +4,11 @@
              xmlns:local="clr-namespace:NoiseGeneratorTest"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-         
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Resources/DefaultStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <FontFamily x:Key="FaSolid">/NoiseGeneratorTest;component/Resources/FaFonts/fa-solid-900.ttf#Font Awesome 6 Free Solid</FontFamily>
+        </ResourceDictionary>
     </Application.Resources>
 </Application>

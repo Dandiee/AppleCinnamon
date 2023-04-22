@@ -3,251 +3,160 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
         xmlns:noiseGeneratorTest="clr-namespace:NoiseGeneratorTest"
         xmlns:interop="clr-namespace:System.Windows.Interop;assembly=PresentationCore"
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+        d:DataContext="{d:DesignInstance IsDesignTimeCreatable=False, Type=noiseGeneratorTest:MainWindowViewModel}"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="Dani Noise" Height="450" Width="800">
     <Grid Margin="10">
         <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="250"/>
             <ColumnDefinition/>
-            <ColumnDefinition Width="200"/>
+            <ColumnDefinition Width="250"/>
         </Grid.ColumnDefinitions>
 
-        <Image x:Name="imgelt">
-            <Image.Source>
-                <interop:D3DImage x:Name="d3dimg" />
-            </Image.Source>
-        </Image>
+        <Grid Grid.Column="1" Margin="10" Background="LightBlue">
+            <Image>
+                <Image.Source>
+                    <interop:D3DImage x:Name="NoiseD3DImage" />
+                </Image.Source>
+            </Image>
+        </Grid>
 
-        <!--<Image Source="{Binding Image}" Margin="10"></Image>-->
+        <Grid Grid.Column="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
 
-        <StackPanel Grid.Column="1">
-            <TabControl>
-                <TabItem Header="Noise">
-                    <StackPanel>
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition/>
-                                <ColumnDefinition/>
-                            </Grid.ColumnDefinitions>
-                            <Label Grid.Column="0" Content="Width"/>
-                            <TextBlock Grid.Column="1" Text="{Binding Width}" HorizontalAlignment="Right"/>
-                        </Grid>
-                        <Slider Value="{Binding Width}" Minimum="16" Maximum="512" Margin="0 0 0 10" Ticks="16">
-                            <i:Interaction.Triggers>
-                                <i:EventTrigger EventName="ValueChanged">
-                                    <i:InvokeCommandAction Command="{Binding RenderCommand}"/>
-                                </i:EventTrigger>
-                            </i:Interaction.Triggers>
-                        </Slider>
+            <TextBlock Grid.Column="0" Grid.Row="0" Text="Width"/>
+            <TextBlock Grid.Column="1" Grid.Row="0" Text="{Binding Width}" HorizontalAlignment="Right"/>
+            <Slider Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="2" Value="{Binding Width}" Minimum="16" Maximum="512" Ticks="16"/>
 
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition/>
-                                <ColumnDefinition/>
-                            </Grid.ColumnDefinitions>
-                            <Label Grid.Column="0" Content="Height"/>
-                            <TextBlock Grid.Column="1" Text="{Binding Height}" HorizontalAlignment="Right"/>
-                        </Grid>
-                        <Slider Value="{Binding Height}" Minimum="16" Maximum="512" Margin="0 0 0 10" Ticks="16">
-                            <i:Interaction.Triggers>
-                                <i:EventTrigger EventName="ValueChanged">
-                                    <i:InvokeCommandAction Command="{Binding RenderCommand}"/>
-                                </i:EventTrigger>
-                            </i:Interaction.Triggers>
-                        </Slider>
+            <TextBlock Grid.Column="0" Grid.Row="2" Text="Height"/>
+            <TextBlock Grid.Column="1" Grid.Row="2" Text="{Binding Height}" HorizontalAlignment="Right"/>
+            <Slider Grid.Column="0" Grid.Row="3" Grid.ColumnSpan="2" Value="{Binding Height}" Minimum="16" Maximum="512" Ticks="16"/>
 
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition/>
-                                <ColumnDefinition/>
-                            </Grid.ColumnDefinitions>
-                            <Label Grid.Column="0" Content="Offset"/>
-                            <TextBlock Grid.Column="1" Text="{Binding Offset}" HorizontalAlignment="Right"/>
-                        </Grid>
-                        <Slider Value="{Binding Offset}" Minimum="-300" Maximum="300" Margin="0 0 0 10" Ticks="16">
-                            <i:Interaction.Triggers>
-                                <i:EventTrigger EventName="ValueChanged">
-                                    <i:InvokeCommandAction Command="{Binding RenderCommand}"/>
-                                </i:EventTrigger>
-                            </i:Interaction.Triggers>
-                        </Slider>
+            <TextBlock Grid.Column="0" Grid.Row="4" Text="Offset"/>
+            <TextBlock Grid.Column="1" Grid.Row="4" Text="{Binding Offset}" HorizontalAlignment="Right"/>
+            <Slider Grid.Column="0" Grid.Row="5" Grid.ColumnSpan="2" Value="{Binding Offset}" Minimum="-300" Maximum="300" Ticks="1"/>
 
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition/>
-                                <ColumnDefinition/>
-                            </Grid.ColumnDefinitions>
-                            <Label Grid.Column="0" Content="Octaves"/>
-                            <TextBlock Grid.Column="1" Text="{Binding Octaves}" HorizontalAlignment="Right"/>
-                        </Grid>
-                        <Slider Value="{Binding Octaves}" Minimum="1" Maximum="16" Margin="0 0 0 10">
-                            <i:Interaction.Triggers>
-                                <i:EventTrigger EventName="ValueChanged">
-                                    <i:InvokeCommandAction Command="{Binding RenderCommand}"/>
-                                </i:EventTrigger>
-                            </i:Interaction.Triggers>
-                        </Slider>
+            <TextBlock Grid.Column="0" Grid.Row="6" Text="Octaves"/>
+            <TextBlock Grid.Column="1" Grid.Row="6" Text="{Binding Octaves}" HorizontalAlignment="Right"/>
+            <Slider Grid.Column="0" Grid.Row="7" Grid.ColumnSpan="2" Value="{Binding Octaves}" Minimum="1" Maximum="16" Ticks="1"/>
+
+            <TextBlock Grid.Column="0" Grid.Row="8" Text="Amplitude"/>
+            <TextBlock Grid.Column="1" Grid.Row="8" Text="{Binding Amplitude}" HorizontalAlignment="Right"/>
+            <Slider Grid.Column="0" Grid.Row="9" Grid.ColumnSpan="2" Value="{Binding Amplitude}" Minimum="0" Maximum="5"/>
+
+            <TextBlock Grid.Column="0" Grid.Row="10" Text="Frequency"/>
+            <TextBlock Grid.Column="1" Grid.Row="10" Text="{Binding Frequency}" HorizontalAlignment="Right"/>
+            <Slider Grid.Column="0" Grid.Row="11" Grid.ColumnSpan="2" Value="{Binding Frequency}" Minimum="0" Maximum="5"/>
+
+            <TextBlock Grid.Column="0" Grid.Row="12" Text="Factor"/>
+            <TextBlock Grid.Column="1" Grid.Row="12" Text="{Binding Factor}" HorizontalAlignment="Right"/>
+            <Slider Grid.Column="0" Grid.Row="13" Grid.ColumnSpan="2" Value="{Binding Factor}" Minimum="0.001" Maximum="1"/>
+
+            <TextBlock Grid.Column="0" Grid.Row="14"  Text="Base color"/>
+            <xctk:ColorPicker Grid.Column="1" Grid.Row="14" SelectedColor="{Binding BaseColor}" />
 
 
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition/>
-                                <ColumnDefinition/>
-                            </Grid.ColumnDefinitions>
-                            <Label Grid.Column="0" Content="Amplitude"/>
-                            <TextBlock Grid.Column="1" Text="{Binding Amplitude, StringFormat={}{0:N2}}" HorizontalAlignment="Right"/>
-                        </Grid>
-                        <Slider Value="{Binding Amplitude}" Minimum="0" Maximum="5" Margin="0 0 0 10">
-                            <i:Interaction.Triggers>
-                                <i:EventTrigger EventName="ValueChanged">
-                                    <i:InvokeCommandAction Command="{Binding RenderCommand}"/>
-                                </i:EventTrigger>
-                            </i:Interaction.Triggers>
-                        </Slider>
-
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition/>
-                                <ColumnDefinition/>
-                            </Grid.ColumnDefinitions>
-                            <Label Grid.Column="0" Content="Frequency"/>
-                            <TextBlock Grid.Column="1" Text="{Binding Frequency, StringFormat={}{0:N2}}" HorizontalAlignment="Right"/>
-                        </Grid>
-                        <Slider Value="{Binding Frequency}" Minimum="0" Maximum="5" Margin="0 0 0 10">
-                            <i:Interaction.Triggers>
-                                <i:EventTrigger EventName="ValueChanged">
-                                    <i:InvokeCommandAction Command="{Binding RenderCommand}"/>
-                                </i:EventTrigger>
-                            </i:Interaction.Triggers>
-                        </Slider>
-
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition/>
-                                <ColumnDefinition/>
-                            </Grid.ColumnDefinitions>
-                            <Label Grid.Column="0" Content="Factor"/>
-                            <TextBlock Grid.Column="1" Text="{Binding Factor}" HorizontalAlignment="Right"/>
-                        </Grid>
-                        <Slider Value="{Binding Factor}" Minimum="0.0001" Maximum="1" Margin="0 0 0 10">
-                            <i:Interaction.Triggers>
-                                <i:EventTrigger EventName="ValueChanged">
-                                    <i:InvokeCommandAction Command="{Binding RenderCommand}"/>
-                                </i:EventTrigger>
-                            </i:Interaction.Triggers>
-                        </Slider>
-                    </StackPanel>
-                </TabItem>
-
-                <TabItem Header="Palette">
-                    <StackPanel>
-
-                        <CheckBox IsChecked="{Binding UseGrayScale}" Content="Use gray scale"/>
-                        <CheckBox IsChecked="{Binding IsHighlightValueEnabled}" Content="Highlight value"/>
-
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition/>
-                                <ColumnDefinition/>
-                            </Grid.ColumnDefinitions>
-                            <Label Grid.Column="0" Content="Highlighted value"/>
-                            <TextBlock Grid.Column="1" Text="{Binding HighlightedValue, StringFormat={}{0:N2}}" HorizontalAlignment="Right"/>
-                        </Grid>
-                        <Slider Value="{Binding HighlightedValue}" 
-                                Minimum="0" 
-                                Maximum="255">
-                            <!--Minimum="{Binding RecordedMin, Mode=OneWay}" 
-                            Maximum="{Binding RecordedMax, Mode=OneWay}" Margin="0 0 0 10">-->
-                            <i:Interaction.Triggers>
-                                <i:EventTrigger EventName="ValueChanged">
-                                    <i:InvokeCommandAction Command="{Binding RenderCommand}"/>
-                                </i:EventTrigger>
-                            </i:Interaction.Triggers>
-                        </Slider>
-
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition/>
-                                <ColumnDefinition/>
-                            </Grid.ColumnDefinitions>
-                            <Label Grid.Column="0" Content="Highlighted range"/>
-                            <TextBlock Grid.Column="1" Text="{Binding HighlightedRange, StringFormat={}{0:N2}}" HorizontalAlignment="Right"/>
-                        </Grid>
-                        <Slider Value="{Binding HighlightedRange}" Minimum="0" Maximum="100" Margin="0 0 0 10">
-                            <i:Interaction.Triggers>
-                                <i:EventTrigger EventName="ValueChanged">
-                                    <i:InvokeCommandAction Command="{Binding RenderCommand}"/>
-                                </i:EventTrigger>
-                            </i:Interaction.Triggers>
-                        </Slider>
-
-                        <CheckBox IsChecked="{Binding ShowWater}" Content="Show water"/>
-
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition/>
-                                <ColumnDefinition/>
-                            </Grid.ColumnDefinitions>
-                            <Label Grid.Column="0" Content="WaterLevel"/>
-                            <TextBlock Grid.Column="1" Text="{Binding WaterLevel}" HorizontalAlignment="Right"/>
-                        </Grid>
-                        <Slider Value="{Binding WaterLevel}" Minimum="0" Maximum="255" Margin="0 0 0 10">
-                            <i:Interaction.Triggers>
-                                <i:EventTrigger EventName="ValueChanged">
-                                    <i:InvokeCommandAction Command="{Binding RenderCommand}"/>
-                                </i:EventTrigger>
-                            </i:Interaction.Triggers>
-                        </Slider>
-
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition/>
-                                <ColumnDefinition/>
-                            </Grid.ColumnDefinitions>
-                            <Label Grid.Column="0" Content="GrassLevel"/>
-                            <TextBlock Grid.Column="1" Text="{Binding GrassLevel}" HorizontalAlignment="Right"/>
-                        </Grid>
-                        <Slider Value="{Binding GrassLevel}" Minimum="0" Maximum="255" Margin="0 0 0 10">
-                            <i:Interaction.Triggers>
-                                <i:EventTrigger EventName="ValueChanged">
-                                    <i:InvokeCommandAction Command="{Binding RenderCommand}"/>
-                                </i:EventTrigger>
-                            </i:Interaction.Triggers>
-                        </Slider>
-
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition/>
-                                <ColumnDefinition/>
-                            </Grid.ColumnDefinitions>
-                            <Label Grid.Column="0" Content="SnowLevel"/>
-                            <TextBlock Grid.Column="1" Text="{Binding SnowLevel}" HorizontalAlignment="Right"/>
-                        </Grid>
-                        <Slider Value="{Binding SnowLevel}" Minimum="0" Maximum="255" Margin="0 0 0 10">
-                            <i:Interaction.Triggers>
-                                <i:EventTrigger EventName="ValueChanged">
-                                    <i:InvokeCommandAction Command="{Binding RenderCommand}"/>
-                                </i:EventTrigger>
-                            </i:Interaction.Triggers>
-                        </Slider>
-
-                    </StackPanel>
-                </TabItem>
-            </TabControl>
-
-            
-            <TextBlock Text="{Binding Seed, StringFormat={}Seed: {0}}"/>
-            <TextBlock Text="{Binding RenderTime, StringFormat={}Render time: {0}}"/>
-            
-
-            <Button Content="Render" Command="{Binding RenderCommand}"/>
-            <Button Content="Reseed" Command="{Binding ReseedCommand}"/>
-
-        </StackPanel>
+            <TextBlock Grid.Column="0" Grid.Row="15" Text="Presets"/>
+            <StackPanel Orientation="Horizontal" Grid.Column="1" Grid.Row="15" HorizontalAlignment="Right">
+                <ComboBox ItemsSource="{Binding Presets}" 
+                          SelectedItem="{Binding SelectedPreset}" 
+                          DisplayMemberPath="Name"/>
+                <Button Content="Apply" Command="{Binding ApplyPresetCommand}"/>
+            </StackPanel>
 
 
+        </Grid>
+
+        <Grid Grid.Column="2">
+
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Text="Highlighting"/>
+            <Button Grid.Column="1" Grid.Row="0" Command="{Binding AddHighlightCommand}"
+                        FontFamily="{StaticResource FaSolid}" Content="&#x2b;"
+                        />
+
+            <ItemsControl BorderThickness="0" Margin="0" Padding="0" ItemsSource="{Binding Highlights}" Grid.Row="1" Grid.ColumnSpan="2" Grid.Column="0">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border BorderBrush="DarkSlateGray" BorderThickness="0 1 0 0" Margin="0 5" Padding="0 5">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition/>
+                                    <ColumnDefinition/>
+                                </Grid.ColumnDefinitions>
+
+                                <Grid.RowDefinitions>
+                                    <RowDefinition/>
+                                    <RowDefinition/>
+                                    <RowDefinition/>
+                                    <RowDefinition/>
+                                    <RowDefinition/>
+                                    <RowDefinition/>
+                                </Grid.RowDefinitions>
+
+                                <CheckBox Grid.Column="0" Grid.Row="0" Content="Solid" IsChecked="{Binding IsSolid}"/>
+                                <StackPanel Grid.Column="1" Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Right">
+                                    <Button HorizontalAlignment="Right" CommandParameter="{Binding}" 
+                                            FontFamily="{StaticResource FaSolid}" Content="&#xf00d;"
+                                            Command="{Binding ViewModel.RemoveHighlightCommand, RelativeSource={RelativeSource AncestorType=noiseGeneratorTest:MainWindow} }"/>
+                                    <Button HorizontalAlignment="Right" CommandParameter="{Binding}" 
+                                            FontFamily="{StaticResource FaSolid}" Content="&#xf0d8;"
+                                            Command="{Binding ViewModel.MoveHighlightUpCommand, RelativeSource={RelativeSource AncestorType=noiseGeneratorTest:MainWindow} }"/>
+                                    <Button HorizontalAlignment="Right" CommandParameter="{Binding}" 
+                                            FontFamily="{StaticResource FaSolid}" Content="&#xf0d7;"
+                                            Command="{Binding ViewModel.MoveHighlightDownCommand, RelativeSource={RelativeSource AncestorType=noiseGeneratorTest:MainWindow} }"/>
+                                </StackPanel>
+
+                                <TextBlock Grid.Column="0" Grid.Row="1" Text="Value"/>
+                                <TextBlock Grid.Column="1" Grid.Row="1" Text="{Binding Value}" HorizontalAlignment="Right"/>
+                                <Slider Grid.Column="0" Grid.Row="2" Grid.ColumnSpan="2" Value="{Binding Value}" Minimum="0" Maximum="255"/>
+
+                                <TextBlock Grid.Column="0" Grid.Row="3" Text="Range"/>
+                                <TextBlock Grid.Column="1" Grid.Row="3" Text="{Binding Range}" HorizontalAlignment="Right"/>
+                                <Slider Grid.Column="0" Grid.Row="4" Grid.ColumnSpan="2" Value="{Binding Range}" Minimum="0" Maximum="255"/>
+
+                                <TextBlock Grid.Column="0" Grid.Row="5"  Text="Base color"/>
+                                <xctk:ColorPicker Grid.Column="1" Grid.Row="5" SelectedColor="{Binding Color}" />
+
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </Grid>
 
     </Grid>
 </Window>

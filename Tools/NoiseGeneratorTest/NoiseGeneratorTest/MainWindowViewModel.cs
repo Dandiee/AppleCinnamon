@@ -1,309 +1,146 @@
-﻿using System.Diagnostics;
-using System.Drawing;
-using System.Windows;
+﻿using System.ComponentModel;
+using System.Diagnostics;
 using System.Windows.Input;
-using System.Windows.Interop;
-using System.Windows.Media.Imaging;
 using Prism.Commands;
 using Prism.Mvvm;
-using SharpDX.Direct3D9;
-using SharpDX.Mathematics.Interop;
 
 namespace NoiseGeneratorTest
 {
-    public class MainWindowViewModel : BindableBase
+    public partial class MainWindowViewModel : BindableBase
     {
         private readonly MainWindow _window;
-        private readonly D3DImage _d3DImage;
-        private readonly Device _device;
+        private readonly Random _random = new();
 
-        private BitmapImage _image;
-        public BitmapImage Image
-        {
-            get => _image;
-            set => SetProperty(ref _image, value);
-        }
-
-        private int _width = 256;
-        public int Width
-        {
-            get => _width;
-            set
-            {
-                if (SetProperty(ref _width, value))
-                {
-                    _bytes = new byte[Width * Height * 4];
-                }
-            }
-        }
-
-        private int _height = 256;
-        public int Height
-        {
-            get => _height;
-            set
-            {
-                if (SetProperty(ref _height, value))
-                {
-                    _bytes = new byte[Width * Height * 4];
-                }
-            }
-        }
-
-
-        private int _octaves;
-        public int Octaves
-        {
-            get => _octaves;
-            set
-            {
-                if (SetProperty(ref _octaves, value))
-                {
-                    _octaveNoise = new OctaveNoise(Octaves, new Random(Seed));
-                }
-            }
-        }
-
-        private float _factor;
-        public float Factor
-        {
-            get => _factor;
-            set => SetProperty(ref _factor, value);
-        }
-
-        private float _amplitude = 1;
-        public float Amplitude
-        {
-            get => _amplitude;
-            set => SetProperty(ref _amplitude, value);
-        }
-
-        private float _frequency = 1;
-        public float Frequency
-        {
-            get => _frequency;
-            set => SetProperty(ref _frequency, value);
-        }
-
-
-        private int _renderTime;
-        public int RenderTime
-        {
-            get => _renderTime;
-            set => SetProperty(ref _renderTime, value);
-        }
-
-
-        private int _waterLevel;
-        public int WaterLevel
-        {
-            get => _waterLevel;
-            set => SetProperty(ref _waterLevel, value);
-        }
-
-        private int _snowLevel;
-        public int SnowLevel
-        {
-            get => _snowLevel;
-            set => SetProperty(ref _snowLevel, value);
-        }
-
-        private int _grassLevel;
-        public int GrassLevel
-        {
-            get => _grassLevel;
-            set => SetProperty(ref _grassLevel, value);
-        }
-
-        private bool _useGrayScale;
-        public bool UseGrayScale
-        {
-            get => _useGrayScale;
-            set => SetProperty(ref _useGrayScale, value);
-        }
-
-        private bool _isHighlightValueEnabled;
-        public bool IsHighlightValueEnabled
-        {
-            get => _isHighlightValueEnabled;
-            set => SetProperty(ref _isHighlightValueEnabled, value);
-        }
-
-        private bool _showWater = false;
-        public bool ShowWater
-        {
-            get => _showWater;
-            set => SetProperty(ref _showWater, value);
-        }
-
-
-        private byte _highlightedValue;
-        public byte HighlightedValue
-        {
-            get => _highlightedValue;
-            set => SetProperty(ref _highlightedValue, value);
-        }
-
-        private byte _highlightedRange;
-        public byte HighlightedRange
-        {
-            get => _highlightedRange;
-            set => SetProperty(ref _highlightedRange, value);
-        }
-
-
-        private int _offset;
-        public int Offset
-        {
-            get => _offset;
-            set => SetProperty(ref _offset, value);
-        }
-
-        private int _seed;
-        public int Seed
-        {
-            get => _seed;
-            set => SetProperty(ref _seed, value);
-        }
+        private bool _supressRender;
+        private byte[] _bytes;
+        private OctaveNoise _octaveNoise;
 
         public ICommand RenderCommand { get; }
         public ICommand ReseedCommand { get; }
+        public ICommand AddHighlightCommand { get; }
+        public ICommand MoveHighlightUpCommand { get; }
+        public ICommand MoveHighlightDownCommand { get; }
+        public ICommand RemoveHighlightCommand { get; }
+        public ICommand ApplyPresetCommand { get; }
 
-        private readonly Random _random = new Random();
-
-
-        public MainWindowViewModel(MainWindow window, D3DImage d3DImage, Device device)
+        public MainWindowViewModel(MainWindow window)
         {
             _window = window;
-            _d3DImage = d3DImage;
-            _device = device;
-            Octaves = 8;
-            Factor = 0.47f;
-            Amplitude = 1.1f;
-            Frequency = 0.4f;
-            Offset = 134;
-
-            WaterLevel = 119;
-            SnowLevel = 128;
-            GrassLevel = 65;
-            Seed = 1513;// _random.Next(0, 9999);
+            
             RenderCommand = new DelegateCommand(Render);
-            ReseedCommand = new DelegateCommand(Reseed);
+            ApplyPresetCommand = new DelegateCommand(ApplyPreset);
+            ReseedCommand = new DelegateCommand(() => Seed = _random.Next(0, 9999));
+            AddHighlightCommand = new DelegateCommand(() => Highlights.Add(new HighlightViewModel()));
+            MoveHighlightUpCommand = new DelegateCommand<HighlightViewModel>(h =>
+            {
+                var index = Highlights.IndexOf(h);
+                if (index > 0)
+                {
+                    Highlights.Move(index, index - 1);
+                }
+            });
 
-            _bytes = new byte[Width * Height * 4];
-            _octaveNoise = new OctaveNoise(Octaves, new Random(Seed));
-        }
+            MoveHighlightDownCommand = new DelegateCommand<HighlightViewModel>(h =>
+            {
+                var index = Highlights.IndexOf(h);
+                if (index < Highlights.Count - 1)
+                {
+                    Highlights.Move(index, index + 1);
+                }
+            });
 
-        private void Reseed()
-        {
-            Seed = _random.Next(0, 9999);
-            _octaveNoise = new OctaveNoise(Octaves, new Random(Seed));
+            RemoveHighlightCommand = new DelegateCommand<HighlightViewModel>(h => Highlights.Remove(h));
+
+            Highlights.CollectionChanged += (_, args) =>
+            {
+                if (args.NewItems != null)
+                {
+                    foreach (var item in args.NewItems.OfType<BindableBase>())
+                    {
+                        item.PropertyChanged += OnHighlightChanged;
+                    }
+                }
+
+                if (args.OldItems != null)
+                {
+                    foreach (var item in args.OldItems.OfType<BindableBase>())
+                    {
+                        item.PropertyChanged -= OnHighlightChanged;
+                    }
+                }
+
+                Render();
+            };
+
+            InitializePresets();
+            ResizeArray();
+            RecreateNoise();
             Render();
         }
 
-        private byte[] _bytes;
-        private OctaveNoise _octaveNoise;
+        private void OnHighlightChanged(object? sender, PropertyChangedEventArgs e) => Render();
+
+        private void ResizeArray() => _bytes = new byte[Width * Height * 4];
+        private void RecreateNoise() => _octaveNoise = new OctaveNoise(Octaves, new Random(Seed));
+
+        private void Render()
+        {
+            if (!_supressRender)
+            {
+                var sw = Stopwatch.StartNew();
+                GenerateNoise();
+                sw.Stop();
+                RenderTime = (int)sw.ElapsedMilliseconds;
+            }
+        }
 
         private void GenerateNoise()
         {
             var fromI = Width / -2;
             var fromJ = Height / -2;
-
+            
             Parallel.For(0, Width * Height, ij =>
-            //for (var ij = 0; ij < Width * Height; ij++)
             {
                 var i = ij % Width;
                 var j = ij / Width;
 
                 var value = _octaveNoise.Compute(i + fromI, j + fromJ, Amplitude, Frequency);
                 var factoredByteValue = (byte)(value * Factor + Offset);
+                var ratio = factoredByteValue / 255f;
 
                 var offset = ij * 4;
 
-                _bytes[offset + 0] = factoredByteValue; // BLUE
-                _bytes[offset + 1] = factoredByteValue; // GREEN
-                _bytes[offset + 2] = factoredByteValue; // RED
+                var r = (byte)(BaseColor.R * ratio);
+                var g = (byte)(BaseColor.G * ratio);
+                var b = (byte)(BaseColor.B * ratio);
+
+                foreach (var highlight in Highlights)
+                {
+                    var highlightFactor = highlight.IsSolid ? 1 : ratio;
+
+                    if (Math.Abs(factoredByteValue - highlight.Value) < highlight.Range)
+                    {
+                        r = (byte)(highlight.Color.R * highlightFactor);
+                        g = (byte)(highlight.Color.G * highlightFactor); 
+                        b = (byte)(highlight.Color.B * highlightFactor);
+                    }
+                }
+
+                _bytes[offset + 0] = b; // BLUE
+                _bytes[offset + 1] = g; // GREEN
+                _bytes[offset + 2] = r; // RED
                 _bytes[offset + 3] = 255; // ALPHA
             });
 
-            var imageSurface = Surface.CreateOffscreenPlain(_device, Width, Height, Format.A8R8G8B8, Pool.SystemMemory);
-            Surface.FromMemory(imageSurface, _bytes, Filter.None, 0, Format.A8R8G8B8, 4 * Width, new RawRectangle(0, 0, Width, Height));
-            _window.Draw(imageSurface, Width, Height);
+            _window.Draw(ref _bytes, Width, Height);
         }
 
-        private void Render()
+        private void SetPropertyAndRender<T>(ref T storage, T value, string propertyName = null)
         {
-            var sw = Stopwatch.StartNew();
-            GenerateNoise();
-            sw.Stop();
-            RenderTime = (int)sw.ElapsedMilliseconds;
+            if (base.SetProperty(ref storage, value, propertyName))
+            {
+                Render();
+            }
         }
-
-
-
-        private static readonly Color WaterColor = Color.Aqua;
-        private static readonly Color SnowColor = Color.Snow;
-        private static readonly Color GrassColor = Color.Green;
-
-
-
-        //private Bitmap GetBitmap(byte[,] heightMap)
-        //{
-        //    var bitmap = new Bitmap(Width, Height, PixelFormat.Format32bppArgb);
-
-        //    for (var i = 0; i < Width; i++)
-        //    {
-        //        for (var j = 0; j < Height; j++)
-        //        {
-        //            var height = heightMap[i, j];
-        //            var color = Color.Empty;
-        //            var refHeight = 0;
-
-        //            if (UseGrayScale)
-        //            {
-        //                refHeight = height;
-        //                color = Color.FromArgb(height, height, height);
-        //            }
-        //            else
-        //            {
-        //                if (height < WaterLevel)
-        //                {
-        //                    color = WaterColor;
-        //                    refHeight = WaterLevel - height;
-        //                }
-        //                else if (height < SnowLevel)
-        //                {
-        //                    color = GrassColor;
-        //                    refHeight = height - WaterLevel;
-        //                }
-        //                else
-        //                {
-        //                    color = SnowColor;
-        //                    refHeight = 255 - height;
-        //                }
-        //            }
-
-        //            if (ShowWater)
-        //            {
-        //                if (height <= WaterLevel)
-        //                {
-        //                    color = WaterColor;
-        //                }
-        //            }
-
-        //            if (IsHighlightValueEnabled)
-        //            {
-        //                if (Math.Abs(height - HighlightedValue) <= HighlightedRange)
-        //                {
-        //                    color = Color.Red;
-        //                }
-        //            }
-
-        //            bitmap.SetPixel(i, j, Color.FromArgb(refHeight, color));
-        //        }
-        //    }
-
-        //    return bitmap;
-        //}
     }
 }

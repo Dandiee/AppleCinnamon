@@ -10,6 +10,11 @@
 		<OutputType>WinExe</OutputType>
 	</PropertyGroup>
 
+
+	<ItemGroup>
+	  <None Remove="Resources\FaFonts\fa-solid-900.ttf" />
+	</ItemGroup>
+
   <ItemGroup>
     <Reference Include="CommonServiceLocator, Version=2.0.4.0, Culture=neutral, PublicKeyToken=489b6accfaf20ef0, processorArchitecture=MSIL">
       <HintPath>..\packages\CommonServiceLocator.2.0.4\lib\net47\CommonServiceLocator.dll</HintPath>
@@ -27,11 +32,17 @@
 
 
 	<ItemGroup>
+		<PackageReference Include="Extended.Wpf.Toolkit" Version="4.5.0" />
 		<PackageReference Include="SharpDX" Version="4.2.0" />
 		<PackageReference Include="SharpDX.Direct2D1" Version="4.2.0" />
 		<PackageReference Include="SharpDX.Direct3D11" Version="4.2.0" />
 		<PackageReference Include="SharpDX.Direct3D9" Version="4.2.0" />
 		<PackageReference Include="SharpDX.DXGI" Version="4.2.0" />
+	</ItemGroup>
+
+
+	<ItemGroup>
+	  <Resource Include="Resources\FaFonts\fa-solid-900.ttf" />
 	</ItemGroup>
   
 </Project>
