@@ -13,6 +13,8 @@ public static class ArtifactGenerator
 
     public static Chunk Generate(Chunk chunk)
     {
+        return chunk;
+
         var rnd = new Random(chunk.ChunkIndex.GetHashCode());
 
         foreach (var flatIndex in chunk.BuildingContext.TopMostLandVoxels)

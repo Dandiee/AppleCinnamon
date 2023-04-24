@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Windows.Input;
 using Prism.Commands;
 using Prism.Mvvm;
+using SharpDX;
 
 namespace NoiseGeneratorTest
 {
@@ -88,13 +89,62 @@ namespace NoiseGeneratorTest
             if (!_supressRender)
             {
                 var sw = Stopwatch.StartNew();
-                GenerateNoise();
+                GenerateFbmNoise();
                 sw.Stop();
                 RenderTime = (int)sw.ElapsedMilliseconds;
             }
         }
 
-        private void GenerateNoise()
+        private void GenerateFbmNoise()
+        {
+            var fromI = Width / -2;
+            var fromJ = Height / -2;
+
+            var noise = new FractionalBrownianMotionNoise()
+            {
+                Octaves = Octaves,
+                Amplitude = Amplitude
+            };
+
+            Parallel.For(0, Width * Height, ij =>
+            {
+                var i = ij % Width;
+                var j = ij / Width;
+
+                var x = ((float)i / Width) * 3;
+                var y = ((float)j / Height) * 3;
+
+                var value = noise.GetValue(new Vector2(x, y));
+                var factoredByteValue = (byte)(value * 255);
+
+                var offset = ij * 4;
+
+                var r = (byte)(BaseColor.R * value);
+                var g = (byte)(BaseColor.G * value);
+                var b = (byte)(BaseColor.B * value);
+
+                foreach (var highlight in Highlights)
+                {
+                    var highlightFactor = highlight.IsSolid ? 1 : value;
+
+                    if (Math.Abs(factoredByteValue - highlight.Value) < highlight.Range)
+                    {
+                        r = (byte)(highlight.Color.R * highlightFactor);
+                        g = (byte)(highlight.Color.G * highlightFactor);
+                        b = (byte)(highlight.Color.B * highlightFactor);
+                    }
+                }
+
+                _bytes[offset + 0] = b; // BLUE
+                _bytes[offset + 1] = g; // GREEN
+                _bytes[offset + 2] = r; // RED
+                _bytes[offset + 3] = 255; // ALPHA
+            });
+
+            _window.Draw(ref _bytes, Width, Height);
+        }
+
+        private void GenerateNotchyNoise()
         {
             var fromI = Width / -2;
             var fromJ = Height / -2;
