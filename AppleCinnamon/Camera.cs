@@ -12,7 +12,7 @@ namespace AppleCinnamon;
 public sealed class Camera
 {
     private readonly GraphicsContext _graphicsContext;
-        
+
     private DateTime _lastModification;
 
     public Vector3 Position { get; set; }
@@ -31,6 +31,7 @@ public sealed class Camera
     public Keyboard Keyboard { get; set; }
     public Mouse Mouse { get; set; }
 
+    public bool IsFlying { get; private set; }
     public float Yaw { get; private set; }
     public float Pitch { get; private set; }
 
@@ -197,11 +198,14 @@ public sealed class Camera
 
         if (!GameOptions.IsPaused)
         {
-            Velocity += CameraOptions.Gravity * t;
-
-            if (IsInWater)
+            if (!IsFlying)
             {
-                Velocity += CameraOptions.Gravity * -t;
+                Velocity += CameraOptions.Gravity * t;
+
+                if (IsInWater)
+                {
+                    Velocity += CameraOptions.Gravity * -t;
+                }
             }
         }
 
@@ -218,6 +222,25 @@ public sealed class Camera
             var direction = Vector3.UnitX.Rotate(Vector3.UnitY, Yaw);
             var directionNormal = new Vector3(-direction.Z, 0, direction.X);
             var translationVector = Vector3.Zero;
+
+            if (!CurrentKeyboardState.IsPressed(Key.Q) && LastKeyboardState.IsPressed(Key.Q))
+            {
+                IsFlying = !IsFlying;
+            }
+
+            if (IsFlying)
+            {
+                t *= 8;
+                Velocity = Vector3.Zero;
+                direction = Vector3.Normalize(LookAt);
+                directionNormal = new Vector3(-direction.Z, 0, direction.X);
+
+
+                if (CurrentKeyboardState.IsPressed(Key.Space))
+                {
+                    translationVector += Vector3.Up;
+                }
+            }
 
             if (CurrentKeyboardState.IsPressed(Key.W))
             {
@@ -246,7 +269,7 @@ public sealed class Camera
             }
         }
 
-        if ((!IsInAir || IsInWater) && CurrentKeyboardState.IsPressed(Key.Space))
+        if ((!IsInAir || IsInWater) && CurrentKeyboardState.IsPressed(Key.Space) && !IsFlying)
         {
             IsInAir = true;
             Velocity = new Vector3(Velocity.X, jumpVelocity * (CurrentKeyboardState.IsPressed(Key.LeftShift) ? sprintSpeedFactor : 1), Velocity.Z);
