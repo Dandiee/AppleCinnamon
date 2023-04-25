@@ -9,6 +9,7 @@ namespace NoiseGeneratorTest
 
         public int Octaves { get; set; }
         public float Amplitude { get; set; }
+        public float Frequency { get; set; }
 
         public float GetValue(Vector2 input)
         {
@@ -20,7 +21,7 @@ namespace NoiseGeneratorTest
             {
                 value += amplitude * Noise(input);
                 //input = input.Rotate(0.5f) * 2 + shift;
-                //input *= 2;
+                input *= 2;
                 amplitude *= .5f;
             }
             return value;
@@ -30,7 +31,7 @@ namespace NoiseGeneratorTest
         private static readonly float RandomScalar = 43758.5453123f;
 
         
-        private static float Noise(Vector2 input)
+        private float Noise(Vector2 input)
         {
             var i = input.Floor();
             var f = input.Fract();
@@ -41,7 +42,7 @@ namespace NoiseGeneratorTest
             var c = Random(i + Vector2.UnitY);
             var d = Random(i + Vector2.One);
 
-            var u = f * f * (3.0f - 2.0f * f);
+            var u = f * f * (3 - 2.0f * f);
 
             return u.X.Mix(a, b) +
                    (c - a) * u.Y * (1.0f - u.X) +

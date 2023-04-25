@@ -17,11 +17,29 @@
         </Grid.ColumnDefinitions>
 
         <Grid Grid.Column="1" Margin="10" Background="LightBlue">
-            <Image>
+            <!--<Image>
                 <Image.Source>
                     <interop:D3DImage x:Name="NoiseD3DImage" />
                 </Image.Source>
-            </Image>
+            </Image>-->
+
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+
+                <noiseGeneratorTest:D3dImageUc x:Name="MainImage" Grid.Column="0" Grid.Row="1"/>
+                <noiseGeneratorTest:D3dImageUc x:Name="MainImage2" Grid.Column="1" Grid.Row="1"/>
+                <noiseGeneratorTest:D3dImageUc x:Name="SumImage" Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="2"/>
+
+            </Grid>
+            
         </Grid>
 
         <Grid Grid.Column="0">
@@ -30,6 +48,7 @@
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
@@ -71,7 +90,7 @@
 
             <TextBlock Grid.Column="0" Grid.Row="10" Text="Frequency"/>
             <TextBlock Grid.Column="1" Grid.Row="10" Text="{Binding Frequency}" HorizontalAlignment="Right"/>
-            <Slider Grid.Column="0" Grid.Row="11" Grid.ColumnSpan="2" Value="{Binding Frequency}" Minimum="0" Maximum="5"/>
+            <Slider Grid.Column="0" Grid.Row="11" Grid.ColumnSpan="2" Value="{Binding Frequency}" Minimum="0" Maximum="10"/>
 
             <TextBlock Grid.Column="0" Grid.Row="12" Text="Factor"/>
             <TextBlock Grid.Column="1" Grid.Row="12" Text="{Binding Factor}" HorizontalAlignment="Right"/>
@@ -89,7 +108,8 @@
                 <Button Content="Apply" Command="{Binding ApplyPresetCommand}"/>
             </StackPanel>
 
-
+            <TextBlock Grid.Column="0" Grid.Row="16" Text="Render"/>
+            <TextBlock Grid.Column="1" Grid.Row="16" Text="{Binding RenderTime}" HorizontalAlignment="Right"/>
         </Grid>
 
         <Grid Grid.Column="2">

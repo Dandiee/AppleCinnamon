@@ -89,21 +89,23 @@ namespace NoiseGeneratorTest
             if (!_supressRender)
             {
                 var sw = Stopwatch.StartNew();
-                GenerateFbmNoise();
+                //GenerateFbmNoise();
+                //GenerateDiscreteFbmNoise();
+                GenerateNotchyNoise();
                 sw.Stop();
                 RenderTime = (int)sw.ElapsedMilliseconds;
             }
         }
 
-        private void GenerateFbmNoise()
+        private void GenerateDiscreteFbmNoise()
         {
-            var fromI = Width / -2;
-            var fromJ = Height / -2;
-
-            var noise = new FractionalBrownianMotionNoise()
+            var noise = new DiscreteFractionalBrownianMotionNoise()
             {
                 Octaves = Octaves,
-                Amplitude = Amplitude
+                Amplitude = Amplitude,
+                Width = Width,
+                Height = Height,
+                Frequency = Frequency
             };
 
             Parallel.For(0, Width * Height, ij =>
@@ -111,8 +113,52 @@ namespace NoiseGeneratorTest
                 var i = ij % Width;
                 var j = ij / Width;
 
-                var x = ((float)i / Width) * 3;
-                var y = ((float)j / Height) * 3;
+                var value = noise.GetValue(i, j);
+                var factoredByteValue = (byte)(value * 255);
+
+                var offset = ij * 4;
+
+                var r = (byte)(BaseColor.R * value);
+                var g = (byte)(BaseColor.G * value);
+                var b = (byte)(BaseColor.B * value);
+
+                foreach (var highlight in Highlights)
+                {
+                    var highlightFactor = highlight.IsSolid ? 1 : value;
+
+                    if (Math.Abs(factoredByteValue - highlight.Value) < highlight.Range)
+                    {
+                        r = (byte)(highlight.Color.R * highlightFactor);
+                        g = (byte)(highlight.Color.G * highlightFactor);
+                        b = (byte)(highlight.Color.B * highlightFactor);
+                    }
+                }
+
+                _bytes[offset + 0] = b; // BLUE
+                _bytes[offset + 1] = g; // GREEN
+                _bytes[offset + 2] = r; // RED
+                _bytes[offset + 3] = 255; // ALPHA
+            });
+
+            _window.Draw(ref _bytes, Width, Height);
+        }
+
+        private void GenerateFbmNoise()
+        {
+            var noise = new FractionalBrownianMotionNoise()
+            {
+                Octaves = Octaves,
+                Amplitude = Amplitude,
+                Frequency = Frequency
+            };
+
+            Parallel.For(0, Width * Height, ij =>
+            {
+                var i = ij % Width;
+                var j = ij / Width;
+
+                var x = ((float)i / Width) * Frequency;
+                var y = ((float)j / Height) * Frequency;
 
                 var value = noise.GetValue(new Vector2(x, y));
                 var factoredByteValue = (byte)(value * 255);

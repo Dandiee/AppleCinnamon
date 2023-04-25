@@ -106,6 +106,5 @@ namespace NoiseGeneratorTest
             get => _offset;
             set => SetPropertyAndRender(ref _offset, value);
         }
-        
     }
 }

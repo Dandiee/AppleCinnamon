@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
@@ -17,6 +18,8 @@ namespace NoiseGeneratorTest.Extensions
 
         public static float Fract(this float f) => (float)(f - Math.Floor(f));
         public static float Fract(this double f) => (float)(f - Math.Floor(f));
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float Mix(this float value, float min, float max) => min + value * (max - min);
         public static Vector2 Rotate(this Vector2 v, float alpha)
         {
