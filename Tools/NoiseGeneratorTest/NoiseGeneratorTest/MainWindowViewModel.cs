@@ -34,13 +34,20 @@ namespace NoiseGeneratorTest
 
                 for(var ij = 0; ij < bytes.Length; ij++)
                 {
-                    var left = PerlinLeft.Bytes[ij] / 255f;
-                    var right = PerlinRight.Bytes[ij];
+                    if ((ij + 1) % 4 == 0)
+                    {
+                        bytes[ij] = 255; // leave the alpha channel alone
+                    }
+                    else
+                    {
+                        var left = PerlinLeft.Bytes[ij] / 255f;
+                        var right = PerlinRight.Bytes[ij];
 
-                    //byte total = (byte)((byte)(left / 2) + (byte)(right / 2));
-                    byte total = (byte)(left * right);
+                        //byte total = (byte)((byte)(left / 2) + (byte)(right / 2));
+                        byte total = (byte)(left * right);
 
-                    bytes[ij] = total;
+                        bytes[ij] = total;
+                    }
                 };
 
                 _window.ImageSum.Draw(ref bytes, width, height);

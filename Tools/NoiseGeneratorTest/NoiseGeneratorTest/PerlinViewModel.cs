@@ -2,9 +2,10 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Windows.Input;
-using System.Windows.Media;
 using Prism.Commands;
 using Prism.Mvvm;
+using SharpDX;
+using Color = System.Windows.Media.Color;
 
 namespace NoiseGeneratorTest
 {
@@ -176,6 +177,27 @@ namespace NoiseGeneratorTest
             set => SetProperty(ref _renderTime, value);
         }
 
+        private float _minimumValue;
+        public float MinimumValue
+        {
+            get => _minimumValue;
+            set => SetProperty(ref _minimumValue, value);
+        }
+
+        private float _maximumValue;
+        public float MaximumValue
+        {
+            get => _maximumValue;
+            set => SetProperty(ref _maximumValue, value);
+        }
+
+        private float _valueRange;
+        public float ValueRange
+        {
+            get => _valueRange;
+            set => SetProperty(ref _valueRange, value);
+        }
+
 
         private int _offset = 92;
         public int Offset
@@ -213,13 +235,22 @@ namespace NoiseGeneratorTest
             var fromI = Width / -2;
             var fromJ = Height / -2;
 
-            Parallel.For(0, Width * Height, ij =>
+            var lockObj = new object();
+
+            var globalMinMax = new Vector2(9999, -9999);
+
+            Parallel.For(0, Width * Height, 
+                () => new Vector2(float.MaxValue, float.MinValue), 
+                (ij, state,  localMinMax) =>
             {
                 var i = ij % Width;
                 var j = ij / Width;
 
                 var value = _octaveNoise.Compute(i + fromI, j + fromJ, Amplitude, Frequency);
-                
+
+                if (localMinMax.X > value) localMinMax.X = value;
+                if (localMinMax.Y < value) localMinMax.Y = value;
+
                 var factoredByteValue = (byte)(value * Factor + Offset);
                 
                 var ratio = factoredByteValue / 255f;
@@ -246,7 +277,20 @@ namespace NoiseGeneratorTest
                 Bytes[offset + 1] = g; // GREEN
                 Bytes[offset + 2] = r; // RED
                 Bytes[offset + 3] = 255; // ALPHA
+
+                return localMinMax;
+            }, localMinMax =>
+            {
+                lock (lockObj)
+                {
+                    if (globalMinMax.X > localMinMax.X) globalMinMax.X = localMinMax.X;
+                    if (globalMinMax.Y < localMinMax.Y) globalMinMax.Y = localMinMax.Y;
+                }
             });
+
+            MinimumValue = globalMinMax.X;
+            MaximumValue = globalMinMax.Y;
+            ValueRange = MaximumValue - MinimumValue;
 
             _image.Draw(ref Bytes, Width, Height);
 

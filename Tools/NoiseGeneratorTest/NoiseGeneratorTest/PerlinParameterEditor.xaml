@@ -32,6 +32,8 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
         <TextBlock Grid.Column="0" Grid.Row="0" Text="Width"/>
@@ -76,5 +78,14 @@
 
         <TextBlock Grid.Column="0" Grid.Row="16" Text="Render"/>
         <TextBlock Grid.Column="1" Grid.Row="16" Text="{Binding RenderTime}" HorizontalAlignment="Right"/>
+        
+        <TextBlock Grid.Column="0" Grid.Row="17" Text="Minimum"/>
+        <TextBlock Grid.Column="1" Grid.Row="17" Text="{Binding MinimumValue, StringFormat={}{0:N2}}" HorizontalAlignment="Right"/>
+
+        <TextBlock Grid.Column="0" Grid.Row="18" Text="Maximum"/>
+        <TextBlock Grid.Column="1" Grid.Row="18" Text="{Binding MaximumValue, StringFormat={}{0:N2}}" HorizontalAlignment="Right"/>
+
+        <TextBlock Grid.Column="0" Grid.Row="19" Text="Range"/>
+        <TextBlock Grid.Column="1" Grid.Row="19" Text="{Binding ValueRange, StringFormat={}{0:N2}}" HorizontalAlignment="Right"/>
     </Grid>
 </UserControl>
