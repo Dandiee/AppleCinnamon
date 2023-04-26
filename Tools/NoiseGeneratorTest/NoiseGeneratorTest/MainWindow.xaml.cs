@@ -1,9 +1,4 @@
-﻿using SharpDX.Direct3D9;
-using System.Windows.Interop;
-using System.Windows;
-using SharpDX.Mathematics.Interop;
-
-namespace NoiseGeneratorTest
+﻿namespace NoiseGeneratorTest
 {
     public partial class MainWindow
     {
@@ -32,8 +27,8 @@ namespace NoiseGeneratorTest
 
         public void Draw(ref byte[] bytes, int width, int height)
         {
-            MainImage.Draw(ref bytes, width, height);
-            MainImage2.Draw(ref bytes, width, height);
+            //MainImage.Draw(ref bytes, width, height);
+            //MainImage2.Draw(ref bytes, width, height);
 
             //if (!NoiseD3DImage.TryLock(Timeout))
             //{

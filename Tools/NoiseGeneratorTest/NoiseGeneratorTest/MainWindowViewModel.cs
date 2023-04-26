@@ -1,9 +1,4 @@
-﻿using System.ComponentModel;
-using System.Diagnostics;
-using System.Windows.Input;
-using Prism.Commands;
-using Prism.Mvvm;
-using SharpDX;
+﻿using Prism.Mvvm;
 
 namespace NoiseGeneratorTest
 {
@@ -12,230 +7,43 @@ namespace NoiseGeneratorTest
         private readonly MainWindow _window;
         private readonly Random _random = new();
 
-        private bool _supressRender;
-        private byte[] _bytes;
-        private OctaveNoise _octaveNoise;
-
-        public ICommand RenderCommand { get; }
-        public ICommand ReseedCommand { get; }
-        public ICommand AddHighlightCommand { get; }
-        public ICommand MoveHighlightUpCommand { get; }
-        public ICommand MoveHighlightDownCommand { get; }
-        public ICommand RemoveHighlightCommand { get; }
-        public ICommand ApplyPresetCommand { get; }
+        public PerlinViewModel PerlinLeft { get; }
+        public PerlinViewModel PerlinRight { get; }
 
         public MainWindowViewModel(MainWindow window)
         {
             _window = window;
-            
-            RenderCommand = new DelegateCommand(Render);
-            ApplyPresetCommand = new DelegateCommand(ApplyPreset);
-            ReseedCommand = new DelegateCommand(() => Seed = _random.Next(0, 9999));
-            AddHighlightCommand = new DelegateCommand(() => Highlights.Add(new HighlightViewModel()));
-            MoveHighlightUpCommand = new DelegateCommand<HighlightViewModel>(h =>
-            {
-                var index = Highlights.IndexOf(h);
-                if (index > 0)
-                {
-                    Highlights.Move(index, index - 1);
-                }
-            });
-
-            MoveHighlightDownCommand = new DelegateCommand<HighlightViewModel>(h =>
-            {
-                var index = Highlights.IndexOf(h);
-                if (index < Highlights.Count - 1)
-                {
-                    Highlights.Move(index, index + 1);
-                }
-            });
-
-            RemoveHighlightCommand = new DelegateCommand<HighlightViewModel>(h => Highlights.Remove(h));
-
-            Highlights.CollectionChanged += (_, args) =>
-            {
-                if (args.NewItems != null)
-                {
-                    foreach (var item in args.NewItems.OfType<BindableBase>())
-                    {
-                        item.PropertyChanged += OnHighlightChanged;
-                    }
-                }
-
-                if (args.OldItems != null)
-                {
-                    foreach (var item in args.OldItems.OfType<BindableBase>())
-                    {
-                        item.PropertyChanged -= OnHighlightChanged;
-                    }
-                }
-
-                Render();
-            };
 
             InitializePresets();
-            ResizeArray();
-            RecreateNoise();
-            Render();
+
+            PerlinLeft = new PerlinViewModel(window.ImageLeft);
+            PerlinRight = new PerlinViewModel(window.ImageRight);
+
+            PerlinLeft.Rendered += (_, _) => SourceChanged();
+            PerlinRight.Rendered += (_, _) => SourceChanged();
         }
 
-        private void OnHighlightChanged(object? sender, PropertyChangedEventArgs e) => Render();
-
-        private void ResizeArray() => _bytes = new byte[Width * Height * 4];
-        private void RecreateNoise() => _octaveNoise = new OctaveNoise(Octaves, new Random(Seed));
-
-        private void Render()
+        private void SourceChanged()
         {
-            if (!_supressRender)
+            if (PerlinLeft.Width == PerlinRight.Width && PerlinLeft.Height == PerlinRight.Height)
             {
-                var sw = Stopwatch.StartNew();
-                //GenerateFbmNoise();
-                //GenerateDiscreteFbmNoise();
-                GenerateNotchyNoise();
-                sw.Stop();
-                RenderTime = (int)sw.ElapsedMilliseconds;
-            }
-        }
+                var width = PerlinLeft.Width;
+                var height = PerlinLeft.Height;
 
-        private void GenerateDiscreteFbmNoise()
-        {
-            var noise = new DiscreteFractionalBrownianMotionNoise()
-            {
-                Octaves = Octaves,
-                Amplitude = Amplitude,
-                Width = Width,
-                Height = Height,
-                Frequency = Frequency
-            };
+                var bytes = new byte[PerlinLeft.Bytes.Length];
 
-            Parallel.For(0, Width * Height, ij =>
-            {
-                var i = ij % Width;
-                var j = ij / Width;
-
-                var value = noise.GetValue(i, j);
-                var factoredByteValue = (byte)(value * 255);
-
-                var offset = ij * 4;
-
-                var r = (byte)(BaseColor.R * value);
-                var g = (byte)(BaseColor.G * value);
-                var b = (byte)(BaseColor.B * value);
-
-                foreach (var highlight in Highlights)
+                for(var ij = 0; ij < bytes.Length; ij++)
                 {
-                    var highlightFactor = highlight.IsSolid ? 1 : value;
+                    var left = PerlinLeft.Bytes[ij] / 255f;
+                    var right = PerlinRight.Bytes[ij];
 
-                    if (Math.Abs(factoredByteValue - highlight.Value) < highlight.Range)
-                    {
-                        r = (byte)(highlight.Color.R * highlightFactor);
-                        g = (byte)(highlight.Color.G * highlightFactor);
-                        b = (byte)(highlight.Color.B * highlightFactor);
-                    }
-                }
+                    //byte total = (byte)((byte)(left / 2) + (byte)(right / 2));
+                    byte total = (byte)(left * right);
 
-                _bytes[offset + 0] = b; // BLUE
-                _bytes[offset + 1] = g; // GREEN
-                _bytes[offset + 2] = r; // RED
-                _bytes[offset + 3] = 255; // ALPHA
-            });
+                    bytes[ij] = total;
+                };
 
-            _window.Draw(ref _bytes, Width, Height);
-        }
-
-        private void GenerateFbmNoise()
-        {
-            var noise = new FractionalBrownianMotionNoise()
-            {
-                Octaves = Octaves,
-                Amplitude = Amplitude,
-                Frequency = Frequency
-            };
-
-            Parallel.For(0, Width * Height, ij =>
-            {
-                var i = ij % Width;
-                var j = ij / Width;
-
-                var x = ((float)i / Width) * Frequency;
-                var y = ((float)j / Height) * Frequency;
-
-                var value = noise.GetValue(new Vector2(x, y));
-                var factoredByteValue = (byte)(value * 255);
-
-                var offset = ij * 4;
-
-                var r = (byte)(BaseColor.R * value);
-                var g = (byte)(BaseColor.G * value);
-                var b = (byte)(BaseColor.B * value);
-
-                foreach (var highlight in Highlights)
-                {
-                    var highlightFactor = highlight.IsSolid ? 1 : value;
-
-                    if (Math.Abs(factoredByteValue - highlight.Value) < highlight.Range)
-                    {
-                        r = (byte)(highlight.Color.R * highlightFactor);
-                        g = (byte)(highlight.Color.G * highlightFactor);
-                        b = (byte)(highlight.Color.B * highlightFactor);
-                    }
-                }
-
-                _bytes[offset + 0] = b; // BLUE
-                _bytes[offset + 1] = g; // GREEN
-                _bytes[offset + 2] = r; // RED
-                _bytes[offset + 3] = 255; // ALPHA
-            });
-
-            _window.Draw(ref _bytes, Width, Height);
-        }
-
-        private void GenerateNotchyNoise()
-        {
-            var fromI = Width / -2;
-            var fromJ = Height / -2;
-            
-            Parallel.For(0, Width * Height, ij =>
-            {
-                var i = ij % Width;
-                var j = ij / Width;
-
-                var value = _octaveNoise.Compute(i + fromI, j + fromJ, Amplitude, Frequency);
-                var factoredByteValue = (byte)(value * Factor + Offset);
-                var ratio = factoredByteValue / 255f;
-
-                var offset = ij * 4;
-
-                var r = (byte)(BaseColor.R * ratio);
-                var g = (byte)(BaseColor.G * ratio);
-                var b = (byte)(BaseColor.B * ratio);
-
-                foreach (var highlight in Highlights)
-                {
-                    var highlightFactor = highlight.IsSolid ? 1 : ratio;
-
-                    if (Math.Abs(factoredByteValue - highlight.Value) < highlight.Range)
-                    {
-                        r = (byte)(highlight.Color.R * highlightFactor);
-                        g = (byte)(highlight.Color.G * highlightFactor); 
-                        b = (byte)(highlight.Color.B * highlightFactor);
-                    }
-                }
-
-                _bytes[offset + 0] = b; // BLUE
-                _bytes[offset + 1] = g; // GREEN
-                _bytes[offset + 2] = r; // RED
-                _bytes[offset + 3] = 255; // ALPHA
-            });
-
-            _window.Draw(ref _bytes, Width, Height);
-        }
-
-        private void SetPropertyAndRender<T>(ref T storage, T value, string propertyName = null)
-        {
-            if (base.SetProperty(ref storage, value, propertyName))
-            {
-                Render();
+                _window.ImageSum.Draw(ref bytes, width, height);
             }
         }
     }

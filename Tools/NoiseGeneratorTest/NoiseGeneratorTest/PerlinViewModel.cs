@@ -1,7 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 using Prism.Commands;
@@ -16,7 +15,7 @@ namespace NoiseGeneratorTest
         private readonly Random _random = new();
 
         private bool _supressRender;
-        private byte[] _bytes;
+        public byte[] Bytes;
         private OctaveNoise _octaveNoise;
 
         public ICommand RenderCommand { get; }
@@ -26,8 +25,16 @@ namespace NoiseGeneratorTest
         public ICommand MoveHighlightDownCommand { get; }
         public ICommand RemoveHighlightCommand { get; }
 
-        public PerlinViewModel(Window window)
+        private D3dImageUc _image;
+
+        public event EventHandler<PerlinViewModel> Rendered;
+
+        public PerlinViewModel(D3dImageUc image)
         {
+            _image = image;
+
+            _seed = _random.Next();
+
             RenderCommand = new DelegateCommand(Render);
             ReseedCommand = new DelegateCommand(() => Seed = _random.Next(0, 9999));
             AddHighlightCommand = new DelegateCommand(() => Highlights.Add(new HighlightViewModel()));
@@ -177,7 +184,7 @@ namespace NoiseGeneratorTest
             set => SetPropertyAndRender(ref _offset, value);
         }
 
-        private void ResizeArray() => _bytes = new byte[Width * Height * 4];
+        private void ResizeArray() => Bytes = new byte[Width * Height * 4];
         private void RecreateNoise() => _octaveNoise = new OctaveNoise(Octaves, new Random(Seed));
 
         private void SetPropertyAndRender<T>(ref T storage, T value, string propertyName = null)
@@ -212,7 +219,9 @@ namespace NoiseGeneratorTest
                 var j = ij / Width;
 
                 var value = _octaveNoise.Compute(i + fromI, j + fromJ, Amplitude, Frequency);
+                
                 var factoredByteValue = (byte)(value * Factor + Offset);
+                
                 var ratio = factoredByteValue / 255f;
 
                 var offset = ij * 4;
@@ -233,13 +242,15 @@ namespace NoiseGeneratorTest
                     }
                 }
 
-                _bytes[offset + 0] = b; // BLUE
-                _bytes[offset + 1] = g; // GREEN
-                _bytes[offset + 2] = r; // RED
-                _bytes[offset + 3] = 255; // ALPHA
+                Bytes[offset + 0] = b; // BLUE
+                Bytes[offset + 1] = g; // GREEN
+                Bytes[offset + 2] = r; // RED
+                Bytes[offset + 3] = 255; // ALPHA
             });
 
-            //_window.Draw(ref _bytes, Width, Height);
+            _image.Draw(ref Bytes, Width, Height);
+
+            Rendered?.Invoke(this, this);
         }
     }
 }

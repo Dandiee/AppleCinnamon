@@ -45,26 +45,26 @@ namespace NoiseGeneratorTest
 
         private void ApplyPreset()
         {
-            _supressRender = true;
+            //_supressRender = true;
 
-            Width = SelectedPreset.Width;
-            Height = SelectedPreset.Height;
-            Octaves = SelectedPreset.Octaves;
-            Seed = SelectedPreset.Seed;
-            Factor = SelectedPreset.Factor;
-            Amplitude = SelectedPreset.Amplitude;
-            Frequency = SelectedPreset.Frequency;
-            Offset = SelectedPreset.Offset;
-            BaseColor = SelectedPreset.BaseColor;
+            //Width = SelectedPreset.Width;
+            //Height = SelectedPreset.Height;
+            //Octaves = SelectedPreset.Octaves;
+            //Seed = SelectedPreset.Seed;
+            //Factor = SelectedPreset.Factor;
+            //Amplitude = SelectedPreset.Amplitude;
+            //Frequency = SelectedPreset.Frequency;
+            //Offset = SelectedPreset.Offset;
+            //BaseColor = SelectedPreset.BaseColor;
 
-            Highlights.Clear();
-            foreach (var highlight in SelectedPreset.Highlights)
-            {
-                Highlights.Add(highlight);
-            }
+            //Highlights.Clear();
+            //foreach (var highlight in SelectedPreset.Highlights)
+            //{
+            //    Highlights.Add(highlight);
+            //}
 
-            _supressRender = false;
-            Render();
+            //_supressRender = false;
+            //Render();
         }
 
         private Preset _selectedPreset;

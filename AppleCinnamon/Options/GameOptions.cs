@@ -5,7 +5,7 @@ namespace AppleCinnamon.Options;
 
 public static class GameOptions
 {
-    public const int VIEW_DISTANCE = 64;
+    public const int VIEW_DISTANCE = 80;
     public const int NUMBER_OF_POOLS = 4;
     public const int CHUNK_SIZE = 16;
     public const int SLICE_HEIGHT = 16;
