@@ -25,6 +25,7 @@ namespace NoiseGeneratorTest
         public ICommand MoveHighlightUpCommand { get; }
         public ICommand MoveHighlightDownCommand { get; }
         public ICommand RemoveHighlightCommand { get; }
+        public ICommand CompensateToByteCommand { get; }
 
         private D3dImageUc _image;
 
@@ -36,6 +37,25 @@ namespace NoiseGeneratorTest
 
             _seed = _random.Next();
 
+            CompensateToByteCommand = new DelegateCommand(() =>
+            {
+                _supressRender = true;
+
+                Factor = 255f / ValueRange;
+                if (Math.Abs(MinimumValue) > Math.Abs(MaximumValue))
+                {
+
+                    Offset = -(int)(MinimumValue * Factor) + 2;
+                }
+                else
+                {
+                    Offset = -(int)(MaximumValue * Factor) - 2;
+
+                }
+
+                _supressRender = false;
+                Render();
+            });
             RenderCommand = new DelegateCommand(Render);
             ReseedCommand = new DelegateCommand(() => Seed = _random.Next(0, 9999));
             AddHighlightCommand = new DelegateCommand(() => Highlights.Add(new HighlightViewModel()));
@@ -239,9 +259,9 @@ namespace NoiseGeneratorTest
 
             var globalMinMax = new Vector2(9999, -9999);
 
-            Parallel.For(0, Width * Height, 
-                () => new Vector2(float.MaxValue, float.MinValue), 
-                (ij, state,  localMinMax) =>
+            Parallel.For(0, Width * Height,
+                () => new Vector2(float.MaxValue, float.MinValue),
+                (ij, state, localMinMax) =>
             {
                 var i = ij % Width;
                 var j = ij / Width;
@@ -252,7 +272,7 @@ namespace NoiseGeneratorTest
                 if (localMinMax.Y < value) localMinMax.Y = value;
 
                 var factoredByteValue = (byte)(value * Factor + Offset);
-                
+
                 var ratio = factoredByteValue / 255f;
 
                 var offset = ij * 4;
