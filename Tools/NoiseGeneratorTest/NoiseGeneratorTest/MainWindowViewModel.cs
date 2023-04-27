@@ -28,6 +28,8 @@ namespace NoiseGeneratorTest
 
         private void SetColor(ref byte[] bytes, int offset, Color color, float scale)
         {
+            color = Colors.White;
+
             bytes[offset + 0] = (byte)(color.B * (scale)); // BLUE
             bytes[offset + 1] = (byte)(color.G * (scale)); // GREEN
             bytes[offset + 2] = (byte)(color.R * (scale)); // RED
@@ -78,14 +80,12 @@ namespace NoiseGeneratorTest
                     //}
                     else
                     {
-                        var value = leftValue * leftValue * rightValue * rightValue;
+                        var value = leftValue * rightValue * rightValue;
                         var color = PerlinLeft.OverColor;
                         
                         SetColor(ref bytes, offset, color, value);
                     }
                 }
-
-                
 
                 _window.ImageSum.Draw(ref bytes, width, height);
             }

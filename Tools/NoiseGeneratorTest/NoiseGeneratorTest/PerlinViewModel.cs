@@ -47,12 +47,12 @@ namespace NoiseGeneratorTest
             {
                 _supressRender = true;
 
-                Factor = 255f / ValueRange;
+                Factor = 2f / ValueRange;
                 FactoredMinimumValue = MinimumValue * Factor;
                 FactoredMaximumValue = MaximumValue * Factor;
                 FactoredValueRange = FactoredMaximumValue - FactoredMinimumValue;
 
-                Offset = (byte)(Math.Abs(FactoredMinimumValue) + 1);
+                Offset = (-1f - FactoredMinimumValue);
                 
 
                 _supressRender = false;
@@ -124,7 +124,7 @@ namespace NoiseGeneratorTest
                     Octaves = int.Parse(noiseData[2], CultureInfo.InvariantCulture);
                     Amplitude = float.Parse(noiseData[3], CultureInfo.InvariantCulture);
                     Frequency = float.Parse(noiseData[4], CultureInfo.InvariantCulture);
-                    Offset = int.Parse(noiseData[5], CultureInfo.InvariantCulture);
+                    Offset = float.Parse(noiseData[5], CultureInfo.InvariantCulture);
                     Factor = float.Parse(noiseData[6], CultureInfo.InvariantCulture);
                     BaseColor = (Color)ColorConverter.ConvertFromString(noiseData[7]);
                     Seed = int.Parse(noiseData[8], CultureInfo.InvariantCulture);
@@ -318,8 +318,8 @@ namespace NoiseGeneratorTest
         }
 
 
-        private int _offset = 92;
-        public int Offset
+        private float _offset = 0;
+        public float Offset
         {
             get => _offset;
             set => SetPropertyAndRender(ref _offset, value);
@@ -375,36 +375,34 @@ namespace NoiseGeneratorTest
                 if (localMinMax.X > value) localMinMax.X = value;
                 if (localMinMax.Y < value) localMinMax.Y = value;
 
-                var factored = value * Factor + Offset;
-                var factoredByteValue = (byte)(factored);
+                var signedFactored = value * Factor + Offset;
 
-                var ratio = factoredByteValue / 255f;
-                ScaledValues[ij] = ratio;
+                var factored = (signedFactored + 1f) / 2;
 
-                
+                ScaledValues[ij] = factored;
 
-                var r = (byte)(BaseColor.R * ratio);
-                var g = (byte)(BaseColor.G * ratio);
-                var b = (byte)(BaseColor.B * ratio);
+                var r = (byte)(BaseColor.R * factored);
+                var g = (byte)(BaseColor.G * factored);
+                var b = (byte)(BaseColor.B * factored);
 
-                if (ratio <= SetPoint)
+                if (signedFactored <= SetPoint)
                 {
-                    r = (byte)(UnderColor.R * ratio);
-                    g = (byte)(UnderColor.G * ratio);
-                    b = (byte)(UnderColor.B * ratio);
+                    r = (byte)(UnderColor.R * factored);
+                    g = (byte)(UnderColor.G * factored);
+                    b = (byte)(UnderColor.B * factored);
                 }
                 else
                 {
-                    r = (byte)(OverColor.R * ratio);
-                    g = (byte)(OverColor.G * ratio);
-                    b = (byte)(OverColor.B * ratio);
+                    r = (byte)(OverColor.R * factored);
+                    g = (byte)(OverColor.G * factored);
+                    b = (byte)(OverColor.B * factored);
                 }
 
                 foreach (var highlight in Highlights)
                 {
-                    var highlightFactor = highlight.IsSolid ? 1 : ratio;
+                    var highlightFactor = highlight.IsSolid ? 1 : factored;
 
-                    if (Math.Abs(factoredByteValue - highlight.Value) < highlight.Range)
+                    if (Math.Abs(factored - highlight.Value) < highlight.Range)
                     {
                         r = (byte)(highlight.Color.R * highlightFactor);
                         g = (byte)(highlight.Color.G * highlightFactor);

@@ -54,11 +54,11 @@
         <TextBlock Grid.Column="2" Grid.Row="4" Text="{Binding Frequency, StringFormat={}{0:N2}}" ToolTip="{Binding Frequency}" HorizontalAlignment="Right"/>
 
         <TextBlock Grid.Column="0" Grid.Row="5" Text="Offset" FontStyle="Italic"/>
-        <Slider Grid.Column="1" Grid.Row="5" Value="{Binding Offset}" Minimum="-300" Maximum="300" Ticks="1"/>
-        <TextBlock Grid.Column="2" Grid.Row="5" Text="{Binding Offset}" HorizontalAlignment="Right"/>
+        <Slider Grid.Column="1" Grid.Row="5" Value="{Binding Offset}" Minimum="-1" Maximum="1" Ticks="0.1"/>
+        <TextBlock Grid.Column="2" Grid.Row="5" Text="{Binding Offset, StringFormat={}{0:N2}}" ToolTip="{Binding Offset}" HorizontalAlignment="Right"/>
 
         <TextBlock Grid.Column="0" Grid.Row="6" Text="Factor" FontStyle="Italic" />
-        <Slider Grid.Column="1" Grid.Row="6" Value="{Binding Factor}" Minimum="0.001" Maximum="1"/>
+        <Slider Grid.Column="1" Grid.Row="6" Value="{Binding Factor}" Minimum="-1" Maximum="1"/>
         <TextBlock Grid.Column="2" Grid.Row="6" Text="{Binding Factor, StringFormat={}{0:N2}}"  ToolTip="{Binding Amplitude}" HorizontalAlignment="Right"/>
 
 
@@ -111,7 +111,7 @@
         <TextBlock Grid.Column="1" Grid.Row="12" Grid.ColumnSpan="2" Text="{Binding Seed}" HorizontalAlignment="Right"/>
 
         <TextBlock Grid.Column="0" Grid.Row="13" Text="SetPoint" FontStyle="Italic" />
-        <Slider Grid.Column="1" Grid.Row="13" Value="{Binding SetPoint}" Minimum="0" Maximum="1"/>
+        <Slider Grid.Column="1" Grid.Row="13" Value="{Binding SetPoint}" Minimum="-1" Maximum="1"/>
         <TextBlock Grid.Column="2" Grid.Row="13" Text="{Binding SetPoint, StringFormat={}{0:N2}}"  ToolTip="{Binding SetPoint}" HorizontalAlignment="Right"/>
 
         <TextBlock Grid.Column="0" Grid.Row="14" Text="Colors" FontStyle="Italic" />

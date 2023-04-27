@@ -2,7 +2,8 @@
 
 public static class WorldGeneratorOptions
 {
-    public const int WATER_LEVEL = 79;
+    public const float WATER_LEVEL_VALUE = 0.02f;
+    public const int WATER_LEVEL = (byte)(WATER_LEVEL_VALUE * 255);
     public const int SNOW_LEVEL = 128;
 
     public static readonly SimplexOptions HighMapNoiseOptions = new(8, 0.5, 0.8, 134, 0.40, 1248);

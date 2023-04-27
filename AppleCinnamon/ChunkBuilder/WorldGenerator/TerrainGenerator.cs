@@ -6,8 +6,12 @@ namespace AppleCinnamon.ChunkBuilder.WorldGenerator;
 
 public static class TerrainGenerator
 {
-    private static readonly DaniNoise ContinentNoise = new(new SimplexOptions(11, 8.97442, 0.36437932, 124, 0.42479032, 50));
-    private static readonly DaniNoise MountainNoise = new(new SimplexOptions(13, 10, 1.4760739, 131, 0.024600608, 6201));
+    private static readonly DaniNoise ContinentNoise = 
+        new(new SimplexOptions(13, 10, 1.1f, 111, 0.037543304, 9423));
+    
+    private static readonly DaniNoise MountainNoise = 
+        new(new SimplexOptions(14, 7.755966, 2.034065, 117, 0.012333005, 2983));
+
     private static readonly DaniNoise WaterNoise = new(WorldGeneratorOptions.RiverNoiseOptions);
 
     public static Chunk Generate(Chunk chunk)
@@ -24,37 +28,36 @@ public static class TerrainGenerator
             for (var k = 0; k < GameOptions.CHUNK_SIZE; k++)
             {
                 var coordinates = chunk.ChunkIndex * chunkSizeXz + new Int2(i, k);
-                var continentValue = (byte)(ContinentNoise.Compute(coordinates.X, coordinates.Y) * 0.9f);
-                var mountainValue = (byte)MountainNoise.Compute(coordinates.X, coordinates.Y);
+                var continentValue = (ContinentNoise.Compute(coordinates.X, coordinates.Y) * 0.9f);
+                var mountainValue = MountainNoise.Compute(coordinates.X, coordinates.Y);
 
-                if (continentValue < WorldGeneratorOptions.WATER_LEVEL)
+                var value = 0f;
+
+                if (continentValue <= WorldGeneratorOptions.WATER_LEVEL_VALUE)
                 {
-                    var dif = WorldGeneratorOptions.WATER_LEVEL - continentValue;
+                    var dif = WorldGeneratorOptions.WATER_LEVEL_VALUE - continentValue;
                     var scaledDif = dif * 0.2f;
-                    continentValue = (byte)(WorldGeneratorOptions.WATER_LEVEL - scaledDif);
-                }
-
-                byte height = 0;
-
-                if (continentValue > WorldGeneratorOptions.WATER_LEVEL)
-                {
-                    var landHeightRange = (255f - WorldGeneratorOptions.WATER_LEVEL);
-
-                    var continentOvergrow = continentValue - WorldGeneratorOptions.WATER_LEVEL;
-                    var scaler = continentOvergrow / landHeightRange;
-
-                    var rightOvergrow = mountainValue / 255f;
-
-                    var targetScaler = Math.Pow(scaler, 2.5f) * rightOvergrow;
-
-                    var asd = (byte)(WorldGeneratorOptions.WATER_LEVEL + (landHeightRange * targetScaler));
-                    height = asd;
-
+                    value = continentValue; //(byte)(WorldGeneratorOptions.WATER_LEVEL - (scaledDif * 255));
                 }
                 else
                 {
-                    height = continentValue;
+                    value = continentValue * continentValue * mountainValue * mountainValue;
+                    //var landHeightRange = (255f - WorldGeneratorOptions.WATER_LEVEL);
+                    //
+                    //var continentOvergrow = continentValue - WorldGeneratorOptions.WATER_LEVEL;
+                    //var scaler = continentOvergrow / landHeightRange;
+                    //
+                    //var rightOvergrow = mountainValue / 255f;
+                    //
+                    //var targetScaler = Math.Pow(scaler, 2.5f) * rightOvergrow;
+                    //
+                    //var asd = (byte)(WorldGeneratorOptions.WATER_LEVEL + (landHeightRange * targetScaler));
+                    //height = asd;
                 }
+
+                value = continentValue * continentValue * mountainValue;
+                var height = (byte)(value * 255);
+
                 heatMap[i, k] = height;
                 if (maxHeight < height)
                 {
@@ -83,7 +86,7 @@ public static class TerrainGenerator
 
                 chunk.BuildingContext.TopMostLandVoxels.Add(chunk.GetFlatIndex(i, height, k));
 
-                if (height < WorldGeneratorOptions.WATER_LEVEL)
+                if (height <= WorldGeneratorOptions.WATER_LEVEL)
                 {
                     chunk.SetVoxel(i, height, k, VoxelDefinition.Sand.Create(2));
                 }
@@ -95,8 +98,6 @@ public static class TerrainGenerator
                 {
                     chunk.SetVoxel(i, height, k, VoxelDefinition.Grass.Create(2));
                 }
-
-
 
                 var dirtBlocks = rnd.Next(1, 4);
 

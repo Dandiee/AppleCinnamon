@@ -86,18 +86,18 @@
 
 
                                     <TextBlock Grid.Column="0" Grid.Row="1" Text="Value"/>
-                                    <Slider Grid.Column="1" Grid.Row="1" Value="{Binding Value}" Minimum="0" Maximum="255"/>
-                                    <TextBlock Grid.Column="2" Grid.Row="1" Text="{Binding Value}" HorizontalAlignment="Right"/>
+                                    <Slider Grid.Column="1" Grid.Row="1" Value="{Binding Value}" Minimum="-1" Maximum="1"/>
+                                    <TextBlock Grid.Column="2" Grid.Row="1" Text="{Binding Value, StringFormat={}{0:N2}}" HorizontalAlignment="Right"/>
 
 
                                     <TextBlock Grid.Column="0" Grid.Row="2" Text="Range"/>
-                                    <Slider Grid.Column="1" Grid.Row="2" Value="{Binding Range}" Minimum="0" Maximum="255"/>
-                                    <TextBlock Grid.Column="2" Grid.Row="2" Text="{Binding Range}" HorizontalAlignment="Right"/>
+                                    <Slider Grid.Column="1" Grid.Row="2" Value="{Binding Range}" Minimum="0" Maximum="2"/>
+                                    <TextBlock Grid.Column="2" Grid.Row="2" Text="{Binding Range, StringFormat={}{0:N2}}" HorizontalAlignment="Right"/>
 
                                     <TextBlock Grid.Column="0" Grid.Row="3" Text="Calc"/>
                                     <TextBlock Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="3" HorizontalAlignment="Right">
                                         <TextBlock.Text>
-                                            <MultiBinding StringFormat="{}{0} - {1}">
+                                            <MultiBinding StringFormat="{}{0:N2} - {1:N2}">
                                                 <Binding Path="RangeFrom"/>
                                                 <Binding Path="RangeTo"/>
                                             </MultiBinding>

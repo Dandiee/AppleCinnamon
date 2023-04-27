@@ -5,15 +5,15 @@ namespace NoiseGeneratorTest
 {
     public sealed class HighlightViewModel : BindableBase
     {
-        private byte _value;
-        public byte Value
+        private float _value;
+        public float Value
         {
             get => _value;
             set => SetPropertyAndRages(ref _value, value);
         }
 
-        private byte _range;
-        public byte Range
+        private float _range;
+        public float Range
         {
             get => _range;
             set => SetPropertyAndRages(ref _range, value);
@@ -33,15 +33,15 @@ namespace NoiseGeneratorTest
             set => SetProperty(ref _isSolid, value);
         }
 
-        private byte _rangeFrom;
-        public byte RangeFrom
+        private float _rangeFrom;
+        public float RangeFrom
         {
             get => _rangeFrom;
             set => SetProperty(ref _rangeFrom, value);
         }
 
-        private byte _rangeTo;
-        public byte RangeTo
+        private float _rangeTo;
+        public float RangeTo
         {
             get => _rangeTo;
             set => SetProperty(ref _rangeTo, value);
