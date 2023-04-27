@@ -10,71 +10,107 @@
              d:DesignHeight="450" d:DesignWidth="800">
 
 
-    <Grid>
+    <Border BorderThickness="0 1 0 0" BorderBrush="#333" Margin="0 5 0 0" Padding="0 5 0 5">
+        <Grid>
 
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="Auto"/>
-        </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
 
-        <TextBlock Text="Highlighting" FontWeight="Bold"/>
-        <Button Grid.Column="1" Grid.Row="0" Command="{Binding AddHighlightCommand}"
+            <TextBlock Text="Highlightings" FontWeight="Bold"/>
+            <Button Grid.Column="1" Grid.Row="0" Command="{Binding AddHighlightCommand}"
                         FontFamily="{StaticResource FaSolid}" Content="&#x2b;"
                         />
-        <ScrollViewer Grid.Row="1" Grid.ColumnSpan="2" Grid.Column="0">
-            <ItemsControl BorderThickness="0" Margin="0" Padding="0" ItemsSource="{Binding Highlights}">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <Border BorderBrush="DarkSlateGray" BorderThickness="0 1 0 0" Margin="0 5" Padding="0 5">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition/>
-                                    <ColumnDefinition/>
-                                </Grid.ColumnDefinitions>
+            <ScrollViewer Grid.Row="1" Grid.ColumnSpan="2" Grid.Column="0" VerticalScrollBarVisibility="Auto">
+                <ItemsControl BorderThickness="0" Margin="0" Padding="0" ItemsSource="{Binding Highlights}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border BorderBrush="DarkSlateGray" BorderThickness="0 1 0 0" Margin="0 5" Padding="0 5">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
 
-                                <Grid.RowDefinitions>
-                                    <RowDefinition/>
-                                    <RowDefinition/>
-                                    <RowDefinition/>
-                                    <RowDefinition/>
-                                    <RowDefinition/>
-                                    <RowDefinition/>
-                                </Grid.RowDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition/>
+                                        <RowDefinition/>
+                                        <RowDefinition/>
+                                        <RowDefinition/>
+                                        <RowDefinition/>
+                                    </Grid.RowDefinitions>
 
-                                <CheckBox Grid.Column="0" Grid.Row="0" Content="Solid" IsChecked="{Binding IsSolid}"/>
-                                <StackPanel Grid.Column="1" Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Right">
-                                    <Button HorizontalAlignment="Right" CommandParameter="{Binding}" 
-                                            FontFamily="{StaticResource FaSolid}" Content="&#xf00d;"
-                                            Command="{Binding DataContext.RemoveHighlightCommand, RelativeSource={RelativeSource AncestorType=UserControl} }"/>
-                                    <Button HorizontalAlignment="Right" CommandParameter="{Binding}" 
-                                            FontFamily="{StaticResource FaSolid}" Content="&#xf0d8;"
-                                            Command="{Binding DataContext.MoveHighlightUpCommand, RelativeSource={RelativeSource AncestorType=UserControl} }"/>
-                                    <Button HorizontalAlignment="Right" CommandParameter="{Binding}" 
-                                            FontFamily="{StaticResource FaSolid}" Content="&#xf0d7;"
-                                            Command="{Binding DataContext.MoveHighlightDownCommand, RelativeSource={RelativeSource AncestorType=UserControl} }"/>
-                                </StackPanel>
+                                    <Grid Grid.ColumnSpan="3">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
 
-                                <TextBlock Grid.Column="0" Grid.Row="1" Text="Value"/>
-                                <TextBlock Grid.Column="1" Grid.Row="1" Text="{Binding Value}" HorizontalAlignment="Right"/>
-                                <Slider Grid.Column="0" Grid.Row="2" Grid.ColumnSpan="2" Value="{Binding Value}" Minimum="0" Maximum="255"/>
+                                        <CheckBox Grid.Column="0" Grid.Row="0" Content="Solid" 
+                                              IsChecked="{Binding IsSolid}"/>
+                                        <WrapPanel Grid.Column="1" Grid.Row="0" 
+                                                Orientation="Horizontal" HorizontalAlignment="Right">
+                                            <Button HorizontalAlignment="Right" CommandParameter="{Binding}" 
+                                                    FontFamily="{StaticResource FaSolid}" Content="&#xf2ed;" Foreground="DarkRed"
+                                                    Command="{Binding DataContext.RemoveHighlightCommand, RelativeSource={RelativeSource AncestorType=UserControl} }"/>
 
-                                <TextBlock Grid.Column="0" Grid.Row="3" Text="Range"/>
-                                <TextBlock Grid.Column="1" Grid.Row="3" Text="{Binding Range}" HorizontalAlignment="Right"/>
-                                <Slider Grid.Column="0" Grid.Row="4" Grid.ColumnSpan="2" Value="{Binding Range}" Minimum="0" Maximum="255"/>
+                                            <xctk:ColorPicker SelectedColor="{Binding Color}" />
 
-                                <TextBlock Grid.Column="0" Grid.Row="5"  Text="Base color"/>
-                                <xctk:ColorPicker Grid.Column="1" Grid.Row="5" SelectedColor="{Binding Color}" />
+                                            <Grid>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition/>
+                                                    <RowDefinition/>
+                                                </Grid.RowDefinitions>
 
-                            </Grid>
-                        </Border>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-        </ScrollViewer>
-    </Grid>
+                                                <Button Grid.Row="0" Grid.Column="0" CommandParameter="{Binding}" 
+                                                        FontFamily="{StaticResource FaSolid}" Content="&#xf0d8;"
+                                                        Height="14" VerticalAlignment="Bottom"
+                                                        Margin=" 3 0" Padding="5 0" FontSize="9"
+                                                        Command="{Binding DataContext.MoveHighlightUpCommand, RelativeSource={RelativeSource AncestorType=UserControl} }"/>
+                                                <Button Grid.Row="1" Grid.Column="0" CommandParameter="{Binding}" 
+                                                        Height="14" VerticalAlignment="Top"
+                                                        FontFamily="{StaticResource FaSolid}" Content="&#xf0d7;"
+                                                        Margin="3 0" Padding="5 0" FontSize="9"
+                                                        Command="{Binding DataContext.MoveHighlightDownCommand, RelativeSource={RelativeSource AncestorType=UserControl} }"/>
+
+                                            </Grid>
+                                        </WrapPanel>
+
+                                    </Grid>
+
+
+                                    <TextBlock Grid.Column="0" Grid.Row="1" Text="Value"/>
+                                    <Slider Grid.Column="1" Grid.Row="1" Value="{Binding Value}" Minimum="0" Maximum="255"/>
+                                    <TextBlock Grid.Column="2" Grid.Row="1" Text="{Binding Value}" HorizontalAlignment="Right"/>
+
+
+                                    <TextBlock Grid.Column="0" Grid.Row="2" Text="Range"/>
+                                    <Slider Grid.Column="1" Grid.Row="2" Value="{Binding Range}" Minimum="0" Maximum="255"/>
+                                    <TextBlock Grid.Column="2" Grid.Row="2" Text="{Binding Range}" HorizontalAlignment="Right"/>
+
+                                    <TextBlock Grid.Column="0" Grid.Row="3" Text="Calc"/>
+                                    <TextBlock Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="3" HorizontalAlignment="Right">
+                                        <TextBlock.Text>
+                                            <MultiBinding StringFormat="{}{0} - {1}">
+                                                <Binding Path="RangeFrom"/>
+                                                <Binding Path="RangeTo"/>
+                                            </MultiBinding>
+                                        </TextBlock.Text>
+                                    </TextBlock>
+
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </Grid>
+    </Border>
 
 </UserControl>

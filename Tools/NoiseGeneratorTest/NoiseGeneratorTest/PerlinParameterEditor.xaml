@@ -12,6 +12,7 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto"/>
             <ColumnDefinition/>
+            <ColumnDefinition Width="Auto"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -28,46 +29,39 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <TextBlock Grid.Column="0" Grid.Row="0" Text="Width"/>
-        <TextBlock Grid.Column="1" Grid.Row="0" Text="{Binding Width}" HorizontalAlignment="Right"/>
-        <Slider Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="2" Value="{Binding Width}" Minimum="16" Maximum="512" Ticks="16"/>
+        <TextBlock Grid.Column="0" Grid.Row="0" Text="Width" FontWeight="Bold"/>
+        <Slider Grid.Column="1" Grid.Row="0" Value="{Binding Width}" Minimum="16" Maximum="2048" Ticks="16"/>
+        <TextBlock Grid.Column="2" Grid.Row="0" Text="{Binding Width}" HorizontalAlignment="Right"/>
 
-        <TextBlock Grid.Column="0" Grid.Row="2" Text="Height"/>
-        <TextBlock Grid.Column="1" Grid.Row="2" Text="{Binding Height}" HorizontalAlignment="Right"/>
-        <Slider Grid.Column="0" Grid.Row="3" Grid.ColumnSpan="2" Value="{Binding Height}" Minimum="16" Maximum="512" Ticks="16"/>
+        <TextBlock Grid.Column="0" Grid.Row="1" Text="Height" FontWeight="Bold"/>
+        <Slider Grid.Column="1" Grid.Row="1" Value="{Binding Height}" Minimum="16" Maximum="2048" Ticks="16"/>
+        <TextBlock Grid.Column="2" Grid.Row="1" Text="{Binding Height}" HorizontalAlignment="Right"/>
 
-        <TextBlock Grid.Column="0" Grid.Row="4" Text="Offset"/>
-        <TextBlock Grid.Column="1" Grid.Row="4" Text="{Binding Offset}" HorizontalAlignment="Right"/>
-        <Slider Grid.Column="0" Grid.Row="5" Grid.ColumnSpan="2" Value="{Binding Offset}" Minimum="-300" Maximum="300" Ticks="1"/>
+        <TextBlock Grid.Column="0" Grid.Row="2" Text="Octaves" FontWeight="Bold"/>
+        <Slider Grid.Column="1" Grid.Row="2" Value="{Binding Octaves}" Minimum="1" Maximum="16" Ticks="1"/>
+        <TextBlock Grid.Column="2" Grid.Row="2" Text="{Binding Octaves}" HorizontalAlignment="Right"/>
 
-        <TextBlock Grid.Column="0" Grid.Row="6" Text="Octaves"/>
-        <TextBlock Grid.Column="1" Grid.Row="6" Text="{Binding Octaves}" HorizontalAlignment="Right"/>
-        <Slider Grid.Column="0" Grid.Row="7" Grid.ColumnSpan="2" Value="{Binding Octaves}" Minimum="1" Maximum="16" Ticks="1"/>
+        <TextBlock Grid.Column="0" Grid.Row="3" Text="Amplitude" FontWeight="Bold"/>
+        <Slider Grid.Column="1" Grid.Row="3" Value="{Binding Amplitude}" Minimum="0" Maximum="5"/>
+        <TextBlock Grid.Column="2" Grid.Row="3" Text="{Binding Amplitude, StringFormat={}{0:N2}}" ToolTip="{Binding Amplitude}" HorizontalAlignment="Right"/>
 
-        <TextBlock Grid.Column="0" Grid.Row="8" Text="Amplitude"/>
-        <TextBlock Grid.Column="1" Grid.Row="8" Text="{Binding Amplitude}" HorizontalAlignment="Right"/>
-        <Slider Grid.Column="0" Grid.Row="9" Grid.ColumnSpan="2" Value="{Binding Amplitude}" Minimum="0" Maximum="5"/>
+        <TextBlock Grid.Column="0" Grid.Row="4" Text="Frequency" FontWeight="Bold"/>
+        <Slider Grid.Column="1" Grid.Row="4" Value="{Binding Frequency}" Minimum="0" Maximum="10"/>
+        <TextBlock Grid.Column="2" Grid.Row="4" Text="{Binding Frequency, StringFormat={}{0:N2}}" ToolTip="{Binding Frequency}" HorizontalAlignment="Right"/>
 
-        <TextBlock Grid.Column="0" Grid.Row="10" Text="Frequency"/>
-        <TextBlock Grid.Column="1" Grid.Row="10" Text="{Binding Frequency}" HorizontalAlignment="Right"/>
-        <Slider Grid.Column="0" Grid.Row="11" Grid.ColumnSpan="2" Value="{Binding Frequency}" Minimum="0" Maximum="10"/>
+        <TextBlock Grid.Column="0" Grid.Row="5" Text="Offset" FontStyle="Italic"/>
+        <Slider Grid.Column="1" Grid.Row="5" Value="{Binding Offset}" Minimum="-300" Maximum="300" Ticks="1"/>
+        <TextBlock Grid.Column="2" Grid.Row="5" Text="{Binding Offset}" HorizontalAlignment="Right"/>
 
-        <TextBlock Grid.Column="0" Grid.Row="12" Text="Factor"/>
-        <TextBlock Grid.Column="1" Grid.Row="12" Text="{Binding Factor}" HorizontalAlignment="Right"/>
-        <Slider Grid.Column="0" Grid.Row="13" Grid.ColumnSpan="2" Value="{Binding Factor}" Minimum="0.001" Maximum="1"/>
+        <TextBlock Grid.Column="0" Grid.Row="6" Text="Factor" FontStyle="Italic" />
+        <Slider Grid.Column="1" Grid.Row="6" Value="{Binding Factor}" Minimum="0.001" Maximum="1"/>
+        <TextBlock Grid.Column="2" Grid.Row="6" Text="{Binding Factor, StringFormat={}{0:N2}}"  ToolTip="{Binding Amplitude}" HorizontalAlignment="Right"/>
 
-        <TextBlock Grid.Column="0" Grid.Row="14"  Text="Base color"/>
-        <xctk:ColorPicker Grid.Column="1" Grid.Row="14" SelectedColor="{Binding BaseColor}" />
+
+        <TextBlock Grid.Column="0" Grid.Row="7"  Text="Base color"/>
+        <xctk:ColorPicker Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="7" SelectedColor="{Binding BaseColor}" />
 
 
         <!--<TextBlock Grid.Column="0" Grid.Row="15" Text="Presets"/>
@@ -78,21 +72,56 @@
             <Button Content="Apply" Command="{Binding ApplyPresetCommand}"/>
         </StackPanel>-->
 
-        <TextBlock Grid.Column="0" Grid.Row="16" Text="Render"/>
-        <TextBlock Grid.Column="1" Grid.Row="16" Text="{Binding RenderTime}" HorizontalAlignment="Right"/>
+        <TextBlock Grid.Column="0" Grid.Row="8" Text="Render"/>
+        <TextBlock Grid.Column="1" Grid.Row="8" Grid.ColumnSpan="2" Text="{Binding RenderTime, StringFormat={}{0} ms}" HorizontalAlignment="Right"/>
 
-        <TextBlock Grid.Column="0" Grid.Row="17" Text="Minimum"/>
-        <TextBlock Grid.Column="1" Grid.Row="17" Text="{Binding MinimumValue, StringFormat={}{0:N2}}" HorizontalAlignment="Right"/>
+        <TextBlock Grid.Column="0" Grid.Row="9" Text="Minimum"/>
+        <TextBlock Grid.Column="1" Grid.Row="9" Grid.ColumnSpan="2" HorizontalAlignment="Right">
+            <TextBlock.Text>
+                <MultiBinding StringFormat="{}{0:N2}  |  [{1:N2}]">
+                    <Binding Path="MinimumValue"/>
+                    <Binding Path="FactoredMinimumValue"/>
+                </MultiBinding>
+            </TextBlock.Text>
+        </TextBlock>
 
-        <TextBlock Grid.Column="0" Grid.Row="18" Text="Maximum"/>
-        <TextBlock Grid.Column="1" Grid.Row="18" Text="{Binding MaximumValue, StringFormat={}{0:N2}}" HorizontalAlignment="Right"/>
+        <TextBlock Grid.Column="0" Grid.Row="10" Text="Maximum"/>
+        <TextBlock Grid.Column="1" Grid.Row="10" Grid.ColumnSpan="2" HorizontalAlignment="Right">
+            <TextBlock.Text>
+                <MultiBinding StringFormat="{}{0:N2}  |  [{1:N2}]">
+                    <Binding Path="MaximumValue"/>
+                    <Binding Path="FactoredMaximumValue"/>
+                </MultiBinding>
+            </TextBlock.Text>
+        </TextBlock>
 
-        <TextBlock Grid.Column="0" Grid.Row="19" Text="Range"/>
-        <TextBlock Grid.Column="1" Grid.Row="19" Text="{Binding ValueRange, StringFormat={}{0:N2}}" HorizontalAlignment="Right"/>
+        <TextBlock Grid.Column="0" Grid.Row="11" Text="Range"/>
+        <TextBlock Grid.Column="1" Grid.Row="11" Grid.ColumnSpan="2"  HorizontalAlignment="Right">
+            <TextBlock.Text>
+                <MultiBinding StringFormat="{}{0:N2}  |  [{1:N2}]">
+                    <Binding Path="ValueRange"/>
+                    <Binding Path="FactoredValueRange"/>
+                </MultiBinding>
+            </TextBlock.Text>
+        </TextBlock>
 
-        <StackPanel Grid.Column="1" Grid.Row="20"  Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Right">
-            <Button Content="Reseed" HorizontalAlignment="Right" Command="{Binding ReseedCommand}"/>
-            <Button Content="Compensate to byte" HorizontalAlignment="Right" Command="{Binding CompensateToByteCommand}"/>
-        </StackPanel>
+        <TextBlock Grid.Column="0" Grid.Row="12" Text="Seed"/>
+        <TextBlock Grid.Column="1" Grid.Row="12" Grid.ColumnSpan="2" Text="{Binding Seed}" HorizontalAlignment="Right"/>
+
+        <Border Grid.Column="0" Grid.Row="13"  Grid.ColumnSpan="3" 
+                BorderThickness="0 1 0 0" BorderBrush="#333" Margin="0 3 0 0" Padding="0 3 0 0">
+            <WrapPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Content="Re-seed" HorizontalAlignment="Right" Command="{Binding ReseedCommand}"/>
+                <Button Content="Compensate" HorizontalAlignment="Right" Command="{Binding CompensateToByteCommand}"/>
+                <Button Content="&#xf56f;" HorizontalAlignment="Right" 
+                        FontFamily="{StaticResource FaSolid}"
+                        ToolTip="Import"
+                        Command="{Binding ImportCommand}"/>
+                <Button Content="&#xf56e;" HorizontalAlignment="Right" 
+                        FontFamily="{StaticResource FaSolid}"
+                        ToolTip="Export"
+                        Command="{Binding ExportCommand}"/>
+            </WrapPanel>
+        </Border>
     </Grid>
 </UserControl>

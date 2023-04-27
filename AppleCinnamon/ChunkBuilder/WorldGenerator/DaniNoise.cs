@@ -104,6 +104,8 @@ public sealed class DaniNoise
             amplitude *= 2;
             frequency *= .5;
         }
-        return sum * _options.Factor + _options.Offset;
+        var semiResult = sum * _options.Factor + _options.Offset;
+
+        return Math.Clamp(semiResult, 0, 255);
     }
 }

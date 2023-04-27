@@ -9,14 +9,14 @@ namespace NoiseGeneratorTest
         public byte Value
         {
             get => _value;
-            set => SetProperty(ref _value, value);
+            set => SetPropertyAndRages(ref _value, value);
         }
 
         private byte _range;
         public byte Range
         {
             get => _range;
-            set => SetProperty(ref _range, value);
+            set => SetPropertyAndRages(ref _range, value);
         }
 
         private Color _color;
@@ -31,6 +31,29 @@ namespace NoiseGeneratorTest
         {
             get => _isSolid;
             set => SetProperty(ref _isSolid, value);
+        }
+
+        private byte _rangeFrom;
+        public byte RangeFrom
+        {
+            get => _rangeFrom;
+            set => SetProperty(ref _rangeFrom, value);
+        }
+
+        private byte _rangeTo;
+        public byte RangeTo
+        {
+            get => _rangeTo;
+            set => SetProperty(ref _rangeTo, value);
+        }
+
+        private void SetPropertyAndRages<T>(ref T storage, T value, string propertyName = null)
+        {
+            if (SetProperty(ref storage, value, propertyName))
+            {
+                RangeFrom = (byte)Math.Max(0, Value - Range);
+                RangeTo = (byte)Math.Min(255, Value + Range);
+            }
         }
     }
 }

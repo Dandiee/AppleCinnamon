@@ -13,9 +13,39 @@ public static class ArtifactGenerator
 
     public static Chunk Generate(Chunk chunk)
     {
+        var rnd = new Random(chunk.ChunkIndex.GetHashCode());
+        foreach (var flatIndex in chunk.BuildingContext.TopMostLandVoxels)
+        {
+            var index = chunk.FromFlatIndex(flatIndex);
+
+            var top = chunk.GetFlatIndex(index.X, index.Y + 1, index.Z);
+
+            if (index.Y >= WorldGeneratorOptions.WATER_LEVEL && index.Y < WorldGeneratorOptions.WATER_LEVEL + 16)
+            {
+                if (rnd.Next() % 80 == 0)
+                {
+                    Artifacts.Tree(rnd, chunk, index);
+                }
+                else if (rnd.Next() % 3 == 0)
+                {
+                    chunk.SetSafe(top, VoxelDefinition.Weed.Create(2));
+                }
+                else if (rnd.Next() % 50 == 0)
+                {
+                    var flowerType = FlowersAndSuch[rnd.Next(0, FlowersAndSuch.Length)];
+                    chunk.SetSafe(top, flowerType.Create());
+                }
+                else if (rnd.Next() % 30 == 0)
+                {
+                    //chunk.SetSafe(flatIndex, VoxelDefinition.SunflowerBottom.Create());
+                    //chunk.SetSafe(top, VoxelDefinition.SunflowerTop.Create());
+                }
+            }
+        }
+
         return chunk;
 
-        var rnd = new Random(chunk.ChunkIndex.GetHashCode());
+        
 
         foreach (var flatIndex in chunk.BuildingContext.TopMostLandVoxels)
         {

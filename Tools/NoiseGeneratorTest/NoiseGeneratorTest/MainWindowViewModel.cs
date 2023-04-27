@@ -1,4 +1,6 @@
-﻿using Prism.Mvvm;
+﻿using System.CodeDom;
+using System.Windows.Media;
+using Prism.Mvvm;
 
 namespace NoiseGeneratorTest
 {
@@ -32,23 +34,53 @@ namespace NoiseGeneratorTest
 
                 var bytes = new byte[PerlinLeft.Bytes.Length];
 
-                for(var ij = 0; ij < bytes.Length; ij++)
+                for (var ij = 0; ij < PerlinLeft.ScaledValues.Length; ij++)
                 {
-                    if ((ij + 1) % 4 == 0)
-                    {
-                        bytes[ij] = 255; // leave the alpha channel alone
-                    }
-                    else
-                    {
-                        var left = PerlinLeft.Bytes[ij] / 255f;
-                        var right = PerlinRight.Bytes[ij];
+                    var i = ij % width;
+                    var j = ij / width;
 
-                        //byte total = (byte)((byte)(left / 2) + (byte)(right / 2));
-                        byte total = (byte)(left * right);
+                    var value = PerlinLeft.ScaledValues[ij] * PerlinLeft.ScaledValues[ij] * PerlinRight.ScaledValues[ij];
+                    var byteValue = (byte)(value * 255);
 
-                        bytes[ij] = total;
+                    var offset = ij * 4;
+
+                    var leftValue = PerlinLeft.ScaledValues[ij];
+                    var rightValue = PerlinRight.ScaledValues[ij];
+
+                    var waterHighlight = PerlinLeft.Highlights[1];
+                    var waterLevel = waterHighlight.RangeFrom / 256f;
+
+                    if (leftValue > waterLevel)
+                    {
+                        var offsetLeftValue = leftValue - waterLevel;
+                        var landScaler = offsetLeftValue / ((waterHighlight.RangeTo - waterHighlight.RangeFrom) / 256f);
+
+                        if (landScaler > 0.9)
+                        {
+
+                        }
+
+                        byteValue = (byte)(PerlinLeft.ScaledValues[ij] * 255);
+
+                        var color = Color.FromRgb(0, 255, 127);
+
+                        var scaler = Math.Pow(landScaler, 3);
+
+                        bytes[offset + 0] = (byte)(color.B * (scaler * rightValue)); // BLUE
+                        bytes[offset + 1] = (byte)(color.G * (scaler * rightValue)); // GREEN
+                        bytes[offset + 2] = (byte)(color.R * (scaler * rightValue)); // RED
+                        bytes[offset + 3] = 255; // ALPHA
                     }
-                };
+                    else // water dont care
+                    {
+                        bytes[offset + 0] = 255; // BLUE
+                        bytes[offset + 1] = 0; // GREEN
+                        bytes[offset + 2] = 0; // RED
+                        bytes[offset + 3] = 255; // ALPHA
+                    }
+                }
+
+                
 
                 _window.ImageSum.Draw(ref bytes, width, height);
             }

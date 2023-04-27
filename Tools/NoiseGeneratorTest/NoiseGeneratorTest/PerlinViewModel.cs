@@ -1,7 +1,10 @@
 ﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
+using System.Windows;
 using System.Windows.Input;
+using System.Windows.Media;
 using Prism.Commands;
 using Prism.Mvvm;
 using SharpDX;
@@ -17,6 +20,7 @@ namespace NoiseGeneratorTest
 
         private bool _supressRender;
         public byte[] Bytes;
+        public float[] ScaledValues;
         private OctaveNoise _octaveNoise;
 
         public ICommand RenderCommand { get; }
@@ -26,6 +30,8 @@ namespace NoiseGeneratorTest
         public ICommand MoveHighlightDownCommand { get; }
         public ICommand RemoveHighlightCommand { get; }
         public ICommand CompensateToByteCommand { get; }
+        public ICommand ImportCommand { get; }
+        public ICommand ExportCommand { get; }
 
         private D3dImageUc _image;
 
@@ -42,20 +48,18 @@ namespace NoiseGeneratorTest
                 _supressRender = true;
 
                 Factor = 255f / ValueRange;
-                if (Math.Abs(MinimumValue) > Math.Abs(MaximumValue))
-                {
+                FactoredMinimumValue = MinimumValue * Factor;
+                FactoredMaximumValue = MaximumValue * Factor;
+                FactoredValueRange = FactoredMaximumValue - FactoredMinimumValue;
 
-                    Offset = -(int)(MinimumValue * Factor) + 2;
-                }
-                else
-                {
-                    Offset = -(int)(MaximumValue * Factor) - 2;
-
-                }
+                Offset = (byte)(Math.Abs(FactoredMinimumValue) + 1);
+                
 
                 _supressRender = false;
                 Render();
             });
+            ImportCommand = new DelegateCommand(Import);
+            ExportCommand = new DelegateCommand(Export);
             RenderCommand = new DelegateCommand(Render);
             ReseedCommand = new DelegateCommand(() => Seed = _random.Next(0, 9999));
             AddHighlightCommand = new DelegateCommand(() => Highlights.Add(new HighlightViewModel()));
@@ -103,6 +107,56 @@ namespace NoiseGeneratorTest
             ResizeArray();
             RecreateNoise();
             Render();
+        }
+
+        private void Import()
+        {
+            var text = Clipboard.GetText();
+            if (!string.IsNullOrEmpty(text))
+            {
+                _supressRender = true;
+                try
+                {
+                    var lines = text.Split(Environment.NewLine);
+                    var noiseData = lines[0].Split(";");
+                    Width = int.Parse(noiseData[0], CultureInfo.InvariantCulture);
+                    Height = int.Parse(noiseData[1], CultureInfo.InvariantCulture);
+                    Octaves = int.Parse(noiseData[2], CultureInfo.InvariantCulture);
+                    Amplitude = float.Parse(noiseData[3], CultureInfo.InvariantCulture);
+                    Frequency = float.Parse(noiseData[4], CultureInfo.InvariantCulture);
+                    Offset = int.Parse(noiseData[5], CultureInfo.InvariantCulture);
+                    Factor = float.Parse(noiseData[6], CultureInfo.InvariantCulture);
+                    BaseColor = (Color)ColorConverter.ConvertFromString(noiseData[7]);
+                    Seed = int.Parse(noiseData[8], CultureInfo.InvariantCulture);
+
+                    Highlights.Clear();
+
+                    for (var i = 1; i < lines.Length; i++)
+                    {
+                        var highlightData = lines[i].Split(";");
+
+                        Highlights.Add(new HighlightViewModel
+                        {
+                            Value = byte.Parse(highlightData[0], CultureInfo.InvariantCulture),
+                            Range = byte.Parse(highlightData[1], CultureInfo.InvariantCulture),
+                            IsSolid = bool.Parse(highlightData[2]),
+                            Color = (Color)ColorConverter.ConvertFromString(highlightData[3]),
+                        });
+                    }
+                }
+                catch { }
+                _supressRender = false;
+                Render();
+            }
+        }
+
+        private void Export()
+        {
+            var firstLine = string.Create(CultureInfo.InvariantCulture,
+                $"{Width};{Height};{Octaves};{Amplitude};{Frequency};{Offset};{Factor};{BaseColor.ToString()};{Seed}");
+            var highlightings = string.Join(Environment.NewLine, Highlights.Select(s =>
+                string.Create(CultureInfo.InvariantCulture, $"{s.Value};{s.Range};{s.IsSolid};{s.Color}")));
+            Clipboard.SetText($"{firstLine}{Environment.NewLine}{highlightings}");
         }
 
         private Color _baseColor = Color.FromRgb(255, 255, 255);
@@ -204,6 +258,13 @@ namespace NoiseGeneratorTest
             set => SetProperty(ref _minimumValue, value);
         }
 
+        private float _factoredMinimumValue;
+        public float FactoredMinimumValue
+        {
+            get => _factoredMinimumValue;
+            set => SetProperty(ref _factoredMinimumValue, value);
+        }
+
         private float _maximumValue;
         public float MaximumValue
         {
@@ -211,11 +272,25 @@ namespace NoiseGeneratorTest
             set => SetProperty(ref _maximumValue, value);
         }
 
+        private float _factoredMaximumValue;
+        public float FactoredMaximumValue
+        {
+            get => _factoredMaximumValue;
+            set => SetProperty(ref _factoredMaximumValue, value);
+        }
+
         private float _valueRange;
         public float ValueRange
         {
             get => _valueRange;
             set => SetProperty(ref _valueRange, value);
+        }
+
+        private float _factoredValueRange;
+        public float FactoredValueRange
+        {
+            get => _factoredValueRange;
+            set => SetProperty(ref _factoredValueRange, value);
         }
 
 
@@ -226,7 +301,12 @@ namespace NoiseGeneratorTest
             set => SetPropertyAndRender(ref _offset, value);
         }
 
-        private void ResizeArray() => Bytes = new byte[Width * Height * 4];
+        private void ResizeArray()
+        {
+            Bytes = new byte[Width * Height * 4];
+            ScaledValues = new float[Width * Height];
+        }
+
         private void RecreateNoise() => _octaveNoise = new OctaveNoise(Octaves, new Random(Seed));
 
         private void SetPropertyAndRender<T>(ref T storage, T value, string propertyName = null)
@@ -271,11 +351,20 @@ namespace NoiseGeneratorTest
                 if (localMinMax.X > value) localMinMax.X = value;
                 if (localMinMax.Y < value) localMinMax.Y = value;
 
-                var factoredByteValue = (byte)(value * Factor + Offset);
+                var factored = value * Factor + Offset;
+
+                if (factored > 256 || factored < 0)
+                {
+
+                }
+
+                var factoredByteValue = (byte)(factored);
+
+
 
                 var ratio = factoredByteValue / 255f;
 
-                var offset = ij * 4;
+                ScaledValues[ij] = ratio;
 
                 var r = (byte)(BaseColor.R * ratio);
                 var g = (byte)(BaseColor.G * ratio);
@@ -293,6 +382,7 @@ namespace NoiseGeneratorTest
                     }
                 }
 
+                var offset = ij * 4;
                 Bytes[offset + 0] = b; // BLUE
                 Bytes[offset + 1] = g; // GREEN
                 Bytes[offset + 2] = r; // RED
