@@ -375,17 +375,7 @@ namespace NoiseGeneratorTest
                 if (localMinMax.X > value) localMinMax.X = value;
                 if (localMinMax.Y < value) localMinMax.Y = value;
 
-
-
-                var signedFactored = value * Factor + Offset;
-
-
-                if (signedFactored < 0 || signedFactored > 1)
-                {
-
-                }
-
-                var factored = signedFactored;// + 1f) / 2;
+                var factored = value * Factor + Offset;
 
                 ScaledValues[ij] = factored;
 
@@ -393,7 +383,7 @@ namespace NoiseGeneratorTest
                 var g = (byte)(BaseColor.G * factored);
                 var b = (byte)(BaseColor.B * factored);
 
-                if (signedFactored <= SetPoint)
+                if (factored <= SetPoint)
                 {
                     r = (byte)(UnderColor.R * factored);
                     g = (byte)(UnderColor.G * factored);

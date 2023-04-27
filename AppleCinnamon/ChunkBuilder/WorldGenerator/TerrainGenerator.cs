@@ -7,12 +7,32 @@ namespace AppleCinnamon.ChunkBuilder.WorldGenerator;
 public static class TerrainGenerator
 {
     private static readonly DaniNoise ContinentNoise = 
-        new(new SimplexOptions(13, 10, 1.1f, 111, 0.037543304, 9423));
+        new(new SimplexOptions(14, 10, 1.1f, 0.5441703, 7.1219765e-05, 4535));
     
     private static readonly DaniNoise MountainNoise = 
-        new(new SimplexOptions(14, 7.755966, 2.034065, 117, 0.012333005, 2983));
+        new(new SimplexOptions(14, 10, 2.5337195, 0.4681816, 3.2019507E-05, 5768));
 
     private static readonly DaniNoise WaterNoise = new(WorldGeneratorOptions.RiverNoiseOptions);
+
+    private static int GetHeight(int i, int k)
+    {
+        var leftValue = ContinentNoise.Compute(i, k) - WorldGeneratorOptions.WATER_LEVEL_VALUE;
+        var rightValue = MountainNoise.Compute(i, k);
+
+        double value;
+
+        // water
+        if (leftValue < 0)
+        {
+            value = (leftValue * 0.1) + WorldGeneratorOptions.WATER_LEVEL_VALUE;
+        }
+        else
+        {
+            value = leftValue * rightValue * rightValue + WorldGeneratorOptions.WATER_LEVEL_VALUE;
+        }
+
+        return (int)(value * 255);
+    }
 
     public static Chunk Generate(Chunk chunk)
     {
@@ -20,7 +40,7 @@ public static class TerrainGenerator
         var rnd = new Random(chunk.ChunkIndex.GetHashCode());
 
         var chunkSizeXz = new Int2(GameOptions.CHUNK_SIZE, GameOptions.CHUNK_SIZE);
-        var heatMap = new byte[GameOptions.CHUNK_SIZE, GameOptions.CHUNK_SIZE];
+        var heatMap = new int[GameOptions.CHUNK_SIZE, GameOptions.CHUNK_SIZE];
         var maxHeight = WorldGeneratorOptions.WATER_LEVEL + 1;
 
         for (var i = 0; i < GameOptions.CHUNK_SIZE; i++)
@@ -28,35 +48,7 @@ public static class TerrainGenerator
             for (var k = 0; k < GameOptions.CHUNK_SIZE; k++)
             {
                 var coordinates = chunk.ChunkIndex * chunkSizeXz + new Int2(i, k);
-                var continentValue = (ContinentNoise.Compute(coordinates.X, coordinates.Y) * 0.9f);
-                var mountainValue = MountainNoise.Compute(coordinates.X, coordinates.Y);
-
-                var value = 0f;
-
-                if (continentValue <= WorldGeneratorOptions.WATER_LEVEL_VALUE)
-                {
-                    var dif = WorldGeneratorOptions.WATER_LEVEL_VALUE - continentValue;
-                    var scaledDif = dif * 0.2f;
-                    value = continentValue; //(byte)(WorldGeneratorOptions.WATER_LEVEL - (scaledDif * 255));
-                }
-                else
-                {
-                    value = continentValue * continentValue * mountainValue * mountainValue;
-                    //var landHeightRange = (255f - WorldGeneratorOptions.WATER_LEVEL);
-                    //
-                    //var continentOvergrow = continentValue - WorldGeneratorOptions.WATER_LEVEL;
-                    //var scaler = continentOvergrow / landHeightRange;
-                    //
-                    //var rightOvergrow = mountainValue / 255f;
-                    //
-                    //var targetScaler = Math.Pow(scaler, 2.5f) * rightOvergrow;
-                    //
-                    //var asd = (byte)(WorldGeneratorOptions.WATER_LEVEL + (landHeightRange * targetScaler));
-                    //height = asd;
-                }
-
-                value = continentValue * continentValue * mountainValue;
-                var height = (byte)(value * 255);
+                var height = GetHeight(coordinates.X, coordinates.Y);
 
                 heatMap[i, k] = height;
                 if (maxHeight < height)

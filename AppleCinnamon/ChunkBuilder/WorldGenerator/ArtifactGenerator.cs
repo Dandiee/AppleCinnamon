@@ -20,7 +20,7 @@ public static class ArtifactGenerator
 
             var top = chunk.GetFlatIndex(index.X, index.Y + 1, index.Z);
 
-            if (index.Y >= WorldGeneratorOptions.WATER_LEVEL && index.Y < WorldGeneratorOptions.WATER_LEVEL + 16)
+            if (index.Y >= WorldGeneratorOptions.WATER_LEVEL && index.Y < WorldGeneratorOptions.WATER_LEVEL + 64)
             {
                 if (rnd.Next() % 80 == 0)
                 {

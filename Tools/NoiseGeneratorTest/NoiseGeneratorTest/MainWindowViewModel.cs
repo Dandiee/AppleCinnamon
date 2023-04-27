@@ -1,4 +1,5 @@
 ﻿using System.CodeDom;
+using System.Windows.Controls;
 using System.Windows.Media;
 using Prism.Mvvm;
 using SharpDX.Direct3D9;
@@ -28,6 +29,11 @@ namespace NoiseGeneratorTest
 
         private void SetColor(ref byte[] bytes, int offset, Color color, float scale)
         {
+            if (scale < 0 || scale > 1f)
+            {
+
+            }
+
             color = Colors.White;
 
             bytes[offset + 0] = (byte)(color.B * (scale)); // BLUE
@@ -51,36 +57,20 @@ namespace NoiseGeneratorTest
 
                     var offset = ij * 4;
 
-                    var leftValue = PerlinLeft.ScaledValues[ij];
+                    var leftValue = PerlinLeft.ScaledValues[ij] - PerlinLeft.SetPoint;
                     var rightValue = PerlinRight.ScaledValues[ij];
 
                     // water
-                    if (leftValue <= PerlinLeft.SetPoint)
+                    if (leftValue < 0)
                     {
-                        var value = leftValue;
+                        var value = leftValue + PerlinLeft.SetPoint;
                         var color = PerlinLeft.UnderColor;
 
                         SetColor(ref bytes, offset, color, value);
                     }
-                    //// mountain
-                    //else if (rightValue >= PerlinRight.SetPoint)
-                    //{
-                    //    var value = leftValue * leftValue * rightValue * rightValue;
-                    //    var color = PerlinLeft.OverColor;
-                    //
-                    //    SetColor(ref bytes, offset, color, value);
-                    //}
-                    //// flat land
-                    //else
-                    //{
-                    //    var value = (float)Math.Pow(leftValue, 3) * rightValue;
-                    //    var color = PerlinLeft.OverColor;
-                    //
-                    //    SetColor(ref bytes, offset, color, value);
-                    //}
                     else
                     {
-                        var value = leftValue * rightValue * rightValue;
+                        var value = leftValue * rightValue * rightValue + PerlinLeft.SetPoint;
                         var color = PerlinLeft.OverColor;
                         
                         SetColor(ref bytes, offset, color, value);

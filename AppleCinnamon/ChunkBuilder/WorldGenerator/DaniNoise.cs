@@ -92,7 +92,7 @@ public sealed class DaniNoise
         }
     }
 
-    public float Compute(double x, double y)
+    public double Compute(double x, double y)
     {
         var amplitude = _options.Amplitude;// 1.0; //_baseAmplitude;
         var frequency = _options.Frequency; // 0.4; //baseFrequency;
@@ -104,8 +104,8 @@ public sealed class DaniNoise
             amplitude *= 2;
             frequency *= .5;
         }
-        var semiResult = sum * _options.Factor + _options.Offset;
+        return sum * _options.Factor + _options.Offset;
 
-        return (float)Math.Clamp(semiResult, 0, 255) /  255f;
+        //return (float)Math.Clamp(semiResult, 0, 255) /  255f;
     }
 }

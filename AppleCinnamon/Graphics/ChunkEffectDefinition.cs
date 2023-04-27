@@ -16,6 +16,7 @@ public sealed class ChunkEffectDefinition<TVertex> : EffectDefinition<TVertex>
     private readonly EffectScalarVariable _fogStartVar;
     private readonly EffectScalarVariable _fogEndVar;
     private readonly EffectVectorVariable _fogColorVar;
+    private readonly EffectScalarVariable _fogDensityVar;
 
     public ChunkEffectDefinition(Device device, string shaderFilePath, PrimitiveTopology primitiveTopology, string textureFilePath = default)
         : base(device, shaderFilePath, primitiveTopology, textureFilePath)
@@ -26,6 +27,9 @@ public sealed class ChunkEffectDefinition<TVertex> : EffectDefinition<TVertex>
         _fogStartVar = Effect.GetVariableByName("FogStart").AsScalar();
         _fogEndVar = Effect.GetVariableByName("FogEnd").AsScalar();
         _fogColorVar = Effect.GetVariableByName("FogColor").AsVector();
+        _fogDensityVar = Effect.GetVariableByName("FogDensity").AsScalar();
+
+        _fogDensityVar.Set(0.001f);
     }
 
     public void Update(Camera camera)
@@ -42,13 +46,15 @@ public sealed class ChunkEffectDefinition<TVertex> : EffectDefinition<TVertex>
         {
             _fogStartVar.Set(8);
             _fogEndVar.Set(64);
-            _fogColorVar.Set(new Vector4(0, 0.2f, 1, 0));
+            _fogColorVar.Set(new Vector4(35/255f, 76/255f, 102/255f, 0));
+            _fogDensityVar.Set(0.05f);
         }
         else
         {
             _fogStartVar.Set(GameOptions.VIEW_DISTANCE * GameOptions.CHUNK_SIZE);
             _fogEndVar.Set(10* GameOptions.VIEW_DISTANCE * GameOptions.CHUNK_SIZE);
-            _fogColorVar.Set(new Vector4(0, 0, 0, 1));
+            _fogColorVar.Set(new Vector4(194f/255f, 1, 1, 1));
+            _fogDensityVar.Set(0.001f);
         }
     }
 }

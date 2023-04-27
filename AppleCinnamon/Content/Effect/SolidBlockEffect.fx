@@ -3,6 +3,7 @@ float4x4 WorldViewProjection;
 float4 FogColor;
 float FogStart = 64;
 float FogEnd = 256;
+float FogDensity = 0.005;
 float3 EyePosition;
 
 float2 Resolution = float2(1827, 997);
@@ -53,8 +54,18 @@ float textureFactor = 1.0 / 16.0;
 float totalLightness = 1.0/60.0f;
 float lightFactor = 1.0f;
 
+float fogFactorExp2(
+	const float dist,
+	const float density
+) {
+	const float LOG2 = -1.442695;
+	float d = density * dist;
+	return 1.0 - clamp(exp2(d * d * LOG2), 0.0, 1.0);
+}
+
 float ComputeFogFactor(float dist)
 {
+	return fogFactorExp2(dist, FogDensity);
     return clamp((dist - FogStart) / (FogEnd - FogStart), 0, 1);
 }
 
@@ -84,9 +95,16 @@ float4 PixelShaderFunction(VertexShaderOutput input) : SV_Target
 {
 	float4 textureColor = Textures.Sample(SS, input.TexCoords) * input.AmbientOcclusion /** float4(1.8, 1.8, 1.8, 1)*/ * input.HueColor;
 	clip(textureColor.a == 0 ? -1 : 1);
-	float4 finalColor = (1.0 - input.FogFactor) * textureColor + (input.FogFactor) * FogColor;
-	return finalColor;
+
+	//return float4(1, 0, 0, 1);
+	//return lerp(textureColor, fogColor, 0.5);
+	return lerp(textureColor, FogColor, input.FogFactor);
+
+	//float4 finalColor = (1.0 - input.FogFactor) * textureColor + (input.FogFactor) * FogColor;
+	//return finalColor;
 }
+
+
 
 technique10 Render
 {

@@ -101,7 +101,9 @@ public sealed class GraphicsContext
         {
             CullMode = SharpDX.Direct3D11.CullMode.Back,
             FillMode = SharpDX.Direct3D11.FillMode.Solid,
-            IsMultisampleEnabled = false,
+            IsFrontCounterClockwise = false,
+            IsAntialiasedLineEnabled = true,
+            IsMultisampleEnabled = true,
         });
 
     }

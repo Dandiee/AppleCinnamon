@@ -5,6 +5,7 @@ float3 EyePosition;
 float4 FogColor;
 float FogStart = 64;
 float FogEnd = 256;
+float FogDensity = 0.005;
 
 float lightFactor = 1.0f;
 Texture2D Textures;
@@ -53,9 +54,19 @@ struct VertexShaderOutput
 float textureFactor = 1.0 / 16.0;
 float totalLightness = 1.0/60.0f;
 
-float ComputeFogFactor(float d)
+float fogFactorExp2(
+	const float dist,
+	const float density
+) {
+	const float LOG2 = -1.442695;
+	float d = density * dist;
+	return 1.0 - clamp(exp2(d * d * LOG2), 0.0, 1.0);
+}
+
+float ComputeFogFactor(float dist)
 {
-	return clamp((d - FogStart) / (FogEnd - FogStart), 0, 1) * FogEnabled;
+	return fogFactorExp2(dist, FogDensity);
+	return clamp((dist - FogStart) / (FogEnd - FogStart), 0, 1);
 }
 
 VertexShaderOutput VertexShaderFunction(VertexShaderInput input)
@@ -84,6 +95,9 @@ float4 PixelShaderFunction(VertexShaderOutput input) : SV_Target
 {
 	float4 textureColor = Textures.Sample(SS, input.TexCoords) * input.AmbientOcclusion * float4(1.5, 1.5, 1.5, 1) * input.HueColor;
 	clip(textureColor.a == 0 ? -1 : 1);
+
+	return lerp(textureColor, FogColor, input.FogFactor);
+
 	float4 finalColor = (1.0 - input.FogFactor) * textureColor + (input.FogFactor) * FogColor;
 	return finalColor;
 
