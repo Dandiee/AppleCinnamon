@@ -128,6 +128,9 @@ namespace NoiseGeneratorTest
                     Factor = float.Parse(noiseData[6], CultureInfo.InvariantCulture);
                     BaseColor = (Color)ColorConverter.ConvertFromString(noiseData[7]);
                     Seed = int.Parse(noiseData[8], CultureInfo.InvariantCulture);
+                    SetPoint = float.Parse(noiseData[9], CultureInfo.InvariantCulture);
+                    UnderColor = (Color)ColorConverter.ConvertFromString(noiseData[10]);
+                    OverColor = (Color)ColorConverter.ConvertFromString(noiseData[11]);
 
                     Highlights.Clear();
 
@@ -153,7 +156,7 @@ namespace NoiseGeneratorTest
         private void Export()
         {
             var firstLine = string.Create(CultureInfo.InvariantCulture,
-                $"{Width};{Height};{Octaves};{Amplitude};{Frequency};{Offset};{Factor};{BaseColor.ToString()};{Seed}");
+                $"{Width};{Height};{Octaves};{Amplitude};{Frequency};{Offset};{Factor};{BaseColor.ToString()};{Seed};{SetPoint};{UnderColor};{OverColor}");
             var highlightings = string.Join(Environment.NewLine, Highlights.Select(s =>
                 string.Create(CultureInfo.InvariantCulture, $"{s.Value};{s.Range};{s.IsSolid};{s.Color}")));
             Clipboard.SetText($"{firstLine}{Environment.NewLine}{highlightings}");
@@ -293,6 +296,27 @@ namespace NoiseGeneratorTest
             set => SetProperty(ref _factoredValueRange, value);
         }
 
+        private float _setPoint;
+        public float SetPoint
+        {
+            get => _setPoint;
+            set => SetPropertyAndRender(ref _setPoint, value);
+        }
+
+        private Color _underColor  = Colors.White;
+        public Color UnderColor
+        {
+            get => _underColor;
+            set => SetPropertyAndRender(ref _underColor, value);
+        }
+
+        private Color _overColor = Colors.White;
+        public Color OverColor
+        {
+            get => _overColor;
+            set => SetPropertyAndRender(ref _overColor, value);
+        }
+
 
         private int _offset = 92;
         public int Offset
@@ -352,23 +376,29 @@ namespace NoiseGeneratorTest
                 if (localMinMax.Y < value) localMinMax.Y = value;
 
                 var factored = value * Factor + Offset;
-
-                if (factored > 256 || factored < 0)
-                {
-
-                }
-
                 var factoredByteValue = (byte)(factored);
 
-
-
                 var ratio = factoredByteValue / 255f;
-
                 ScaledValues[ij] = ratio;
+
+                
 
                 var r = (byte)(BaseColor.R * ratio);
                 var g = (byte)(BaseColor.G * ratio);
                 var b = (byte)(BaseColor.B * ratio);
+
+                if (ratio <= SetPoint)
+                {
+                    r = (byte)(UnderColor.R * ratio);
+                    g = (byte)(UnderColor.G * ratio);
+                    b = (byte)(UnderColor.B * ratio);
+                }
+                else
+                {
+                    r = (byte)(OverColor.R * ratio);
+                    g = (byte)(OverColor.G * ratio);
+                    b = (byte)(OverColor.B * ratio);
+                }
 
                 foreach (var highlight in Highlights)
                 {

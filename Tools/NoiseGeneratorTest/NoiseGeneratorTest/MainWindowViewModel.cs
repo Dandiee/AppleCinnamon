@@ -1,6 +1,7 @@
 ﻿using System.CodeDom;
 using System.Windows.Media;
 using Prism.Mvvm;
+using SharpDX.Direct3D9;
 
 namespace NoiseGeneratorTest
 {
@@ -25,6 +26,14 @@ namespace NoiseGeneratorTest
             PerlinRight.Rendered += (_, _) => SourceChanged();
         }
 
+        private void SetColor(ref byte[] bytes, int offset, Color color, float scale)
+        {
+            bytes[offset + 0] = (byte)(color.B * (scale)); // BLUE
+            bytes[offset + 1] = (byte)(color.G * (scale)); // GREEN
+            bytes[offset + 2] = (byte)(color.R * (scale)); // RED
+            bytes[offset + 3] = 255; // ALPHA
+        }
+
         private void SourceChanged()
         {
             if (PerlinLeft.Width == PerlinRight.Width && PerlinLeft.Height == PerlinRight.Height)
@@ -36,47 +45,43 @@ namespace NoiseGeneratorTest
 
                 for (var ij = 0; ij < PerlinLeft.ScaledValues.Length; ij++)
                 {
-                    var i = ij % width;
-                    var j = ij / width;
-
-                    var value = PerlinLeft.ScaledValues[ij] * PerlinLeft.ScaledValues[ij] * PerlinRight.ScaledValues[ij];
-                    var byteValue = (byte)(value * 255);
+                    //var i = ij % width;  var j = ij / width;
 
                     var offset = ij * 4;
 
                     var leftValue = PerlinLeft.ScaledValues[ij];
                     var rightValue = PerlinRight.ScaledValues[ij];
 
-                    var waterHighlight = PerlinLeft.Highlights[1];
-                    var waterLevel = waterHighlight.RangeFrom / 256f;
-
-                    if (leftValue > waterLevel)
+                    // water
+                    if (leftValue <= PerlinLeft.SetPoint)
                     {
-                        var offsetLeftValue = leftValue - waterLevel;
-                        var landScaler = offsetLeftValue / ((waterHighlight.RangeTo - waterHighlight.RangeFrom) / 256f);
+                        var value = leftValue;
+                        var color = PerlinLeft.UnderColor;
 
-                        if (landScaler > 0.9)
-                        {
-
-                        }
-
-                        byteValue = (byte)(PerlinLeft.ScaledValues[ij] * 255);
-
-                        var color = Color.FromRgb(0, 255, 127);
-
-                        var scaler = Math.Pow(landScaler, 3);
-
-                        bytes[offset + 0] = (byte)(color.B * (scaler * rightValue)); // BLUE
-                        bytes[offset + 1] = (byte)(color.G * (scaler * rightValue)); // GREEN
-                        bytes[offset + 2] = (byte)(color.R * (scaler * rightValue)); // RED
-                        bytes[offset + 3] = 255; // ALPHA
+                        SetColor(ref bytes, offset, color, value);
                     }
-                    else // water dont care
+                    //// mountain
+                    //else if (rightValue >= PerlinRight.SetPoint)
+                    //{
+                    //    var value = leftValue * leftValue * rightValue * rightValue;
+                    //    var color = PerlinLeft.OverColor;
+                    //
+                    //    SetColor(ref bytes, offset, color, value);
+                    //}
+                    //// flat land
+                    //else
+                    //{
+                    //    var value = (float)Math.Pow(leftValue, 3) * rightValue;
+                    //    var color = PerlinLeft.OverColor;
+                    //
+                    //    SetColor(ref bytes, offset, color, value);
+                    //}
+                    else
                     {
-                        bytes[offset + 0] = 255; // BLUE
-                        bytes[offset + 1] = 0; // GREEN
-                        bytes[offset + 2] = 0; // RED
-                        bytes[offset + 3] = 255; // ALPHA
+                        var value = leftValue * leftValue * rightValue * rightValue;
+                        var color = PerlinLeft.OverColor;
+                        
+                        SetColor(ref bytes, offset, color, value);
                     }
                 }
 

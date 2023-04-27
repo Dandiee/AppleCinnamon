@@ -29,14 +29,16 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
         <TextBlock Grid.Column="0" Grid.Row="0" Text="Width" FontWeight="Bold"/>
-        <Slider Grid.Column="1" Grid.Row="0" Value="{Binding Width}" Minimum="16" Maximum="2048" Ticks="16"/>
+        <Slider Grid.Column="1" Grid.Row="0" Value="{Binding Width}" Minimum="16" Maximum="1024" Ticks="16"/>
         <TextBlock Grid.Column="2" Grid.Row="0" Text="{Binding Width}" HorizontalAlignment="Right"/>
 
         <TextBlock Grid.Column="0" Grid.Row="1" Text="Height" FontWeight="Bold"/>
-        <Slider Grid.Column="1" Grid.Row="1" Value="{Binding Height}" Minimum="16" Maximum="2048" Ticks="16"/>
+        <Slider Grid.Column="1" Grid.Row="1" Value="{Binding Height}" Minimum="16" Maximum="1024" Ticks="16"/>
         <TextBlock Grid.Column="2" Grid.Row="1" Text="{Binding Height}" HorizontalAlignment="Right"/>
 
         <TextBlock Grid.Column="0" Grid.Row="2" Text="Octaves" FontWeight="Bold"/>
@@ -108,7 +110,19 @@
         <TextBlock Grid.Column="0" Grid.Row="12" Text="Seed"/>
         <TextBlock Grid.Column="1" Grid.Row="12" Grid.ColumnSpan="2" Text="{Binding Seed}" HorizontalAlignment="Right"/>
 
-        <Border Grid.Column="0" Grid.Row="13"  Grid.ColumnSpan="3" 
+        <TextBlock Grid.Column="0" Grid.Row="13" Text="SetPoint" FontStyle="Italic" />
+        <Slider Grid.Column="1" Grid.Row="13" Value="{Binding SetPoint}" Minimum="0" Maximum="1"/>
+        <TextBlock Grid.Column="2" Grid.Row="13" Text="{Binding SetPoint, StringFormat={}{0:N2}}"  ToolTip="{Binding SetPoint}" HorizontalAlignment="Right"/>
+
+        <TextBlock Grid.Column="0" Grid.Row="14" Text="Colors" FontStyle="Italic" />
+        <StackPanel Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="14" Orientation="Horizontal" HorizontalAlignment="Right">
+            <TextBlock Text="Under"/>
+            <xctk:ColorPicker SelectedColor="{Binding UnderColor}" />
+            <TextBlock Text="Over"/>
+            <xctk:ColorPicker SelectedColor="{Binding OverColor}" />
+        </StackPanel>
+
+        <Border Grid.Column="0" Grid.Row="15"  Grid.ColumnSpan="3" 
                 BorderThickness="0 1 0 0" BorderBrush="#333" Margin="0 3 0 0" Padding="0 3 0 0">
             <WrapPanel Orientation="Horizontal" HorizontalAlignment="Right">
                 <Button Content="Re-seed" HorizontalAlignment="Right" Command="{Binding ReseedCommand}"/>
