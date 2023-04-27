@@ -47,12 +47,12 @@ namespace NoiseGeneratorTest
             {
                 _supressRender = true;
 
-                Factor = 2f / ValueRange;
+                Factor = 1f / ValueRange;
                 FactoredMinimumValue = MinimumValue * Factor;
                 FactoredMaximumValue = MaximumValue * Factor;
                 FactoredValueRange = FactoredMaximumValue - FactoredMinimumValue;
 
-                Offset = (-1f - FactoredMinimumValue);
+                Offset = -FactoredMinimumValue;
                 
 
                 _supressRender = false;
@@ -375,9 +375,17 @@ namespace NoiseGeneratorTest
                 if (localMinMax.X > value) localMinMax.X = value;
                 if (localMinMax.Y < value) localMinMax.Y = value;
 
+
+
                 var signedFactored = value * Factor + Offset;
 
-                var factored = (signedFactored + 1f) / 2;
+
+                if (signedFactored < 0 || signedFactored > 1)
+                {
+
+                }
+
+                var factored = signedFactored;// + 1f) / 2;
 
                 ScaledValues[ij] = factored;
 
