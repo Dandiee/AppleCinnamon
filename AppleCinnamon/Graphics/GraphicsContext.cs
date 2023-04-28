@@ -24,6 +24,8 @@ namespace AppleCinnamon.Graphics;
 public sealed class GraphicsContext
 {
 
+    public const int MSAA = 1;
+
     public readonly RenderForm RenderForm;
     public readonly RenderTargetView RenderTargetView;
     public readonly DepthStencilView DepthStencilView;
@@ -51,21 +53,24 @@ public sealed class GraphicsContext
             StartPosition = FormStartPosition.CenterScreen
         };
 
+
+        
         _d3d11.Device.CreateWithSwapChain(_d3d.DriverType.Hardware, DeviceCreationFlags.BgraSupport 
             //| DeviceCreationFlags.Debug
             , new SwapChainDescription
         {
             BufferCount = 1,
-            ModeDescription = new ModeDescription(RenderForm.ClientSize.Width, RenderForm.ClientSize.Height, new Rational(60, 1), Format.R8G8B8A8_UNorm),
+            ModeDescription = new ModeDescription(RenderForm.ClientSize.Width, RenderForm.ClientSize.Height, 
+                new Rational(60, 1), Format.R8G8B8A8_UNorm),
             IsWindowed = true,
             OutputHandle = RenderForm.Handle,
-            SampleDescription = new SampleDescription(1, 0),
+            SampleDescription = new SampleDescription(MSAA, 0),
             SwapEffect = SwapEffect.Discard,
             Usage = Usage.RenderTargetOutput
         }, out var device, out var swapChain);
 
         Device = device;
-
+        var asd = Device.CheckMultisampleQualityLevels(Format.R8G8B8A8_UNorm, 8);
         SwapChain = swapChain;
 
         D2dFactory = new Factory();
@@ -89,7 +94,7 @@ public sealed class GraphicsContext
             MipLevels = 1,
             Width = RenderForm.ClientSize.Width,
             Height = RenderForm.ClientSize.Height,
-            SampleDescription = new SampleDescription(1, 0),
+            SampleDescription = new SampleDescription(MSAA, 0),
             Usage = ResourceUsage.Default,
             BindFlags = BindFlags.DepthStencil,
             CpuAccessFlags = CpuAccessFlags.None,
