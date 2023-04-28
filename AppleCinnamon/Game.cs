@@ -20,6 +20,7 @@ public class Game
     private readonly Crosshair _crosshair;
     private readonly PipelineVisualizer _pipelineVisualizer;
     private readonly GraphicsContext _graphicsContext;
+    private readonly CloudDrawer _cloudDrawer;
 
     private readonly Stopwatch _swComponents;
     private readonly Stopwatch _swTotal;
@@ -53,6 +54,7 @@ public class Game
         ChunkManager = new ChunkManager(_graphicsContext);
         _pipelineVisualizer = new PipelineVisualizer(_graphicsContext);
         _debugLayout = new DebugLayout(this, _graphicsContext);
+        _cloudDrawer = new CloudDrawer(_graphicsContext);
 
         _lastRenderTimes = new double[50];
         _swComponents = new Stopwatch();
@@ -103,6 +105,7 @@ public class Game
             ChunkManager.Update(Camera);
             ChunkManager.CleanUp();
             SkyDome.Update(Camera);
+            _cloudDrawer.Update(Camera, SkyDome.Effect.SunPosition);
             TotalChunkUpdateTime += _swComponents.ElapsedMilliseconds;
 
             _swComponents.Restart();
@@ -132,6 +135,8 @@ public class Game
                 {
                     _pipelineVisualizer.Draw(Camera, ChunkManager);
                 }
+
+                _cloudDrawer.Draw();
             });
 
             // Performance counters

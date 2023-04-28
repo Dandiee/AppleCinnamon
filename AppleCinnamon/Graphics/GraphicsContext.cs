@@ -51,7 +51,9 @@ public sealed class GraphicsContext
             StartPosition = FormStartPosition.CenterScreen
         };
 
-        _d3d11.Device.CreateWithSwapChain(_d3d.DriverType.Hardware, DeviceCreationFlags.BgraSupport /*| DeviceCreationFlags.Debug*/, new SwapChainDescription
+        _d3d11.Device.CreateWithSwapChain(_d3d.DriverType.Hardware, DeviceCreationFlags.BgraSupport 
+            //| DeviceCreationFlags.Debug
+            , new SwapChainDescription
         {
             BufferCount = 1,
             ModeDescription = new ModeDescription(RenderForm.ClientSize.Width, RenderForm.ClientSize.Height, new Rational(60, 1), Format.R8G8B8A8_UNorm),

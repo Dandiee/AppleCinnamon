@@ -10,31 +10,31 @@ namespace AppleCinnamon.Drawers;
 public class SkyDome
 {
     private readonly Device _device;
-    private readonly SkyDomeEffect _skyDomeEffectEffect;
+    public readonly SkyDomeEffect Effect;
 
     private BufferDefinition<VertexSkyBox> _skyBuffer;
 
     public SkyDome(Device device)
     {
         _device = device;
-        _skyDomeEffectEffect = new SkyDomeEffect(device);
+        Effect = new SkyDomeEffect(device);
         UpdateSkyDome();
     }
 
     public void Draw()
     {
-        _skyDomeEffectEffect.EffectDefinition.Use(_device);
+        Effect.EffectDefinition.Use(_device);
         _skyBuffer.Draw(_device);
     }
 
     public void Update(Camera camera)
     {
-        _skyDomeEffectEffect.Update(camera);
+        Effect.Update(camera);
     }
 
     public void UpdateEffect()
     {
-        _skyDomeEffectEffect.UpdateDetails();
+        Effect.UpdateDetails();
     }
 
     public void UpdateSkyDome()

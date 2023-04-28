@@ -36,6 +36,8 @@ public class SkyDomeEffect
     private readonly EffectMatrixVariable _worldViewProjectVar;
     private readonly EffectMatrixVariable _worldViewVar;
 
+    public Vector3 SunPosition;
+
     public SkyDomeEffect(Device device)
     {
         EffectDefinition = new(device, "Content/Effect/RayleightScatter.fx", PrimitiveTopology.TriangleList);
@@ -107,10 +109,15 @@ public class SkyDomeEffect
         LambdaAlpha = Lambda.Pow(alpha);
     }
 
+    private readonly Vector3 _sunRotationAxis = Vector3.Normalize(new Vector3(5, 0, 19));
+
     public void UpdateDetails()
     {
-        var sunPosition = Vector3.UnitZ.Rotate(-Vector3.UnitX, SkyDomeOptions.TimeOfDay * MathUtil.Pi);
-        var thetaS = (float)Math.Acos(Vector3.Dot(sunPosition, Vector3.UnitY));
+        var n = new Vector3(-_sunRotationAxis.Z, _sunRotationAxis.Y, _sunRotationAxis.X);
+        n.Normalize();
+
+        SunPosition = _sunRotationAxis.Rotate(n, SkyDomeOptions.TimeOfDay * MathUtil.Pi);
+        var thetaS = (float)Math.Acos(Vector3.Dot(SunPosition, Vector3.UnitY));
         var beta = 0.04608365822050f * SkyDomeOptions.Turbitity - 0.04586025928522f;
 
         // Relative Optical Mass
@@ -131,7 +138,7 @@ public class SkyDomeEffect
 
         _hGgVar.Set(HGg);
 
-        _sunDirectionVar.Set(sunPosition);
+        _sunDirectionVar.Set(SunPosition);
         _betaRPlusBetaMVar.Set(betaRPlusBetaM);
         _betaDashRVar.Set(BetaDashRay * SkyDomeOptions.BetaRayMultiplier);
         _betaDashMVar.Set(BetaDashMie * SkyDomeOptions.BetaMieMultiplier);
