@@ -5,7 +5,7 @@ namespace AppleCinnamon.Options;
 
 public static class GameOptions
 {
-    public const int VIEW_DISTANCE = 32;
+    public const int VIEW_DISTANCE = 16;
     public const int NUMBER_OF_POOLS = 4;
     public const int CHUNK_SIZE = 16;
     public const int SLICE_HEIGHT = 16;
@@ -23,6 +23,7 @@ public static class GameOptions
     public static bool RenderCrosshair { get; set; } = true;
     public static bool RenderBoxes { get; set; } = true;
     public static bool RenderPipelineVisualization { get; set; } = false;
+    public static bool RenderClouds { get; set; } = true;
     public static bool IsViewFrustumCullingEnabled { get; set; } = true;
     public static bool RenderChunkBoundingBoxes { get; set; } = false;
     public static bool RenderDebugLayout { get; set; } = true;

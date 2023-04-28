@@ -82,9 +82,10 @@ public sealed class DebugLayout
             new DebugToggleAction(Key.F4, () => GameOptions.RenderSky),
             new DebugToggleAction(Key.F5, () => GameOptions.RenderCrosshair),
             new DebugToggleAction(Key.F6, () => GameOptions.RenderBoxes),
-            new DebugToggleAction(Key.F7, () => GameOptions.RenderPipelineVisualization),
-            new DebugToggleAction(Key.F8, () => GameOptions.RenderChunkBoundingBoxes),
-            new DebugToggleAction(Key.F9, () => GameOptions.IsViewFrustumCullingEnabled));
+            new DebugToggleAction(Key.F7, () => GameOptions.RenderClouds),
+            new DebugToggleAction(Key.F8, () => GameOptions.RenderPipelineVisualization),
+            new DebugToggleAction(Key.F9, () => GameOptions.RenderChunkBoundingBoxes),
+            new DebugToggleAction(Key.F10, () => GameOptions.IsViewFrustumCullingEnabled));
 
         var performanceContext = new DebugContext(rightAlignedTextFormat, graphicsContext, rightOrigin,
             new DebugInfoLine<int>(() => GameOptions.VIEW_DISTANCE, "ViewDistance"),
@@ -125,6 +126,7 @@ public sealed class DebugLayout
         yield return $"AbsVoxelAddress: {currentCursor.AbsoluteVoxelIndex}";
         yield return $"Voxel: {currentCursor.Definition.Name}";
         yield return $"Face: {currentCursor.Direction}";
+        yield return $"Light: (S/E){currentCursor.Voxel.Sunlight} / {currentCursor.Voxel.EmittedLight}";
     }
 
 

@@ -7,14 +7,17 @@ float FogStart = 64;
 float FogEnd = 256;
 float FogDensity = 0.005;
 
-float lightFactor = 1.0f;
+
+float lightFactor = 1.0f; // SUNLIGHT FACTOR SET BY THE EFFECT
+
 Texture2D Textures;
 
 float4 HueColors[] =
 {
 	float4(1,1,1,1),
 	float4(0,0.78,0.277,1),
-	float4(152 / 255.0, 245 / 255.0, 95 / 255.0,1),
+	//float4(152 / 255.0, 245 / 255.0, 95 / 255.0,1),
+	  float4(152 / 255.0, 245 / 255.0, 95 / 255.0,1),
 	float4(144/255.0,191 / 255.0,96/255.0,1),
 	float4(0.650,0.780,0,1),
 	float4(0,0.880,0.0440,1),
@@ -51,8 +54,7 @@ struct VertexShaderOutput
 	float4 HueColor : COLOR2;
 };
 
-float textureFactor = 1.0 / 16.0;
-float totalLightness = 1.0/60.0f;
+
 
 float fogFactorExp2(
 	const float dist,
@@ -74,15 +76,22 @@ VertexShaderOutput VertexShaderFunction(VertexShaderInput input)
 	VertexShaderOutput output = (VertexShaderOutput)0;
 	float4 position = float4(input.Position.xyz, 1);
 
-	float textureCoordinateU = ((input.MetaData >>  0) & 31) * textureFactor;						// 5 bits
-	float textureCoordinateV = ((input.MetaData >>  5) & 31) * textureFactor;						// 5 bits
-	float sunlight           = ((input.MetaData >> 10) & 15) * totalLightness * lightFactor + 0.2f; // 4 bits
-	float emittedLight       = ((input.MetaData >> 14) & 15) * totalLightness + 0.2f;				// 4 bits
-	int   hueIndex           = ((input.MetaData >> 18) & 15);										// 4 bits
+	// since theres no real light smoothing going on we only need to scale down everything to 0..1
+	// the maximum value is 15 so our factor is 1/15
+	const float smoothingFactor = 1.0f / 15.0f;
+
+	// we also happen to have 16*16 voxel texture on the texture bitmap
+	const float textureFactor = 1.0f / 16.0f;
+
+	float textureCoordinateU = ((input.MetaData >>  0) & 31) * textureFactor;	// 5 bits
+	float textureCoordinateV = ((input.MetaData >>  5) & 31) * textureFactor;	// 5 bits
+	float sunlight           = ((input.MetaData >> 10) & 15) * lightFactor;		// 4 bits
+	float emittedLight       = ((input.MetaData >> 14) & 15);					// 4 bits
+	int   hueIndex           = ((input.MetaData >> 18) & 15);					// 4 bits
 
 	output.Position = mul(position, WorldViewProjection);
 	output.TexCoords = float2(textureCoordinateU, textureCoordinateV);
-	output.AmbientOcclusion = max(sunlight, emittedLight);
+	output.AmbientOcclusion = max(sunlight, emittedLight) * smoothingFactor;
 	output.FogFactor = ComputeFogFactor(distance(EyePosition.xyz, input.Position.xyz));
 	output.HueColor = HueColors[hueIndex];
 
@@ -93,14 +102,9 @@ VertexShaderOutput VertexShaderFunction(VertexShaderInput input)
 
 float4 PixelShaderFunction(VertexShaderOutput input) : SV_Target
 {
-	float4 textureColor = Textures.Sample(SS, input.TexCoords) * input.AmbientOcclusion * float4(1.5, 1.5, 1.5, 1) * input.HueColor;
+	float4 textureColor = Textures.Sample(SS, input.TexCoords) * input.AmbientOcclusion * input.HueColor;
 	clip(textureColor.a == 0 ? -1 : 1);
-
 	return lerp(textureColor, FogColor, input.FogFactor);
-
-	float4 finalColor = (1.0 - input.FogFactor) * textureColor + (input.FogFactor) * FogColor;
-	return finalColor;
-
 }
 
 technique10 Render

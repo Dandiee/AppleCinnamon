@@ -87,8 +87,11 @@ public static partial class ChunkDispatcher
 
             var hue = (definition.HueFaces & faceInfo.Direction) == faceInfo.Direction ? voxel.MetaData : (byte)0;
 
-            vertices[vertexIndex + vertexInfo.Index] = new VertexSolidBlock(position, textureUv.X + vertexInfo.TextureIndex.X,
-                textureUv.Y + vertexInfo.TextureIndex.Y, neighbor.Sunlight, neighbor.EmittedLight, totalSunlight,
+            vertices[vertexIndex + vertexInfo.Index] = new VertexSolidBlock(
+                position, textureUv.X + vertexInfo.TextureIndex.X, textureUv.Y + vertexInfo.TextureIndex.Y, 
+                neighbor.Sunlight, 
+                neighbor.EmittedLight, 
+                totalSunlight,
                 numberOfAmbientNeighbors, hue, totalCustomLight);
         }
 

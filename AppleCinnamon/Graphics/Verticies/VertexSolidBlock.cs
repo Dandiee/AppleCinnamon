@@ -18,22 +18,23 @@ public struct VertexSolidBlock : IVertex
     public int Size => _sizeInBytes;
     public InputElement[] InputElements => _inputElements;
 
-    public VertexSolidBlock(Vector3 position, int u, int v, byte baseSunlight, byte baseCustomLight, byte totalneighborLights, int numberOfAmbientneighbors, byte hueIndex, byte totalNeighborCustomLight)
+    public VertexSolidBlock(Vector3 position, int u, int v, byte baseSunlight, byte baseCustomLight,
+        byte totalNeighborLights, int numberOfAmbientNeighbors, byte hueIndex, byte totalNeighborCustomLight)
     {
         Position = position; // 32
         MetaData = 0;
 
-        var l = baseSunlight + totalneighborLights;
-        var a = numberOfAmbientneighbors;
+        var l = baseSunlight + totalNeighborLights;
+        var a = numberOfAmbientNeighbors;
         var h = 0b1111 & hueIndex;
         var c = baseCustomLight + totalNeighborCustomLight;
 
-        MetaData |= (uint)(u <<  0); // 5 bits
-        MetaData |= (uint)(v <<  5); // 5 bits
-        MetaData |= (uint)(l << 10); // 6 bits
-        MetaData |= (uint)(a << 16); // 4 bits
-        MetaData |= (uint)(h << 20); // 4 bits
-        MetaData |= (uint)(c << 26); // 6 bits
+        MetaData |= (uint)(u <<  0); // 5 bits  textureCoordinateU
+        MetaData |= (uint)(v <<  5); // 5 bits  textureCoordinateV
+        MetaData |= (uint)(l << 10); // 6 bits  sunlight
+        MetaData |= (uint)(a << 16); // 4 bits  ambientNeighborCount
+        MetaData |= (uint)(h << 20); // 4 bits  hueIndex
+        MetaData |= (uint)(c << 26); // 6 bits  emittedLight
     }
 
     public Vector3 Position;

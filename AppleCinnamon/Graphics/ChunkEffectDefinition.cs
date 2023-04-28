@@ -47,13 +47,14 @@ public sealed class ChunkEffectDefinition<TVertex> : EffectDefinition<TVertex>
             _fogStartVar.Set(8);
             _fogEndVar.Set(64);
             _fogColorVar.Set(new Vector4(35/255f, 76/255f, 102/255f, 0));
-            _fogDensityVar.Set(0.05f);
+            _fogDensityVar.Set(0.5f);
         }
         else
         {
             _fogStartVar.Set(GameOptions.VIEW_DISTANCE * GameOptions.CHUNK_SIZE);
             _fogEndVar.Set(10* GameOptions.VIEW_DISTANCE * GameOptions.CHUNK_SIZE);
             _fogColorVar.Set(new Vector4(194f/255f, 1, 1, 1));
+            //_fogColorVar.Set(new Vector4(0.2f, 0.3f, 0.5f, 1));
             _fogDensityVar.Set(0.001f);
         }
     }

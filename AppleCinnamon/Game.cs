@@ -136,7 +136,10 @@ public class Game
                     _pipelineVisualizer.Draw(Camera, ChunkManager);
                 }
 
-                _cloudDrawer.Draw();
+                if (GameOptions.RenderClouds)
+                {
+                    _cloudDrawer.Draw();
+                }
             });
 
             // Performance counters

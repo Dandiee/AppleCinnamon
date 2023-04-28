@@ -138,7 +138,13 @@ public sealed class VoxelDefinition
         
 
 
-    public static readonly VoxelDefinition Grass = new BlockDefinitionBuilder(23).WithBottomTexture(2, 0).WithTopTexture(0, 0).WithSideTexture(3, 0).WithHue(VisibilityFlag.Top).Build();
+    public static readonly VoxelDefinition Grass = new BlockDefinitionBuilder(23)
+        .WithBottomTexture(2, 0)
+        .WithTopTexture(0, 0)
+        .WithSideTexture(3, 0)
+        .WithHue(VisibilityFlag.Top)
+        .Build();
+
     public static readonly VoxelDefinition Snow = new BlockDefinitionBuilder(24).WithBottomTexture(2, 0).WithTopTexture(0, 4).WithSideTexture(4, 4).WithHeight(1f).Build();
     public static readonly VoxelDefinition Torch = new BlockDefinitionBuilder(25).WithSideTexture(0, 5).WithTopTexture(15,15)
         .AsPermeable()
@@ -156,7 +162,12 @@ public sealed class VoxelDefinition
     public static readonly VoxelDefinition Wood3 = new BlockDefinitionBuilder(29).WithSideTexture(6, 5).WithTopTexture(5, 1).WithTopTexture(5, 1).Build();
     public static readonly VoxelDefinition Wood4 = new BlockDefinitionBuilder(30).WithSideTexture(7, 5).WithTopTexture(5, 1).WithTopTexture(5, 1).Build();
     public static readonly VoxelDefinition Wood5 = new BlockDefinitionBuilder(31).WithSideTexture(5, 7).WithTopTexture(5, 1).WithTopTexture(5, 1).Build();
-    public static readonly VoxelDefinition Weed = new BlockDefinitionBuilder(32).WithAllSideTexture(7, 2).WithSize(1, .8f, 1).AsSprite().WithHue(VisibilityFlag.All).Build();
+    public static readonly VoxelDefinition Weed = new BlockDefinitionBuilder(32)
+        .WithAllSideTexture(7, 2)
+        .WithSize(1, .8f, 1)
+        .AsSprite()
+        .WithHue(VisibilityFlag.All)
+        .Build();
     
     public static readonly VoxelDefinition FlowerRed = new BlockDefinitionBuilder(33)
         .WithAllSideTexture(12, 0)    

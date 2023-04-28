@@ -51,8 +51,9 @@ struct VertexShaderOutput
 };
 
 float textureFactor = 1.0 / 16.0;
-float totalLightness = 1.0/60.0f;
-float lightFactor = 1.0f;
+float lightFactor = 1.0f; // SUNLIGHT FACTOR SET BY THE EFFECT
+//float totalLightness = 1.0/60.0f;
+
 
 float fogFactorExp2(
 	const float dist,
@@ -76,14 +77,30 @@ VertexShaderOutput VertexShaderFunction(VertexShaderInput input)
 
 	float textureCoordinateU   = ((input.MetaData >>  0) & 31) * textureFactor;
 	float textureCoordinateV   = ((input.MetaData >>  5) & 31) * textureFactor;
-	float sunlight             = ((input.MetaData >> 10) & 63) * totalLightness * lightFactor;
+	float sunlight			   = ((input.MetaData >> 10) & 63) * lightFactor; // the light factor is the t variant for the sun
 	float ambientNeighborCount = ((input.MetaData >> 16) & 15);
 	int   hueIndex             = ((input.MetaData >> 20) & 15);
-	float emittedLight         = ((input.MetaData >> 26) & 63) * totalLightness + 0.2f;
+	float emittedLight         = ((input.MetaData >> 26) & 63);
+
+	// each AO neighbor decreases the vertex brightness by 10 percent
+	// if there's no AO this will be 1 (since: 1 - (0 * 0.1) == 1)
+	// worst case all neighbors are darkening the vertex which yields a 0.7f factor
+	float ambientOcclusionFactor = 1.0f - (ambientNeighborCount * 0.1);
 
     output.Position = mul(position, WorldViewProjection);
 	output.TexCoords = float2(textureCoordinateU, textureCoordinateV);
-	output.AmbientOcclusion = max(sunlight, emittedLight) * (1.0 - ambientNeighborCount / 3.0);
+
+	// 1) sunlight: changes over time, it might be the dominant light source at daylight but falls off to 0 at night
+	// 2) block emitted lights: are invariant of time
+	// 3) max() => we always take the brightest value from the two
+	// 4) smoothFactor: there are 3 neighbors with 0-15 light data;
+	//        and the normal-neighbor light data with another 0-15 value
+	//        grand total 15*4 = 60 light data which we need to scale down to 0..1 range => factor it with 1/60
+	// 5) AO factor:
+	const float smoothingFactor = 1.0f / 60.0f;
+
+	// the smoothing factor takes into account the 3 neighbors light data and the normal-neighbor's light data
+	output.AmbientOcclusion = max(sunlight, emittedLight) * smoothingFactor * ambientOcclusionFactor;
 	output.FogFactor = ComputeFogFactor(distance(EyePosition.xyz, input.Position.xyz));
 	output.HueColor = HueColors[hueIndex];
 
@@ -93,15 +110,9 @@ VertexShaderOutput VertexShaderFunction(VertexShaderInput input)
 
 float4 PixelShaderFunction(VertexShaderOutput input) : SV_Target
 {
-	float4 textureColor = Textures.Sample(SS, input.TexCoords) * input.AmbientOcclusion /** float4(1.8, 1.8, 1.8, 1)*/ * input.HueColor;
+	float4 textureColor = Textures.Sample(SS, input.TexCoords) * input.AmbientOcclusion * input.HueColor;
 	clip(textureColor.a == 0 ? -1 : 1);
-
-	//return float4(1, 0, 0, 1);
-	//return lerp(textureColor, fogColor, 0.5);
 	return lerp(textureColor, FogColor, input.FogFactor);
-
-	//float4 finalColor = (1.0 - input.FogFactor) * textureColor + (input.FogFactor) * FogColor;
-	//return finalColor;
 }
 
 
