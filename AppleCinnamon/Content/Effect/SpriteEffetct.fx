@@ -91,7 +91,7 @@ VertexShaderOutput VertexShaderFunction(VertexShaderInput input)
 
 	output.Position = mul(position, WorldViewProjection);
 	output.TexCoords = float2(textureCoordinateU, textureCoordinateV);
-	output.AmbientOcclusion = max(sunlight, emittedLight) * smoothingFactor;
+	output.AmbientOcclusion = max(max(sunlight, emittedLight) * smoothingFactor, 0.1f);
 	output.FogFactor = ComputeFogFactor(distance(EyePosition.xyz, input.Position.xyz));
 	output.HueColor = HueColors[hueIndex];
 

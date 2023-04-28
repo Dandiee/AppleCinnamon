@@ -100,7 +100,7 @@ VertexShaderOutput VertexShaderFunction(VertexShaderInput input)
 	const float smoothingFactor = 1.0f / 60.0f;
 
 	// the smoothing factor takes into account the 3 neighbors light data and the normal-neighbor's light data
-	output.AmbientOcclusion = max(sunlight, emittedLight) * smoothingFactor * ambientOcclusionFactor;
+	output.AmbientOcclusion = max(max(sunlight, emittedLight) * smoothingFactor * ambientOcclusionFactor, 0.1f);
 	output.FogFactor = ComputeFogFactor(distance(EyePosition.xyz, input.Position.xyz));
 	output.HueColor = HueColors[hueIndex];
 
