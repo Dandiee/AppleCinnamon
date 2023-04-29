@@ -227,9 +227,9 @@
             </Grid>
         </TabItem>
         <TabItem Header="Cubic Bezier">
-            <Canvas Width="400" Height="400">
-                <Path Stroke="Black" StrokeThickness="1">
-                    <Path.Data>
+            <Canvas Width="400" Height="400" x:Name="MyCanvas" Background="Transparent">
+                <Path x:Name="MyPath"  Stroke="Black" StrokeThickness="1" Data="">
+                    <!--<Path.Data>
                         <PathGeometry>
                             <PathGeometry.Figures>
                                 <PathFigureCollection>
@@ -237,18 +237,19 @@
                                         <PathFigure.Segments>
                                             <PathSegmentCollection>
                                                 <BezierSegment Point1="200,0" Point2="100,200" Point3="300,100" />
+                                                <BezierSegment Point1="200,0" Point2="100,200" Point3="300,100" />
                                             </PathSegmentCollection>
                                         </PathFigure.Segments>
                                     </PathFigure>
                                 </PathFigureCollection>
                             </PathGeometry.Figures>
                         </PathGeometry>
-                    </Path.Data>
+                    </Path.Data>-->
                 </Path>
-                <Ellipse Canvas.Left="5" Canvas.Top="95" Width="10" Height="10" Fill="Red"></Ellipse>
-                <Ellipse Canvas.Left="145" Canvas.Top="-5" Width="10" Height="10" Fill="Blue"></Ellipse>
-                <Ellipse Canvas.Left="145" Canvas.Top="195" Width="10" Height="10" Fill="Blue"></Ellipse>
-                <Ellipse Canvas.Left="295" Canvas.Top="95" Width="10" Height="10" Fill="Blue"></Ellipse>
+                <!--<Ellipse Canvas.Left="5" Canvas.Top="95" Width="10" Height="10" Fill="Red"/>
+                <Ellipse Canvas.Left="145" Canvas.Top="-5" Width="10" Height="10" Fill="Blue"/>
+                <Ellipse Canvas.Left="145" Canvas.Top="195" Width="10" Height="10" Fill="Blue"/>
+                <Ellipse Canvas.Left="295" Canvas.Top="95" Width="10" Height="10" Fill="Blue"/>-->
             </Canvas>
         </TabItem>
     </TabControl>
