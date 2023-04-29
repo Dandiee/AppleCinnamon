@@ -28,7 +28,11 @@ public static class TerrainGenerator
         }
         else
         {
-            value = leftValue * rightValue * rightValue + WorldGeneratorOptions.WATER_LEVEL_VALUE;
+            var x = rightValue;
+            //var funcX = 0.5f + Math.Atan(238f * x - 70.2f) * (1f / Math.PI);
+            var funcX = 1.2f/ (1 + Math.Exp(-(x-0.55f)/(1f/9)));
+            //funcX = x;
+            value = leftValue * funcX + WorldGeneratorOptions.WATER_LEVEL_VALUE;
         }
 
         return (int)(value * 255);
