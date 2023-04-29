@@ -9,56 +9,58 @@
         d:DataContext="{d:DesignInstance IsDesignTimeCreatable=False, Type=noiseGeneratorTest:MainWindowViewModel}"
         mc:Ignorable="d"
         Title="Dani Noise" Height="450" Width="800">
-    <Grid Margin="10">
+    <TabControl>
+        <TabItem Header="Main">
+            <Grid Margin="10">
 
-        <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="300"/>
-                <ColumnDefinition Width="5"/>
-                <ColumnDefinition Width="*"/>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="300"/>
+                        <ColumnDefinition Width="5"/>
+                        <ColumnDefinition Width="*"/>
 
-                <ColumnDefinition Width="5"/>
+                        <ColumnDefinition Width="5"/>
 
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="5"/>
-                <ColumnDefinition Width="300"/>
-            </Grid.ColumnDefinitions>
-            <Grid.RowDefinitions>
-                <RowDefinition/>
-                <RowDefinition Height="5"/>
-                <RowDefinition/>
-            </Grid.RowDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="5"/>
+                        <ColumnDefinition Width="300"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition/>
+                        <RowDefinition Height="5"/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
 
-            <Grid Grid.RowSpan="3" Grid.Column="0" Margin="5" DataContext="{Binding PerlinLeft}">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
-                <noiseGeneratorTest:PerlinParameterEditor/>
-                <noiseGeneratorTest:HighlightsEditor Grid.Row="1"/>
-            </Grid>
-            <GridSplitter Grid.Column="1" Grid.RowSpan="3" Grid.Row="0"/>
-            <noiseGeneratorTest:D3dImageUc x:Name="ImageLeft" Grid.Column="2" Grid.Row="0"/>
+                    <Grid Grid.RowSpan="3" Grid.Column="0" Margin="5" DataContext="{Binding PerlinLeft}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <noiseGeneratorTest:PerlinParameterEditor/>
+                        <noiseGeneratorTest:HighlightsEditor Grid.Row="1"/>
+                    </Grid>
+                    <GridSplitter Grid.Column="1" Grid.RowSpan="3" Grid.Row="0"/>
+                    <noiseGeneratorTest:D3dImageUc x:Name="ImageLeft" Grid.Column="2" Grid.Row="0"/>
 
-            <GridSplitter Grid.Column="3" Grid.RowSpan="2" Grid.Row="0"/>
+                    <GridSplitter Grid.Column="3" Grid.RowSpan="2" Grid.Row="0"/>
 
-            <noiseGeneratorTest:D3dImageUc x:Name="ImageRight" Grid.Column="4" Grid.Row="0"/>
-            <GridSplitter Grid.Column="5" Grid.RowSpan="3" Grid.Row="0"/>
+                    <noiseGeneratorTest:D3dImageUc x:Name="ImageRight" Grid.Column="4" Grid.Row="0"/>
+                    <GridSplitter Grid.Column="5" Grid.RowSpan="3" Grid.Row="0"/>
 
-            <Grid Grid.RowSpan="3" Grid.Column="6" Grid.Row="0" Margin="5" DataContext="{Binding PerlinRight}">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
-                <noiseGeneratorTest:PerlinParameterEditor/>
-                <noiseGeneratorTest:HighlightsEditor Grid.Row="1"/>
-            </Grid>
+                    <Grid Grid.RowSpan="3" Grid.Column="6" Grid.Row="0" Margin="5" DataContext="{Binding PerlinRight}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <noiseGeneratorTest:PerlinParameterEditor/>
+                        <noiseGeneratorTest:HighlightsEditor Grid.Row="1"/>
+                    </Grid>
 
-            <GridSplitter Grid.Column="1" Grid.ColumnSpan="5" Grid.Row="1"/>
-            <noiseGeneratorTest:D3dImageUc x:Name="ImageSum" Grid.Column="1" Grid.Row="2" Grid.ColumnSpan="5"/>
-        </Grid>
+                    <GridSplitter Grid.Column="1" Grid.ColumnSpan="5" Grid.Row="1"/>
+                    <noiseGeneratorTest:D3dImageUc x:Name="ImageSum" Grid.Column="1" Grid.Row="2" Grid.ColumnSpan="5"/>
+                </Grid>
 
-        <!--<Grid.ColumnDefinitions>
+                <!--<Grid.ColumnDefinitions>
             <ColumnDefinition Width="250"/>
             <ColumnDefinition/>
             <ColumnDefinition Width="250"/>
@@ -222,5 +224,33 @@
             </ItemsControl>
         </Grid>-->
 
-    </Grid>
+            </Grid>
+        </TabItem>
+        <TabItem Header="Cubic Bezier">
+            <Canvas Width="400" Height="400">
+                <Path Stroke="Black" StrokeThickness="1">
+                    <Path.Data>
+                        <PathGeometry>
+                            <PathGeometry.Figures>
+                                <PathFigureCollection>
+                                    <PathFigure StartPoint="10,100">
+                                        <PathFigure.Segments>
+                                            <PathSegmentCollection>
+                                                <BezierSegment Point1="200,0" Point2="100,200" Point3="300,100" />
+                                            </PathSegmentCollection>
+                                        </PathFigure.Segments>
+                                    </PathFigure>
+                                </PathFigureCollection>
+                            </PathGeometry.Figures>
+                        </PathGeometry>
+                    </Path.Data>
+                </Path>
+                <Ellipse Canvas.Left="5" Canvas.Top="95" Width="10" Height="10" Fill="Red"></Ellipse>
+                <Ellipse Canvas.Left="145" Canvas.Top="-5" Width="10" Height="10" Fill="Blue"></Ellipse>
+                <Ellipse Canvas.Left="145" Canvas.Top="195" Width="10" Height="10" Fill="Blue"></Ellipse>
+                <Ellipse Canvas.Left="295" Canvas.Top="95" Width="10" Height="10" Fill="Blue"></Ellipse>
+            </Canvas>
+        </TabItem>
+    </TabControl>
+   
 </Window>
