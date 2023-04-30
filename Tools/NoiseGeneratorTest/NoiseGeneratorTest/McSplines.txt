@@ -29,7 +29,18 @@ public class TerrainProvider {
       CubicSpline<C, I> cubicspline1 = buildErosionOffsetSpline(p_236637_, p_236638_, -0.1F, 0.03F, 0.1F, 0.1F, 0.01F, -0.03F, false, false, tofloatfunction);
       CubicSpline<C, I> cubicspline2 = buildErosionOffsetSpline(p_236637_, p_236638_, -0.1F, 0.03F, 0.1F, 0.7F, 0.01F, -0.03F, true, true, tofloatfunction);
       CubicSpline<C, I> cubicspline3 = buildErosionOffsetSpline(p_236637_, p_236638_, -0.05F, 0.03F, 0.1F, 1.0F, 0.01F, 0.01F, true, true, tofloatfunction);
-      return CubicSpline.<C, I>builder(p_236636_, tofloatfunction).addPoint(-1.1F, 0.044F).addPoint(-1.02F, -0.2222F).addPoint(-0.51F, -0.2222F).addPoint(-0.44F, -0.12F).addPoint(-0.18F, -0.12F).addPoint(-0.16F, cubicspline).addPoint(-0.15F, cubicspline).addPoint(-0.1F, cubicspline1).addPoint(0.25F, cubicspline2).addPoint(1.0F, cubicspline3).build();
+      return CubicSpline.<C, I>builder(p_236636_, tofloatfunction)
+      .addPoint(-1.1F, 0.044F)
+      .addPoint(-1.02F, -0.2222F)
+      .addPoint(-0.51F, -0.2222F)
+      .addPoint(-0.44F, -0.12F)
+      .addPoint(-0.18F, -0.12F)
+      .addPoint(-0.16F, cubicspline)
+      .addPoint(-0.15F, cubicspline)
+      .addPoint(-0.1F, cubicspline1)
+      .addPoint(0.25F, cubicspline2)
+      .addPoint(1.0F, cubicspline3)
+      .build();
    }
 
    public static <C, I extends ToFloatFunction<C>> CubicSpline<C, I> 
