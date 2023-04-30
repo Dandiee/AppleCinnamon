@@ -59,220 +59,46 @@
                     <GridSplitter Grid.Column="1" Grid.ColumnSpan="5" Grid.Row="1"/>
                     <noiseGeneratorTest:D3dImageUc x:Name="ImageSum" Grid.Column="1" Grid.Row="2" Grid.ColumnSpan="5"/>
                 </Grid>
-
-                <!--<Grid.ColumnDefinitions>
-            <ColumnDefinition Width="250"/>
-            <ColumnDefinition/>
-            <ColumnDefinition Width="250"/>
-        </Grid.ColumnDefinitions>
-
-        <Grid Grid.Column="1" Margin="10" Background="LightBlue">
-          
-
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition/>
-                    <ColumnDefinition/>
-                </Grid.ColumnDefinitions>
-
-                <noiseGeneratorTest:D3dImageUc x:Name="MainImage" Grid.Column="0" Grid.Row="1"/>
-                <noiseGeneratorTest:D3dImageUc x:Name="MainImage2" Grid.Column="1" Grid.Row="1"/>
-                <noiseGeneratorTest:D3dImageUc x:Name="SumImage" Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="2"/>
-
-            </Grid>
-            
-        </Grid>
-
-        <Grid Grid.Column="0">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition/>
-            </Grid.ColumnDefinitions>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>
-
-            <TextBlock Grid.Column="0" Grid.Row="0" Text="Width"/>
-            <TextBlock Grid.Column="1" Grid.Row="0" Text="{Binding Width}" HorizontalAlignment="Right"/>
-            <Slider Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="2" Value="{Binding Width}" Minimum="16" Maximum="512" Ticks="16"/>
-
-            <TextBlock Grid.Column="0" Grid.Row="2" Text="Height"/>
-            <TextBlock Grid.Column="1" Grid.Row="2" Text="{Binding Height}" HorizontalAlignment="Right"/>
-            <Slider Grid.Column="0" Grid.Row="3" Grid.ColumnSpan="2" Value="{Binding Height}" Minimum="16" Maximum="512" Ticks="16"/>
-
-            <TextBlock Grid.Column="0" Grid.Row="4" Text="Offset"/>
-            <TextBlock Grid.Column="1" Grid.Row="4" Text="{Binding Offset}" HorizontalAlignment="Right"/>
-            <Slider Grid.Column="0" Grid.Row="5" Grid.ColumnSpan="2" Value="{Binding Offset}" Minimum="-300" Maximum="300" Ticks="1"/>
-
-            <TextBlock Grid.Column="0" Grid.Row="6" Text="Octaves"/>
-            <TextBlock Grid.Column="1" Grid.Row="6" Text="{Binding Octaves}" HorizontalAlignment="Right"/>
-            <Slider Grid.Column="0" Grid.Row="7" Grid.ColumnSpan="2" Value="{Binding Octaves}" Minimum="1" Maximum="16" Ticks="1"/>
-
-            <TextBlock Grid.Column="0" Grid.Row="8" Text="Amplitude"/>
-            <TextBlock Grid.Column="1" Grid.Row="8" Text="{Binding Amplitude}" HorizontalAlignment="Right"/>
-            <Slider Grid.Column="0" Grid.Row="9" Grid.ColumnSpan="2" Value="{Binding Amplitude}" Minimum="0" Maximum="5"/>
-
-            <TextBlock Grid.Column="0" Grid.Row="10" Text="Frequency"/>
-            <TextBlock Grid.Column="1" Grid.Row="10" Text="{Binding Frequency}" HorizontalAlignment="Right"/>
-            <Slider Grid.Column="0" Grid.Row="11" Grid.ColumnSpan="2" Value="{Binding Frequency}" Minimum="0" Maximum="10"/>
-
-            <TextBlock Grid.Column="0" Grid.Row="12" Text="Factor"/>
-            <TextBlock Grid.Column="1" Grid.Row="12" Text="{Binding Factor}" HorizontalAlignment="Right"/>
-            <Slider Grid.Column="0" Grid.Row="13" Grid.ColumnSpan="2" Value="{Binding Factor}" Minimum="0.001" Maximum="1"/>
-
-            <TextBlock Grid.Column="0" Grid.Row="14"  Text="Base color"/>
-            <xctk:ColorPicker Grid.Column="1" Grid.Row="14" SelectedColor="{Binding BaseColor}" />
-
-
-            <TextBlock Grid.Column="0" Grid.Row="15" Text="Presets"/>
-            <StackPanel Orientation="Horizontal" Grid.Column="1" Grid.Row="15" HorizontalAlignment="Right">
-                <ComboBox ItemsSource="{Binding Presets}" 
-                          SelectedItem="{Binding SelectedPreset}" 
-                          DisplayMemberPath="Name"/>
-                <Button Content="Apply" Command="{Binding ApplyPresetCommand}"/>
-            </StackPanel>
-
-            <TextBlock Grid.Column="0" Grid.Row="16" Text="Render"/>
-            <TextBlock Grid.Column="1" Grid.Row="16" Text="{Binding RenderTime}" HorizontalAlignment="Right"/>
-        </Grid>
-
-        <Grid Grid.Column="2">
-
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
-
-            <TextBlock Text="Highlighting"/>
-            <Button Grid.Column="1" Grid.Row="0" Command="{Binding AddHighlightCommand}"
-                        FontFamily="{StaticResource FaSolid}" Content="&#x2b;"
-                        />
-
-            <ItemsControl BorderThickness="0" Margin="0" Padding="0" ItemsSource="{Binding Highlights}" Grid.Row="1" Grid.ColumnSpan="2" Grid.Column="0">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <Border BorderBrush="DarkSlateGray" BorderThickness="0 1 0 0" Margin="0 5" Padding="0 5">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition/>
-                                    <ColumnDefinition/>
-                                </Grid.ColumnDefinitions>
-
-                                <Grid.RowDefinitions>
-                                    <RowDefinition/>
-                                    <RowDefinition/>
-                                    <RowDefinition/>
-                                    <RowDefinition/>
-                                    <RowDefinition/>
-                                    <RowDefinition/>
-                                </Grid.RowDefinitions>
-
-                                <CheckBox Grid.Column="0" Grid.Row="0" Content="Solid" IsChecked="{Binding IsSolid}"/>
-                                <StackPanel Grid.Column="1" Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Right">
-                                    <Button HorizontalAlignment="Right" CommandParameter="{Binding}" 
-                                            FontFamily="{StaticResource FaSolid}" Content="&#xf00d;"
-                                            Command="{Binding ViewModel.RemoveHighlightCommand, RelativeSource={RelativeSource AncestorType=noiseGeneratorTest:MainWindow} }"/>
-                                    <Button HorizontalAlignment="Right" CommandParameter="{Binding}" 
-                                            FontFamily="{StaticResource FaSolid}" Content="&#xf0d8;"
-                                            Command="{Binding ViewModel.MoveHighlightUpCommand, RelativeSource={RelativeSource AncestorType=noiseGeneratorTest:MainWindow} }"/>
-                                    <Button HorizontalAlignment="Right" CommandParameter="{Binding}" 
-                                            FontFamily="{StaticResource FaSolid}" Content="&#xf0d7;"
-                                            Command="{Binding ViewModel.MoveHighlightDownCommand, RelativeSource={RelativeSource AncestorType=noiseGeneratorTest:MainWindow} }"/>
-                                </StackPanel>
-
-                                <TextBlock Grid.Column="0" Grid.Row="1" Text="Value"/>
-                                <TextBlock Grid.Column="1" Grid.Row="1" Text="{Binding Value}" HorizontalAlignment="Right"/>
-                                <Slider Grid.Column="0" Grid.Row="2" Grid.ColumnSpan="2" Value="{Binding Value}" Minimum="0" Maximum="255"/>
-
-                                <TextBlock Grid.Column="0" Grid.Row="3" Text="Range"/>
-                                <TextBlock Grid.Column="1" Grid.Row="3" Text="{Binding Range}" HorizontalAlignment="Right"/>
-                                <Slider Grid.Column="0" Grid.Row="4" Grid.ColumnSpan="2" Value="{Binding Range}" Minimum="0" Maximum="255"/>
-
-                                <TextBlock Grid.Column="0" Grid.Row="5"  Text="Base color"/>
-                                <xctk:ColorPicker Grid.Column="1" Grid.Row="5" SelectedColor="{Binding Color}" />
-
-                            </Grid>
-                        </Border>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-        </Grid>-->
-
             </Grid>
         </TabItem>
-        <TabItem Header="Cubic Bezier">
-            <StackPanel>
-                <Grid x:Name="MyGrid" Width="400" Height="400" ClipToBounds="True" Background="DarkGray">
-                    <Canvas Width="400" Height="400" x:Name="MyCanvas" Background="DarkGray" 
-                            ClipToBounds="False">
-                        <Canvas.LayoutTransform>
-                            <TransformGroup>
-                            <ScaleTransform ScaleX="1" ScaleY="-1" CenterX="0.5" CenterY="0.5"/>
-                            </TransformGroup>
-                        </Canvas.LayoutTransform>
+        <TabItem Header="Mixing">
+            <Grid Margin="10">
 
-                    <Line X1="0" Y1="0" X2="400" Y2="0" Stroke="Red" StrokeThickness="0.5" />
-                        <Line X1="0" Y1="0" X2="0" Y2="400" Stroke="Red" StrokeThickness="0.5" />
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="300"/>
+                        <ColumnDefinition Width="5"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="5"/>
+                        <ColumnDefinition Width="400"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition/>
+                        <RowDefinition Height="5"/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
 
-                        <Line X1="0" Y1="200" X2="400" Y2="200" Stroke="Blue" StrokeThickness="0.5"/>
-                        <Line X1="200" Y1="0" X2="200" Y2="400" Stroke="Blue" StrokeThickness="0.5"/>
-                        <Line X1="400" Y1="0" X2="400" Y2="400" Stroke="Green" StrokeThickness="0.5"/>
-                        <Line X1="0" Y1="400" X2="400" Y2="400" Stroke="Green" StrokeThickness="0.5"/>
+                    <Grid Grid.RowSpan="3" Grid.Column="0" Margin="5" DataContext="{Binding RawImageVm}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <noiseGeneratorTest:PerlinParameterEditor/>
+                        <noiseGeneratorTest:HighlightsEditor Grid.Row="1"/>
+                    </Grid>
+                    <GridSplitter Grid.Column="1" Grid.RowSpan="3" Grid.Row="0"/>
+                    <noiseGeneratorTest:D3dImageUc x:Name="RawImage" Grid.Column="2" Grid.Row="0"/>
 
-                        <Path x:Name="MyPath"  Stroke="Black" StrokeThickness="1" IsHitTestVisible="False">
-                            <!--<Path.Data>
-                        <PathGeometry>
-                            <PathGeometry.Figures>
-                                <PathFigureCollection>
-                                    <PathFigure StartPoint="10,100">
-                                        <PathFigure.Segments>
-                                            <PathSegmentCollection>
-                                                <BezierSegment Point1="200,0" Point2="100,200" Point3="300,100" />
-                                                <BezierSegment Point1="200,0" Point2="100,200" Point3="300,100" />
-                                            </PathSegmentCollection>
-                                        </PathFigure.Segments>
-                                    </PathFigure>
-                                </PathFigureCollection>
-                            </PathGeometry.Figures>
-                        </PathGeometry>
-                    </Path.Data>-->
-                        </Path>
-                        <!--<Ellipse Canvas.Left="5" Canvas.Top="95" Width="10" Height="10" Fill="Red"/>
-                <Ellipse Canvas.Left="145" Canvas.Top="-5" Width="10" Height="10" Fill="Blue"/>
-                <Ellipse Canvas.Left="145" Canvas.Top="195" Width="10" Height="10" Fill="Blue"/>
-                <Ellipse Canvas.Left="295" Canvas.Top="95" Width="10" Height="10" Fill="Blue"/>-->
-                    </Canvas>
-                    
+                    <GridSplitter Grid.Column="3" Grid.RowSpan="2" Grid.Row="0"/>
+
+                    <noiseGeneratorTest:SplineEditor Grid.Column="4" Grid.Row="0" x:Name="MySplineEditor"/>
+
+                    <GridSplitter Grid.Column="1" Grid.ColumnSpan="4" Grid.Row="1"/>
+                    <Button Grid.Column="2" Grid.Row="2" HorizontalAlignment="Left" VerticalAlignment="Top"
+                            Content="Generate" Command="{Binding MixCommand}" CommandParameter="{Binding ElementName=MySplineEditor}"/>
+                    <noiseGeneratorTest:D3dImageUc x:Name="MixImage" Grid.Column="1" Grid.Row="2" Grid.ColumnSpan="4"/>
+                </Grid>
             </Grid>
-                <Slider Width="400" ValueChanged="RangeBase_OnValueChanged" Minimum="0" Maximum="400" Margin="0 5" Padding="0 5" VerticalAlignment="Bottom"/>
-                <TextBlock x:Name="Peter"/>
-            </StackPanel>
         </TabItem>
     </TabControl>
 

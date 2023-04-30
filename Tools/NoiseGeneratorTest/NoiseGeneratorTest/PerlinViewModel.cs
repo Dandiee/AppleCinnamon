@@ -47,13 +47,17 @@ namespace NoiseGeneratorTest
             {
                 _supressRender = true;
 
-                Factor = 1f / ValueRange;
+                Factor = 2f / ValueRange;
+
                 FactoredMinimumValue = MinimumValue * Factor;
                 FactoredMaximumValue = MaximumValue * Factor;
+                var offset = 1 - FactoredMaximumValue;
                 FactoredValueRange = FactoredMaximumValue - FactoredMinimumValue;
 
-                Offset = -FactoredMinimumValue;
-                
+                Offset = offset;
+
+
+
 
                 _supressRender = false;
                 Render();
@@ -303,7 +307,7 @@ namespace NoiseGeneratorTest
             set => SetPropertyAndRender(ref _setPoint, value);
         }
 
-        private Color _underColor  = Colors.White;
+        private Color _underColor = Colors.White;
         public Color UnderColor
         {
             get => _underColor;
@@ -376,25 +380,25 @@ namespace NoiseGeneratorTest
                 if (localMinMax.Y < value) localMinMax.Y = value;
 
                 var factored = value * Factor + Offset;
-
+                var factoredToOne = (factored + 1f) / 2f;
                 ScaledValues[ij] = factored;
 
-                var r = (byte)(BaseColor.R * factored);
-                var g = (byte)(BaseColor.G * factored);
-                var b = (byte)(BaseColor.B * factored);
+                var r = (byte)(BaseColor.R * factoredToOne);
+                var g = (byte)(BaseColor.G * factoredToOne);
+                var b = (byte)(BaseColor.B * factoredToOne);
 
-                if (factored <= SetPoint)
-                {
-                    r = (byte)(UnderColor.R * factored);
-                    g = (byte)(UnderColor.G * factored);
-                    b = (byte)(UnderColor.B * factored);
-                }
-                else
-                {
-                    r = (byte)(OverColor.R * factored);
-                    g = (byte)(OverColor.G * factored);
-                    b = (byte)(OverColor.B * factored);
-                }
+                //if (factored <= SetPoint)
+                //{
+                //    r = (byte)(UnderColor.R * factored);
+                //    g = (byte)(UnderColor.G * factored);
+                //    b = (byte)(UnderColor.B * factored);
+                //}
+                //else
+                //{
+                //    r = (byte)(OverColor.R * factored);
+                //    g = (byte)(OverColor.G * factored);
+                //    b = (byte)(OverColor.B * factored);
+                //}
 
                 foreach (var highlight in Highlights)
                 {
