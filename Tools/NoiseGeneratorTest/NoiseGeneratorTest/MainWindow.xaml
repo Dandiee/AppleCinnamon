@@ -227,20 +227,26 @@
             </Grid>
         </TabItem>
         <TabItem Header="Cubic Bezier">
-            <Canvas Width="400" Height="400" x:Name="MyCanvas" Background="LightBlue">
-                <Canvas.LayoutTransform>
-                    <TransformGroup>
-                        <!--<TranslateTransform X="100" Y="-100"/>-->
-                        <ScaleTransform ScaleX="1" ScaleY="-1" CenterX="0.5" CenterY="0.5"/>
-                    </TransformGroup>
-                </Canvas.LayoutTransform>
-                <!--<Canvas.RenderTransform>
-                    <TranslateTransform X="-10" Y="-10"/>
-                </Canvas.RenderTransform>-->
-                <Line X1="-1" Y1="-1" X2="100" Y2="-1" Stroke="Red" StrokeThickness="0.5" />
-                <Line X1="-1" Y1="-1" X2="-1" Y2="100" Stroke="Red" StrokeThickness="0.5" />
-                <Path x:Name="MyPath"  Stroke="Black" StrokeThickness="1" Data="">
-                    <!--<Path.Data>
+            <StackPanel>
+                <Grid x:Name="MyGrid" Width="400" Height="400" ClipToBounds="True" Background="DarkGray">
+                    <Canvas Width="400" Height="400" x:Name="MyCanvas" Background="DarkGray" 
+                            ClipToBounds="False">
+                        <Canvas.LayoutTransform>
+                            <TransformGroup>
+                            <ScaleTransform ScaleX="1" ScaleY="-1" CenterX="0.5" CenterY="0.5"/>
+                            </TransformGroup>
+                        </Canvas.LayoutTransform>
+
+                    <Line X1="0" Y1="0" X2="400" Y2="0" Stroke="Red" StrokeThickness="0.5" />
+                        <Line X1="0" Y1="0" X2="0" Y2="400" Stroke="Red" StrokeThickness="0.5" />
+
+                        <Line X1="0" Y1="200" X2="400" Y2="200" Stroke="Blue" StrokeThickness="0.5"/>
+                        <Line X1="200" Y1="0" X2="200" Y2="400" Stroke="Blue" StrokeThickness="0.5"/>
+                        <Line X1="400" Y1="0" X2="400" Y2="400" Stroke="Green" StrokeThickness="0.5"/>
+                        <Line X1="0" Y1="400" X2="400" Y2="400" Stroke="Green" StrokeThickness="0.5"/>
+
+                        <Path x:Name="MyPath"  Stroke="Black" StrokeThickness="1" IsHitTestVisible="False">
+                            <!--<Path.Data>
                         <PathGeometry>
                             <PathGeometry.Figures>
                                 <PathFigureCollection>
@@ -256,12 +262,17 @@
                             </PathGeometry.Figures>
                         </PathGeometry>
                     </Path.Data>-->
-                </Path>
-                <!--<Ellipse Canvas.Left="5" Canvas.Top="95" Width="10" Height="10" Fill="Red"/>
+                        </Path>
+                        <!--<Ellipse Canvas.Left="5" Canvas.Top="95" Width="10" Height="10" Fill="Red"/>
                 <Ellipse Canvas.Left="145" Canvas.Top="-5" Width="10" Height="10" Fill="Blue"/>
                 <Ellipse Canvas.Left="145" Canvas.Top="195" Width="10" Height="10" Fill="Blue"/>
                 <Ellipse Canvas.Left="295" Canvas.Top="95" Width="10" Height="10" Fill="Blue"/>-->
-            </Canvas>
+                    </Canvas>
+                    
+            </Grid>
+                <Slider Width="400" ValueChanged="RangeBase_OnValueChanged" Minimum="0" Maximum="400" Margin="0 5" Padding="0 5" VerticalAlignment="Bottom"/>
+                <TextBlock x:Name="Peter"/>
+            </StackPanel>
         </TabItem>
     </TabControl>
 
