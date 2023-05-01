@@ -17,11 +17,18 @@ namespace NoiseGeneratorTest
         private bool _isPanning;
         private Point _panStartPosition;
 
+        public event EventHandler<object> OnUpdated;
+
+        public void FireEvent()
+        {
+            OnUpdated?.Invoke(this, null);
+        }
+
         public SplineEditor()
         {
             InitializeComponent();
-
-            var canvas = new BezierCanvas(MyCanvas);
+            
+            var canvas = new BezierCanvas(MyCanvas, this);
             _first = new CB(canvas, new Point(100, 10), new Point(120, 20), new Point(150, 30), new Point(200, 50));
             _last = _first.LinkTo(new(250, 60), new(260, 70), new(300, 100));
 
@@ -96,51 +103,56 @@ namespace NoiseGeneratorTest
             Panel.SetZIndex(MyPath, 100);
         }
 
-        public float GetValue(float input)
+        public float GetValue(float input, double canvasHeight)
         {
-            var a = (input + 1f) * MyCanvas.Height / 2f;
-            
-
+            var a = (float)((input + 1f) * canvasHeight / 2f);
             foreach (var cb in _first.GetCbs())
             {
-                var x1 = cb.Prev?._segment.Point3.X ?? cb._path.StartPoint.X;
-                var x2 = cb._segment.Point3.X;
+                var x1 = cb.V1.X;
+                var x2 = cb.V4.X;
 
                 if (x1 <= a && x2 >= a)
                 {
-                    foreach (var vector in cb.Values)
-                    {
-                        if (vector.X >= a)
-                        {
-                            return (float)(vector.Y / MyCanvas.Height);
-                        }
-                    }
+                    var result = BinarySearchIterative(ref cb.Values, a);
+                    if (result == null) return -1;
+                    return (float)(result.Value.Y / canvasHeight);
                 }
             }
 
             return -1;
         }
 
-        private Vector2 HyperLerp(CB cb, float t)
+        public static Vector2? BinarySearchIterative(ref Vector2[] inputArray, float value)
         {
-            var p0 = (cb.Prev?._segment.Point3 ?? cb._path.StartPoint).ToVector2();
-            var p1 = cb._segment.Point1.ToVector2();
-            var p2 = cb._segment.Point2.ToVector2();
-            var p3 = cb._segment.Point3.ToVector2();
+            var tries = 0;
+            int min = 0;
+            int max = inputArray.Length - 1;
+            while (min <= max)
+            {
+                tries++;
+                int mid = (min + max) / 2;
+                if (inputArray[mid].X <= value && (mid + 1 == inputArray.Length || inputArray[mid + 1].X >= value))
+                {
+                    return inputArray[mid];
 
-            var a = Vector2.Lerp(p0, p1, t);
-            var b = Vector2.Lerp(p1, p2, t);
-            var c = Vector2.Lerp(p2, p3, t);
-            var d = Vector2.Lerp(a, b, t);
-            var e = Vector2.Lerp(b, c, t);
-            return Vector2.Lerp(d, e, t);
+                }
+                else if (value < inputArray[mid].X)
+                {
+                    max = mid - 1;
+                }
+                else
+                {
+                    min = mid + 1;
+                }
+            }
+            return null;
         }
-
     }
 
     public class BezierCanvas
     {
         public readonly Canvas Canvas;
+        private readonly SplineEditor _editor;
 
         private bool _isDragging;
         private Point _startDragPosition;
@@ -148,9 +160,10 @@ namespace NoiseGeneratorTest
 
         public CB Cb { get; set; }
 
-        public BezierCanvas(Canvas canvas)
+        public BezierCanvas(Canvas canvas, SplineEditor editor)
         {
             Canvas = canvas;
+            _editor = editor;
 
             Canvas.PreviewMouseMove += (_, e) =>
             {
@@ -169,6 +182,8 @@ namespace NoiseGeneratorTest
                     {
                         cb.UpdatePosition();
                     }
+
+                    _editor.FireEvent();
 
                     _startDragPosition = currentPosition;
 
@@ -274,7 +289,12 @@ namespace NoiseGeneratorTest
 
         public CB LinkTo(Point c1, Point c2, Point p2) => new(this, c1, c2, p2);
 
-        public Vector2[] Values { get; set; } = new Vector2[1000];
+        public Vector2[] Values = new Vector2[1000];
+
+        public Vector2 V1;
+        public Vector2 V2;
+        public Vector2 V3;
+        public Vector2 V4;
 
         public void UpdatePosition()
         {
@@ -284,16 +304,22 @@ namespace NoiseGeneratorTest
 
                 L1.X1 = _path.StartPoint.X;
                 L1.Y1 = _path.StartPoint.Y;
+                V1 = _path.StartPoint.ToVector2();
             }
             else
             {
                 L1.X1 = Prev._segment.Point3.X;
                 L1.Y1 = Prev._segment.Point3.Y;
+                V1 = Prev._segment.Point3.ToVector2();
             }
 
             _segment.Point1 = C1.GetPosition();
             _segment.Point2 = C2.GetPosition();
             _segment.Point3 = P2.GetPosition();
+
+            V2 = _segment.Point1.ToVector2();
+            V3 = _segment.Point2.ToVector2();
+            V4 = _segment.Point3.ToVector2();
 
             L1.X2 = _segment.Point1.X;
             L1.Y2 = _segment.Point1.Y;
@@ -363,5 +389,16 @@ namespace NoiseGeneratorTest
         }
 
         public static Vector2 ToVector2(this Point p) => new Vector2((float)p.X, (float)p.Y);
+    }
+
+    public class Vector2Comparer : IComparer<Vector2>
+    {
+        public int Compare(Vector2 x, Vector2 y)
+        {
+            var xComparison = x.X.CompareTo(y.X);
+            if (xComparison != 0) return xComparison;
+
+            return x.IsZero.CompareTo(y.IsZero);
+        }
     }
 }

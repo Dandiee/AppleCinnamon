@@ -5,6 +5,7 @@ using System.Windows.Media;
 using System.Windows.Media.Media3D;
 using Prism.Commands;
 using Prism.Mvvm;
+using SharpDX.Direct2D1.Effects;
 using SharpDX.Direct3D9;
 
 namespace NoiseGeneratorTest
@@ -36,6 +37,11 @@ namespace NoiseGeneratorTest
 
             RawImageVm = new PerlinViewModel(window.RawImage);
 
+            window.MySplineEditor.OnUpdated += (sender, _) =>
+            {
+                Mix((SplineEditor)sender);
+            };
+
             PerlinLeft.Rendered += (_, _) => SourceChanged();
             PerlinRight.Rendered += (_, _) => SourceChanged();
         }
@@ -44,19 +50,20 @@ namespace NoiseGeneratorTest
         {
             var bytes = new byte[RawImageVm.Bytes.Length];
 
-            for (var ij = 0; ij < RawImageVm.ScaledValues.Length; ij++)
-            {
-                //var i = ij % width;  var j = ij / width;
+            var canvasHeight = splineEditor.MyCanvas.Height;
 
+            Parallel.For(0, RawImageVm.ScaledValues.Length, ij =>
+            {
                 var offset = ij * 4;
 
                 var rawValue = RawImageVm.ScaledValues[ij];
-                var splinedValue = splineEditor.GetValue(rawValue);
+                var splinedValue = splineEditor.GetValue(rawValue, canvasHeight);
 
-                
-
-                SetColor(ref bytes, offset, Colors.White, splinedValue);
-            }
+                bytes[offset + 0] = (byte)(255 * splinedValue); // BLUE
+                bytes[offset + 1] = (byte)(255 * splinedValue); // GREEN
+                bytes[offset + 2] = (byte)(255 * splinedValue); // RED
+                bytes[offset + 3] = 255; // ALPHA
+            });
 
             _window.MixImage.Draw(ref bytes, RawImageVm.Width, RawImageVm.Height);
         }
