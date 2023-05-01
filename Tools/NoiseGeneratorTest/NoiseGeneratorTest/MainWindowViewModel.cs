@@ -37,9 +37,59 @@ namespace NoiseGeneratorTest
 
         public ICommand MixCommand { get; }
 
+        public void GrandMix()
+        {
+            var c = _window.ContinentMixer;
+            var e = _window.ErosionMixer;
+            var p = _window.PeakMixer;
+
+            if (c.MixedValues != null && e.MixedValues != null && p.MixedValues != null)
+            {
+                var l1 = c.MixedValues.Length;
+                var l2 = e.MixedValues.Length;
+                var l3 = p.MixedValues.Length;
+
+                if (l1 != l2 || l2 != l3 || l1 != l3) return;
+
+                var bytes = new byte[_window.ContinentMixer.PerlinViewModel.Bytes.Length];
+
+                //Parallel.For(0, Size, ij =>
+                for (var ij = 0; ij < _window.ContinentMixer.PerlinViewModel.ScaledValues.Length; ij++)
+                {
+                    var offset = ij * 4;
+
+                    var n1 = c.MixedValues[ij];
+                    var n2 = e.MixedValues[ij];
+                    var n3 = p.MixedValues[ij];
+
+                    var total = n1 + n2;// * n3;
+
+                    var byteValue = (byte)((total + 1f) * 0.5f * 255);
+
+                    bytes[offset + 0] = byteValue; // BLUE
+                    bytes[offset + 1] = byteValue; // GREEN
+                    bytes[offset + 2] = byteValue; // RED
+                    bytes[offset + 3] = 255; // ALPHA
+
+                }
+                //);
+
+                try
+                {
+                    _window.GrandTotal.Draw(ref bytes, Size, Size);
+                }
+                catch  {}
+                
+            }
+        }
+
         public MainWindowViewModel(MainWindow window)
         {
             _window = window;
+
+            //window.ContinentMixer.Mixed += (_, _) => GrandMix();
+            //window.ErosionMixer.Mixed += (_, _) => GrandMix();
+            //window.PeakMixer.Mixed += (_, _) => GrandMix();
 
             InitializePresets();
 

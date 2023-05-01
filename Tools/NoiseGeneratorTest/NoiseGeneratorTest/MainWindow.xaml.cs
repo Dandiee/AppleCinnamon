@@ -1,4 +1,6 @@
-﻿namespace NoiseGeneratorTest
+﻿using System.Windows;
+
+namespace NoiseGeneratorTest
 {
     public partial class MainWindow
     {
@@ -10,6 +12,11 @@
 
             ViewModel = new MainWindowViewModel(this);
             DataContext = ViewModel;
+        }
+
+        private void ButtonBase_OnClick(object sender, RoutedEventArgs e)
+        {
+            ViewModel.GrandMix();
         }
     }
 }

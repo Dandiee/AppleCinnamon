@@ -1,18 +1,21 @@
 ﻿using System.Diagnostics.Metrics;
+using System.Globalization;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using SharpDX;
+using Color = SharpDX.Color;
 using Point = System.Windows.Point;
 
 namespace NoiseGeneratorTest
 {
     public partial class SplineEditor
     {
-        private readonly CB _first;
+        private CB _first;
         private CB _last;
-        private double _zoom = 1;
+        private double _zoom = 0.8;
         private Point _pan;
         private bool _isPanning;
         private Point _panStartPosition;
@@ -49,6 +52,11 @@ namespace NoiseGeneratorTest
             {
                 _isPanning = true;
                 _panStartPosition = e.GetPosition(MyGrid);
+            };
+
+            MyCanvas.MouseLeave += (_, _) =>
+            {
+                _isPanning = false;
             };
 
             MyCanvas.MouseMove += (_, e) =>
@@ -95,12 +103,19 @@ namespace NoiseGeneratorTest
 
         private void SetPath()
         {
-            MyPath.Data = new PathGeometry(new[]
+            var path = new Path
             {
-                _first.GetPathFigure()
-            });
+                Stroke = new SolidColorBrush(Colors.Black),
+                StrokeThickness = 1,
+                IsHitTestVisible = false,
+                Data = new PathGeometry(new[]
+                {
+                    _first.GetPathFigure()
+                })
+            };
 
-            Panel.SetZIndex(MyPath, 100);
+            MyCanvas.Children.Add(path);
+            Panel.SetZIndex(path, 100);
         }
 
         public float GetValue(float input, double canvasHeight)
@@ -146,6 +161,55 @@ namespace NoiseGeneratorTest
                 }
             }
             return null;
+        }
+
+        private void Import_Click(object sender, RoutedEventArgs e)
+        {
+            var str = Clipboard.GetText();
+            if (string.IsNullOrEmpty(str)) return;
+
+            try
+            {
+                var vectors = str.Split("|").Select(s =>
+                {
+                    var coords = s.Split(";");
+                    return new Point(float.Parse(coords[0], CultureInfo.InvariantCulture),
+                        float.Parse(coords[1], CultureInfo.InvariantCulture));
+                }).ToList();
+
+                var elementsToRemove = MyCanvas.Children.OfType<FrameworkElement>()
+                    .Where(s => string.IsNullOrEmpty(s.Name)).ToList();
+
+                foreach (var elementToRemove in elementsToRemove)
+                {
+                    MyCanvas.Children.Remove(elementToRemove);
+                }
+
+                var canvas = new BezierCanvas(MyCanvas, this);
+                _first = new CB(canvas, vectors[0], vectors[1], vectors[2], vectors[3]);
+                _last = _first;
+                for (var i = 4; i < vectors.Count; i += 3)
+                {
+                    _last = _last.LinkTo(vectors[i], vectors[i + 1], vectors[i + 2]);
+                }
+                canvas.Cb = _first;
+                SetPath();
+
+            }
+            catch {}
+        }
+
+        private void Export_Click(object sender, RoutedEventArgs e)
+        {
+            var str = _first._path.StartPoint.ToVector2().ToInvariantString();
+            foreach (var cb in _first.GetCbs())
+            {
+                str += $"|{cb._segment.Point1.ToVector2().ToInvariantString()}";
+                str += $"|{cb._segment.Point2.ToVector2().ToInvariantString()}";
+                str += $"|{cb._segment.Point3.ToVector2().ToInvariantString()}";
+            }
+
+            Clipboard.SetText(str);
         }
     }
 
@@ -389,6 +453,9 @@ namespace NoiseGeneratorTest
         }
 
         public static Vector2 ToVector2(this Point p) => new Vector2((float)p.X, (float)p.Y);
+
+        public static string ToInvariantString(this Vector2 p) => p.X.ToString(CultureInfo.InvariantCulture) + ";" +
+                                                                  p.Y.ToString(CultureInfo.InvariantCulture);
     }
 
     public class Vector2Comparer : IComparer<Vector2>

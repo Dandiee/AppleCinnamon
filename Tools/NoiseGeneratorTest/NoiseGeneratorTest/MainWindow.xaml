@@ -121,11 +121,18 @@
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
 
                     <TextBlock Grid.Column="0" Grid.Row="0" Text="Size" FontWeight="Bold"/>
                     <Slider Grid.Column="1" Grid.Row="0" Value="{Binding Size}" Minimum="16" Maximum="1024" Ticks="16"/>
                     <TextBlock Grid.Column="2" Grid.Row="0" Text="{Binding Size}" HorizontalAlignment="Right"/>
+
+                    <Button Click="ButtonBase_OnClick">ok</Button>
+
+                    <noiseGeneratorTest:D3dImageUc x:Name="GrandTotal" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" />
+
                 </Grid>
 
             </Grid>
