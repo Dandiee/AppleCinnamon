@@ -9,7 +9,7 @@
         d:DataContext="{d:DesignInstance IsDesignTimeCreatable=False, Type=noiseGeneratorTest:MainWindowViewModel}"
         mc:Ignorable="d"
         Title="Dani Noise" Height="450" Width="800">
-    <TabControl SelectedIndex="1">
+    <TabControl SelectedIndex="2">
         <TabItem Header="Main">
             <Grid Margin="10">
 
@@ -98,6 +98,36 @@
                             Content="Generate" Command="{Binding MixCommand}" CommandParameter="{Binding ElementName=MySplineEditor}"/>
                     <noiseGeneratorTest:D3dImageUc x:Name="MixImage" Grid.Column="1" Grid.Row="2" Grid.ColumnSpan="4"/>
                 </Grid>
+            </Grid>
+        </TabItem>
+        <TabItem Header="3 Like In Tales">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+
+                <noiseGeneratorTest:PerlinMixer x:Name="ContinentMixer" Grid.Column="0"/>
+                <noiseGeneratorTest:PerlinMixer x:Name="ErosionMixer" Grid.Column="1"/>
+                <noiseGeneratorTest:PerlinMixer x:Name="PeakMixer" Grid.Column="2"/>
+
+                <Grid Grid.Column="3" Grid.Row="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Column="0" Grid.Row="0" Text="Size" FontWeight="Bold"/>
+                    <Slider Grid.Column="1" Grid.Row="0" Value="{Binding Size}" Minimum="16" Maximum="1024" Ticks="16"/>
+                    <TextBlock Grid.Column="2" Grid.Row="0" Text="{Binding Size}" HorizontalAlignment="Right"/>
+                </Grid>
+
             </Grid>
         </TabItem>
     </TabControl>

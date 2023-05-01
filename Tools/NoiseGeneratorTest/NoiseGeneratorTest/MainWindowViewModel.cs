@@ -19,6 +19,22 @@ namespace NoiseGeneratorTest
         public PerlinViewModel PerlinRight { get; }
         public PerlinViewModel RawImageVm { get; }
 
+        private int _size = 512;
+        public int Size
+        {
+            get => _size;
+            set
+            {
+                if (SetProperty(ref _size, value))
+                {
+                    _window.ContinentMixer.SetSize(value);
+                    _window.ErosionMixer.SetSize(value);
+                    _window.PeakMixer.SetSize(value);
+                }
+            }
+        }
+
+
         public ICommand MixCommand { get; }
 
         public MainWindowViewModel(MainWindow window)

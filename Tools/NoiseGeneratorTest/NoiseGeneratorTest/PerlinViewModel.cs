@@ -8,6 +8,7 @@ using System.Windows.Media;
 using Prism.Commands;
 using Prism.Mvvm;
 using SharpDX;
+using SharpDX.Direct3D9;
 using Color = System.Windows.Media.Color;
 
 namespace NoiseGeneratorTest
@@ -18,7 +19,9 @@ namespace NoiseGeneratorTest
 
         private readonly Random _random = new();
 
-        private bool _supressRender;
+        public readonly bool IsNormalizingEnabled;
+
+        public bool SupressRender;
         public byte[] Bytes;
         public float[] ScaledValues;
         private OctaveNoise _octaveNoise;
@@ -37,29 +40,32 @@ namespace NoiseGeneratorTest
 
         public event EventHandler<PerlinViewModel> Rendered;
 
-        public PerlinViewModel(D3dImageUc image)
+        public void Normalize()
         {
+            SupressRender = true;
+
+            Factor = 2f / ValueRange;
+
+            FactoredMinimumValue = MinimumValue * Factor;
+            FactoredMaximumValue = MaximumValue * Factor;
+            var offset = 1 - FactoredMaximumValue;
+            FactoredValueRange = FactoredMaximumValue - FactoredMinimumValue;
+
+            Offset = offset;
+
+            SupressRender = false;
+        }
+
+        public PerlinViewModel(D3dImageUc image, bool isNormalizingEnabled = true)
+        {
+            IsNormalizingEnabled = isNormalizingEnabled;
             _image = image;
 
             _seed = _random.Next();
 
             CompensateToByteCommand = new DelegateCommand(() =>
             {
-                _supressRender = true;
-
-                Factor = 2f / ValueRange;
-
-                FactoredMinimumValue = MinimumValue * Factor;
-                FactoredMaximumValue = MaximumValue * Factor;
-                var offset = 1 - FactoredMaximumValue;
-                FactoredValueRange = FactoredMaximumValue - FactoredMinimumValue;
-
-                Offset = offset;
-
-
-
-
-                _supressRender = false;
+                Normalize();
                 Render();
             });
             ImportCommand = new DelegateCommand(Import);
@@ -111,6 +117,7 @@ namespace NoiseGeneratorTest
             ResizeArray();
             RecreateNoise();
             Render();
+            
         }
 
         private void Import()
@@ -118,7 +125,7 @@ namespace NoiseGeneratorTest
             var text = Clipboard.GetText();
             if (!string.IsNullOrEmpty(text))
             {
-                _supressRender = true;
+                SupressRender = true;
                 try
                 {
                     var lines = text.Split(Environment.NewLine);
@@ -152,7 +159,7 @@ namespace NoiseGeneratorTest
                     }
                 }
                 catch { }
-                _supressRender = false;
+                SupressRender = false;
                 Render();
             }
         }
@@ -345,9 +352,9 @@ namespace NoiseGeneratorTest
             }
         }
 
-        private void Render()
+        public void Render()
         {
-            if (!_supressRender)
+            if (!SupressRender)
             {
                 var sw = Stopwatch.StartNew();
                 GenerateNoise();
@@ -379,44 +386,40 @@ namespace NoiseGeneratorTest
                 if (localMinMax.X > value) localMinMax.X = value;
                 if (localMinMax.Y < value) localMinMax.Y = value;
 
-                var factored = value * Factor + Offset;
-                var factoredToOne = (factored + 1f) / 2f;
-                ScaledValues[ij] = factored;
-
-                var r = (byte)(BaseColor.R * factoredToOne);
-                var g = (byte)(BaseColor.G * factoredToOne);
-                var b = (byte)(BaseColor.B * factoredToOne);
-
-                //if (factored <= SetPoint)
-                //{
-                //    r = (byte)(UnderColor.R * factored);
-                //    g = (byte)(UnderColor.G * factored);
-                //    b = (byte)(UnderColor.B * factored);
-                //}
-                //else
-                //{
-                //    r = (byte)(OverColor.R * factored);
-                //    g = (byte)(OverColor.G * factored);
-                //    b = (byte)(OverColor.B * factored);
-                //}
-
-                foreach (var highlight in Highlights)
+                if (IsNormalizingEnabled)
                 {
-                    var highlightFactor = highlight.IsSolid ? 1 : factored;
 
-                    if (Math.Abs(factored - highlight.Value) < highlight.Range)
+                    var factored = value * Factor + Offset;
+                    var factoredToOne = (factored + 1f) / 2f;
+                    ScaledValues[ij] = factored;
+
+                    var r = (byte)(BaseColor.R * factoredToOne);
+                    var g = (byte)(BaseColor.G * factoredToOne);
+                    var b = (byte)(BaseColor.B * factoredToOne);
+
+
+                    foreach (var highlight in Highlights)
                     {
-                        r = (byte)(highlight.Color.R * highlightFactor);
-                        g = (byte)(highlight.Color.G * highlightFactor);
-                        b = (byte)(highlight.Color.B * highlightFactor);
-                    }
-                }
+                        var highlightFactor = highlight.IsSolid ? 1 : factored;
 
-                var offset = ij * 4;
-                Bytes[offset + 0] = b; // BLUE
-                Bytes[offset + 1] = g; // GREEN
-                Bytes[offset + 2] = r; // RED
-                Bytes[offset + 3] = 255; // ALPHA
+                        if (Math.Abs(factored - highlight.Value) < highlight.Range)
+                        {
+                            r = (byte)(highlight.Color.R * highlightFactor);
+                            g = (byte)(highlight.Color.G * highlightFactor);
+                            b = (byte)(highlight.Color.B * highlightFactor);
+                        }
+                    }
+
+                    var offset = ij * 4;
+                    Bytes[offset + 0] = b; // BLUE
+                    Bytes[offset + 1] = g; // GREEN
+                    Bytes[offset + 2] = r; // RED
+                    Bytes[offset + 3] = 255; // ALPHA
+                }
+                else
+                {
+                    ScaledValues[ij] = value;
+                }
 
                 return localMinMax;
             }, localMinMax =>
@@ -432,9 +435,27 @@ namespace NoiseGeneratorTest
             MaximumValue = globalMinMax.Y;
             ValueRange = MaximumValue - MinimumValue;
 
+            if (!IsNormalizingEnabled)
+            {
+                Normalize();
+
+                Parallel.For(0, ScaledValues.Length, ij =>
+                {
+                    var offset = ij * 4;
+                    var rawValue = (byte)(255 * (((ScaledValues[ij] * Factor + Offset)) + 1) * 0.5f);
+
+                    Bytes[offset + 0] = rawValue; // BLUE
+                    Bytes[offset + 1] = rawValue; // GREEN
+                    Bytes[offset + 2] = rawValue; // RED
+                    Bytes[offset + 3] = 255; // ALPHA
+                });
+            }
+
             _image.Draw(ref Bytes, Width, Height);
 
             Rendered?.Invoke(this, this);
         }
+
+
     }
 }
