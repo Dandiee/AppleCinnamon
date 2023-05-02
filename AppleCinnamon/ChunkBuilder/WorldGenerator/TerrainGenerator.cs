@@ -16,26 +16,32 @@ public static class TerrainGenerator
 
     private static int GetHeight(int i, int k)
     {
-        var leftValue = ContinentNoise.Compute(i, k) - WorldGeneratorOptions.WATER_LEVEL_VALUE;
-        var rightValue = MountainNoise.Compute(i, k);
+        var c = Noises.Continent.Compute(i, k);
+        var e = Noises.Erosion.Compute(i, k);
+        var p = Noises.Peaks.Compute(i, k);
 
-        double value;
+        var c1 = SplineSegment.Continental.GetValue((float)c);
+        var c2 = SplineSegment.Erosion.GetValue((float)e);
+        var c3 = SplineSegment.PeaksAndRivers.GetValue((float)p);
 
-        // water
-        if (leftValue < 0)
+        var product = (c1 + c2 + c3) / 3f;
+
+        if (c1 < -1f || c2 > 1f)
         {
-            value = (leftValue * 0.1) + WorldGeneratorOptions.WATER_LEVEL_VALUE;
-        }
-        else
-        {
-            var x = rightValue;
-            //var funcX = 0.5f + Math.Atan(238f * x - 70.2f) * (1f / Math.PI);
-            var funcX = 1.2f/ (1 + Math.Exp(-(x-0.55f)/(1f/9)));
-            //funcX = x;
-            value = leftValue * funcX + WorldGeneratorOptions.WATER_LEVEL_VALUE;
+
         }
 
-        return (int)(value * 255);
+        if (c1 < -0.9f || c2 > 0.9f)
+        {
+
+        }
+
+        if (product <= 0)
+        {
+
+        }
+
+        return 110 + (int)(100 * product);
     }
 
     public static Chunk Generate(Chunk chunk)
@@ -75,47 +81,61 @@ public static class TerrainGenerator
             {
                 var height = heatMap[i, k];
 
-                if (height < 10)
-                {
-                    height = 10;
-                }
+                if (height <= 0) height = 1;
 
                 chunk.BuildingContext.TopMostLandVoxels.Add(chunk.GetFlatIndex(i, height, k));
 
-                if (height <= WorldGeneratorOptions.WATER_LEVEL)
+                for (var j = height; j > 0; j--)
                 {
-                    chunk.SetVoxel(i, height, k, VoxelDefinition.Sand.Create(2));
-                }
-                else if (height + rnd.Next() % 3 >= WorldGeneratorOptions.SNOW_LEVEL)
-                {
-                    chunk.SetVoxel(i, height, k, VoxelDefinition.Snow.Create(2));
-                }
-                else
-                {
-                    chunk.SetVoxel(i, height, k, VoxelDefinition.Grass.Create(2));
+                    chunk.SetVoxel(i, j, k, VoxelDefinition.Grass.Create(2));
                 }
 
-                var dirtBlocks = rnd.Next(1, 4);
+                const int waterLevel = 80;
 
-                for (var j = height - 1; j > height - dirtBlocks; j--)
+                for (var j = waterLevel; j > height; j--)
                 {
-                    chunk.SetVoxel(i, j, k, VoxelDefinition.Dirt.Create());
+                    chunk.SetVoxel(i, j, k, VoxelDefinition.Water.Create());
                 }
 
-                for (var j = height - dirtBlocks; j > -1; j--)
+                if (height < waterLevel)
                 {
-                    chunk.SetVoxel(i, j, k, VoxelDefinition.Stone.Create());
+                    chunk.BuildingContext.TopMostWaterVoxels.Add(chunk.GetFlatIndex(i, waterLevel, k));
                 }
 
-                if (height <= WorldGeneratorOptions.WATER_LEVEL)
-                {
-                    for (var j = WorldGeneratorOptions.WATER_LEVEL; j > height; j--)
-                    {
-                        chunk.SetVoxel(i, j, k, VoxelDefinition.Water.Create());
-                        chunk.BuildingContext.TopMostWaterVoxels.Add(chunk.GetFlatIndex(i, WorldGeneratorOptions.WATER_LEVEL, k));
-                    }
-                }
+                //if (height <= WorldGeneratorOptions.WATER_LEVEL)
+                //{
+                //    chunk.SetVoxel(i, height, k, VoxelDefinition.Sand.Create(2));
+                //}
+                //else if (height + rnd.Next() % 3 >= WorldGeneratorOptions.SNOW_LEVEL)
+                //{
+                //    chunk.SetVoxel(i, height, k, VoxelDefinition.Snow.Create(2));
+                //}
+                //else
+                //{
+                //    chunk.SetVoxel(i, height, k, VoxelDefinition.Grass.Create(2));
+                //}
 
+                //var dirtBlocks = rnd.Next(1, 4);
+
+                //for (var j = height - 1; j > height - dirtBlocks; j--)
+                //{
+                //    chunk.SetVoxel(i, j, k, VoxelDefinition.Dirt.Create());
+                //}
+
+                //for (var j = height - dirtBlocks; j > -1; j--)
+                //{
+                //    chunk.SetVoxel(i, j, k, VoxelDefinition.Stone.Create());
+                //}
+
+                //if (height <= WorldGeneratorOptions.WATER_LEVEL)
+                //{
+                //    for (var j = WorldGeneratorOptions.WATER_LEVEL; j > height; j--)
+                //    {
+                //        chunk.SetVoxel(i, j, k, VoxelDefinition.Water.Create());
+                //        chunk.BuildingContext.TopMostWaterVoxels.Add(chunk.GetFlatIndex(i, WorldGeneratorOptions.WATER_LEVEL, k));
+                //    }
+                //}
+                // ----------
                 //var waterRandom = WaterNoise.Compute(i + chunk.ChunkIndex.X * GameOptions.CHUNK_SIZE, k + chunk.ChunkIndex.Y * GameOptions.CHUNK_SIZE);
                 var isWater = false;
                 //if (Math.Abs(waterRandom - 128) <= 2)

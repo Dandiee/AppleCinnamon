@@ -170,7 +170,10 @@ namespace NoiseGeneratorTest
                 $"{Width};{Height};{Octaves};{Amplitude};{Frequency};{Offset};{Factor};{BaseColor.ToString()};{Seed};{SetPoint};{UnderColor};{OverColor}");
             var highlightings = string.Join(Environment.NewLine, Highlights.Select(s =>
                 string.Create(CultureInfo.InvariantCulture, $"{s.Value};{s.Range};{s.IsSolid};{s.Color}")));
-            Clipboard.SetText($"{firstLine}{Environment.NewLine}{highlightings}");
+
+            var codeLine = string.Create(CultureInfo.InvariantCulture,
+                $"{Octaves},{Frequency},{Amplitude},{Offset},{Factor},{Seed}");
+            Clipboard.SetText($"{firstLine}{Environment.NewLine}{highlightings}{Environment.NewLine}{codeLine}");
         }
 
         private Color _baseColor = Color.FromRgb(255, 255, 255);

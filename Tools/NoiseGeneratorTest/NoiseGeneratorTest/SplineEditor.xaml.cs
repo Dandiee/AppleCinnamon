@@ -130,7 +130,7 @@ namespace NoiseGeneratorTest
                 {
                     var result = BinarySearchIterative(ref cb.Values, a);
                     if (result == null) return -1;
-                    return (float)(result.Value.Y / canvasHeight);
+                    return (float)(((result.Value.Y / canvasHeight) * 2) - 1f);
                 }
             }
 
@@ -259,8 +259,8 @@ namespace NoiseGeneratorTest
         public void Add(Ellipse ellipse, Point origo)
         {
             Canvas.Children.Add(ellipse);
-            Canvas.SetLeft(ellipse, origo.X + ellipse.Width / 2f);
-            Canvas.SetTop(ellipse, origo.Y + ellipse.Width / 2f);
+            Canvas.SetLeft(ellipse, origo.X - ellipse.Width / 2f);
+            Canvas.SetTop(ellipse, origo.Y - ellipse.Width / 2f);
             Panel.SetZIndex(ellipse, 10);
 
 

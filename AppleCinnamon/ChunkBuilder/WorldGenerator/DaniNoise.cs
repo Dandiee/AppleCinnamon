@@ -105,7 +105,5 @@ public sealed class DaniNoise
             frequency *= .5;
         }
         return sum * _options.Factor + _options.Offset;
-
-        //return (float)Math.Clamp(semiResult, 0, 255) /  255f;
     }
 }

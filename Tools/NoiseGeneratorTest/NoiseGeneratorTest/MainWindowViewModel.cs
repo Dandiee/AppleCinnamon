@@ -42,6 +42,7 @@ namespace NoiseGeneratorTest
             var c = _window.ContinentMixer;
             var e = _window.ErosionMixer;
             var p = _window.PeakMixer;
+            var floats = new float[Size * Size];
 
             if (c.MixedValues != null && e.MixedValues != null && p.MixedValues != null)
             {
@@ -53,6 +54,9 @@ namespace NoiseGeneratorTest
 
                 var bytes = new byte[_window.ContinentMixer.PerlinViewModel.Bytes.Length];
 
+                var min = float.MaxValue;
+                var max = float.MinValue;
+
                 //Parallel.For(0, Size, ij =>
                 for (var ij = 0; ij < _window.ContinentMixer.PerlinViewModel.ScaledValues.Length; ij++)
                 {
@@ -62,14 +66,56 @@ namespace NoiseGeneratorTest
                     var n2 = e.MixedValues[ij];
                     var n3 = p.MixedValues[ij];
 
-                    var total = n1 + n2;// * n3;
+                    var n12 = (n1 + n2 + n3) / 3f;
+                    //if (Math.Sign(n12) == Math.Sign(n3))
+                    //{
+                    //    n12 *= n3;
+                    //}
+                    //
+                    //if (n3 < 0)
+                    //{
+                    //
+                    //}
+
+                    var total = (n12);
+
+                    if (min > total) min = total;
+                    if (max < total) max = total;
+
+                    floats[ij] = total;
 
                     var byteValue = (byte)((total + 1f) * 0.5f * 255);
-
+                    
                     bytes[offset + 0] = byteValue; // BLUE
                     bytes[offset + 1] = byteValue; // GREEN
                     bytes[offset + 2] = byteValue; // RED
                     bytes[offset + 3] = 255; // ALPHA
+
+                }
+
+                var range = max - min;
+
+                for (var ij = 0; ij < _window.ContinentMixer.PerlinViewModel.ScaledValues.Length; ij++)
+                {
+                    var offset = ij * 4;
+
+                    var n1 = c.MixedValues[ij];
+                    var n2 = e.MixedValues[ij];
+                    var n3 = p.MixedValues[ij];
+
+                    var total = n1 * n2 * n3;
+
+                    if (min > total) min = total;
+                    if (max < total) max = total;
+
+                    floats[ij] = total;
+
+                    //var byteValue = (byte)((total + 1f) * 0.5f * 255);
+                    //
+                    //bytes[offset + 0] = byteValue; // BLUE
+                    //bytes[offset + 1] = byteValue; // GREEN
+                    //bytes[offset + 2] = byteValue; // RED
+                    //bytes[offset + 3] = 255; // ALPHA
 
                 }
                 //);

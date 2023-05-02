@@ -18,8 +18,5 @@
         <local:D3dImageUc x:Name="RawNoise" Grid.Row="1" />
         <local:SplineEditor  x:Name="MySplineEditor" Grid.Row="2"/>
         <local:D3dImageUc x:Name="MixedImage" Grid.Row="3"/>
-
-        
-
     </Grid>
 </UserControl>

@@ -46,7 +46,13 @@
 
                 var rawValue = PerlinViewModel.ScaledValues[ij] * PerlinViewModel.Factor + PerlinViewModel.Offset;
                 var splinedValue = splineEditor.GetValue(rawValue, canvasHeight);
-                var byteValue = (byte)(255 * splinedValue);
+
+                if (splinedValue < -0.9f)
+                {
+
+                }
+
+                var byteValue = (byte)(255 * ((splinedValue + 1f) / 2f));
 
                 MixedValues[ij] = splinedValue;
 
