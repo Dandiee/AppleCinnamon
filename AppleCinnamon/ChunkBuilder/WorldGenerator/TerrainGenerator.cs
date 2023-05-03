@@ -25,22 +25,6 @@ public static class TerrainGenerator
         var c3 = SplineSegment.PeaksAndRivers.GetValue((float)p);
 
         var product = (c1 + c2 + c3) / 3f;
-
-        if (c1 < -1f || c2 > 1f)
-        {
-
-        }
-
-        if (c1 < -0.9f || c2 > 0.9f)
-        {
-
-        }
-
-        if (product <= 0)
-        {
-
-        }
-
         return 110 + (int)(100 * product);
     }
 
@@ -90,7 +74,7 @@ public static class TerrainGenerator
                     chunk.SetVoxel(i, j, k, VoxelDefinition.Grass.Create(2));
                 }
 
-                const int waterLevel = 80;
+                const int waterLevel = 105;
 
                 for (var j = waterLevel; j > height; j--)
                 {

@@ -11,6 +11,6 @@ namespace AppleCinnamon.ChunkBuilder.WorldGenerator
             = new(new(10, 0.2595467, 0.08986536, -0.16380763, 0.07992246, 1833));
 
         public static readonly DaniNoise Peaks
-            = new(new(9, 0.8196214, 0.039858673, -0.05864966, 0.120486386, 1308));
+            = new(new(9, 1.9397707, 0.039858673, 0.063578725, 0.09921174, 1308));
     }
 }

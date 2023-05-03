@@ -66,7 +66,7 @@ namespace NoiseGeneratorTest
                     var n2 = e.MixedValues[ij];
                     var n3 = p.MixedValues[ij];
 
-                    var n12 = (n1 + n2 + n3) / 3f;
+                    var n12 = (n1 * n2);// + n3;
                     //if (Math.Sign(n12) == Math.Sign(n3))
                     //{
                     //    n12 *= n3;
@@ -84,12 +84,28 @@ namespace NoiseGeneratorTest
 
                     floats[ij] = total;
 
-                    var byteValue = (byte)((total + 1f) * 0.5f * 255);
-                    
-                    bytes[offset + 0] = byteValue; // BLUE
-                    bytes[offset + 1] = byteValue; // GREEN
-                    bytes[offset + 2] = byteValue; // RED
-                    bytes[offset + 3] = 255; // ALPHA
+                    var scaledValue = (total + 1f) * 0.5;
+
+                    if (false && 110 + total * 100 < 105)
+                    {
+                        var byteValue = (byte)(scaledValue * 255);
+
+                        bytes[offset + 0] = 255; // BLUE
+                        bytes[offset + 1] = 0; // GREEN
+                        bytes[offset + 2] = 0; // RED
+                        bytes[offset + 3] = 255; // ALPHA
+                    }
+                    else
+                    {
+                        var byteValue = (byte)(scaledValue * 255);
+
+                        bytes[offset + 0] = byteValue; // BLUE
+                        bytes[offset + 1] = byteValue; // GREEN
+                        bytes[offset + 2] = byteValue; // RED
+                        bytes[offset + 3] = 255; // ALPHA
+                    }
+
+                   
 
                 }
 
