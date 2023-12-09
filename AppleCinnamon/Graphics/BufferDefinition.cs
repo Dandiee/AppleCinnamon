@@ -12,6 +12,7 @@ public sealed class BufferDefinition<TVertex> : IDisposable
 {
     public readonly bool IsValid;
     public readonly int IndexCount;
+    public readonly int VertexCount;
     public Buffer VertexBuffer;
     public Buffer IndexBuffer;
     public VertexBufferBinding Binding;
@@ -20,6 +21,7 @@ public sealed class BufferDefinition<TVertex> : IDisposable
     {
         IsValid = indexes.Length > 0;
         IndexCount = indexes.Length;
+        VertexCount = vertices.Length;
         VertexBuffer = Buffer.Create(device, BindFlags.VertexBuffer, vertices, vertices.Length * default(TVertex).Size, ResourceUsage.Immutable);
         IndexBuffer = Buffer.Create(device, BindFlags.IndexBuffer, indexes, indexes.Length * sizeof(uint), ResourceUsage.Immutable);
         Binding = new VertexBufferBinding(VertexBuffer, default(TVertex).Size, 0);

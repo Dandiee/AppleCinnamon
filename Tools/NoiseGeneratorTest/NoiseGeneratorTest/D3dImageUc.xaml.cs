@@ -2,6 +2,7 @@
 using SharpDX.Mathematics.Interop;
 using System.Windows;
 using System.Windows.Interop;
+using Application = System.Windows.Application;
 
 namespace NoiseGeneratorTest
 {

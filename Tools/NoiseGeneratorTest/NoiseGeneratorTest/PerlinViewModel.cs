@@ -2,7 +2,9 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using Prism.Commands;
@@ -10,6 +12,9 @@ using Prism.Mvvm;
 using SharpDX;
 using SharpDX.Direct3D9;
 using Color = System.Windows.Media.Color;
+using System.Windows.Media.Media3D;
+using Clipboard = System.Windows.Clipboard;
+using ColorConverter = System.Windows.Media.ColorConverter;
 
 namespace NoiseGeneratorTest
 {
@@ -28,6 +33,7 @@ namespace NoiseGeneratorTest
 
         public ICommand RenderCommand { get; }
         public ICommand ReseedCommand { get; }
+        public ICommand SaveAsPngCommand { get; }
         public ICommand AddHighlightCommand { get; }
         public ICommand MoveHighlightUpCommand { get; }
         public ICommand MoveHighlightDownCommand { get; }
@@ -71,6 +77,7 @@ namespace NoiseGeneratorTest
             ImportCommand = new DelegateCommand(Import);
             ExportCommand = new DelegateCommand(Export);
             RenderCommand = new DelegateCommand(Render);
+            SaveAsPngCommand = new DelegateCommand(SaveAsPng);
             ReseedCommand = new DelegateCommand(() => Seed = _random.Next(0, 9999));
             AddHighlightCommand = new DelegateCommand(() => Highlights.Add(new HighlightViewModel()));
             MoveHighlightUpCommand = new DelegateCommand<HighlightViewModel>(h =>
@@ -117,7 +124,32 @@ namespace NoiseGeneratorTest
             ResizeArray();
             RecreateNoise();
             Render();
-            
+
+        }
+
+        private void SaveAsPng()
+        {
+
+            var bmp = new Bitmap(Width, Height);
+
+            for (var ij = 0; ij < Width * Height; ij++)
+            {
+                var i = ij % Width;
+                var j = ij / Width;
+                var offset = ij * 4;
+                var blue = Bytes[offset + 0]; // BLUE
+                var green = Bytes[offset + 1]; // GREEN
+                var red = Bytes[offset + 2]; // RED
+                var alpha = Bytes[offset + 3] = 255; // ALPHA
+
+                bmp.SetPixel(i, j, System.Drawing.Color.FromArgb(alpha, red, green, blue));
+            }
+
+            SaveFileDialog dialof = new SaveFileDialog();
+            if (dialof.ShowDialog() == DialogResult.OK)
+            {
+                bmp.Save(dialof.FileName, System.Drawing.Imaging.ImageFormat.Png);
+            };
         }
 
         private void Import()

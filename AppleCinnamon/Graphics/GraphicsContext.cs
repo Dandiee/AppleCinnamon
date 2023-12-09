@@ -55,7 +55,7 @@ public sealed class GraphicsContext
 
 
         
-        _d3d11.Device.CreateWithSwapChain(_d3d.DriverType.Hardware, DeviceCreationFlags.BgraSupport 
+        Device.CreateWithSwapChain(_d3d.DriverType.Hardware, DeviceCreationFlags.BgraSupport 
             //| DeviceCreationFlags.Debug
             , new SwapChainDescription
         {

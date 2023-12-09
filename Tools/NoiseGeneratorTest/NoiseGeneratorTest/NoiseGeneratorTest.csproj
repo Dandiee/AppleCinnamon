@@ -6,9 +6,17 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<!--<Nullable>enable</Nullable>-->
 		<UseWPF>true</UseWPF>
-		<!--<UseWindowsForms>true</UseWindowsForms>-->
+		<UseWindowsForms>true</UseWindowsForms>
 		<OutputType>WinExe</OutputType>
 	</PropertyGroup>
+
+
+	<ItemGroup>
+	  <Compile Remove="Java\**" />
+	  <EmbeddedResource Remove="Java\**" />
+	  <None Remove="Java\**" />
+	  <Page Remove="Java\**" />
+	</ItemGroup>
 
 
 	<ItemGroup>

@@ -6,7 +6,9 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using SharpDX;
+using Clipboard = System.Windows.Clipboard;
 using Color = SharpDX.Color;
+using Panel = System.Windows.Controls.Panel;
 using Point = System.Windows.Point;
 
 namespace NoiseGeneratorTest

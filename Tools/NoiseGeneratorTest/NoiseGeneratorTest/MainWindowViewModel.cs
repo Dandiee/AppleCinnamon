@@ -7,6 +7,7 @@ using Prism.Commands;
 using Prism.Mvvm;
 using SharpDX.Direct2D1.Effects;
 using SharpDX.Direct3D9;
+using Color = System.Windows.Media.Color;
 
 namespace NoiseGeneratorTest
 {

@@ -53,8 +53,14 @@ public sealed class ChunkDrawer
         Task.Run(UpdateWaterTexture);
     }
 
+    public int SolidVertexCountDrawn = 0;
+    public int SolidIndexCountDrawn = 0;
+
     public void Draw(IList<Chunk> chunks, Camera camera)
     {
+        SolidVertexCountDrawn = 0;
+        SolidIndexCountDrawn = 0;
+
         if (chunks.Count > 0)
         {
             if (GameOptions.RenderSolid)
@@ -63,6 +69,8 @@ public sealed class ChunkDrawer
                 _solidEffectDefinition.Use(_device);
                 foreach (var chunk in chunks)
                 {
+                    SolidIndexCountDrawn += chunk.Buffers.BufferSolid.IndexCount;
+                    SolidVertexCountDrawn += chunk.Buffers.BufferSolid.VertexCount;
                     chunk.Buffers.BufferSolid?.Draw(_device);
                 }
             }

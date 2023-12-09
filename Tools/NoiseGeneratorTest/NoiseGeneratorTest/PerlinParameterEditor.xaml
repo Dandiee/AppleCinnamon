@@ -125,6 +125,7 @@
         <Border Grid.Column="0" Grid.Row="15"  Grid.ColumnSpan="3" 
                 BorderThickness="0 1 0 0" BorderBrush="#333" Margin="0 3 0 0" Padding="0 3 0 0">
             <WrapPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Content="Save as .PNG" HorizontalAlignment="Right" Command="{Binding SaveAsPngCommand}"/>
                 <Button Content="Re-seed" HorizontalAlignment="Right" Command="{Binding ReseedCommand}"/>
                 <Button Content="Compensate" HorizontalAlignment="Right" Command="{Binding CompensateToByteCommand}"/>
                 <Button Content="&#xf56f;" HorizontalAlignment="Right" 

@@ -21,7 +21,7 @@ public sealed partial class ChunkManager
     public readonly ConcurrentDictionary<Int2, Chunk> Chunks = new();
     public readonly Pipeline Pipeline;
 
-    private readonly ChunkDrawer _chunkDrawer;
+    public readonly ChunkDrawer ChunkDrawer;
 
     private Int2? _lastQueueIndex;
     private List<Chunk> _chunksToDraw;
@@ -33,7 +33,7 @@ public sealed partial class ChunkManager
     public ChunkManager(GraphicsContext graphicsContext)
     {
         _graphicsContext = graphicsContext;
-        _chunkDrawer = new ChunkDrawer(graphicsContext.Device);
+        ChunkDrawer = new ChunkDrawer(graphicsContext.Device);
         _chunksToDraw = new List<Chunk>();
         Pipeline = new Pipeline(FinishChunk, _graphicsContext.Device, this);
 
@@ -42,7 +42,7 @@ public sealed partial class ChunkManager
 
     public void Draw(Camera camera)
     {
-        _chunkDrawer.Draw(_chunksToDraw, camera);
+        ChunkDrawer.Draw(_chunksToDraw, camera);
     }
 
     public void FinishChunk(Chunk chunk)
@@ -63,7 +63,7 @@ public sealed partial class ChunkManager
     {
         if (IsInitialized)
         {
-            _chunkDrawer.Update(camera);
+            ChunkDrawer.Update(camera);
             var currentChunkIndex = new Int2((int)camera.Position.X / GameOptions.CHUNK_SIZE, (int)camera.Position.Z / GameOptions.CHUNK_SIZE);
 
             UpdateChunks(camera);

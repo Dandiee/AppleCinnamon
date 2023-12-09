@@ -38,6 +38,7 @@ struct VertexShaderInput
 {
     float3 Position : POSITION0;
 	uint MetaData: VISIBILITY;
+    uint VertexId : SV_VertexID;
 };
 
 
@@ -73,6 +74,13 @@ float ComputeFogFactor(float dist)
 VertexShaderOutput VertexShaderFunction(VertexShaderInput input)
 {
     VertexShaderOutput output = (VertexShaderOutput)0;
+	
+    if (input.VertexId > 1000)
+    {
+		
+    return output;
+    }
+	
 	float4 position = float4(input.Position.xyz, 1);
 
 	float textureCoordinateU   = ((input.MetaData >>  0) & 31) * textureFactor;
@@ -87,6 +95,7 @@ VertexShaderOutput VertexShaderFunction(VertexShaderInput input)
 	// worst case all neighbors are darkening the vertex which yields a 0.7f factor
 	float ambientOcclusionFactor = 1.0f - (ambientNeighborCount * 0.1);
 
+	
     output.Position = mul(position, WorldViewProjection);
 	output.TexCoords = float2(textureCoordinateU, textureCoordinateV);
 

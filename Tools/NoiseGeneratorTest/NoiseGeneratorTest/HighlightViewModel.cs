@@ -1,5 +1,6 @@
 ﻿using System.Windows.Media;
 using Prism.Mvvm;
+using Color = System.Windows.Media.Color;
 
 namespace NoiseGeneratorTest
 {

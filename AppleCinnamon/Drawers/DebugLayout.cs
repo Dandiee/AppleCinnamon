@@ -94,6 +94,8 @@ public sealed class DebugLayout
             new DebugInfoLine<double>(() => game.CameraUpdateTimeRatio, textFactory: n => $"Camera Updt {n:F3}"),
             new DebugInfoLine<double>(() => game.ChunkUpdateTimeRatio, textFactory: n => $"Chunk Updt {n:F3}"),
             new DebugInfoLine<double>(() => game.DrawTimeRatio, textFactory: n => $"Draw {n:F3}"),
+            new DebugInfoLine<double>(() => game.ChunkManager.ChunkDrawer.SolidIndexCountDrawn, "Solid indicies"),
+            new DebugInfoLine<double>(() => game.ChunkManager.ChunkDrawer.SolidVertexCountDrawn, "Solid vertices"),
             new DebugInfoLine<double>(() => game.MissingTimeRatio, textFactory: n => $"Missing {n:F2}"));
 
 
